@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h5>List Overview</h5>
+<div id="accordion">
+    {% for course, waitlists in coursedict.items %}
+  <div class="card">
+    <div class="card-header" id="headingOne">
+      <h5 class="mb-0">
+        <button class="btn btn-link" data-toggle="collapse" data-target="#collapse{{ forloop.counter }}" aria-expanded="false" aria-controls="collapse{{ forloop.counter }}">
+          {{ course.airport_name }} {{ course.get_position_display }}, {{ waitlists|length }} waiting
+        </button>
+      </h5>
+    </div>
+
+    <div id="collapse{{ forloop.counter }}" class="collapse" aria-labelledby="headingOne" data-parent="#accordion">
+      <div class="card-body">
+          <table class="table table-striped">
+              <thead>
+              <tr>
+                  <td>#</td>
+                  <td>Name</td>
+                  <td>ID</td>
+                  <td>Action</td>
+                  <td>Activity</td>
+              </tr>
+              </thead>
+                <tbody>
+                {% for list_entry in waitlists %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ list_entry.user.get_full_name }}</td>
+                    <td>{{ list_entry.user.username }}</td>
+                    <td>
+                        <a href="{% url 'lists:start_training' list_entry.id %}" class="btn btn-primary btn-sm">Start Training</a>
+                    </td>
+                    <td>
+                        <a target="_blank" href="https://stats.vatsim.net/stats/{{ list_entry.user.username }}?range=2months">{{ list_entry.activity }}</a>
+                    </td>
+                </tr>
+                    {% endfor %}
+                </tbody>
+          </table>
+      </div>
+    </div>
+  </div>
+{% endfor %}
+</div>
+</div>
+{% endblock %}

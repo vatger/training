@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Courses</h1>
+<div class="container">
+    <div class="row">
+    {% for course, ent in entered.items %}
+    <div class="col-4">
+        <div class="card">
+            <h5>{{ course.name }}</h5>
+            <p>{{ course.get_position_display }} {{ course.get_type_display }} |
+            {% if ent %}
+                <a class="btn btn-outline-danger btn-sm" href="{% url 'lists:join_leave_list' course.id %}">Leave</a>
+            {% else %}
+                <a class="btn btn-outline-info btn-sm" href="{% url 'lists:join_leave_list' course.id %}">Join</a>
+            {% endif %}
+            </p>
+        </div>
+    </div>
+
+    {% endfor %}
+    </div>
+</div>
+{% endblock %}

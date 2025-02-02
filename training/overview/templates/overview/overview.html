@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% for course, v in overview.items %}
+    <h5>{{ course }}</h5>
+    <table class="table table-striped">
+    <tr>
+        <th>Name</th>
+        <th>ID</th>
+        <th>Progress</th>
+        <th>Solo</th>
+        <th>Next</th>
+        <th>Mentor</th>
+    </tr>
+    {% for a, b in v.items %}
+        <tr>
+        <td>{{ a }}</td>
+        <td>{{ a.username }}</td>
+        <td>{% for log in b.logs %}
+            {% if log.result %}
+            <a class="btn btn-success btn-sm" href="{% url 'logs:log_detail' log.id %}">
+            {% else %}
+            <a class="btn btn-danger btn-sm" href="{% url 'logs:log_detail' log.id %}">
+            {% endif %}
+        {{ log.type }}</a> {% endfor %}</td>
+        <td>{{ b.solo }}</td>
+        <td>{{ b.next_step }}</td>
+        <td>
+        <a href="{% url 'overview:claim' a.id course.id %}">{% if b.claimed %}{{ b.claimed_by }}{% else %}Claim{% endif %}</a></td>
+        </tr>
+    {% endfor %}
+    </table>
+
+{% endfor %}
+{% endblock %}
