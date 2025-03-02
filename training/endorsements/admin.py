@@ -19,7 +19,10 @@ class EndorsementActivityAdmin(admin.ModelAdmin):
     formatted_updated.short_description = "Last Updated"
 
     # Define the fields displayed in the form view (include group field)
-    fields = ("activity", "group")
+    fields = ("activity", "group", "removal_notified", "removal_date", "created")
+
+    # read_only fields
+    readonly_fields = ("created",)  # "removal_notified", "removal_date")
 
     # Add a simple action to reset activity values (optional)
     actions = ["reset_activity"]

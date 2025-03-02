@@ -1,7 +1,39 @@
 {% extends "base.html" %}
 
 {% block content %}
-{% for group in groups %}
-{{ group }}
+    <div class="container">
+    <div class="row">
+{% for group, activity_list in endorsements.items %}
+    <div class="col-md-6">
+    <h4>{{ group }}</h4> <!-- Keep the group name outside the table -->
+    <div class="table-responsive" style="max-height: 300px; overflow-y: auto; position: relative;">
+        <table class="table table-striped table-bordered">
+            <thead class="table-light" style="position: sticky; top: 0; background: white; z-index: 10;">
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Activity [h]</th>
+                    <th>Remove</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in activity_list %}
+                    <tr>
+                        <td><a href="https://stats.vatsim.net/stats/{{ entry.id }}?range=6months" target="_blank" rel="noopener noreferrer">{{ entry.id }}</a></td>
+                        <td>{{ entry.name }}</td>
+                        <td>{{ entry.activity }}</td>
+                        <td>{% if entry.removal %} In progress
+                            {% else %} <a href="{% url 'endorsements:remove' entry.endorsement_id %}" class="btn btn-sm btn-danger">Remove</a>
+                        {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
 {% endfor %}
+    </div>
+    </div>
 {% endblock %}

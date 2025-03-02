@@ -1,9 +1,14 @@
-from django.core.management.base import BaseCommand
-from endorsements.models import EndorsementActivity, EndorsementGroup
-from endorsements.helpers import get_tier1_endorsements
-from django.utils import timezone
-import requests
+import os
+from datetime import datetime, timezone
 
+import requests
+from django.core.management.base import BaseCommand
+from django.utils import timezone as dj_timezone
+from dotenv import load_dotenv
+from endorsements.helpers import get_tier1_endorsements
+from endorsements.models import EndorsementActivity, EndorsementGroup
+
+load_dotenv()
 
 viable_suffixes = {
     # endorsement: [suffixes]
@@ -57,7 +62,7 @@ def calculate_activity(endorsement: dict, connections: list[dict]) -> float:
 
 def get_hours(endorsement: dict) -> float:
     vatsim_id = endorsement["user_cid"]
-    start = timezone.now() - timezone.timedelta(days=180)
+    start = dj_timezone.now() - dj_timezone.timedelta(days=180)
     start = start.strftime("%Y-%m-%d")
     api_url = (
         lambda id, start: f"https://api.vatsim.net/api/ratings/{id}/atcsessions/?start={start}"
@@ -76,16 +81,21 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         tier1_endorsements = get_tier1_endorsements()
         # todo remove this for production
-        for t1 in tier1_endorsements[10:]:
+        for t1 in tier1_endorsements[:10]:
             try:
                 EndorsementActivity.objects.get(id=t1["id"])
             except EndorsementActivity.DoesNotExist:
                 group = EndorsementGroup.objects.get(name=t1["position"])
+                created_at = datetime.strptime(
+                    t1["created_at"], "%Y-%m-%dT%H:%M:%S.%fZ"
+                ).replace(tzinfo=timezone.utc)
+
                 EndorsementActivity.objects.create(
                     id=t1["id"],
                     activity=0.0,
-                    updated=timezone.now(),
+                    updated=dj_timezone.now(),
                     group=group,
+                    created=created_at,
                 )
 
         endorsement = EndorsementActivity.objects.order_by("updated").first()
@@ -106,8 +116,18 @@ class Command(BaseCommand):
             if hours == -1:
                 self.stdout.write("Error fetching hours from VATSIM API.")
                 return
+            if hours >= float(os.getenv("T1_MIN_HOURS")):
+                # Set removal_date field to blank
+                endorsement.removal_date = None
+            else:
+                if endorsement.removal_date and not endorsement.removal_notified:
+                    # Send notification
+                    # TODO: Send VATGER notification
+                    endorsement.removal_notified = True
+                    self.stdout.write("Sent notification.")
+
             endorsement.activity = hours
-            endorsement.updated = timezone.now()
+            endorsement.updated = dj_timezone.now()
             endorsement.save()
             self.stdout.write(f"Updated hours.")
         else:
