@@ -43,10 +43,11 @@ def get_connections(user):
 
 @login_required
 def view_lists(request):
+    # make sure user is not currently active_trainee
     courses = Course.objects.filter(
         min_rating__lte=request.user.userdetail.rating,
         max_rating__gte=request.user.userdetail.rating,
-    )
+    ).exclude(active_trainees=request.user)
     entered = {}
 
     try:

@@ -1,10 +1,13 @@
 TODO
-
-- Trainee overview
-- Log Detail view
-  - edit logs?
-- View for trainee, see active courses and logs
 - Core APIs
+  - Add Solo
 - Waiting List signup
 - Oauth integration
 - Think about who can access logs
+- Permissions
+  - ATD Leitung -> superuser
+  - Mentoren -> pro Kurs gemanaged
+  - Trainees -> können eigene Sachen sehen
+- GDPR Zeug
+- images in log
+- Redo courses?

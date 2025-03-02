@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% load tags %}
+
 {% block content %}
 {% for course, v in overview.items %}
     <h5>{{ course }}</h5>
@@ -11,6 +13,7 @@
         <th>Solo</th>
         <th>Next</th>
         <th>Mentor</th>
+        <th>Rmv.</th>
     </tr>
     {% for a, b in v.items %}
         <tr>
@@ -22,14 +25,31 @@
             {% else %}
             <a class="btn btn-danger btn-sm" href="{% url 'logs:log_detail' log.id %}">
             {% endif %}
-        {{ log.type }}</a> {% endfor %}</td>
+        {{ log.type }}</a> {% endfor %} {{ b.date_last|format_date }}</td>
         <td>{{ b.solo }}</td>
         <td>{{ b.next_step }}</td>
         <td>
         <a href="{% url 'overview:claim' a.id course.id %}">{% if b.claimed %}{{ b.claimed_by }}{% else %}Claim{% endif %}</a></td>
+        <td><a href="{% url 'overview:remove' a.id course.id %}" class="btn btn-danger btn-sm">X</a></td>
         </tr>
     {% endfor %}
     </table>
+    <form method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="course_id" value="{{ course.id }}">
+        <label for="username-{{ course.id }}">ID:</label>
+        <input type="text" name="username" id="username-{{ course.id }}">
+
+        <button class="btn btn-primary btn-sm" type="submit">Add</button>
+
+    {% if form.errors %}
+            <div style="color: red;">
+                {{ form.errors.username }}
+            </div>
+        {% endif %}
+    </form>
+    <hr>
+    <br>
 
 {% endfor %}
 {% endblock %}

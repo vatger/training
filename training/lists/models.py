@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from endorsements.models import EndorsementGroup
 
 
 from connect.models import FIR
@@ -44,9 +45,12 @@ class Course(models.Model):
     mentors = models.ManyToManyField(User, related_name="mentored_courses", blank=True)
     type = models.CharField(max_length=4, choices=CourseType.choices)
     position = models.CharField(max_length=3, choices=Position.choices)
+    endorsement_groups = models.ManyToManyField(
+        EndorsementGroup, blank=True, related_name="courses"
+    )
 
     def __str__(self):
-        return self.name
+        return self.name + " - " + self.type
 
 
 class WaitingListEntry(models.Model):

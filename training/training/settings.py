@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     "logs.apps.LogsConfig",
     "overview.apps.OverviewConfig",
     "connect.apps.ConnectConfig",
+    "trainee.apps.TraineeConfig",
+    "endorsements.apps.EndorsementsConfig",
 ]
 
 MIDDLEWARE = [

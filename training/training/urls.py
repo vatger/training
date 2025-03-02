@@ -8,5 +8,7 @@ urlpatterns = [
     path("logs/", include("logs.urls")),
     path("overview/", include("overview.urls")),
     path("lists/", include("lists.urls")),
-    path("", RedirectView.as_view(url="/lists/")),
+    path("trainee/", include("trainee.urls")),
+    path("endorsements/", include("endorsements.urls")),
+    path("", RedirectView.as_view(url="/trainee/")),
 ]

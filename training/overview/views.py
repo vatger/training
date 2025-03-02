@@ -1,17 +1,18 @@
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import redirect
-
 import os
-from dotenv import load_dotenv
-import requests
-
 from datetime import datetime, timezone
 
+import requests
 from cachetools import TTLCache, cached
-
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from django.shortcuts import redirect, get_object_or_404
+from django.shortcuts import render
+from dotenv import load_dotenv
+from lists.models import Course
 from logs.models import Log
 from overview.models import TraineeClaim
+
+from .forms import AddUserForm
 
 load_dotenv()
 
@@ -46,10 +47,25 @@ def get_solos():
 
 @login_required
 def overview(request):
+    if request.method == "POST":
+        form = AddUserForm(request.POST)
+        if form.is_valid():
+            course_id = form.cleaned_data["course_id"]
+            username = form.cleaned_data["username"]
+            course = get_object_or_404(Course, id=course_id)
+
+            try:
+                user = User.objects.get(username=username)
+                if user not in course.active_trainees.all():
+                    course.active_trainees.add(user)
+            except User.DoesNotExist:
+                form.add_error("username", "User not found.")
+
+        return redirect("overview:overview")
+
     courses = request.user.mentored_courses.all()
     solos = get_solos()
     res = {}
-    next_step = ""
     for course in courses:
         course_trainees = {}
         trainees = course.active_trainees.all()
@@ -82,9 +98,12 @@ def overview(request):
             }
             try:
                 next_step = course_trainees[trainee]["logs"].last().next_step
+                date_last = course_trainees[trainee]["logs"].last().session_date
             except:
                 next_step = ""
+                date_last = None
             course_trainees[trainee]["next_step"] = next_step
+            course_trainees[trainee]["date_last"] = date_last
         res[course] = course_trainees
     return render(request, "overview/overview.html", {"overview": res})
 
@@ -101,4 +120,14 @@ def claim_trainee(request, trainee_id, course_id):
             TraineeClaim.objects.create(
                 mentor=request.user, trainee_id=trainee_id, course_id=course_id
             )
+    return redirect("overview:overview")
+
+
+# todo: mentor only
+def remove_trainee(request, trainee_id, course_id):
+    try:
+        course = Course.objects.get(id=course_id)
+        course.active_trainees.remove(trainee_id)
+    except Course.DoesNotExist:
+        pass
     return redirect("overview:overview")

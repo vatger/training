@@ -5,6 +5,7 @@ from lists.models import Course
 from .models import Log
 
 
+# TODO: mentor only
 def create_training_log(request):
     category_list = [
         {"name": "theory", "label": "Theory"},
