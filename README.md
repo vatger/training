@@ -1,13 +1,13 @@
-TODO
+## TODO
 - Core APIs
   - Add Solo
-- Waiting List signup
 - Oauth integration
-- Think about who can access logs
 - Permissions
   - ATD Leitung -> superuser
   - Mentoren -> pro Kurs gemanaged
   - Trainees -> können eigene Sachen sehen
 - GDPR Zeug
 - images in log
-- Redo courses?
+- Check all views for permissions
+- Add mentors to core via API
+- Trainee Detail view

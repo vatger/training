@@ -25,7 +25,9 @@
             {% else %}
             <a class="btn btn-danger btn-sm" href="{% url 'logs:log_detail' log.id %}">
             {% endif %}
-        {{ log.type }}</a> {% endfor %} {{ b.date_last|format_date }}</td>
+        {{ log.type }}</a> {% endfor %} {{ b.date_last|format_date }}
+        <a class="btn btn-sm btn-info" href="{% url 'logs:new_log' a.id course.id %}">+</a>
+        </td>
         <td>{{ b.solo }}</td>
         <td>{{ b.next_step }}</td>
         <td>

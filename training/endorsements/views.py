@@ -1,11 +1,14 @@
-from django.shortcuts import render, redirect
-from .models import EndorsementGroup, EndorsementActivity
-from .helpers import get_tier1_endorsements
-from django.contrib.auth.models import User
-from datetime import datetime, timedelta
 import os
-from dotenv import load_dotenv
+from datetime import datetime, timedelta
+
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from django.shortcuts import render, redirect
 from django.utils import timezone
+from dotenv import load_dotenv
+
+from .helpers import get_tier1_endorsements
+from .models import EndorsementGroup, EndorsementActivity
 
 load_dotenv()
 
@@ -17,7 +20,7 @@ def valid_removal(endorsement: EndorsementActivity) -> bool:
     return no_min_hours and not_recent
 
 
-# TODO: mentor only
+@login_required
 def overview(request):
     groups = EndorsementGroup.objects.filter(
         courses__in=request.user.mentored_courses.all()
@@ -58,11 +61,15 @@ def overview(request):
     )
 
 
-# TODO: mentor of correct course only
+@login_required
 def remove_tier1(request, endorsement_id: int):
     try:
         endorsement = EndorsementActivity.objects.get(id=endorsement_id)
     except EndorsementActivity.DoesNotExist:
+        return redirect("endorsements:overview")
+    # Check whether user can mentor any of the linked courses
+    courses = endorsement.group.courses.all()
+    if not courses.filter(mentors=request.user).exists():
         return redirect("endorsements:overview")
     # Check if removal date is already set
     if endorsement.removal_date:

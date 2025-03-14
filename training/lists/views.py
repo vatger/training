@@ -114,21 +114,28 @@ def join_leave_list(request, course_id):
     return HttpResponseRedirect(reverse("lists:view_lists"))
 
 
-# TODO: mentor only
+@login_required
 def mentor_view(request):
     res = {}
     courses = request.user.mentored_courses.all()
     for course in courses:
-        res[course] = list(
-            WaitingListEntry.objects.filter(course=course, activity__gte=activity_min)
-        )
+        if course.type == "RTG":
+            res[course] = list(
+                WaitingListEntry.objects.filter(
+                    course=course, activity__gte=activity_min
+                )
+            )
+        else:
+            res[course] = list(WaitingListEntry.objects.filter(course=course))
     return render(request, "lists/mentor.html", {"coursedict": res})
 
 
-# TODO: mentor only
+@login_required
 def start_training(request, waitlist_entry_id):
     entry = get_object_or_404(WaitingListEntry, pk=waitlist_entry_id)
-    if entry.activity < activity_min:
+    if request.user not in entry.course.mentors.all():
+        return HttpResponseRedirect(reverse("lists:mentor_view"))
+    if entry.activity < activity_min and entry.course.type == "RTG":
         return HttpResponseRedirect(reverse("lists:mentor_view"))
     # Add user to active_trainees
     entry.course.active_trainees.add(entry.user)

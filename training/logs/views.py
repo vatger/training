@@ -1,12 +1,22 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 
 from .forms import TrainingLogForm
 from lists.models import Course
+from overview.models import TraineeClaim
 from .models import Log
 
 
-# TODO: mentor only
-def create_training_log(request):
+@login_required
+def create_training_log(request, trainee_id: int, course_id: int):
+    # Ensure the trainee and course exist
+    trainee = get_object_or_404(User, id=trainee_id)
+    course = get_object_or_404(Course, id=course_id)
+
+    if request.user not in course.mentors.all():
+        return redirect("overview:overview")
+
     category_list = [
         {"name": "theory", "label": "Theory"},
         {"name": "phraseology", "label": "Phraseology"},
@@ -26,24 +36,37 @@ def create_training_log(request):
         form = TrainingLogForm(request.POST)
         if form.is_valid():
             training_log = form.save(commit=False)
-            training_log.trainee = request.user
-            training_log.mentor = request.user
-            training_log.course = Course.objects.get(name="Frankfurt Tower")
+            training_log.trainee = trainee
+            training_log.mentor = request.user  # Mentor is always the logged-in user
+            training_log.course = course
             training_log.save()
-            return redirect(
-                "success_page"
-            )  # Replace with your success page or redirect target
+            try:
+                claim = TraineeClaim.objects.get(
+                    trainee=trainee, course=course, mentor=request.user
+                )
+                claim.delete()
+            except TraineeClaim.DoesNotExist:
+                pass
+            return redirect("overview:overview")
     else:
         form = TrainingLogForm()
 
     return render(
         request,
         "logs/create_training_log.html",
-        {"form": form, "category_list": category_list},
+        {
+            "form": form,
+            "category_list": category_list,
+            "trainee": trainee,
+            "course": course,
+        },
     )
 
 
-# TODO: mentor only
+@login_required
 def log_detail(request, log_id):
     log = get_object_or_404(Log, pk=log_id)
+    course = log.course
+    if request.user not in course.mentors.all():
+        return redirect("overview:overview")
     return render(request, "logs/log_detail.html", {"form": log})

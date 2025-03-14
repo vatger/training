@@ -58,11 +58,16 @@ class Command(BaseCommand):
     help = "Update hours controlled using VATSIM API"
 
     def handle(self, *args, **kwargs):
-        # Get waiting list entry with oldest hours_updated
-        waiting_list_entry = WaitingListEntry.objects.order_by("hours_updated").first()
+        # Get waiting list entries where their course type is RTG and order by hours_updated
+        waiting_list_entry = (
+            WaitingListEntry.objects.filter(course__type="RTG")
+            .order_by("hours_updated")
+            .first()
+        )
+
         if waiting_list_entry:
             hours = get_hours(
-                1439797,  # waiting_list_entry.user.username,
+                1439797,  # waiting_list_entry.user.username, TODO!
                 waiting_list_entry.course.airport_icao,
                 waiting_list_entry.course.position,
                 waiting_list_entry.course.fir.icao,

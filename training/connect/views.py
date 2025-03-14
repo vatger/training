@@ -12,6 +12,7 @@ from authlib.integrations.django_client import OAuth
 
 load_dotenv()
 
+mentor_groups = {"EDGG Mentor", "EDMM Mentor", "EDWW Mentor"}
 
 oauth = OAuth()
 
@@ -53,11 +54,11 @@ def callback_view(request):
         defaults={
             "first_name": profile["firstname"],
             "last_name": profile["lastname"],
-            "is_staff": "S1 Mentor" in profile["teams"]
-            or "ATD Leitung" in profile["teams"],
+            "is_staff": mentor_groups & set(profile["teams"]),
+            "is_superuser": "ATD Leitung" in profile["teams"],
         },
     )
-    if "S1 Mentor" in profile["teams"] or "ATD Leitung" in profile["teams"]:
+    if mentor_groups & set(profile["teams"]):
         mentor_group = Group.objects.get(name="Mentor")
         user.groups.add(mentor_group)
 
