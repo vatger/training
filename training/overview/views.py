@@ -200,3 +200,39 @@ def add_solo(request, vatsim_id, course_id):
             "core": core_passed,
         },
     )
+
+
+@login_required
+def finish_course(request, trainee_id, course_id):
+    course = get_object_or_404(Course, id=course_id)
+    trainee = get_object_or_404(User, id=trainee_id)
+    if request.user not in course.mentors.all():
+        return redirect("overview:overview")
+    course.active_trainees.remove(trainee_id)
+    if course.endorsement_groups.all():
+        endorsements = requests.get(
+            "https://core.vateud.net/api/facility/endorsements/tier-1",
+            headers=eud_header,
+        ).json()["data"]
+
+    for endorsement_group in course.endorsement_groups.all():
+        print(endorsement_group)
+        if [
+            endorsement
+            for endorsement in endorsements
+            if endorsement["user_cid"] == int(trainee.username)
+            and endorsement["position"] == endorsement_group.name
+        ]:
+            print("Endorsement exists")
+            continue
+
+        requests.post(
+            "https://core.vateud.net/api/facility/endorsements/tier-1",
+            headers=eud_header,
+            json={
+                "user_cid": int(trainee.username),
+                "position": endorsement_group.name,
+                "instructor_cid": request.user.username,
+            },
+        )
+    return redirect("overview:overview")

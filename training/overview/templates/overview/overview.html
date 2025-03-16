@@ -15,7 +15,7 @@
         {% endif %}
         <th>Next</th>
         <th>Mentor</th>
-        <th>Rmv.</th>
+        <th>Actions</th>
     </tr>
     {% for a, b in v.items %}
         <tr>
@@ -42,7 +42,10 @@
         <td>{{ b.next_step }}</td>
         <td>
         <a href="{% url 'overview:claim' a.id course.id %}">{% if b.claimed %}{{ b.claimed_by }}{% else %}Claim{% endif %}</a></td>
-        <td><a href="{% url 'overview:remove' a.id course.id %}" class="btn btn-danger btn-sm">X</a></td>
+        <td>
+            <a href="{% url 'overview:finish' a.id course.id %}" class="btn btn-success btn-sm">✓</a>
+            <a href="{% url 'overview:remove' a.id course.id %}" class="btn btn-danger btn-sm">X</a>
+        </td>
         </tr>
     {% endfor %}
     </table>
