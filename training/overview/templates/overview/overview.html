@@ -10,7 +10,9 @@
         <th>Name</th>
         <th>ID</th>
         <th>Progress</th>
+        {% if course.type == "RTG" %}
         <th>Solo</th>
+        {% endif %}
         <th>Next</th>
         <th>Mentor</th>
         <th>Rmv.</th>
@@ -18,7 +20,7 @@
     {% for a, b in v.items %}
         <tr>
         <td>{{ a }}</td>
-        <td>{{ a.username }}</td>
+            <td> <a href="{% url 'trainee:mentor_view' a.username %}">{{ a.username }} </a> </td>
         <td>{% for log in b.logs %}
             {% if log.result %}
             <a class="btn btn-success btn-sm" href="{% url 'logs:log_detail' log.id %}">
@@ -28,7 +30,15 @@
         {{ log.type }}</a> {% endfor %} {{ b.date_last|format_date }}
         <a class="btn btn-sm btn-info" href="{% url 'logs:new_log' a.id course.id %}">+</a>
         </td>
-        <td>{{ b.solo }}</td>
+        {% if course.type == "RTG" %}
+            <td>
+            {% if b.solo == "Add Solo" %}
+                <a href="{% url 'overview:add_solo' a.username course.id %}">{{ b.solo }} </a>
+                {% else %}
+                {{ b.solo }}
+                {% endif %}
+            </td>
+        {% endif %}
         <td>{{ b.next_step }}</td>
         <td>
         <a href="{% url 'overview:claim' a.id course.id %}">{% if b.claimed %}{{ b.claimed_by }}{% else %}Claim{% endif %}</a></td>

@@ -48,6 +48,7 @@ class Course(models.Model):
     endorsement_groups = models.ManyToManyField(
         EndorsementGroup, blank=True, related_name="courses"
     )
+    moodle_course_ids = models.JSONField(default=list, blank=True)
 
     def __str__(self):
         return self.name + " - " + self.type

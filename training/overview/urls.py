@@ -11,4 +11,5 @@ urlpatterns = [
     path(
         "remove/<int:trainee_id>/<int:course_id>/", views.remove_trainee, name="remove"
     ),
+    path("solo/<int:vatsim_id>/<int:course_id>/", views.add_solo, name="add_solo"),
 ]

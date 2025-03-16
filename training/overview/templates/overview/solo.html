@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% load tags %}
+
+{% block content %}
+
+<h4>New Solo</h4>
+    <div class="row">
+        <div class="col-4">
+            <div class="mb-3">
+                <table class="table">
+    <tr>
+        <th>ID</th>
+        <td>{{ vatsim_id }}</td>
+    </tr>
+    <tr>
+        <th>Station</th>
+        <td>{{ course.solo_station }}</td>
+    </tr>
+    <tr>
+        <th>Core passed</th>
+        <td>{{ core }}</td>
+    </tr>
+    <tr>
+        <th>Moodle passed</th>
+        <td>{{ moodle }}</td>
+    </tr>
+</table>
+            </div>
+        </div>
+    </div>
+
+<form method="post" action="">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Submit</button>
+{% endblock %}

@@ -1,13 +1,9 @@
 ## TODO
-- Core APIs
-  - Add Solo
 - Oauth integration
-- Permissions
-  - ATD Leitung -> superuser
-  - Mentoren -> pro Kurs gemanaged
-  - Trainees -> können eigene Sachen sehen
 - GDPR Zeug
-- images in log
 - Check all views for permissions
 - Add mentors to core via API
-- Trainee Detail view
+- Familiarisations
+- Finish course (remove active, add endorsement)
+- Add comments
+- Remove from waiting list
