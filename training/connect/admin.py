@@ -1,5 +1,4 @@
 from django.contrib import admin
-from .models import FIR, UserDetail
+from .models import UserDetail
 
 admin.site.register(UserDetail)
-admin.site.register(FIR)
