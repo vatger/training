@@ -67,6 +67,7 @@ def view_lists(request):
         twr_s1, twr_s2, app_s3 = get_connections(request.user)
         error = False
     except:
+        # TODO
         twr_s1, twr_s2, app_s3 = 26, 0, 0
         error = True
 
