@@ -236,3 +236,43 @@ def finish_course(request, trainee_id, course_id):
             },
         )
     return redirect("overview:overview")
+
+
+@login_required
+def manage_mentors(request, course_id):
+    course = get_object_or_404(Course, id=course_id)
+    if request.user not in course.mentors.all():
+        return redirect("overview:overview")
+
+    if request.method == "POST":
+        form = AddUserForm(request.POST)
+        if form.is_valid():
+            course_id = form.cleaned_data["course_id"]
+            username = form.cleaned_data["username"]
+            course = get_object_or_404(Course, id=course_id)
+
+            try:
+                user = User.objects.get(username=username)
+                if user not in course.mentors.all():
+                    if course.mentor_group is not None:
+                        if user.groups.filter(id=course.mentor_group.id).exists():
+                            course.mentors.add(user)
+                    else:
+                        course.mentors.add(user)
+            except User.DoesNotExist:
+                form.add_error("username", "User not found.")
+
+    mentors = course.mentors.all()
+
+    return render(
+        request, "overview/course_mentors.html", {"mentors": mentors, "course": course}
+    )
+
+
+@login_required
+def remove_mentor(request, course_id, mentor_id):
+    course = get_object_or_404(Course, id=course_id)
+    mentor = get_object_or_404(User, id=mentor_id)
+    if request.user in course.mentors.all():
+        course.mentors.remove(mentor)
+    return redirect("overview:manage_mentors", course_id=course_id)

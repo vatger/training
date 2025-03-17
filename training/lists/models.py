@@ -1,9 +1,6 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from endorsements.models import EndorsementGroup
-
-
-from connect.models import FIR
 
 
 class Course(models.Model):
@@ -36,7 +33,7 @@ class Course(models.Model):
     airport_name = models.CharField(max_length=100)
     airport_icao = models.CharField(max_length=4)
     solo_station = models.CharField(max_length=15, null=True, blank=True)
-    fir = models.ForeignKey(FIR, on_delete=models.CASCADE)
+    mentor_group = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True)
     min_rating = models.IntegerField(choices=Rating.choices)
     max_rating = models.IntegerField(choices=Rating.choices)
     active_trainees = models.ManyToManyField(

@@ -15,4 +15,10 @@ urlpatterns = [
     path(
         "finish/<int:trainee_id>/<int:course_id>/", views.finish_course, name="finish"
     ),
+    path("mentors/<int:course_id>/", views.manage_mentors, name="manage_mentors"),
+    path(
+        "remove_mentor/<int:course_id>/<int:mentor_id>/",
+        views.remove_mentor,
+        name="remove_mentor",
+    ),
 ]

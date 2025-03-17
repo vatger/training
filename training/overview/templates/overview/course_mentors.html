@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% load tags %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col-6">
+                <h4>Mentors for {{ course }}</h4>
+                <table class="table table-striped">
+                    {% for mentor in mentors %}
+                    <tr>
+                    <td>{{ mentor }}</td>
+                    <td><a href="{% url 'overview:remove_mentor' course.id mentor.id %}" class="btn btn-sm btn-danger"> X </a></td>
+                    </tr>
+                    {% endfor %}
+                </table>
+
+        </div>
+    </div>
+
+ <form method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="course_id" value="{{ course.id }}">
+        <label for="username-{{ course.id }}">ID:</label>
+        <input type="text" name="username" id="username-{{ course.id }}">
+
+        <button class="btn btn-primary btn-sm" type="submit">Add</button>
+
+    {% if form.errors %}
+            <div style="color: red;">
+                {{ form.errors.username }}
+            </div>
+        {% endif %}
+    </form>
+
+{% endblock %}

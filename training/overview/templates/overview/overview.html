@@ -4,7 +4,7 @@
 
 {% block content %}
 {% for course, v in overview.items %}
-    <h5>{{ course }}</h5>
+    <h5>{{ course }} <a href="{% url 'overview:manage_mentors' course.id %}"> ⚙ </a> </h5>
     <table class="table table-striped">
     <tr>
         <th>Name</th>
@@ -67,4 +67,7 @@
     <br>
 
 {% endfor %}
+  <a class="btn btn-success btn-sm">✓</a> Finish course, add endorsement
+    | <a class="btn btn-danger btn-sm">X</a> Remove trainee from course
+    | Solo: Current Remaining / Remaining extension days
 {% endblock %}
