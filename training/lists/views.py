@@ -15,6 +15,15 @@ min_hours = 25
 activity_min = 8
 
 
+def enrol_into_required_moodles(user_id, course_ids: list):
+    header = {"Authorization": f"Token {os.getenv("VATGER_API_KEY")}"}
+    for course_id in course_ids:
+        requests.get(
+            f"https://vatsim-germany.org/api/moodle/course/{course_id}/user/{user_id}/enrol",
+            headers=header,
+        )
+
+
 @cached(cache=TTLCache(maxsize=float("inf"), ttl=60 * 60))
 def get_connections(user):
     api_url = f"https://api.vatsim.net/api/ratings/{user.username}/atcsessions"
@@ -144,11 +153,5 @@ def start_training(request, waitlist_entry_id):
     # Add user to active_trainees
     entry.course.active_trainees.add(entry.user)
     entry.delete()
-    # Enrol into required Moodle courses
-    header = {"Authorization": f"Token {os.getenv("VATGER_API_KEY")}"}
-    for course_id in entry.course.moodle_course_ids:
-        requests.get(
-            f"https://vatsim-germany.org/api/moodle/course/{course_id}/user/{entry.user.username}/enrol",
-            headers=header,
-        )
+    enrol_into_required_moodles(entry.user.username, entry.course.moodle_course_ids)
     return HttpResponseRedirect(reverse("lists:mentor_view"))

@@ -9,6 +9,7 @@ from django.shortcuts import redirect, get_object_or_404
 from django.shortcuts import render
 from dotenv import load_dotenv
 from lists.models import Course
+from lists.views import enrol_into_required_moodles
 from logs.models import Log
 from overview.models import TraineeClaim
 from training.eud_header import eud_header
@@ -55,6 +56,7 @@ def overview(request):
                 user = User.objects.get(username=username)
                 if user not in course.active_trainees.all():
                     course.active_trainees.add(user)
+                    enrol_into_required_moodles(user.username, course.moodle_course_ids)
             except User.DoesNotExist:
                 form.add_error("username", "User not found.")
 
