@@ -216,14 +216,12 @@ def finish_course(request, trainee_id, course_id):
         ).json()["data"]
 
     for endorsement_group in course.endorsement_groups.all():
-        print(endorsement_group)
         if [
             endorsement
             for endorsement in endorsements
             if endorsement["user_cid"] == int(trainee.username)
             and endorsement["position"] == endorsement_group.name
         ]:
-            print("Endorsement exists")
             continue
 
         requests.post(

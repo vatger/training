@@ -5,6 +5,10 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render, HttpResponseRedirect, reverse
 
 from .models import Course, WaitingListEntry
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 min_hours = 25
@@ -140,4 +144,11 @@ def start_training(request, waitlist_entry_id):
     # Add user to active_trainees
     entry.course.active_trainees.add(entry.user)
     entry.delete()
+    # Enrol into required Moodle courses
+    header = {"Authorization": f"Token {os.getenv("VATGER_API_KEY")}"}
+    for course_id in entry.course.moodle_course_ids:
+        requests.get(
+            f"https://vatsim-germany.org/api/moodle/course/{course_id}/user/{entry.user.username}/enrol",
+            headers=header,
+        )
     return HttpResponseRedirect(reverse("lists:mentor_view"))
