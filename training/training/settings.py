@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "connect.apps.ConnectConfig",
     "trainee.apps.TraineeConfig",
     "endorsements.apps.EndorsementsConfig",
+    "api.apps.ApiConfig",
 ]
 
 MIDDLEWARE = [
