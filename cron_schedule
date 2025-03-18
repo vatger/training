@@ -1,0 +1,3 @@
+*/3 * * * * cd /opt/training/training && python manage.py update_activity
+1-59/3 * * * * cd /opt/training/training && python manage.py remove_endorsement
+2-59/3 * * * * cd /opt/training/training && python manage.py check_waiting_list
