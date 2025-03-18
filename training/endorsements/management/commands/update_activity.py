@@ -76,7 +76,9 @@ def get_hours(endorsement: dict) -> float:
 
 
 class Command(BaseCommand):
-    help = "Update hours controlled using VATSIM API"
+    help = """Update hours controlled using VATSIM API.
+    Will send removal inforation if controller is marked for deletion.
+    Is run every minute to keep Endorsement Activities up to date."""
 
     def handle(self, *args, **kwargs):
         tier1_endorsements = get_tier1_endorsements()
@@ -106,7 +108,6 @@ class Command(BaseCommand):
                 tier1_entry = next(
                     item for item in tier1_endorsements if item["id"] == endorsement.id
                 )
-                print(tier1_entry)
             except StopIteration:
                 endorsement.delete()
                 self.stdout.write("EndorsementActivity entry deleted.")

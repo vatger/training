@@ -11,7 +11,10 @@ from .update_activity import get_hours
 
 
 class Command(BaseCommand):
-    help = "Remove endorsements"
+    help = (
+        "Remove endorsements that have been flagged for "
+        "removal and removal has been notified."
+    )
 
     def handle(self, *args, **options):
         t1 = get_tier1_endorsements()

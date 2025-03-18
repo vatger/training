@@ -55,7 +55,7 @@ def get_hours(id: int, airport: str, position: str, fir: str):
 
 
 class Command(BaseCommand):
-    help = "Update hours controlled using VATSIM API"
+    help = "Update hours controlled using VATSIM API. Will be run every minute"
 
     def handle(self, *args, **kwargs):
         # Get waiting list entries where their course type is RTG and order by hours_updated
