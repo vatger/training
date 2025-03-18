@@ -1,0 +1,6 @@
+.github
+.env.example
+.gitignore
+README.md
+.idea
+training/db/db.sqlite3
