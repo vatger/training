@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container">
+<div class="row">
+    <div class="col-6">
+        <h4>Find User</h4>
+        <form method="post" action="">
+            {% csrf_token %}
+            <div class="mb-3">
+                {{ user_form.user_id.label_tag }}
+                {{ user_form.user_id }}
+                {% if user_form.user_id.errors %}
+                    <div class="text-danger">{{ user_form.user_id.errors.0 }}</div>
+                {% endif %}
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
+    </div>
+</div>
+
+{% endblock %}

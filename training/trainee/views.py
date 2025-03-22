@@ -1,15 +1,13 @@
-from typing import Optional
-
-from django.shortcuts import render
+from connect.views import mentor_groups
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404, HttpResponseRedirect, reverse, redirect
-
+from django.shortcuts import render
 from lists.models import Course
 from logs.models import Log
-from .forms import CommentForm
+from trainee.forms import UserDetailForm
 
-from connect.views import mentor_groups
+from .forms import CommentForm
 
 
 def split_active_inactive(logs, courses, trainee):
@@ -73,5 +71,31 @@ def mentor_view(request, vatsim_id: int):
     return render(
         request,
         "trainee/mentor_view.html",
-        {"active": active, "inactive": inactive, "comments": comments, "form": form},
+        {
+            "trainee": trainee,
+            "active": active,
+            "inactive": inactive,
+            "comments": comments,
+            "form": form,
+        },
     )
+
+
+def find_user(request):
+    if request.method == "POST":
+        user_form = UserDetailForm(request.POST)
+        if user_form.is_valid():
+            user_id = user_form.cleaned_data["user_id"]
+            print("Happening")
+            # Check if the user exists
+            if User.objects.filter(username=user_id).exists():
+                # Redirect to the user_detail view
+                return HttpResponseRedirect(
+                    reverse("trainee:mentor_view", args=[user_id])
+                )
+            else:
+                user_form.add_error("user_id", "User not found.")
+    else:
+        user_form = UserDetailForm()
+
+    return render(request, "trainee/find_user.html", {"user_form": user_form})
