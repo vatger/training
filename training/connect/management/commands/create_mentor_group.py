@@ -9,19 +9,7 @@ class Command(BaseCommand):
         group_names = ["EDGG Mentor", "EDMM Mentor", "EDWW Mentor"]
 
         # Define permissions for the Mentor group
-        mentor_permissions = [
-            "add_session",
-            "change_session",
-            "delete_session",
-            "view_session",
-            "add_course",
-            "change_course",
-            "delete_course",
-            "view_course",
-            "add_log",
-            "change_log",
-            "delete_log",
-        ]
+        mentor_permissions = []
 
         # Add general view permissions for the admin site
         mentor_permissions.extend(
