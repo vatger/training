@@ -122,8 +122,26 @@ class Command(BaseCommand):
             else:
                 if endorsement.removal_date and not endorsement.removal_notified:
                     # Send notification
-                    # TODO: Send VATGER notification
-                    endorsement.removal_notified = True
+
+                    data = {
+                        "title": "Endorsement Removal",
+                        "message": f"""Your endorsement for {endorsement.group.name} will be removed on {endorsement.removal_date.strftime("%d.%m.%Y")}.
+                        If you wish to keep it, please ensure you meet the minimum activity requirements by then.""",
+                        "source_name": "VATGER ATD",
+                    }
+                    header = {"Authorization": f"Token {os.getenv("VATGER_API_KEY")}"}
+                    r = requests.post(
+                        f"http://vatsim-germany.org/api/user/{tier1_entry["user_cid"]}/send_notification",
+                        data=data,
+                        headers=header,
+                    )
+                    if r.status_code == 200:
+                        endorsement.removal_notified = True
+                        r = requests.post(
+                            "http://vatsim-germany.org/api/user/1439797/send_notification",
+                            data=data,
+                            headers=header,
+                        )
                     self.stdout.write("Sent notification.")
 
             endorsement.activity = hours
