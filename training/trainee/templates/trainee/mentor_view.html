@@ -1,0 +1,310 @@
+{% extends "base.html" %}
+{% load tags %}
+
+
+{% block content %}
+<h4>Active Courses</h4>
+<div class="container-fluid">
+    <div class="row">
+    <div class="col-12">
+        {{ course.name }}
+    </div>
+
+    <div id="accordion" class="w-100">
+    {% for course, logs in active.items %}
+  <div class="card">
+    <div class="card-header" id="headingOne">
+      <h5 class="mb-0">
+        <button class="btn btn-link" data-toggle="collapse" data-target="#ollapse{{ forloop.counter }}" aria-expanded="false" aria-controls="collapse{{ forloop.counter }}{{ course.name
+                }}">
+          {{ course }}
+        </button>
+      </h5>
+    </div>
+
+    <div id="ollapse{{ forloop.counter }}" class="collapse" aria-labelledby="headingOne" data-parent="#accordion">
+      <div class="card-body">
+        {% for form in logs %}
+            <div class="card">
+            <div class="container mt-5">
+        <h1>{{ form.position }}</h1>
+            <div class="row">
+                <div class="col-12">
+                Date: {{ form.session_date }}
+                </div>
+            </div>
+    <div class="row">
+                <div class="col-4">
+                    <div class="mb-3">
+                        <label for="id_position" class="form-label">Mentor: </label>
+                        {{ form.mentor.first_name }} {{ form.mentor.last_name }}
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="mb-3">
+                        <label for="id_type" class="form-label">Type: </label>
+                        {{ form.get_type_display }}
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="mb-3 form-check">
+                        <label for="id_result" class="form-check-label">Training Passed: </label>
+                        {{ form.result }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Categories -->
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th>Positives</th>
+                    <th>Negatives</th>
+                    <th>Rating</th>
+                </tr>
+            </thead>
+        <tr>
+            <td>Theory</td>
+            <td>{{ form.theory_positives }}</td>
+            <td>{{ form.theory_negatives }}</td>
+            <td>{{ form.theory }}</td>
+        </tr>
+        <tr>
+            <td>Phraseology</td>
+            <td>{{ form.phraseology_positives }}</td>
+            <td>{{ form.phraseology_negatives }}</td>
+            <td>{{ form.phraseology }}</td>
+        </tr>
+        <tr>
+            <td>Coordination</td>
+            <td>{{ form.coordination_positives }}</td>
+            <td>{{ form.coordination_negatives }}</td>
+            <td>{{ form.coordination }}</td>
+        </tr>
+        <tr>
+            <td>Tag Management</td>
+            <td>{{ form.tag_management_positives }}</td>
+            <td>{{ form.tag_management_negatives }}</td>
+            <td>{{ form.tag_management }}</td>
+        </tr>
+        <tr>
+            <td>Situational Awareness</td>
+            <td>{{ form.situational_awareness_positives }}</td>
+            <td>{{ form.situational_awareness_negatives }}</td>
+            <td>{{ form.situational_awareness }}</td>
+        </tr>
+        <tr>
+            <td>Traffic Flow</td>
+            <td>{{ form.traffic_flow_positives }}</td>
+            <td>{{ form.traffic_flow_negatives }}</td>
+            <td>{{ form.traffic_flow }}</td>
+        </tr>
+        <tr>
+            <td>Separation</td>
+            <td>{{ form.separation_positives }}</td>
+            <td>{{ form.separation_negatives }}</td>
+            <td>{{ form.separation }}</td>
+        </tr>
+        <tr>
+            <td>Ability to Work Under Pressure</td>
+            <td>{{ form.ability_to_work_under_pressure_positives }}</td>
+            <td>{{ form.ability_to_work_under_pressure_negatives }}</td>
+            <td>{{ form.ability_to_work_under_pressure }}</td>
+        </tr>
+        <tr>
+            <td>Motivation</td>
+            <td>{{ form.motivation_positives }}</td>
+            <td>{{ form.motivation_negatives }}</td>
+            <td>{{ form.motivation }}</td>
+        </tr>
+    </table>
+    <div class="row">
+        <div class="col-6">
+                <label for="id_final_comment" class="form-label">Final Comment: </label>
+                {{ form.final_comment }}
+        </div>
+        <div class="col-6">
+                <label for="id_internal_remarks" class="form-label">Next Step: </label>
+                {{ form.next_step }}
+        </div>
+    </div>
+
+    </div>
+
+
+            </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+{% endfor %}
+</div>
+
+</div>
+</div>
+
+
+<h4>Other Courses</h4>
+<div class="container-fluid">
+    <div class="row">
+    <div class="col-12">
+        {{ course.name }}
+    </div>
+
+    <div id="accordion" class="w-100">
+    {% for course, logs in inactive.items %}
+  <div class="card">
+    <div class="card-header" id="headingOne">
+      <h5 class="mb-0">
+        <button class="btn btn-link" data-toggle="collapse" data-target="#collapse{{ forloop.counter }}" aria-expanded="false" aria-controls="collapse{{ forloop.counter }}">
+          {{ course.airport_name }} {{ course.get_position_display }}
+        </button>
+      </h5>
+    </div>
+
+    <div id="collapse{{ forloop.counter }}" class="collapse" aria-labelledby="headingOne" data-parent="#accordion">
+      <div class="card-body">
+        {% for form in logs %}
+            <div class="card">
+            <div class="container mt-5">
+        <h1>{{ form.position }}</h1>
+            <div class="row">
+                <div class="col-12">
+                Date: {{ form.session_date }}
+                </div>
+            </div>
+    <div class="row">
+                <div class="col-4">
+                    <div class="mb-3">
+                        <label for="id_position" class="form-label">Mentor: </label>
+                        {{ form.mentor.first_name }} {{ form.mentor.last_name }}
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="mb-3">
+                        <label for="id_type" class="form-label">Type: </label>
+                        {{ form.get_type_display }}
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="mb-3 form-check">
+                        <label for="id_result" class="form-check-label">Training Passed: </label>
+                        {{ form.result }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Categories -->
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th>Positives</th>
+                    <th>Negatives</th>
+                    <th>Rating</th>
+                </tr>
+            </thead>
+        <tr>
+            <td>Theory</td>
+            <td>{{ form.theory_positives }}</td>
+            <td>{{ form.theory_negatives }}</td>
+            <td>{{ form.theory }}</td>
+        </tr>
+        <tr>
+            <td>Phraseology</td>
+            <td>{{ form.phraseology_positives }}</td>
+            <td>{{ form.phraseology_negatives }}</td>
+            <td>{{ form.phraseology }}</td>
+        </tr>
+        <tr>
+            <td>Coordination</td>
+            <td>{{ form.coordination_positives }}</td>
+            <td>{{ form.coordination_negatives }}</td>
+            <td>{{ form.coordination }}</td>
+        </tr>
+        <tr>
+            <td>Tag Management</td>
+            <td>{{ form.tag_management_positives }}</td>
+            <td>{{ form.tag_management_negatives }}</td>
+            <td>{{ form.tag_management }}</td>
+        </tr>
+        <tr>
+            <td>Situational Awareness</td>
+            <td>{{ form.situational_awareness_positives }}</td>
+            <td>{{ form.situational_awareness_negatives }}</td>
+            <td>{{ form.situational_awareness }}</td>
+        </tr>
+        <tr>
+            <td>Traffic Flow</td>
+            <td>{{ form.traffic_flow_positives }}</td>
+            <td>{{ form.traffic_flow_negatives }}</td>
+            <td>{{ form.traffic_flow }}</td>
+        </tr>
+        <tr>
+            <td>Separation</td>
+            <td>{{ form.separation_positives }}</td>
+            <td>{{ form.separation_negatives }}</td>
+            <td>{{ form.separation }}</td>
+        </tr>
+        <tr>
+            <td>Ability to Work Under Pressure</td>
+            <td>{{ form.ability_to_work_under_pressure_positives }}</td>
+            <td>{{ form.ability_to_work_under_pressure_negatives }}</td>
+            <td>{{ form.ability_to_work_under_pressure }}</td>
+        </tr>
+        <tr>
+            <td>Motivation</td>
+            <td>{{ form.motivation_positives }}</td>
+            <td>{{ form.motivation_negatives }}</td>
+            <td>{{ form.motivation }}</td>
+        </tr>
+    </table>
+    <div class="row">
+        <div class="col-6">
+                <label for="id_final_comment" class="form-label">Final Comment: </label>
+                {{ form.final_comment }}
+        </div>
+        <div class="col-6">
+                <label for="id_internal_remarks" class="form-label">Next Step: </label>
+                {{ form.next_step }}
+        </div>
+    </div>
+
+    </div>
+
+
+            </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+{% endfor %}
+</div>
+
+</div>
+</div>
+
+<div class="row">
+    <div class="col-6">
+        <h4>Comments</h4>
+        {% for comment in comments %}
+            <p>{{ comment.text }}</p>
+            {{ comment.author.first_name }} {{ comment.author.last_name }}, {{ comment.date_added|format_date }}
+            <hr>
+        {% endfor %}
+    </div>
+    <div class="col-6">
+        <h4>Actions</h4>
+        <form method="post" action="">
+    {% csrf_token %}
+    <div class="form-group">
+        <label for="id_text" class="form-label">Add Comment</label><br>
+        {{ form.text }}
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+    </div>
+    </div>
+
+{% endblock %}
