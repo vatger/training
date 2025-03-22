@@ -37,18 +37,19 @@ def get_hours(id: int, airport: str, position: str, fir: str):
             stations = [station["logon"] for station in filtered]
             # Calculate hours
             hours = sum(
-                float(session["minutes_on_callsign"])
+                float(session["minutes_on_callsign"]) / 60
                 for session in response
                 if any(equal_str(session["callsign"], station) for station in stations)
             )
         case "APP":
             hours = sum(
-                float(session["minutes_on_callsign"])
+                float(session["minutes_on_callsign"]) / 60
                 for session in response
-                if equal_str(session["callsign"], f"{airport.upper()}_APP")
+                if equal_str(session["callsign"], f"{airport.upper()}_TWR")
             )
         case "CTR":
-            hours = 0
+            # TODO: Implement CTR
+            hours = 10
         case _:
             hours = -1
     return hours
@@ -64,13 +65,12 @@ class Command(BaseCommand):
             .order_by("hours_updated")
             .first()
         )
-
         if waiting_list_entry:
             hours = get_hours(
                 1439797,  # waiting_list_entry.user.username, TODO!
                 waiting_list_entry.course.airport_icao,
                 waiting_list_entry.course.position,
-                waiting_list_entry.course.fir.icao,
+                waiting_list_entry.course.mentor_group.name[:4],
             )
             if hours == -1:
                 self.stdout.write("Error fetching hours from VATSIM API.")
@@ -79,7 +79,7 @@ class Command(BaseCommand):
             waiting_list_entry.hours_updated = timezone.now()
             waiting_list_entry.save()
             self.stdout.write(
-                f"Updated hours for {waiting_list_entry.user.first_name} {waiting_list_entry.user.last_name}"
+                f"Updated hours for {waiting_list_entry.user.first_name} {waiting_list_entry.user.last_name}: {hours}"
             )
         else:
             self.stdout.write("No waiting list entries found.")
