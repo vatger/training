@@ -1,5 +1,5 @@
 ## TODO for v1.0
-- How to get to trainee detail view
+- Check all todos in the code
 
 ## TODO for v1.1
 - Familiarisations
