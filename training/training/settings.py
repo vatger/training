@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 import os
+import ast
 
 from pathlib import Path
 from dotenv import load_dotenv
@@ -30,8 +31,8 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
-CSRF_TRUSTED_ORIGINS = ["http://localhost:8000"]
+ALLOWED_HOSTS = ast.literal_eval(os.getenv("ALLOWED_HOSTS"))
+CSRF_TRUSTED_ORIGINS = ast.literal_eval(os.getenv("CSRF_TRUSTED_ORIGINS"))
 
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
