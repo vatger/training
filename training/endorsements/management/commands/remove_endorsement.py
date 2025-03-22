@@ -1,11 +1,13 @@
 import os
 from time import sleep
 
+import requests
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from endorsements.helpers import get_tier1_endorsements
 from endorsements.models import EndorsementActivity
 from endorsements.views import valid_removal
+from training.eud_header import eud_header
 
 from .update_activity import get_hours
 
@@ -40,5 +42,8 @@ class Command(BaseCommand):
                 self.stdout.write(
                     self.style.SUCCESS(f"Endorsement {tier1_entry} removed")
                 )
-                # TODO: Add VATEUD endpoint
-                # endorsement.delete()
+                requests.delete(
+                    f"https://core.vateud.net/api/facility/endorsements/tier-1/{tier1_entry['id']}",
+                    headers=eud_header,
+                )
+                endorsement.delete()

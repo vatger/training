@@ -82,8 +82,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         tier1_endorsements = get_tier1_endorsements()
-        # todo remove this for production
-        for t1 in tier1_endorsements[:10]:
+        for t1 in tier1_endorsements:
             try:
                 EndorsementActivity.objects.get(id=t1["id"])
             except EndorsementActivity.DoesNotExist:
