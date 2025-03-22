@@ -67,7 +67,7 @@ class Command(BaseCommand):
         )
         if waiting_list_entry:
             hours = get_hours(
-                1439797,  # waiting_list_entry.user.username, TODO!
+                waiting_list_entry.user.username,
                 waiting_list_entry.course.airport_icao,
                 waiting_list_entry.course.position,
                 waiting_list_entry.course.mentor_group.name[:4],
