@@ -21,6 +21,7 @@
                 <li class="nac-item active">
                     <a class="nav-link" href="{% url 'lists:view_lists' %}">Courses <span class="sr-only">(current)</span></a>
                 </li>
+                {% if request.user.is_staff %}
                 <li class="nav-item active">
                     <a class="nav-link" href="{% url 'overview:overview' %}">Trainee Overview <span class="sr-only">(current)</span></a>
                 </li>
@@ -29,12 +30,9 @@
                 </li>
                 <li class="nav-item active">
                     <a class="nav-link" href="{% url 'endorsements:overview' %}">Endorsements <span class="sr-only">(current)</span></a>
-                {% if is_mentor %}
-                <li class="nav-item active">
-                    <a class="nav-link" href="{% url 'management' %}">Management</a>
                 </li>
                 <li class="nav-item active">
-                    <a class="nav-link" href="https://s1.vatsim-germany.org/admin/waitinglists/session/add/">New Session</a>
+                    <a class="nav-link" href="{% url 'trainee:find_user' %}">Find User <span class="sr-only">(current)</span></a>
                 </li>
                 {% endif %}
             </ul>
