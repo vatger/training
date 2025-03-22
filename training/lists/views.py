@@ -12,7 +12,7 @@ load_dotenv()
 
 
 min_hours = 25
-activity_min = 8
+activity_min = 8  # Policy says 10 hours, but we are more lenient here
 
 
 def enrol_into_required_moodles(user_id, course_ids: list):
@@ -24,14 +24,18 @@ def enrol_into_required_moodles(user_id, course_ids: list):
         )
 
 
-@cached(cache=TTLCache(maxsize=float("inf"), ttl=60 * 60))
+connections_cache = TTLCache(maxsize=float("inf"), ttl=10 * 60 * 60)
+
+
 def get_connections(user):
     api_url = f"https://api.vatsim.net/api/ratings/{user.username}/atcsessions"
     try:
         res = requests.get(api_url).json()
         response = res["results"]
     except:
+        print("Error fetching data from VATSIM API")
         return -1
+
     twr_s1 = sum(
         float(session["minutes_on_callsign"])
         for session in response
@@ -51,7 +55,19 @@ def get_connections(user):
         for session in response
         if session["callsign"].split("_")[-1] == "APP"
     )
-    return twr_s1 / 60, twr_s2 / 60, app_s3 / 60
+
+    result = (twr_s1 / 60, twr_s2 / 60, app_s3 / 60)
+
+    # Store in cache only if the request was successful
+    connections_cache[user.username] = result
+    return result
+
+
+# Wrapper function to check cache first
+def get_cached_connections(user):
+    if user.username in connections_cache:
+        return connections_cache[user.username]
+    return get_connections(user)
 
 
 @login_required
@@ -64,11 +80,10 @@ def view_lists(request):
     entered = {}
 
     try:
-        twr_s1, twr_s2, app_s3 = get_connections(request.user)
+        twr_s1, twr_s2, app_s3 = get_cached_connections(request.user)
         error = False
     except:
-        # TODO
-        twr_s1, twr_s2, app_s3 = 26, 0, 0
+        twr_s1, twr_s2, app_s3 = 0, 0, 0
         error = True
 
     for course in courses:
@@ -88,9 +103,10 @@ def view_lists(request):
             entered[course] = True
         except WaitingListEntry.DoesNotExist:
             entered[course] = False
-
     return render(
-        request, "lists/overview.html", {"courses": courses, "entered": entered}
+        request,
+        "lists/overview.html",
+        {"courses": courses, "entered": entered, "error": error},
     )
 
 

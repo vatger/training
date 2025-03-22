@@ -3,22 +3,32 @@
 {% block content %}
 <h1>Courses</h1>
 <div class="container">
-    <div class="row">
-    {% for course, ent in entered.items %}
-    <div class="col-4">
-        <div class="card">
-            <h5>{{ course.name }}</h5>
-            <p>{{ course.get_position_display }} {{ course.get_type_display }} |
-            {% if ent %}
-                <a class="btn btn-outline-danger btn-sm" href="{% url 'lists:join_leave_list' course.id %}">Leave</a>
-            {% else %}
-                <a class="btn btn-outline-info btn-sm" href="{% url 'lists:join_leave_list' course.id %}">Join</a>
-            {% endif %}
-            </p>
+    {% if error %}
+        <div class="row">
+            <div class="col">
+                <div class="alert alert-danger" role="alert">
+                    Error fetching data from the VATSIM API. Try again in a few minutes.
+                </div>
+            </div>
         </div>
-    </div>
+    {% endif %}
 
-    {% endfor %}
+    <div class="row">
+        {% for course, ent in entered.items %}
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ course.name }}</h5>
+                        <p class="card-text">{{ course.get_position_display }} {{ course.get_type_display }}</p>
+                        {% if ent %}
+                            <a class="btn btn-outline-danger btn-sm" href="{% url 'lists:join_leave_list' course.id %}">Leave</a>
+                        {% else %}
+                            <a class="btn btn-outline-info btn-sm" href="{% url 'lists:join_leave_list' course.id %}">Join</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
     </div>
 </div>
 {% endblock %}
