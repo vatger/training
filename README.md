@@ -1,5 +1,5 @@
 ## TODO for v1.0
-- Add comments
+- How to get to trainee detail view
 
 ## TODO for v1.1
 - Familiarisations
