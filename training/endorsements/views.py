@@ -52,7 +52,6 @@ def overview(request):
                     "endorsement_id": activity.id,
                 }
             )
-            # res[endorsement["user_cid"]] = activity.activity
         tot_res[group.name] = res
     return render(
         request,

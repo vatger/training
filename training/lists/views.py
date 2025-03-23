@@ -19,7 +19,7 @@ def enrol_into_required_moodles(user_id, course_ids: list):
     header = {"Authorization": f"Token {os.getenv("VATGER_API_KEY")}"}
     for course_id in course_ids:
         requests.get(
-            f"https://vatsim-germany.org/api/moodle/course/{course_id}/user/{user_id}/enrol",
+            f"http://vatsim-germany.org/api/moodle/course/{course_id}/user/{user_id}/enrol",
             headers=header,
         )
 
