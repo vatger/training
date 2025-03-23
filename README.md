@@ -1,5 +1,5 @@
 ## TODO for v1.0
-- Check all todos in the code
+- Add legend to trainee overview
 
 ## TODO for v1.1
 - Familiarisations
