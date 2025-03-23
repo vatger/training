@@ -10,6 +10,7 @@ class Log(models.Model):
         SIM = "S", "Sim"
 
     class Rating(models.IntegerChoices):
+        ZERO = 0, "Not rated"
         ONE = 1, "Requirements not met"
         TWO = 2, "Requirements partially met"
         THREE = 3, "Requirements met"
@@ -45,13 +46,25 @@ class Log(models.Model):
     situational_awareness_positives = models.TextField(blank=True, null=True)
     situational_awareness_negatives = models.TextField(blank=True, null=True)
 
-    traffic_flow = models.IntegerField(choices=Rating.choices)
-    traffic_flow_positives = models.TextField(blank=True, null=True)
-    traffic_flow_negatives = models.TextField(blank=True, null=True)
+    problem_recognition = models.IntegerField(choices=Rating.choices)
+    problem_recognition_positives = models.TextField(blank=True, null=True)
+    problem_recognition_negatives = models.TextField(blank=True, null=True)
+
+    traffic_planning = models.IntegerField(choices=Rating.choices)
+    traffic_planning_positives = models.TextField(blank=True, null=True)
+    traffic_planning_negatives = models.TextField(blank=True, null=True)
+
+    reaction = models.IntegerField(choices=Rating.choices)
+    reaction_positives = models.TextField(blank=True, null=True)
+    reaction_negatives = models.TextField(blank=True, null=True)
 
     separation = models.IntegerField(choices=Rating.choices)
     separation_positives = models.TextField(blank=True, null=True)
     separation_negatives = models.TextField(blank=True, null=True)
+
+    efficiency = models.IntegerField(choices=Rating.choices)
+    efficiency_positives = models.TextField(blank=True, null=True)
+    efficiency_negatives = models.TextField(blank=True, null=True)
 
     ability_to_work_under_pressure = models.IntegerField(choices=Rating.choices)
     ability_to_work_under_pressure_positives = models.TextField(blank=True, null=True)
