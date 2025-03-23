@@ -1,5 +1,6 @@
 ## TODO for v1.0
-- Add legend to trainee overview
+- Button to request Core test
+- Moodle Check for Guest/Endorsement courses
 
 ## TODO for v1.1
 - Familiarisations
