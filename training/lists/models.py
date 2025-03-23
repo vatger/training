@@ -20,7 +20,7 @@ class Course(models.Model):
     class CourseType(models.TextChoices):
         EDMT = "EDMT", "Endorsement"
         RTG = "RTG", "Rating"
-        GST = "GST", "Guest"
+        GST = "GST", "Visitor"
 
     class Position(models.TextChoices):
         GND = "GND", "Ground"
