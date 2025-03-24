@@ -2,6 +2,7 @@
 - Button to request Core test
 - Moodle Check for Guest/Endorsement courses
 - Increase verbosity of trainee course page
+- Message for start of course (Links to Moodle Courses)
 
 ## TODO for v1.1
 - Familiarisations
