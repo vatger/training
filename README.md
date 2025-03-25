@@ -3,6 +3,7 @@
 - Moodle Check for Guest/Endorsement courses
 - Increase verbosity of trainee course page
 - Message for start of course (Links to Moodle Courses)
+- Logging
 
 ## TODO for v1.1
 - CoT role
