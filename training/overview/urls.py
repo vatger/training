@@ -21,4 +21,9 @@ urlpatterns = [
         views.remove_mentor,
         name="remove_mentor",
     ),
+    path(
+        "assign/<int:vatsim_id>/<int:course_id>",
+        views.assign_core_test_view,
+        name="assign_course",
+    ),
 ]

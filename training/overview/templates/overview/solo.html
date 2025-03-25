@@ -18,8 +18,12 @@
         <td>{{ course.solo_station }}</td>
     </tr>
     <tr>
-        <th>Core passed</th>
-        <td>{{ core }}</td>
+        <th>Core</th>
+        {% if core.name == "NOT_ASSIGNED" %}
+            <td> <a href="{% url 'overview:assign_course' vatsim_id course.id %}" class="btn btn-warning btn-sm">Assign Test</a> </td>
+        {% else %}
+        <td>{{ core.value }}</td>
+        {% endif %}
     </tr>
     <tr>
         <th>Moodle passed</th>

@@ -13,7 +13,12 @@ from overview.models import TraineeClaim
 from training.eud_header import eud_header
 
 from .forms import AddUserForm, SoloForm
-from .helpers import get_course_completion, get_core_theory_passed
+from .helpers import (
+    get_course_completion,
+    get_core_theory_passed,
+    CoreState,
+    assign_core_test,
+)
 
 load_dotenv()
 
@@ -143,6 +148,7 @@ def add_solo(request, vatsim_id, course_id):
         return redirect("overview:overview")
 
     core_passed = get_core_theory_passed(int(vatsim_id), course.position)
+    print(core_passed)
     moodle_completed = True
     for course_id in course.moodle_course_ids:
         moodle_completed = moodle_completed and get_course_completion(
@@ -181,7 +187,6 @@ def add_solo(request, vatsim_id, course_id):
                 headers=eud_header,
                 json=data,
             )
-            print(res)
             if res.status_code == 200:
                 return redirect("overview:overview")
             else:
@@ -274,3 +279,14 @@ def remove_mentor(request, course_id, mentor_id):
     if request.user in course.mentors.all():
         course.mentors.remove(mentor)
     return redirect("overview:manage_mentors", course_id=course_id)
+
+
+@login_required
+def assign_core_test_view(request, vatsim_id: int, course_id: int):
+    course = get_object_or_404(Course, id=course_id)
+    if request.user not in course.mentors.all():
+        return redirect("overview:overview")
+    if get_core_theory_passed(vatsim_id, course.position) != CoreState.NOT_ASSIGNED:
+        return redirect("overview:overview")
+    assign_core_test(request.user.username, vatsim_id, course.position)
+    return redirect("overview:overview")
