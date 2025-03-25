@@ -1,12 +1,12 @@
-from cachetools import TTLCache, cached
-import requests
+import os
 
+import requests
+from cachetools import TTLCache
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render, HttpResponseRedirect, reverse
+from dotenv import load_dotenv
 
 from .models import Course, WaitingListEntry
-import os
-from dotenv import load_dotenv
 
 load_dotenv()
 
@@ -77,7 +77,6 @@ def view_lists(request):
         min_rating__lte=request.user.userdetail.rating,
         max_rating__gte=request.user.userdetail.rating,
     ).exclude(active_trainees=request.user)
-    entered = {}
 
     try:
         twr_s1, twr_s2, app_s3 = get_cached_connections(request.user)
@@ -86,27 +85,36 @@ def view_lists(request):
         twr_s1, twr_s2, app_s3 = 0, 0, 0
         error = True
 
+    hours_dict = {
+        "GND": twr_s1,
+        "TWR": twr_s1,
+        "APP": twr_s2,
+        "CTR": app_s3,
+    }
+
+    courses_dict = {}
+    n_rtg = 0
+
     for course in courses:
+        res = {"course": course, "hours_reached": True}
         if course.type == "RTG":
-            match course.position:
-                case "TWR":
-                    if twr_s1 < min_hours:
-                        continue
-                case "APP":
-                    if twr_s2 < min_hours:
-                        continue
-                case "CTR":
-                    if app_s3 < min_hours:
-                        continue
+            if hours_dict[course.position] < min_hours:
+                res["hours_reached"] = False
+            else:
+                res["hours_reached"] = True
         try:
             WaitingListEntry.objects.get(user=request.user, course=course)
-            entered[course] = True
+            res["entered"] = True
+            res["rtg_limit_reached"] = False
+            if course.type == "RTG":
+                n_rtg += 1
         except WaitingListEntry.DoesNotExist:
-            entered[course] = False
+            res["entered"] = False
+        courses_dict[course] = res
     return render(
         request,
         "lists/overview.html",
-        {"courses": courses, "entered": entered, "error": error},
+        {"courses": courses_dict, "error": error, "rating_reached": n_rtg >= 1},
     )
 
 
@@ -117,6 +125,11 @@ def join_leave_list(request, course_id):
         entry = WaitingListEntry.objects.get(user=request.user, course=course)
         entry.delete()
     except WaitingListEntry.DoesNotExist:
+        n_rtg = WaitingListEntry.objects.filter(
+            user=request.user, course__type="RTG"
+        ).count()
+        if course.type == "RTG" and n_rtg >= 1:
+            return HttpResponseRedirect(reverse("lists:view_lists"))
         if course.min_rating <= request.user.userdetail.rating <= course.max_rating:
             if course.type == "RTG":
                 try:
