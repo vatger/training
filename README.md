@@ -1,5 +1,4 @@
 ## TODO for v1.0
-- Button to request Core test
 - Moodle Check for Guest/Endorsement courses
 - Message for start of course (Links to Moodle Courses)
 - Logging
