@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 from django.shortcuts import redirect, get_object_or_404
 from django.shortcuts import render
 from dotenv import load_dotenv
-from lists.models import Course
+from lists.models import Course, WaitingListEntry
 from lists.views import enrol_into_required_moodles
 from logs.models import Log
 from overview.models import TraineeClaim
@@ -60,6 +60,7 @@ def overview(request):
                 if user not in course.active_trainees.all():
                     course.active_trainees.add(user)
                     enrol_into_required_moodles(user.username, course.moodle_course_ids)
+                    WaitingListEntry.objects.filter(user=user, course=course).delete()
             except User.DoesNotExist:
                 form.add_error("username", "User not found.")
 
