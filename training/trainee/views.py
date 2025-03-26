@@ -35,16 +35,15 @@ def home(request):
     active, inactive = split_active_inactive(logs, courses, request.user)
 
     # Get required Moodle courses
-    active = request.user.active_courses.all()
+    active_courses = request.user.active_courses.all()
     moodles = []
-    for course in active:
+    for course in active_courses:
         for moodle_id in course.moodle_course_ids:
             link = f"https://moodle.vatsim-germany.org/course/view.php?id={moodle_id}"
             passed = get_course_completion(request.user.username, moodle_id)
             moodles.append(
                 {"course": course.name, "passed": passed, "id": moodle_id, "link": link}
             )
-
     return render(
         request,
         "trainee/home.html",
