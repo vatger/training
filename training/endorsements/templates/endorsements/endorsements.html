@@ -23,7 +23,8 @@
                         <td>{{ entry.name }}</td>
                         <td>{{ entry.activity }}</td>
                         <td>{% if entry.removal %} In progress
-                            {% else %} <a href="{% url 'endorsements:remove' entry.endorsement_id %}" class="btn btn-sm btn-danger">Remove</a>
+                            {% else %} <a href="{% url 'endorsements:remove' entry.endorsement_id %}" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#confirmModal"
+   data-href="{% url 'endorsements:remove' entry.endorsement_id %}" data-message="Are you sure you want to start the {{ group }} endorsement removal process for {{ entry.name }} / {{ entry.id }}?">Remove</a>
                         {% endif %}
                         </td>
                     </tr>
@@ -36,4 +37,5 @@
 {% endfor %}
     </div>
     </div>
+    {% include "modal.html" %}
 {% endblock %}

@@ -11,7 +11,8 @@
                     {% for mentor in mentors %}
                     <tr>
                     <td>{{ mentor }}</td>
-                    <td><a href="{% url 'overview:remove_mentor' course.id mentor.id %}" class="btn btn-sm btn-danger"> X </a></td>
+                    <td><a href="{% url 'overview:remove_mentor' course.id mentor.id %}" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#confirmModal"
+   data-href="{% url 'overview:remove_mentor' course.id mentor.id %}" data-message="Are you sure you want to remove {{ mentor}} from {{ course }} as mentor?"> X </a></td>
                     </tr>
                     {% endfor %}
                 </table>
@@ -33,5 +34,7 @@
             </div>
         {% endif %}
     </form>
+
+{% include "modal.html" %}
 
 {% endblock %}
