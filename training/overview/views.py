@@ -76,6 +76,15 @@ def overview(request):
             claim = TraineeClaim.objects.filter(
                 mentor=request.user, trainee=trainee, course=course
             ).exists()
+
+            # Moodle check for EDMT and GST
+            moodle_completed = True
+            if course.type != "RTG":
+                for moodle_course_id in course.moodle_course_ids:
+                    moodle_completed = moodle_completed and get_course_completion(
+                        trainee.username, moodle_course_id
+                    )
+
             solo = [
                 solo
                 for solo in solos
@@ -109,6 +118,7 @@ def overview(request):
                 date_last = None
             course_trainees[trainee]["next_step"] = next_step
             course_trainees[trainee]["date_last"] = date_last
+            course_trainees[trainee]["moodle"] = moodle_completed
         res[course] = course_trainees
     return render(request, "overview/overview.html", {"overview": res})
 

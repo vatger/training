@@ -12,6 +12,8 @@
         <th>Progress</th>
         {% if course.type == "RTG" %}
         <th>Solo</th>
+        {% else %}
+        <th>Moodle</th>
         {% endif %}
         <th>Next</th>
         <th>Mentor</th>
@@ -38,6 +40,8 @@
                 {{ b.solo }}
                 {% endif %}
             </td>
+        {% else %}
+            <td>{% if b.moodle %} ✅ {% else %} ❌ {% endif %}</td>
         {% endif %}
         <td>{{ b.next_step }}</td>
         <td>

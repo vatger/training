@@ -1,5 +1,4 @@
 ## TODO for v1.0
-- Moodle Check for Guest/Endorsement courses
 - Message for start of course (Links to Moodle Courses)
 - Logging
 
@@ -8,3 +7,4 @@
 - Familiarisations
 - Request Tier 2 Endorsements
 - Remove from waiting list with email
+- Check for waiting list entries no longer valid (rating, etc)
