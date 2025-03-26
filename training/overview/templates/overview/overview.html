@@ -21,8 +21,8 @@
     </tr>
     {% for a, b in v.items %}
         <tr>
-        <td>{{ a }}</td>
-            <td> <a href="{% url 'trainee:mentor_view' a.username %}">{{ a.username }} </a> </td>
+            <td><a href="{% url 'trainee:mentor_view' a.username %}">{{ a }} </a></td>
+            <td><a href="https://stats.vatsim.net/stats/{{ a.username }}" target="_blank"> {{ a.username }} </a> </td>
         <td>{% for log in b.logs %}
             {% if log.result %}
             <a class="btn btn-success btn-sm" href="{% url 'logs:log_detail' log.id %}">
