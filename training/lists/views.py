@@ -78,6 +78,10 @@ def view_lists(request):
         max_rating__gte=request.user.userdetail.rating,
     ).exclude(active_trainees=request.user)
 
+    # Check whether user is already in a RTG course
+    if request.user.active_courses.all().filter(type="RTG").exists():
+        courses = courses.exclude(type="RTG")
+
     try:
         twr_s1, twr_s2, app_s3 = get_cached_connections(request.user)
         error = False
