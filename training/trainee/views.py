@@ -8,6 +8,7 @@ from logs.models import Log
 from trainee.forms import UserDetailForm
 
 from .forms import CommentForm
+from overview.helpers import get_course_completion
 
 
 def split_active_inactive(logs, courses, trainee):
@@ -33,8 +34,21 @@ def home(request):
 
     active, inactive = split_active_inactive(logs, courses, request.user)
 
+    # Get required Moodle courses
+    active = request.user.active_courses.all()
+    moodles = []
+    for course in active:
+        for moodle_id in course.moodle_course_ids:
+            link = f"https://moodle.vatsim-germany.org/course/view.php?id={moodle_id}"
+            passed = get_course_completion(request.user.username, moodle_id)
+            moodles.append(
+                {"course": course.name, "passed": passed, "id": moodle_id, "link": link}
+            )
+
     return render(
-        request, "trainee/home.html", {"active": active, "inactive": inactive}
+        request,
+        "trainee/home.html",
+        {"active": active, "inactive": inactive, "moodles": moodles},
     )
 
 
