@@ -47,8 +47,10 @@
         <td>
         <a href="{% url 'overview:claim' a.id course.id %}">{% if b.claimed %}{{ b.claimed_by }}{% else %}Claim{% endif %}</a></td>
         <td>
-            <a href="{% url 'overview:finish' a.id course.id %}" class="btn btn-success btn-sm">✓</a>
-            <a href="{% url 'overview:remove' a.id course.id %}" class="btn btn-danger btn-sm">X</a>
+            <a href="{% url 'overview:finish' a.id course.id %}" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#confirmModal"
+   data-href="{% url 'overview:finish' a.id course.id %}" data-message="Do you want to give {{ a }} the endorsements for {{ course }}?">✓</a>
+            <a href="{% url 'overview:remove' a.id course.id %}" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#confirmModal"
+   data-href="{% url 'overview:remove' a.id course.id %}" data-message="Are you sure you want to remove {{ a }} from {{ course }}?">X</a>
         </td>
         </tr>
     {% endfor %}
@@ -80,4 +82,22 @@
     </div>
     </div>
     </div>
+
+    {% include "modal.html" %}
+ <script>
+document.addEventListener("DOMContentLoaded", function () {
+    var confirmModal = document.getElementById('confirmModal');
+
+    confirmModal.addEventListener('show.bs.modal', function (event) {
+        var button = event.relatedTarget; // Button that triggered the modal
+        var href = button.getAttribute('data-href'); // Get the delete URL
+        var message = button.getAttribute('data-message'); // Get the dynamic message
+
+        document.getElementById('confirmMessage').textContent = message; // Update message
+        document.getElementById('confirmAction').setAttribute('href', href); // Set link dynamically
+    });
+});
+</script>
+
+
 {% endblock %}
