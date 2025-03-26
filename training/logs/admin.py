@@ -10,22 +10,20 @@ class LogAdmin(admin.ModelAdmin):
     search_fields = ("trainee__username", "mentor__username", "position")
 
     def get_queryset(self, request):
-        """Limit logs to only those where the user is mentoring the course."""
+        """Limit logs to only those where the user is the mentor."""
         qs = super().get_queryset(request)
         if request.user.is_superuser:
             return qs  # Superusers see all logs
-        # Filter logs where the course is in the user's mentored_courses
-        return qs.filter(course__in=request.user.mentored_courses.all())
+        return qs.filter(mentor=request.user)  # Regular users only see their logs
 
     def has_change_permission(self, request, obj=None):
-        """Allow only users who mentor the course to edit the log."""
+        """Allow only mentors (or superusers) to edit logs."""
         if obj is None:  # List view
             return True
-        # Check if the user is mentoring the course in the log
-        return request.user in obj.course.mentors.all() or request.user.is_superuser
+        return request.user == obj.mentor or request.user.is_superuser
 
     def has_delete_permission(self, request, obj=None):
-        """Allow only users who mentor the course to delete the log."""
+        """Allow only mentors (or superusers) to delete logs."""
         return self.has_change_permission(request, obj)
 
 
