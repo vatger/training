@@ -1,12 +1,13 @@
 import os
 
 import requests
-from cachetools import TTLCache
+from cachetools import TTLCache, cached
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render, HttpResponseRedirect, reverse
 from dotenv import load_dotenv
 
 from .models import Course, WaitingListEntry
+from endorsements.helpers import get_tier1_endorsements
 
 load_dotenv()
 
@@ -22,6 +23,17 @@ def enrol_into_required_moodles(user_id, course_ids: list):
             f"http://vatsim-germany.org/api/moodle/course/{course_id}/user/{user_id}/enrol",
             headers=header,
         )
+
+
+@cached(cache=TTLCache(maxsize=1024, ttl=60 * 60))
+def get_user_endorsements(user_id: int) -> set:
+    return set(
+        [
+            end["position"]
+            for end in get_tier1_endorsements()
+            if end["user_cid"] == user_id
+        ]
+    )
 
 
 connections_cache = TTLCache(maxsize=float("inf"), ttl=10 * 60 * 60)
@@ -82,6 +94,12 @@ def view_lists(request):
     if request.user.active_courses.all().filter(type="RTG").exists():
         courses = courses.exclude(type="RTG")
 
+    # If a user is not assigned to VATSIM Germany, they cannot see RTG courses
+    if request.user.userdetail.subdivision != "GER":
+        courses = courses.exclude(type="RTG")
+    if request.user.userdetail.subdivision == "GER":
+        courses = courses.exclude(type="GST")
+
     try:
         twr_s1, twr_s2, app_s3 = get_cached_connections(request.user)
         error = False
@@ -99,7 +117,18 @@ def view_lists(request):
     courses_dict = {}
     n_rtg = 0
 
+    # Get Tier 1 Endorsement, do not show course if user already has it
+    user_endorsements = get_user_endorsements(int(request.user.username))
+
     for course in courses:
+        endorsement_groups = set(
+            course.endorsement_groups.all().values_list("name", flat=True)
+        )
+        if (
+            len(endorsement_groups & user_endorsements) == len(endorsement_groups)
+            and len(endorsement_groups) > 0
+        ):
+            continue
         res = {"course": course, "hours_reached": True}
         if course.type == "RTG":
             if hours_dict[course.position] < min_hours:
