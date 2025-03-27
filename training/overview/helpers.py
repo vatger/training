@@ -81,3 +81,20 @@ def assign_core_test(instructor_id: int, vatsim_id: int, position: str):
         headers=eud_header,
         json=data,
     )
+
+
+def inform_user_course_start(vatsim_id: int, course_name: str):
+    data = {
+        "title": "Endorsement Removal",
+        "message": f"""You have been enrolled in the {course_name} course. Check the training centre for moodle 
+        courses to start your training.""",
+        "source_name": "VATGER ATD",
+        "link_text": "Training Centre",
+        "link_url": "https://training.vatsim-germany.org/",
+    }
+    header = {"Authorization": f"Token {os.getenv("VATGER_API_KEY")}"}
+    r = requests.post(
+        f"http://vatsim-germany.org/api/user/{vatsim_id}/send_notification",
+        data=data,
+        headers=header,
+    )

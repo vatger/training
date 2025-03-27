@@ -5,9 +5,10 @@ from cachetools import TTLCache, cached
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render, HttpResponseRedirect, reverse
 from dotenv import load_dotenv
+from endorsements.helpers import get_tier1_endorsements
+from overview.helpers import inform_user_course_start
 
 from .models import Course, WaitingListEntry
-from endorsements.helpers import get_tier1_endorsements
 
 load_dotenv()
 
@@ -217,4 +218,5 @@ def start_training(request, waitlist_entry_id):
     entry.course.active_trainees.add(entry.user)
     entry.delete()
     enrol_into_required_moodles(entry.user.username, entry.course.moodle_course_ids)
+    inform_user_course_start(int(entry.user.username), entry.course.name)
     return HttpResponseRedirect(reverse("lists:mentor_view"))
