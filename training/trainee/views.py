@@ -1,3 +1,5 @@
+from cachetools import cached, TTLCache
+
 from connect.views import mentor_groups
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -26,6 +28,20 @@ def split_active_inactive(logs, courses, trainee):
     return active, inactive
 
 
+@cached(cache=TTLCache(maxsize=1024, ttl=60 * 60))
+def get_moodles(user) -> list:
+    active_courses = user.active_courses.all()
+    moodles = []
+    for course in active_courses:
+        for moodle_id in course.moodle_course_ids:
+            link = f"https://moodle.vatsim-germany.org/course/view.php?id={moodle_id}"
+            passed = get_course_completion(user.username, moodle_id)
+            moodles.append(
+                {"course": course.name, "passed": passed, "id": moodle_id, "link": link}
+            )
+    return moodles
+
+
 @login_required
 def home(request):
     logs = Log.objects.filter(trainee=request.user)
@@ -35,15 +51,7 @@ def home(request):
     active, inactive = split_active_inactive(logs, courses, request.user)
 
     # Get required Moodle courses
-    active_courses = request.user.active_courses.all()
-    moodles = []
-    for course in active_courses:
-        for moodle_id in course.moodle_course_ids:
-            link = f"https://moodle.vatsim-germany.org/course/view.php?id={moodle_id}"
-            passed = get_course_completion(request.user.username, moodle_id)
-            moodles.append(
-                {"course": course.name, "passed": passed, "id": moodle_id, "link": link}
-            )
+    moodles = get_moodles(request.user)
     return render(
         request,
         "trainee/home.html",
@@ -81,6 +89,8 @@ def mentor_view(request, vatsim_id: int):
     else:
         form = CommentForm()
 
+    moodles = get_moodles(trainee)
+
     return render(
         request,
         "trainee/mentor_view.html",
@@ -90,6 +100,7 @@ def mentor_view(request, vatsim_id: int):
             "inactive": inactive,
             "comments": comments,
             "form": form,
+            "moodles": moodles,
         },
     )
 

@@ -15,7 +15,10 @@
 {% include "trainee/_course_logs.html" with courses=inactive %}
 </div>
 
+    {% include "trainee/moodle_overview.html" with moodles=moodles %}
 
+
+<div class="container">
 <div class="row">
     <div class="col-6">
         <h4>Comments</h4>
@@ -37,5 +40,5 @@
 </form>
     </div>
     </div>
-
+</div>
 {% endblock %}
