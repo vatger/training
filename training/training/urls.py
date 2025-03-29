@@ -2,6 +2,8 @@ from django.contrib import admin
 from django.urls import path, include
 from django.views.generic.base import RedirectView
 
+from .views import group_based_redirect
+
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -12,5 +14,5 @@ urlpatterns = [
     path("lists/", include("lists.urls")),
     path("trainee/", include("trainee.urls")),
     path("endorsements/", include("endorsements.urls")),
-    path("", RedirectView.as_view(url="/trainee/")),
+    path("", group_based_redirect, name="group_redirect"),
 ]
