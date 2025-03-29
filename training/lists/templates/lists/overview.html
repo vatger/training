@@ -29,7 +29,7 @@
                             {% elif rating_reached and course.type == "RTG" %}
                                 You can only join one rating course at a time.
                             {% else %}
-                            <a class="btn btn-outline-info btn-sm" href="{% url 'lists:join_leave_list' course.id %}">Join</a>
+                            <a class="btn btn-outline-info btn-sm" href="{% url 'lists:join_leave_list' course.id %}">Join (currently disabled)</a>
                             {% endif %}
                         {% endif %}
                     </div>

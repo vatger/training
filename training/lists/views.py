@@ -3,7 +3,13 @@ import os
 import requests
 from cachetools import TTLCache, cached
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import get_object_or_404, render, HttpResponseRedirect, reverse
+from django.shortcuts import (
+    get_object_or_404,
+    render,
+    HttpResponseRedirect,
+    reverse,
+    redirect,
+)
 from dotenv import load_dotenv
 from endorsements.helpers import get_tier1_endorsements
 from overview.helpers import inform_user_course_start
@@ -154,6 +160,9 @@ def view_lists(request):
 
 @login_required
 def join_leave_list(request, course_id):
+    # Temporary diabling of course joining
+    return redirect("lists:view_lists")
+
     course = get_object_or_404(Course, pk=course_id)
     try:
         entry = WaitingListEntry.objects.get(user=request.user, course=course)
