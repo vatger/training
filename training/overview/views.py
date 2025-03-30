@@ -1,6 +1,8 @@
 from datetime import datetime, timezone
 
 import requests
+from django.contrib.admin.models import LogEntry, CHANGE
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.shortcuts import redirect, get_object_or_404
@@ -22,6 +24,18 @@ from .helpers import (
 )
 
 load_dotenv()
+
+
+def log_admin_action(user, instance, action_flag, message):
+    """Manually creates a LogEntry row."""
+    LogEntry.objects.create(
+        user=user,
+        content_type=ContentType.objects.get_for_model(instance),
+        object_id=instance.pk,
+        object_repr=str(instance),
+        action_flag=action_flag,
+        change_message=message,
+    )
 
 
 # @cached(cache=TTLCache(maxsize=1024, ttl=60 * 10))
@@ -63,6 +77,13 @@ def overview(request):
                     enrol_into_required_moodles(user.username, course.moodle_course_ids)
                     inform_user_course_start(int(user.username), course.name)
                     WaitingListEntry.objects.filter(user=user, course=course).delete()
+
+                    log_admin_action(
+                        request.user,
+                        course,
+                        CHANGE,
+                        f"Added trainee {user} ({user.username}) to course {course}",
+                    )
             except User.DoesNotExist:
                 form.add_error("username", "User not found.")
 
@@ -147,8 +168,15 @@ def claim_trainee(request, trainee_id, course_id):
 def remove_trainee(request, trainee_id, course_id):
     try:
         course = Course.objects.get(id=course_id)
+        trainee = User.objects.get(id=trainee_id)
         if request.user in course.mentors.all():
             course.active_trainees.remove(trainee_id)
+            log_admin_action(
+                request.user,
+                course,
+                CHANGE,
+                f"Removed trainee {trainee} ({trainee.username}) from active",
+            )
     except Course.DoesNotExist:
         pass
     return redirect("overview:overview")
@@ -227,6 +255,12 @@ def finish_course(request, trainee_id, course_id):
     if request.user not in course.mentors.all():
         return redirect("overview:overview")
     course.active_trainees.remove(trainee_id)
+    log_admin_action(
+        request.user,
+        course,
+        CHANGE,
+        f"Finished trainee {trainee} ({trainee.username}), added endorsements",
+    )
     if course.endorsement_groups.all():
         endorsements = requests.get(
             "https://core.vateud.net/api/facility/endorsements/tier-1",
@@ -273,6 +307,12 @@ def manage_mentors(request, course_id):
                     if course.mentor_group is not None:
                         if user.groups.filter(id=course.mentor_group.id).exists():
                             course.mentors.add(user)
+                            log_admin_action(
+                                request.user,
+                                course,
+                                CHANGE,
+                                f"Added mentor {user} ({user.username}) to course {course}",
+                            )
                     else:
                         course.mentors.add(user)
             except User.DoesNotExist:
@@ -291,6 +331,12 @@ def remove_mentor(request, course_id, mentor_id):
     mentor = get_object_or_404(User, id=mentor_id)
     if request.user in course.mentors.all():
         course.mentors.remove(mentor)
+        log_admin_action(
+            request.user,
+            course,
+            CHANGE,
+            f"Removed mentor {mentor} ({mentor.username}) from course {course}",
+        )
     return redirect("overview:manage_mentors", course_id=course_id)
 
 

@@ -3,6 +3,7 @@ import os
 import requests
 from cachetools import TTLCache, cached
 from django.contrib.auth.decorators import login_required
+from django.contrib.admin.models import CHANGE
 from django.shortcuts import (
     get_object_or_404,
     render,
@@ -13,6 +14,7 @@ from django.shortcuts import (
 from dotenv import load_dotenv
 from endorsements.helpers import get_tier1_endorsements
 from overview.helpers import inform_user_course_start
+from lists.views import log_admin_action
 
 from .models import Course, WaitingListEntry
 
@@ -228,4 +230,10 @@ def start_training(request, waitlist_entry_id):
     entry.delete()
     enrol_into_required_moodles(entry.user.username, entry.course.moodle_course_ids)
     inform_user_course_start(int(entry.user.username), entry.course.name)
+    log_admin_action(
+        request.user,
+        entry.course,
+        CHANGE,
+        f"Added trainee {entry.user} ({entry.user.username}) to course {entry.course}",
+    )
     return HttpResponseRedirect(reverse("lists:mentor_view"))
