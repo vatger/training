@@ -85,7 +85,7 @@ def assign_core_test(instructor_id: int, vatsim_id: int, position: str):
 
 def inform_user_course_start(vatsim_id: int, course_name: str):
     data = {
-        "title": "Endorsement Removal",
+        "title": "Start of Training",
         "message": f"""You have been enrolled in the {course_name} course. Check the training centre for moodle 
         courses to start your training.""",
         "source_name": "VATGER ATD",
