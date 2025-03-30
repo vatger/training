@@ -1,8 +1,7 @@
 from datetime import datetime, timezone
 
 import requests
-from django.contrib.admin.models import LogEntry, CHANGE
-from django.contrib.contenttypes.models import ContentType
+from django.contrib.admin.models import CHANGE
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.shortcuts import redirect, get_object_or_404
@@ -13,6 +12,7 @@ from lists.views import enrol_into_required_moodles
 from logs.models import Log
 from overview.models import TraineeClaim
 from training.eud_header import eud_header
+from training.helpers import log_admin_action
 
 from .forms import AddUserForm, SoloForm
 from .helpers import (
@@ -24,18 +24,6 @@ from .helpers import (
 )
 
 load_dotenv()
-
-
-def log_admin_action(user, instance, action_flag, message):
-    """Manually creates a LogEntry row."""
-    LogEntry.objects.create(
-        user=user,
-        content_type=ContentType.objects.get_for_model(instance),
-        object_id=instance.pk,
-        object_repr=str(instance),
-        action_flag=action_flag,
-        change_message=message,
-    )
 
 
 # @cached(cache=TTLCache(maxsize=1024, ttl=60 * 10))

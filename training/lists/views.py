@@ -14,7 +14,7 @@ from django.shortcuts import (
 from dotenv import load_dotenv
 from endorsements.helpers import get_tier1_endorsements
 from overview.helpers import inform_user_course_start
-from lists.views import log_admin_action
+from training.helpers import log_admin_action
 
 from .models import Course, WaitingListEntry
 
