@@ -48,7 +48,11 @@ def overview(request):
                     "id": endorsement["user_cid"],
                     "activity": round(activity.activity / 60, 2),
                     "name": name,
-                    "removal": True if activity.removal_date else False,
+                    "removal": (
+                        (activity.removal_date - timezone.now().date()).days
+                        if activity.removal_date
+                        else 0
+                    ),
                     "endorsement_id": activity.id,
                 }
             )
