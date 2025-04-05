@@ -3,31 +3,34 @@ from django.contrib.auth.models import User, Group
 from endorsements.models import EndorsementGroup
 
 
+class Rating(models.IntegerChoices):
+    OBS = 1
+    S1 = 2
+    S2 = 3
+    S3 = 4
+    C1 = 5
+    C2 = 6
+    C3 = 7
+    I1 = 8
+    I2 = 9
+    I3 = 10
+    UNL = 1000
+
+
+class Position(models.TextChoices):
+    GND = "GND", "Ground"
+    TWR = "TWR", "Tower"
+    APP = "APP", "Approach"
+    CTR = "CTR", "Centre"
+
+
+class CourseType(models.TextChoices):
+    EDMT = "EDMT", "Endorsement"
+    RTG = "RTG", "Rating"
+    GST = "GST", "Visitor"
+
+
 class Course(models.Model):
-    class Rating(models.IntegerChoices):
-        OBS = 1
-        S1 = 2
-        S2 = 3
-        S3 = 4
-        C1 = 5
-        C2 = 6
-        C3 = 7
-        I1 = 8
-        I2 = 9
-        I3 = 10
-        UNL = 1000
-
-    class CourseType(models.TextChoices):
-        EDMT = "EDMT", "Endorsement"
-        RTG = "RTG", "Rating"
-        GST = "GST", "Visitor"
-
-    class Position(models.TextChoices):
-        GND = "GND", "Ground"
-        TWR = "TWR", "Tower"
-        APP = "APP", "Approach"
-        CTR = "CTR", "Centre"
-
     name = models.CharField(max_length=100)
     description = models.TextField(null=True, blank=True)
     airport_name = models.CharField(max_length=100)
@@ -48,7 +51,7 @@ class Course(models.Model):
     moodle_course_ids = models.JSONField(default=list, blank=True)
 
     def __str__(self):
-        return self.name + " - " + self.type
+        return f"{self.airport_name} {Position(self.position).label} - {CourseType(self.type).label}"
 
 
 class WaitingListEntry(models.Model):

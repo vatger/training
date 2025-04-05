@@ -78,6 +78,7 @@ def overview(request):
         return redirect("overview:overview")
 
     courses = request.user.mentored_courses.all()
+    courses = sorted(courses, key=lambda course: str(course))
     solos = get_solos()
     res = {}
     for course in courses:
