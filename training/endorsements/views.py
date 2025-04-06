@@ -97,3 +97,21 @@ def remove_tier1(request, endorsement_id: int):
         f"Removal process for {endorsement.id} started by {request.user.username}.",
     )
     return redirect("endorsements:overview")
+
+
+def trainee_view(request):
+    tier_1 = get_tier1_endorsements()
+    tier_1 = [t1 for t1 in tier_1 if t1["user_cid"] == int(request.user.username)]
+    print(tier_1)
+    res_t1 = []
+    for endorsement in tier_1:
+        entry = {}
+        try:
+            activity = EndorsementActivity.objects.get(id=endorsement["id"])
+        except EndorsementActivity.DoesNotExist:
+            continue
+        entry["activity"] = round(activity.activity / 60, 1)
+        entry["position"] = endorsement["position"]
+        entry["removal_date"] = activity.removal_date
+        res_t1.append(entry)
+    return render(request, "endorsements/trainee.html", {"tier_1": res_t1})

@@ -34,6 +34,9 @@
                 <li class="nac-item active">
                     <a class="nav-link" href="{% url 'lists:view_lists' %}">Courses <span class="sr-only">(current)</span></a>
                 </li>
+                <li class="nac-item active">
+                    <a class="nav-link" href="{% url 'endorsements:trainee_view' %}">Endorsements <span class="sr-only">(current)</span></a>
+                </li>
                 {% if request.user.is_staff %}
                 <li class="nav-item active">
                     <a class="nav-link" href="{% url 'overview:overview' %}">Trainee Overview <span class="sr-only">(current)</span></a>
