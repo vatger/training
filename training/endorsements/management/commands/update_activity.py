@@ -137,11 +137,6 @@ class Command(BaseCommand):
                     )
                     if r.status_code == 200:
                         endorsement.removal_notified = True
-                        r = requests.post(
-                            "http://vatsim-germany.org/api/user/1439797/send_notification",
-                            data=data,
-                            headers=header,
-                        )
                     self.stdout.write("Sent notification.")
 
             endorsement.activity = hours
