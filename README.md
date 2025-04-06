@@ -1,6 +1,3 @@
-## TODO for v1.0
-- Logging
-
 ## TODO for v1.1
 - CoT role
 - Familiarisations
