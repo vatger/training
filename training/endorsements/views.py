@@ -102,7 +102,6 @@ def remove_tier1(request, endorsement_id: int):
 def trainee_view(request):
     tier_1 = get_tier1_endorsements()
     tier_1 = [t1 for t1 in tier_1 if t1["user_cid"] == int(request.user.username)]
-    print(tier_1)
     res_t1 = []
     for endorsement in tier_1:
         entry = {}
