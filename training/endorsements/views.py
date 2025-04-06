@@ -7,6 +7,8 @@ from django.shortcuts import render, redirect
 from django.utils import timezone
 from dotenv import load_dotenv
 
+from training.helpers import log_admin_action
+
 from .helpers import get_tier1_endorsements
 from .models import EndorsementGroup, EndorsementActivity
 
@@ -87,4 +89,11 @@ def remove_tier1(request, endorsement_id: int):
     # Set updated to zero unix time to trigger update
     endorsement.updated = datetime(1975, 1, 1, 0, 0, 0)
     endorsement.save()
+    # Log the removal
+    log_admin_action(
+        request.user,
+        endorsement,
+        2,
+        f"Removal process for {endorsement.id} started by {request.user.username}.",
+    )
     return redirect("endorsements:overview")
