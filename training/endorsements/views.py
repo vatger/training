@@ -99,6 +99,7 @@ def remove_tier1(request, endorsement_id: int):
     return redirect("endorsements:overview")
 
 
+@login_required
 def trainee_view(request):
     tier_1 = get_tier1_endorsements()
     tier_1 = [t1 for t1 in tier_1 if t1["user_cid"] == int(request.user.username)]
