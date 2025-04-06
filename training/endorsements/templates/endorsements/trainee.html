@@ -18,7 +18,7 @@
                     {% for endorsement in tier_1 %}
                     <tr>
                         <td>{{ endorsement.position }}</td>
-                        <td>{{ endorsement.activity }}</td>
+                        <td style="text-align: right;">{{ endorsement.activity }}</td>
                         <td>
                         {% if endorsement.removal_date %}
                             ⚠️ The endorsement will be removed on {{ endorsement.removal_date }}.
