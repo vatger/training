@@ -66,7 +66,10 @@ def mentor_view(request, vatsim_id: int):
     if request.user.is_superuser:
         courses = Course.objects.all()
 
-    if not request.user.groups.filter(name__in=mentor_groups).exists():
+    if (
+        not request.user.groups.filter(name__in=mentor_groups).exists()
+        and not request.user.is_superuser
+    ):
         return redirect("/")
     # Get all logs for the trainee that are in the courses
     logs = Log.objects.filter(trainee=trainee, course__in=courses).order_by(
