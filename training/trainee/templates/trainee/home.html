@@ -4,12 +4,12 @@
 
 <div class="container">
 <h4>Active Courses</h4>
-    {% include "trainee/_course_logs.html" with courses=active %}
+    {% include "trainee/_course_logs.html" with courses=active render_internal=False %}
 </div>
 
 <div class="container">
 <h4>Inactive Courses</h4>
-    {% include "trainee/_course_logs.html" with courses=inactive %}
+    {% include "trainee/_course_logs.html" with courses=inactive render_internal=False %}
 </div>
 
 {% include "trainee/moodle_overview.html" with moodles=moodles %}

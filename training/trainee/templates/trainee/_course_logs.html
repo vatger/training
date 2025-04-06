@@ -13,7 +13,7 @@
         <div id="collapse{{ course.id }}" class="collapse" data-parent="#accordion">
           <div class="card-body">
             {% for form in logs %}
-        {% include "log_form.html" with form=form %}
+        {% include "log_form.html" with form=form render_internal=render_internal %}
             {% endfor %}
           </div>
         </div>
