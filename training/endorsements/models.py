@@ -17,3 +17,9 @@ class EndorsementActivity(models.Model):
     removal_date = models.DateField(null=True, blank=True)
     removal_notified = models.BooleanField(default=False)
     created = models.DateTimeField(default=datetime.now)
+
+
+class Tier2Endorsement(models.Model):
+    name = models.CharField(max_length=30)
+    position = models.CharField(max_length=15)
+    moodle_course_id = models.IntegerField()

@@ -1,16 +1,19 @@
+import requests
 import os
 from datetime import datetime, timedelta
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 from dotenv import load_dotenv
 
 from training.helpers import log_admin_action
+from training.eud_header import eud_header
+from overview.helpers import get_course_completion
 
-from .helpers import get_tier1_endorsements
-from .models import EndorsementGroup, EndorsementActivity
+from .helpers import get_tier1_endorsements, get_tier2_endorsements
+from .models import EndorsementGroup, EndorsementActivity, Tier2Endorsement
 
 load_dotenv()
 
@@ -114,4 +117,58 @@ def trainee_view(request):
         entry["position"] = endorsement["position"]
         entry["removal_date"] = activity.removal_date
         res_t1.append(entry)
-    return render(request, "endorsements/trainee.html", {"tier_1": res_t1})
+
+    tier_2 = get_tier2_endorsements()
+    tier_2 = [
+        t2["position"] for t2 in tier_2 if t2["user_cid"] == int(request.user.username)
+    ]
+    available_t2 = Tier2Endorsement.objects.all()
+    available_t2 = sorted(available_t2, key=lambda x: x.name)
+    res_t2 = []
+    for endorsement in available_t2:
+        entry = {
+            "position": endorsement.position,
+            "name": endorsement.name,
+            "moodle_id": endorsement.moodle_course_id,
+            "has_endorsement": endorsement.position in tier_2,
+            "moodle_completed": (
+                True
+                if endorsement.position in tier_2
+                else get_course_completion(
+                    int(request.user.username), endorsement.moodle_course_id
+                )
+            ),
+            "id": endorsement.id,
+        }
+        res_t2.append(entry)
+
+    return render(
+        request, "endorsements/trainee.html", {"tier_1": res_t1, "tier_2": res_t2}
+    )
+
+
+@login_required
+def request_tier_2(request, endorsemment_id: int):
+    endorsement = get_object_or_404(Tier2Endorsement, id=endorsemment_id)
+    if not get_course_completion(
+        int(request.user.username), endorsement.moodle_course_id
+    ):
+        return redirect("endorsements:trainee_view")
+    t2 = get_tier2_endorsements()
+    t2_user = [
+        t2
+        for t2 in t2
+        if t2["user_cid"] == int(request.user.username)
+        and t2["position"] == endorsement.position
+    ]
+    if t2_user:
+        return redirect("endorsements:trainee_view")
+    requests.post(
+        "https://core.vateud.net/api/facility/endorsements/tier-2",
+        headers=eud_header,
+        data={
+            "user_cid": int(request.user.username),
+            "position": endorsement.position,
+            "instructor_cid": os.getenv("ATD_LEAD_CID"),
+        },
+    )

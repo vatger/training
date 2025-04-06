@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import EndorsementActivity, EndorsementGroup
+from .models import EndorsementActivity, EndorsementGroup, Tier2Endorsement
 
 
 class EndorsementActivityAdmin(admin.ModelAdmin):
@@ -38,3 +38,4 @@ class EndorsementActivityAdmin(admin.ModelAdmin):
 # Register the customized admin page
 admin.site.register(EndorsementActivity, EndorsementActivityAdmin)
 admin.site.register(EndorsementGroup)
+admin.site.register(Tier2Endorsement)

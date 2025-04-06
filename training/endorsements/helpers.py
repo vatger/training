@@ -12,3 +12,10 @@ def get_tier1_endorsements():
         "https://core.vateud.net/api/facility/endorsements/tier-1", headers=eud_header
     ).json()["data"]
     return endorsements
+
+
+def get_tier2_endorsements():
+    endorsements = requests.get(
+        "https://core.vateud.net/api/facility/endorsements/tier-2", headers=eud_header
+    ).json()["data"]
+    return endorsements

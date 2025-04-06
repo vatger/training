@@ -32,5 +32,47 @@
         </div>
     </div>
 
+    <div class="row">
+        <div class="col-12">
+            <h4>Tier 2 Endorsements</h4>
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered">
+                    <thead>
+                    <tr>
+                        <th style="width: 40%;">Name</th>
+                        <th style="width: 15%;">Position</th>
+                        <th style="width: 15%;">Moodle</th>
+                        <th style="width: 30%;">Endorsement</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for endorsement in tier_2 %}
+                    <tr>
+                        <td>{{ endorsement.name }}</td>
+                        <td>{{ endorsement.position }}</td>
+                        <td>
+                            {% if endorsement.moodle_completed %}
+                            <span class="badge badge-success">Passed</span>
+                            {% else %}
+                            <a href="https://moodle.vatsim-germany.org/course/view.php?id={{ endorsement.moodle_id }}" target="_blank" class="btn btn-primary btn-sm">View Course</a>
+                            {% endif %}
+                        </td>
+                        <td>
+                        {% if endorsement.has_endorsement %}
+                            ✅
+                        {% elif endorsement.moodle_completed %}
+                            <a href="{% url 'endorsements:request_tier_2' endorsement.id %}" class="btn btn-primary btn-sm">Get Endorsement</a>
+                        {% else %}
+                            <i>Moodle not passed</i>
+                        {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
 </div>
 {% endblock %}
