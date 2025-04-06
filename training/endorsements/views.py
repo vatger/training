@@ -104,6 +104,7 @@ def remove_tier1(request, endorsement_id: int):
 
 @login_required
 def trainee_view(request):
+    request.user.username = 1234027
     tier_1 = get_tier1_endorsements()
     tier_1 = [t1 for t1 in tier_1 if t1["user_cid"] == int(request.user.username)]
     res_t1 = []
@@ -148,8 +149,9 @@ def trainee_view(request):
 
 
 @login_required
-def request_tier_2(request, endorsemment_id: int):
-    endorsement = get_object_or_404(Tier2Endorsement, id=endorsemment_id)
+def request_tier_2(request, endorsement_id: int):
+    request.user.username = 1234027
+    endorsement = get_object_or_404(Tier2Endorsement, id=endorsement_id)
     if not get_course_completion(
         int(request.user.username), endorsement.moodle_course_id
     ):
