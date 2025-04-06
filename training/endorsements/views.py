@@ -172,3 +172,4 @@ def request_tier_2(request, endorsemment_id: int):
             "instructor_cid": os.getenv("ATD_LEAD_CID"),
         },
     )
+    return redirect("endorsements:trainee_view")
