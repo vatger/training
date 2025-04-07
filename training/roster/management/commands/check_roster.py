@@ -97,7 +97,11 @@ class Command(BaseCommand):
             if entry.last_session < timezone.now() - timezone.timedelta(
                 days=11 * 4.33 * 7
             ):
-                check, change_date = s1_check(vatsim_id)
+                try:
+                    check, change_date = s1_check(vatsim_id)
+                except:
+                    print(f"Error getting rating for {vatsim_id}")
+                    continue
                 if check:
                     entry.last_session = change_date
                     entry.removal_date = None
