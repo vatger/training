@@ -67,8 +67,10 @@ def callback_view(request):
                 "first_name": profile["firstname"],
                 "last_name": profile["lastname"],
                 "is_staff": len(mentor_groups & set(profile["teams"])) > 0
-                or "ATD Leitung" in profile["teams"],
-                "is_superuser": "ATD Leitung" in profile["teams"],
+                or "ATD Leitung" in profile["teams"]
+                or "VATGER Leitung" in profile["teams"],
+                "is_superuser": "ATD Leitung" in profile["teams"]
+                or "VATGER Leitung" in profile["teams"],
             },
         )
         user.first_name = profile["firstname"]
@@ -76,8 +78,11 @@ def callback_view(request):
         user.is_staff = (
             len(mentor_groups & set(profile["teams"])) > 0
             or "ATD Leitung" in profile["teams"]
+            or "VATGER Leitung" in profile["teams"]
         )
-        user.is_superuser = "ATD Leitung" in profile["teams"]
+        user.is_superuser = (
+            "ATD Leitung" in profile["teams"] or "VATGER Leitung" in profile["teams"]
+        )
         user.save()
         is_mentor = False
         for group in mentor_groups:
