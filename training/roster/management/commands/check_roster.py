@@ -7,6 +7,7 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 
 from roster.models import RosterEntry
+from endorsements.helpers import remove_roster_and_endorsements
 from training.eud_header import eud_header
 
 load_dotenv()
@@ -87,10 +88,7 @@ class Command(BaseCommand):
             ):
                 if entry.removal_date < timezone.now():
                     entry.delete()
-                    requests.delete(
-                        f"https://core.vateud.net/api/facility/roster/{entry.user_id}",
-                        headers=eud_header,
-                    )
+                    remove_roster_and_endorsements(entry.user_id)
                     continue
                 else:
                     continue
