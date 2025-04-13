@@ -44,7 +44,7 @@ def get_moodles(user) -> list:
 
 @login_required
 def home(request):
-    logs = Log.objects.filter(trainee=request.user)
+    logs = Log.objects.filter(trainee=request.user).order_by("-session_date")
     # Get all courses from the logs
     courses = set(Course.objects.filter(log__in=logs))
 
