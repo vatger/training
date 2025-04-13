@@ -85,9 +85,7 @@ def overview(request):
         course_trainees = {}
         trainees = course.active_trainees.all()
         for trainee in trainees:
-            claim = TraineeClaim.objects.filter(
-                mentor=request.user, trainee=trainee, course=course
-            ).exists()
+            claim = TraineeClaim.objects.filter(trainee=trainee, course=course).exists()
 
             # Moodle check for EDMT and GST
             moodle_completed = True
@@ -110,7 +108,7 @@ def overview(request):
             )
             if claim:
                 claimer = TraineeClaim.objects.get(
-                    mentor=request.user, trainee=trainee, course=course
+                    trainee=trainee, course=course
                 ).mentor
             course_trainees[trainee] = {
                 "logs": Log.objects.filter(trainee=trainee, course=course).order_by(
