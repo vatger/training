@@ -1,1 +1,38 @@
 @import "tailwindcss";
+
+/* Define the mandatory layer structure for Tailwind v4 */
+@layer theme, base, components, utilities;
+
+
+/* Main Django templates directory */
+@source "../../training/templates/**/*.html";
+
+/* App-specific template directories */
+@source "../../training/connect/templates/**/*.html";
+@source "../../training/endorsements/templates/**/*.html";
+@source "../../training/lists/templates/**/*.html";
+@source "../../training/logs/templates/**/*.html";
+@source "../../training/overview/templates/**/*.html";
+@source "../../training/trainee/templates/**/*.html";
+
+/* Or more generally, catch all app template directories */
+@source "../../training/*/templates/**/*.html";
+
+/* Include frontend source files */
+@source "../**/*.{js,jsx}";
+
+@source inline("bg-blue-500 text-white p-4 rounded-lg");
+@source inline("container mx-auto");
+@source inline("grid grid-cols-1 md:grid-cols-2 gap-4");
+
+/* Define basic theme variables - customize these as needed */
+@theme {
+  /* Spacing scale used for padding, margin, width, etc. */
+  --spacing: 0.25rem;
+  
+  /* Common colors */
+  --color-blue-500: oklch(0.52 0.25 252.11);
+  --color-white: oklch(1 0 0);
+  --color-gray-100: oklch(0.98 0.01 0);
+  --color-gray-800: oklch(0.40 0.01 0);
+}
