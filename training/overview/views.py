@@ -4,6 +4,7 @@ import requests
 from django.contrib.admin.models import CHANGE
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.core.exceptions import MultipleObjectsReturned
 from django.shortcuts import redirect, get_object_or_404
 from django.shortcuts import render
 from dotenv import load_dotenv
@@ -107,9 +108,16 @@ def overview(request):
                 else "Add Solo"
             )
             if claim:
-                claimer = TraineeClaim.objects.get(
-                    trainee=trainee, course=course
-                ).mentor
+                try:
+                    claimer = TraineeClaim.objects.get(
+                        trainee=trainee, course=course
+                    ).mentor
+                except MultipleObjectsReturned:
+                    claimer = (
+                        TraineeClaim.objects.filter(trainee=trainee, course=course)
+                        .first()
+                        .mentor
+                    )
             course_trainees[trainee] = {
                 "logs": Log.objects.filter(trainee=trainee, course=course).order_by(
                     "session_date"
@@ -176,7 +184,6 @@ def add_solo(request, vatsim_id, course_id):
         return redirect("overview:overview")
 
     core_passed = get_core_theory_passed(int(vatsim_id), course.position)
-    print(core_passed)
     moodle_completed = True
     for course_id in course.moodle_course_ids:
         moodle_completed = moodle_completed and get_course_completion(

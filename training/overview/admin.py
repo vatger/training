@@ -1,6 +1,8 @@
 from django.contrib import admin
 from django.contrib.admin.models import LogEntry
 
+from .models import TraineeClaim
+
 
 @admin.register(LogEntry)
 class LogEntryAdmin(admin.ModelAdmin):
@@ -17,3 +19,6 @@ class LogEntryAdmin(admin.ModelAdmin):
 
     def has_add_permission(self, request):
         return False  # Prevent manual addition
+
+
+admin.site.register(TraineeClaim)
