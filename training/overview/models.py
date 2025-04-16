@@ -14,3 +14,6 @@ class TraineeClaim(models.Model):
     course = models.ForeignKey(
         Course, on_delete=models.CASCADE, related_name="claim_course"
     )
+
+    def __str__(self):
+        return f"{self.mentor.first_name} {self.mentor.last_name} claiming {self.trainee.first_name} {self.trainee.last_name} in {self.course}"
