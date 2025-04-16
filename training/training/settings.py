@@ -29,7 +29,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ast.literal_eval(os.getenv("ALLOWED_HOSTS"))
 CSRF_TRUSTED_ORIGINS = ast.literal_eval(os.getenv("CSRF_TRUSTED_ORIGINS"))
@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     "endorsements.apps.EndorsementsConfig",
     "api.apps.ApiConfig",
     "roster.apps.RosterConfig",
+    "django_vite"
 ]
 
 MIDDLEWARE = [
@@ -133,8 +134,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = "/static/"
-STATIC_ROOT = BASE_DIR / "staticfiles"
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -142,3 +142,18 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 LOGIN_URL = "/connect/login"
+
+DJANGO_VITE = {
+    "default": {
+        "dev_mode": DEBUG,  # Use Django's DEBUG setting to determine dev mode
+        "dev_server_port": 5173,
+        "manifest_path": BASE_DIR / "frontend" / "dist" / "manifest.json",
+    }
+}
+
+STATICFILES_DIRS = [
+    BASE_DIR / "frontend" / "dist",  # Where Vite will output the built files
+]
+
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"

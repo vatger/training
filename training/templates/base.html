@@ -1,90 +1,137 @@
+{% load django_vite %}
 <!DOCTYPE html>
-<html lang="en" style="height: 100%;">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<html lang="en" style="height: 100%">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>VATSIM Germany Training</title>
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-    {% block extra_styles %}{% endblock %}
+    <link
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+      crossorigin="anonymous"
+    ></script>
+    {% block extra_styles %}{% endblock %} {% if debug %} {% vite_hmr_client %}
+    {% endif %} {% vite_asset 'src/main.js' %}
 
-<style>
-        body {
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-        .content-wrapper {
-            flex: 1;
-        }
+    <style>
+      body {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+      .content-wrapper {
+        flex: 1;
+      }
     </style>
-
-</head>
-<body>
+  </head>
+  <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" href="#">Training</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav">
-                <li class="nav-item active">
-                    <a class="nav-link" href="{% url 'trainee:home' %}">Home <span class="sr-only">(current)</span></a>
-                </li>
-                <li class="nac-item active">
-                    <a class="nav-link" href="{% url 'lists:view_lists' %}">Courses <span class="sr-only">(current)</span></a>
-                </li>
-                <li class="nac-item active">
-                    <a class="nav-link" href="{% url 'endorsements:trainee_view' %}">Endorsements <span class="sr-only">(current)</span></a>
-                </li>
-                {% if request.user.is_staff %}
-                <li class="nav-item active">
-                    <a class="nav-link" href="{% url 'overview:overview' %}">Trainee Overview <span class="sr-only">(current)</span></a>
-                </li>
-                <li class="nav-item active">
-                    <a class="nav-link" href="{% url 'lists:mentor_view' %}">List Overview <span class="sr-only">(current)</span></a>
-                </li>
-                <li class="nav-item active">
-                    <a class="nav-link" href="{% url 'endorsements:overview' %}">Endorsement Management <span class="sr-only">(current)</span></a>
-                </li>
-                <li class="nav-item active">
-                    <a class="nav-link" href="{% url 'trainee:find_user' %}">Find User <span class="sr-only">(current)</span></a>
-                </li>
-                {% endif %}
-            </ul>
-        </div>
+      <a class="navbar-brand text-8xl" href="#">Training</a>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-toggle="collapse"
+        data-target="#navbarNav"
+        aria-controls="navbarNav"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item active">
+            <a class="nav-link" href="{% url 'trainee:home' %}"
+              >Home <span class="sr-only">(current)</span></a
+            >
+          </li>
+          <li class="nac-item active">
+            <a class="nav-link" href="{% url 'lists:view_lists' %}"
+              >Courses <span class="sr-only">(current)</span></a
+            >
+          </li>
+          <li class="nac-item active">
+            <a class="nav-link" href="{% url 'endorsements:trainee_view' %}"
+              >Endorsements <span class="sr-only">(current)</span></a
+            >
+          </li>
+          {% if request.user.is_staff %}
+          <li class="nav-item active">
+            <a class="nav-link" href="{% url 'overview:overview' %}"
+              >Trainee Overview <span class="sr-only">(current)</span></a
+            >
+          </li>
+          <li class="nav-item active">
+            <a class="nav-link" href="{% url 'lists:mentor_view' %}"
+              >List Overview <span class="sr-only">(current)</span></a
+            >
+          </li>
+          <li class="nav-item active">
+            <a class="nav-link" href="{% url 'endorsements:overview' %}"
+              >Endorsement Management <span class="sr-only">(current)</span></a
+            >
+          </li>
+          <li class="nav-item active">
+            <a class="nav-link" href="{% url 'trainee:find_user' %}"
+              >Find User <span class="sr-only">(current)</span></a
+            >
+          </li>
+          {% endif %}
+        </ul>
+      </div>
 
-        <div class="navbar-collapse collapse w-100 order-3 dual-collapse2">
-            <ul class="navbar-nav ml-auto">
-            {% if request.user.is_authenticated %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'logout' %}">Logout <span class="sr-only">(current)</span></a>
-                </li>
-                {% else %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'login' %}">Login <span class="sr-only">(current)</span></a>
-                </li>
-                {% endif %}
-            </ul>
-        </div>
+      <div class="navbar-collapse collapse w-100 order-3 dual-collapse2">
+        <ul class="navbar-nav ml-auto">
+          {% if request.user.is_authenticated %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'logout' %}"
+              >Logout <span class="sr-only">(current)</span></a
+            >
+          </li>
+          {% else %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'login' %}"
+              >Login <span class="sr-only">(current)</span></a
+            >
+          </li>
+          {% endif %}
+        </ul>
+      </div>
     </nav>
 
     <div class="container content-wrapper">
-        {% block content %}{% endblock %}
+      {% block content %}{% endblock %}
     </div>
 
-
     <!-- Footer -->
-    <footer class="bg-light text-center text-muted py-3" style="border-top: 1px solid #ddd;">
-        <div class="container">
-            <a href="https://vatsim-germany.org/policies/gdpr" target="_blank" class="text-muted mx-2">GDPR</a> |
-            <a href="https://vatsim-germany.org/policies/imprint" target="_blank" class="text-muted mx-2">Imprint</a>
-        </div>
+    <footer
+      class="bg-light text-center text-muted py-3"
+      style="border-top: 1px solid #ddd"
+    >
+      <div class="container">
+        <a
+          href="https://vatsim-germany.org/policies/gdpr"
+          target="_blank"
+          class="text-muted mx-2"
+          >GDPR</a
+        >
+        |
+        <a
+          href="https://vatsim-germany.org/policies/imprint"
+          target="_blank"
+          class="text-muted mx-2"
+          >Imprint</a
+        >
+      </div>
     </footer>
 
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     {% block extra_scripts %}{% endblock %}
-</body>
+  </body>
 </html>
