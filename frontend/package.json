@@ -13,6 +13,12 @@
   "description": "",
   "dependencies": {
     "@tailwindcss/vite": "^4.1.4",
+    "alpinejs": "^3.14.9",
+    "flowbite": "^3.1.2",
+    "htmx.org": "^2.0.4",
     "tailwindcss": "^4.1.4"
+  },
+  "devDependencies": {
+    "daisyui": "^5.0.23"
   }
 }

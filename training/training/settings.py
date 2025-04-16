@@ -145,7 +145,7 @@ LOGIN_URL = "/connect/login"
 
 DJANGO_VITE = {
     "default": {
-        "dev_mode": DEBUG,
+        "dev_mode": True,
     }
 }
 

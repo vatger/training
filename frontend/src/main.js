@@ -1,8 +1,12 @@
-// Import the CSS with proper @source directives
 import "./styles.css";
+import "flowbite";
+import htmx from "htmx.org";
+import Alpine from "alpinejs";
 
-// Import the Tailwind test script
 //import "./tailwind-test.js";
 
-// Log message to verify script loading
+window.Alpine = Alpine;
+window.htmx = htmx;
+
+Alpine.start();
 console.log("Frontend initialized with Tailwind CSS v4");
