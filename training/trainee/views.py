@@ -113,7 +113,6 @@ def find_user(request):
         user_form = UserDetailForm(request.POST)
         if user_form.is_valid():
             user_id = user_form.cleaned_data["user_id"]
-            print("Happening")
             # Check if the user exists
             if User.objects.filter(username=user_id).exists():
                 # Redirect to the user_detail view
