@@ -113,6 +113,7 @@ def overview(request):
                         trainee=trainee, course=course
                     ).mentor
                 except MultipleObjectsReturned:
+                    print(f"Multiple claims for trainee {trainee} in course {course}")
                     claimer = (
                         TraineeClaim.objects.filter(trainee=trainee, course=course)
                         .first()
