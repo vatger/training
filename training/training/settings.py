@@ -145,14 +145,12 @@ LOGIN_URL = "/connect/login"
 
 DJANGO_VITE = {
     "default": {
-        "dev_mode": DEBUG,  # Use Django's DEBUG setting to determine dev mode
-        "dev_server_port": 5173,
-        "manifest_path": BASE_DIR / "frontend" / "dist" / "manifest.json",
+        "dev_mode": DEBUG,
     }
 }
 
 STATICFILES_DIRS = [
-    BASE_DIR / "frontend" / "dist",  # Where Vite will output the built files
+    BASE_DIR / "frontend" / "dist",
 ]
 
 STATIC_URL = "/static/"

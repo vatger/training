@@ -14,8 +14,7 @@
       integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
       crossorigin="anonymous"
     ></script>
-    {% block extra_styles %}{% endblock %} {% if debug %} {% vite_hmr_client %}
-    {% endif %} {% vite_asset 'src/main.js' %}
+    {% vite_hmr_client %} {% vite_asset 'src/main.js' %}
 
     <style>
       body {
