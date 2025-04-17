@@ -2,116 +2,14 @@
 
 <div class="container">
   <h4>Active Courses</h4>
-  {% include "trainee/_course_logs.html" with courses=active
-  render_internal=False %}
+  {% include "trainee/_course_logs.html" with courses=active render_internal=False %}
 </div>
 
 <div class="container">
   <h4>Inactive Courses</h4>
-  {% include "trainee/_course_logs.html" with courses=inactive
-  render_internal=False %}
+  {% include "trainee/_course_logs.html" with courses=inactive render_internal=False %}
 </div>
 
 {% include "trainee/moodle_overview.html" with moodles=moodles %}
-
-<div class="container mt-4">
-  <button
-    class="btn btn-primary mb-3"
-    type="button"
-    data-bs-toggle="collapse"
-    data-bs-target="#evaluationTable"
-    aria-expanded="false"
-    aria-controls="evaluationTable"
-  >
-    Criteria Description
-  </button>
-  <div class="collapse" id="evaluationTable">
-    <table class="table table-bordered table-striped">
-      <thead class="table-dark">
-        <tr>
-          <th>Category</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Theory</td>
-          <td>
-            Applies required knowledge including airspace structure, SOPs, LoAs.
-          </td>
-        </tr>
-        <tr>
-          <td>Phraseology/Radiotelephony</td>
-          <td>Applies correct phraseology in English and German.</td>
-        </tr>
-        <tr>
-          <td>Coordination</td>
-          <td>
-            Performs the required coordination with neighboring stations clearly
-            and effectively. Hands/takes over station correctly. Uses correct
-            vocabulary (e.g. approval request).
-          </td>
-        </tr>
-        <tr>
-          <td>Tag management/FPL Handling</td>
-          <td>Keeps flight plan and tag up to date at all times.</td>
-        </tr>
-        <tr>
-          <td>Situational awareness</td>
-          <td>
-            Aware of the current and future traffic situation. Takes new
-            information into account. Knows his own limits and limits of the
-            airspace/airport, asks for relief when appropriate.
-          </td>
-        </tr>
-        <tr>
-          <td>Problem recognition</td>
-          <td>Recognizes problems early and reacts accordingly.</td>
-        </tr>
-        <tr>
-          <td>Traffic planning</td>
-          <td>Looks ahead and plans a secure and efficient traffic flow.</td>
-        </tr>
-        <tr>
-          <td>Reaction</td>
-          <td>
-            Reacts in a timely manner, flexible and appropriate to changes in
-            the current traffic situation.
-          </td>
-        </tr>
-        <tr>
-          <td>Separation</td>
-          <td>
-            Applies prescribed separation minima at all times (i.e. runway,
-            radar, wake turbulence, separation etc.).
-          </td>
-        </tr>
-        <tr>
-          <td>Efficiency</td>
-          <td>
-            Takes pilot's requests into account, handles traffic in an efficient
-            way for himself, the downstream sector and the pilot.
-          </td>
-        </tr>
-        <tr>
-          <td>Ability to work under pressure</td>
-          <td>
-            Shows consistent performance regardless of traffic volume. Recovery
-            from mistakes.
-          </td>
-        </tr>
-        <tr>
-          <td>Manner and motivation</td>
-          <td>
-            Is open to feedback and makes a realistic assessment of own
-            performance. Deals respectfully with others and is well prepared for
-            the session.
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 {% endblock %}
