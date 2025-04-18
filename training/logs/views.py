@@ -1,10 +1,10 @@
-from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-
-from .forms import TrainingLogForm
+from django.shortcuts import render, redirect, get_object_or_404, reverse
 from lists.models import Course
 from overview.models import TraineeClaim
+
+from .forms import TrainingLogForm
 from .models import Log
 
 
@@ -69,4 +69,7 @@ def log_detail(request, log_id):
     course = log.course
     if request.user not in course.mentors.all():
         return redirect("overview:overview")
-    return render(request, "logs/log_detail.html", {"form": log})
+    admin_edit_url = reverse("admin:logs_log_change", args=[log.pk])
+    return render(
+        request, "logs/log_detail.html", {"form": log, "admin_edit_url": admin_edit_url}
+    )
