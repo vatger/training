@@ -13,7 +13,7 @@ class FamiliarisationSector(models.Model):
     fir = models.CharField(max_length=4, choices=FIR.choices)
 
     def __str__(self):
-        return self.name
+        return f"{self.name} - {self.fir}"
 
 
 class Familiarisation(models.Model):
