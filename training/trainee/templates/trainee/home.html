@@ -12,7 +12,14 @@
     {% include "trainee/_course_logs.html" with courses=inactive render_internal=False %}
 </div>
 
-{% include "trainee/moodle_overview.html" with moodles=moodles %}
+<div class="row">
+<div class="col-8">
+    {% include "trainee/moodle_overview.html" with moodles=moodles %}
+</div>
+<div class="col-4">
+    {% include "familiarisations/familiarisation.html" with fams=fams %}
+</div>
+</div>
 
 <div class="container mt-4">
         <button class="btn btn-primary mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#evaluationTable" aria-expanded="false" aria-controls="evaluationTable">

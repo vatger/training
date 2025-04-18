@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User, Group
 from endorsements.models import EndorsementGroup
+from familiarisations.models import FamiliarisationSector
 
 
 class Rating(models.IntegerChoices):
@@ -28,6 +29,7 @@ class CourseType(models.TextChoices):
     EDMT = "EDMT", "Endorsement"
     RTG = "RTG", "Rating"
     GST = "GST", "Visitor"
+    FAM = "FAM", "Familiarisation"
 
 
 class Course(models.Model):
@@ -49,6 +51,10 @@ class Course(models.Model):
         EndorsementGroup, blank=True, related_name="courses"
     )
     moodle_course_ids = models.JSONField(default=list, blank=True)
+
+    familiarisation_sector = models.ForeignKey(
+        FamiliarisationSector, null=True, blank=True, on_delete=models.SET_NULL
+    )
 
     def __str__(self):
         return f"{self.airport_name} {Position(self.position).label} - {CourseType(self.type).label}"

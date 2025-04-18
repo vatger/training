@@ -15,7 +15,14 @@
 {% include "trainee/_course_logs.html" with courses=inactive render_internal=True %}
 </div>
 
+<div class="row">
+<div class="col-8">
     {% include "trainee/moodle_overview.html" with moodles=moodles %}
+</div>
+<div class="col-4">
+    {% include "familiarisations/familiarisation.html" with fams=fams %}
+</div>
+</div>
 
 
 <div class="container">

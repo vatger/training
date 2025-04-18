@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     "endorsements.apps.EndorsementsConfig",
     "api.apps.ApiConfig",
     "roster.apps.RosterConfig",
+    "familiarisations.apps.FamiliarisationsConfig",
 ]
 
 MIDDLEWARE = [

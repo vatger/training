@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404, HttpResponseRedirect, reverse, redirect
 from django.shortcuts import render
+from familiarisations.helpers import get_familiarisations
 from lists.models import Course
 from logs.models import Log
 from trainee.forms import UserDetailForm
@@ -52,10 +53,12 @@ def home(request):
 
     # Get required Moodle courses
     moodles = get_moodles(request.user)
+    fams = get_familiarisations(request.user.username)
+
     return render(
         request,
         "trainee/home.html",
-        {"active": active, "inactive": inactive, "moodles": moodles},
+        {"active": active, "inactive": inactive, "moodles": moodles, "fams": fams},
     )
 
 
@@ -93,6 +96,7 @@ def mentor_view(request, vatsim_id: int):
         form = CommentForm()
 
     moodles = get_moodles(trainee)
+    fams = get_familiarisations(trainee.username)
 
     return render(
         request,
@@ -104,6 +108,7 @@ def mentor_view(request, vatsim_id: int):
             "comments": comments,
             "form": form,
             "moodles": moodles,
+            "fams": fams,
         },
     )
 
