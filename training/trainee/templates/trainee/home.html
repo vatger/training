@@ -1,15 +1,351 @@
-{% extends "base.html" %} {% block content %}
+{% extends "base.html" %} 
+{% block content %}
 
-<div class="container">
-  <h4>Active Courses</h4>
-  {% include "trainee/_course_logs.html" with courses=active render_internal=False %}
+<div class="container px-4 py-5">
+  <!-- Page Title -->
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-800">Training Dashboard</h1>
+    <p class="text-gray-600 mt-2">Welcome, {{ user.first_name }}! Here's an overview of your training progress.</p>
+  </div>
+  
+  <!-- Summary Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <!-- Active Courses Card -->
+    <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-lg font-semibold text-gray-800">Active Courses</h3>
+          <p class="text-gray-500 text-sm mt-1">Courses you're currently enrolled in</p>
+        </div>
+        <div class="bg-blue-100 p-3 rounded-full">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+          </svg>
+        </div>
+      </div>
+      <div class="mt-4">
+        <span class="text-3xl font-bold text-gray-800">{{ active|length }}</span>
+      </div>
+    </div>
+    
+    <!-- Completed Courses Card -->
+    <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-lg font-semibold text-gray-800">Completed Courses</h3>
+          <p class="text-gray-500 text-sm mt-1">Courses you've successfully completed</p>
+        </div>
+        <div class="bg-green-100 p-3 rounded-full">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+      </div>
+      <div class="mt-4">
+        <span class="text-3xl font-bold text-gray-800">{{ inactive|length }}</span>
+      </div>
+    </div>
+    
+    <!-- Moodle Courses Card -->
+    <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-lg font-semibold text-gray-800">Moodle Courses</h3>
+          <p class="text-gray-500 text-sm mt-1">Online learning resources</p>
+        </div>
+        <div class="bg-purple-100 p-3 rounded-full">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
+        </div>
+      </div>
+      <div class="mt-4">
+        <span class="text-3xl font-bold text-gray-800">{{ moodles|length }}</span>
+        <span class="text-sm text-gray-500 ml-1">courses</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Active Courses Section -->
+  <div class="mb-10">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-xl font-bold text-gray-800">Active Courses</h2>
+    </div>
+
+    {% if active %}
+      <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+        <div class="divide-y divide-gray-200">
+          {% for course, logs in active.items %}
+            <div x-data="{ open: false }" class="bg-white">
+              <div @click="open = !open" class="p-5 flex justify-between items-center cursor-pointer hover:bg-gray-50">
+                <div class="flex items-center">
+                  <div class="flex-shrink-0 mr-4">
+                    {% if course.position == 'GND' %}
+                      <div class="bg-gray-200 p-2 rounded-lg">
+                        <!-- Ground handling icon -->
+                        <svg class="h-6 w-6 text-gray-600" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" xml:space="preserve">
+                          <g>
+                            <g>
+                              <path d="M405.5,42.72c-1.935-2.417-4.865-3.825-7.961-3.825H296.52l-2.213-29.46C293.908,4.113,289.473,0,284.137,0h-56.273
+                                c-5.336,0-9.771,4.113-10.171,9.435l-2.213,29.46H114.462c-3.096,0-6.026,1.406-7.961,3.825c-1.936,2.417-2.668,5.583-1.992,8.605
+                                l13.315,59.425l23.966,106.964l14.04,62.665c1.043,4.658,5.179,7.969,9.952,7.969h41.122v213.453
+                                c0,5.633,4.566,10.199,10.199,10.199h77.791c5.633,0,10.199-4.566,10.199-10.199V288.348h41.122c4.774,0,8.909-3.312,9.952-7.969
+                                l14.04-62.665l23.966-106.964l13.315-59.425C408.168,48.303,407.435,45.138,405.5,42.72z M237.326,20.398h37.348l1.389,18.497
+                                h-40.128L237.326,20.398z M140.515,118.719h53.425v86.566H159.91L140.515,118.719z M284.697,491.602h-57.393V288.348h57.393
+                                V491.602z M338.051,267.949H173.95l-9.47-42.267h183.041L338.051,267.949z M352.091,205.284H214.339v-86.566h83.323v33.249
+                                c0,5.633,4.566,10.199,10.199,10.199c5.633,0,10.199-4.566,10.199-10.199v-33.249h53.425L352.091,205.284z M376.058,98.32H135.944
+                                L127.2,59.294h257.601L376.058,98.32z"/>
+                            </g>
+                          </g>
+                          <g>
+                            <g>
+                              <path d="M307.862,172.367c-5.633,0-10.199,4.566-10.199,10.199v1.896c0,5.633,4.566,10.199,10.199,10.199
+                                c5.633,0,10.199-4.566,10.199-10.199v-1.896C318.061,176.934,313.495,172.367,307.862,172.367z"/>
+                            </g>
+                          </g>
+                          </svg>
+                      </div>
+                    {% elif course.position == 'TWR' %}
+                      <div class="bg-blue-100 p-2 rounded-lg">
+                        <!-- Airport control tower icon -->
+                        <svg class="h-6 w-6 text-blue-600" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" xml:space="preserve">
+                          <g>
+                            <g>
+                              <path d="M405.5,42.72c-1.935-2.417-4.865-3.825-7.961-3.825H296.52l-2.213-29.46C293.908,4.113,289.473,0,284.137,0h-56.273
+                                c-5.336,0-9.771,4.113-10.171,9.435l-2.213,29.46H114.462c-3.096,0-6.026,1.406-7.961,3.825c-1.936,2.417-2.668,5.583-1.992,8.605
+                                l13.315,59.425l23.966,106.964l14.04,62.665c1.043,4.658,5.179,7.969,9.952,7.969h41.122v213.453
+                                c0,5.633,4.566,10.199,10.199,10.199h77.791c5.633,0,10.199-4.566,10.199-10.199V288.348h41.122c4.774,0,8.909-3.312,9.952-7.969
+                                l14.04-62.665l23.966-106.964l13.315-59.425C408.168,48.303,407.435,45.138,405.5,42.72z M237.326,20.398h37.348l1.389,18.497
+                                h-40.128L237.326,20.398z M140.515,118.719h53.425v86.566H159.91L140.515,118.719z M284.697,491.602h-57.393V288.348h57.393
+                                V491.602z M338.051,267.949H173.95l-9.47-42.267h183.041L338.051,267.949z M352.091,205.284H214.339v-86.566h83.323v33.249
+                                c0,5.633,4.566,10.199,10.199,10.199c5.633,0,10.199-4.566,10.199-10.199v-33.249h53.425L352.091,205.284z M376.058,98.32H135.944
+                                L127.2,59.294h257.601L376.058,98.32z"/>
+                            </g>
+                          </g>
+                          <g>
+                            <g>
+                              <path d="M307.862,172.367c-5.633,0-10.199,4.566-10.199,10.199v1.896c0,5.633,4.566,10.199,10.199,10.199
+                                c5.633,0,10.199-4.566,10.199-10.199v-1.896C318.061,176.934,313.495,172.367,307.862,172.367z"/>
+                            </g>
+                          </g>
+                          </svg>
+                      </div>
+                    {% elif course.position == 'APP' %}
+                      <div class="bg-green-100 p-2 rounded-lg">
+                        <!-- Approach radar icon -->
+                        <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M9.41185 21.6588C9.94114 21.8006 10.4719 21.8972 11 21.9509C15.7947 22.4387 20.3717 19.3931 21.6593 14.5877C23.0887 9.25308 19.9229 3.76971 14.5882 2.34029C11.9556 1.63489 9.28684 2.04857 7.0869 3.28972M12 11.9996L5.00197 6.33546C4.57285 5.98813 3.93869 6.05182 3.63599 6.5135C3.06678 7.38163 2.62413 8.35389 2.34078 9.41136C1.37322 13.0224 2.51113 16.7015 5.00197 19.1453M7.36918 8.18416C6.51383 9.22115 6.00004 10.5503 6.00004 11.9996C6.00004 15.3133 8.68633 17.9996 12 17.9996C15.3137 17.9996 18 15.3133 18 11.9996C18 11.4818 17.9345 10.9793 17.8111 10.5M10.1029 6.30568C10.6991 6.10709 11.337 5.99955 12 5.99955C13.0929 5.99955 14.1175 6.29173 15 6.80222" stroke="#1C274C" stroke-width="1.5" stroke-linecap="round"/>
+                          </svg>
+                      </div>
+                    {% elif course.position == 'CTR' %}
+                      <div class="bg-purple-100 p-2 rounded-lg">
+                        <!-- Center/enroute radar icon -->
+                        <svg class="w-6 h-6 text-purple-600" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M9.41185 21.6588C9.94114 21.8006 10.4719 21.8972 11 21.9509C15.7947 22.4387 20.3717 19.3931 21.6593 14.5877C23.0887 9.25308 19.9229 3.76971 14.5882 2.34029C11.9556 1.63489 9.28684 2.04857 7.0869 3.28972M12 11.9996L5.00197 6.33546C4.57285 5.98813 3.93869 6.05182 3.63599 6.5135C3.06678 7.38163 2.62413 8.35389 2.34078 9.41136C1.37322 13.0224 2.51113 16.7015 5.00197 19.1453M7.36918 8.18416C6.51383 9.22115 6.00004 10.5503 6.00004 11.9996C6.00004 15.3133 8.68633 17.9996 12 17.9996C15.3137 17.9996 18 15.3133 18 11.9996C18 11.4818 17.9345 10.9793 17.8111 10.5M10.1029 6.30568C10.6991 6.10709 11.337 5.99955 12 5.99955C13.0929 5.99955 14.1175 6.29173 15 6.80222" stroke="#1C274C" stroke-width="1.5" stroke-linecap="round"/>
+                          </svg>
+                      </div>
+                    {% endif %}
+                  </div>
+                  <div>
+                    <h3 class="font-medium text-gray-900">{{ course.name }}</h3>
+                    <p class="text-sm text-gray-500">{{ course.get_position_display }} {{ course.get_type_display }}</p>
+                  </div>
+                </div>
+                <div class="flex items-center">
+                  <div class="mr-4">
+                    <span class="text-sm font-medium {% if logs|length > 0 %}text-green-500{% else %}text-gray-500{% endif %}">
+                      {{ logs|length }} Training Session{% if logs|length != 1 %}s{% endif %}
+                    </span>
+                  </div>
+                  <svg class="h-5 w-5 text-gray-400 transform transition-transform duration-200" :class="{'rotate-180': open}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                  </svg>
+                </div>
+              </div>
+              
+              <div x-show="open" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 transform scale-95" x-transition:enter-end="opacity-100 transform scale-100" x-transition:leave="transition ease-in duration-100" x-transition:leave-start="opacity-100 transform scale-100" x-transition:leave-end="opacity-0 transform scale-95" class="px-5 pb-5">
+                {% if logs|length > 0 %}
+                  <div class="mt-3 space-y-4">
+                    {% for form in logs %}
+                      <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                        <div class="flex justify-between items-start">
+                          <div>
+                            <div class="flex items-center space-x-2">
+                              <span class="font-medium">{{ form.position }}</span>
+                              <span class="px-2 py-1 text-xs rounded-full {% if form.type == 'O' %}bg-blue-100 text-blue-800{% else %}bg-green-100 text-green-800{% endif %}">
+                                {{ form.get_type_display }}
+                              </span>
+                              <span class="px-2 py-1 text-xs rounded-full {% if form.result %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                                {{ form.result|yesno:"Passed,Not Passed" }}
+                              </span>
+                            </div>
+                            <p class="text-sm text-gray-500 mt-1">{{ form.session_date }}</p>
+                          </div>
+                          <a href="{% url 'logs:log_detail' form.id %}" class="text-sm font-medium text-blue-600 hover:text-blue-500">View details</a>
+                        </div>
+                        
+                        <div class="mt-3">
+                          <p class="text-sm text-gray-600">
+                            <span class="font-medium">Next step:</span> 
+                            {{ form.next_step|default:"Not specified" }}
+                          </p>
+                        </div>
+                      </div>
+                    {% endfor %}
+                  </div>
+                {% else %}
+                  <div class="py-4 text-center text-gray-500">
+                    <p>No training sessions recorded yet.</p>
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% else %}
+      <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200 text-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+        <h3 class="text-lg font-medium text-gray-900">No active courses</h3>
+        <p class="mt-2 text-sm text-gray-500">You are not currently enrolled in any active courses.</p>
+        <div class="mt-6">
+          <a href="{% url 'lists:view_lists' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            Browse Available Courses
+          </a>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Moodle Courses Section -->
+  <div class="mb-10">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-xl font-bold text-gray-800">Moodle Courses</h2>
+    </div>
+
+    {% if moodles %}
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for moodle in moodles %}
+          <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+            <div class="p-5">
+              <div class="flex justify-between">
+                <h3 class="text-lg font-medium text-gray-900 truncate" title="{{ moodle.course }}">{{ moodle.course }}</h3>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if moodle.passed %}bg-green-100 text-green-800{% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                  {{ moodle.passed|yesno:"Passed,In Progress" }}
+                </span>
+              </div>
+              
+              <div class="mt-4 flex justify-between items-center">
+                <a href="{{ moodle.link }}" target="_blank" class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                  Open Course
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </a>
+              </div>
+            </div>
+            
+            <div class="bg-gray-50 px-5 py-3">
+              <div class="w-full bg-gray-200 rounded-full h-2.5">
+                <div class="bg-blue-600 h-2.5 rounded-full {% if moodle.passed %}w-full{% endif %} {% if not moodle.passed %}w-1/2{% endif %}"></div>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200 text-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+        </svg>
+        <h3 class="text-lg font-medium text-gray-900">No Moodle courses</h3>
+        <p class="mt-2 text-sm text-gray-500">You don't have any assigned Moodle courses yet.</p>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Completed/Inactive Courses Section -->
+  <div>
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-xl font-bold text-gray-800">Completed Courses</h2>
+    </div>
+
+    {% if inactive %}
+      <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+        <div class="divide-y divide-gray-200">
+          {% for course, logs in inactive.items %}
+            <div x-data="{ open: false }" class="bg-white">
+              <div @click="open = !open" class="p-5 flex justify-between items-center cursor-pointer hover:bg-gray-50">
+                <div class="flex items-center">
+                  <div class="flex-shrink-0 mr-4">
+                    <div class="bg-green-100 p-2 rounded-lg">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                  </div>
+                  <div>
+                    <h3 class="font-medium text-gray-900">{{ course.name }}</h3>
+                    <p class="text-sm text-gray-500">{{ course.get_position_display }} {{ course.get_type_display }}</p>
+                  </div>
+                </div>
+                <div class="flex items-center">
+                  <div class="mr-4">
+                    <span class="text-sm font-medium text-gray-500">
+                      {{ logs|length }} Training Session{% if logs|length != 1 %}s{% endif %}
+                    </span>
+                  </div>
+                  <svg class="h-5 w-5 text-gray-400 transform transition-transform duration-200" :class="{'rotate-180': open}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                  </svg>
+                </div>
+              </div>
+              
+              <div x-show="open" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 transform scale-95" x-transition:enter-end="opacity-100 transform scale-100" x-transition:leave="transition ease-in duration-100" x-transition:leave-start="opacity-100 transform scale-100" x-transition:leave-end="opacity-0 transform scale-95" class="px-5 pb-5">
+                {% if logs|length > 0 %}
+                  <div class="mt-3 space-y-4">
+                    {% for form in logs %}
+                      <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                        <div class="flex justify-between items-start">
+                          <div>
+                            <div class="flex items-center space-x-2">
+                              <span class="font-medium">{{ form.position }}</span>
+                              <span class="px-2 py-1 text-xs rounded-full {% if form.type == 'O' %}bg-blue-100 text-blue-800{% else %}bg-green-100 text-green-800{% endif %}">
+                                {{ form.get_type_display }}
+                              </span>
+                              <span class="px-2 py-1 text-xs rounded-full {% if form.result %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                                {{ form.result|yesno:"Passed,Not Passed" }}
+                              </span>
+                            </div>
+                            <p class="text-sm text-gray-500 mt-1">{{ form.session_date }}</p>
+                          </div>
+                          <a href="{% url 'logs:log_detail' form.id %}" class="text-sm font-medium text-blue-600 hover:text-blue-500">View details</a>
+                        </div>
+                      </div>
+                    {% endfor %}
+                  </div>
+                {% else %}
+                  <div class="py-4 text-center text-gray-500">
+                    <p>No training sessions recorded.</p>
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% else %}
+      <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200 text-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+        </svg>
+        <h3 class="text-lg font-medium text-gray-900">No completed courses</h3>
+        <p class="mt-2 text-sm text-gray-500">You haven't completed any courses yet.</p>
+      </div>
+    {% endif %}
+  </div>
 </div>
-
-<div class="container">
-  <h4>Inactive Courses</h4>
-  {% include "trainee/_course_logs.html" with courses=inactive render_internal=False %}
-</div>
-
-{% include "trainee/moodle_overview.html" with moodles=moodles %}
 
 {% endblock %}
