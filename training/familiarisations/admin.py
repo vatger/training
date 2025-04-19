@@ -13,15 +13,6 @@ class FamiliarisationAdmin(admin.ModelAdmin):
     user_username.short_description = "Username"
 
 
-class UserAdmin(admin.ModelAdmin):
-    search_fields = ["username"]
-
-
-# Unregister the default User admin and register our custom one
-admin.site.unregister(User)
-admin.site.register(User, UserAdmin)
-
-
 class FamiliarisationSectorAdmin(admin.ModelAdmin):
     list_display = ("name", "fir")
 
