@@ -67,6 +67,30 @@ def create_training_log(request, trainee_id: int, course_id: int):
 def log_detail(request, log_id):
     log = get_object_or_404(Log, pk=log_id)
     course = log.course
-    if request.user not in course.mentors.all():
-        return redirect("overview:overview")
-    return render(request, "logs/log_detail.html", {"form": log})
+    
+    can_view_internal = request.user.is_superuser or (
+        course is not None and request.user in course.mentors.all()
+    )
+    
+    # Define custom breadcrumbs for this view
+    breadcrumbs = [
+        {'title': 'Dashboard', 'url': '/'},
+        {'title': 'Training Logs', 'url': '#'},
+        {'title': f'{log.position} Training Log', 'url': None}
+    ]
+    
+    # If the user is not a mentor for this course and is not the trainee,
+    # they shouldn't be able to see the log at all
+    if not can_view_internal and request.user != log.trainee:
+        return redirect('trainee:home')
+    
+    # Log access in debug mode
+    print(f"User {request.user.username} accessing log {log_id}")
+    print(f"Can view internal remarks: {can_view_internal}")
+    print(f"Is course mentor: {request.user in course.mentors.all() if course else False}")
+    
+    return render(request, "logs/log_detail.html", {
+        'form': log,
+        'breadcrumbs': breadcrumbs,
+        'render_internal': can_view_internal  # Only true for course-specific mentors and admins
+    })

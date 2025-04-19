@@ -1,0 +1,122 @@
+{% comment %}
+  File location: templates/components/breadcrumbs.html
+  
+  Usage:
+  {% include "components/breadcrumbs.html" with breadcrumbs=breadcrumbs %}
+  
+  Or with default Home link:
+  {% include "components/breadcrumbs.html" %}
+  
+  Or with auto-generation:
+  {% include "components/breadcrumbs.html" with auto=True current_title="Current Page Title" %}
+{% endcomment %}
+
+<nav class="flex mb-5" aria-label="Breadcrumb">
+  <ol class="inline-flex items-center space-x-1 md:space-x-3">
+    {% if breadcrumbs %}
+      {% for crumb in breadcrumbs %}
+        <li class="inline-flex items-center">
+          {% if forloop.first %}
+            <a href="{{ crumb.url }}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600">
+              <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path>
+              </svg>
+              {{ crumb.title }}
+            </a>
+          {% elif forloop.last %}
+            <div class="flex items-center">
+              <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+              </svg>
+              <span class="ml-1 text-sm font-medium text-gray-500 md:ml-2">{{ crumb.title }}</span>
+            </div>
+          {% else %}
+            <div class="flex items-center">
+              <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+              </svg>
+              <a href="{{ crumb.url }}" class="ml-1 text-sm font-medium text-gray-700 hover:text-blue-600 md:ml-2">{{ crumb.title }}</a>
+            </div>
+          {% endif %}
+        </li>
+      {% endfor %}
+    {% elif auto %}
+      <li class="inline-flex items-center">
+        <a href="{% url 'trainee:home' %}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600">
+          <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+            <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path>
+          </svg>
+          Dashboard
+        </a>
+      </li>
+      
+      {% if request.path|slice:"1:8" == "trainee" %}
+        <li>
+          <div class="flex items-center">
+            <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+              <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+            </svg>
+            <a href="{% url 'trainee:home' %}" class="ml-1 text-sm font-medium text-gray-700 hover:text-blue-600 md:ml-2">Trainee</a>
+          </div>
+        </li>
+      {% elif request.path|slice:"1:5" == "logs" %}
+        <li>
+          <div class="flex items-center">
+            <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+              <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+            </svg>
+            <a href="#" class="ml-1 text-sm font-medium text-gray-700 hover:text-blue-600 md:ml-2">Logs</a>
+          </div>
+        </li>
+      {% elif request.path|slice:"1:14" == "endorsements" %}
+        <li>
+          <div class="flex items-center">
+            <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+              <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+            </svg>
+            <a href="{% url 'endorsements:trainee_view' %}" class="ml-1 text-sm font-medium text-gray-700 hover:text-blue-600 md:ml-2">Endorsements</a>
+          </div>
+        </li>
+      {% elif request.path|slice:"1:6" == "lists" %}
+        <li>
+          <div class="flex items-center">
+            <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+              <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+            </svg>
+            <a href="{% url 'lists:view_lists' %}" class="ml-1 text-sm font-medium text-gray-700 hover:text-blue-600 md:ml-2">Courses</a>
+          </div>
+        </li>
+      {% elif request.path|slice:"1:9" == "overview" %}
+        <li>
+          <div class="flex items-center">
+            <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+              <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+            </svg>
+            <a href="{% url 'overview:overview' %}" class="ml-1 text-sm font-medium text-gray-700 hover:text-blue-600 md:ml-2">Overview</a>
+          </div>
+        </li>
+      {% endif %}
+      
+      {% if current_title %}
+        <li>
+          <div class="flex items-center">
+            <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+              <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+            </svg>
+            <span class="ml-1 text-sm font-medium text-gray-500 md:ml-2">{{ current_title }}</span>
+          </div>
+        </li>
+      {% endif %}
+    {% else %}
+      <!-- Default Home link if nothing else is provided -->
+      <li class="inline-flex items-center">
+        <a href="{% url 'trainee:home' %}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600">
+          <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+            <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path>
+          </svg>
+          Dashboard
+        </a>
+      </li>
+    {% endif %}
+  </ol>
+</nav>

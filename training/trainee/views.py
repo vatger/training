@@ -125,3 +125,4 @@ def find_user(request):
         user_form = UserDetailForm()
 
     return render(request, "trainee/find_user.html", {"user_form": user_form})
+
