@@ -4,6 +4,7 @@ import requests
 from django.contrib.admin.models import CHANGE
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.conf import settings
 from django.core.exceptions import MultipleObjectsReturned
 from django.shortcuts import redirect, get_object_or_404
 from django.shortcuts import render
@@ -29,9 +30,24 @@ load_dotenv()
 
 # @cached(cache=TTLCache(maxsize=1024, ttl=60 * 10))
 def get_solos():
-    solos = requests.get(
-        "https://core.vateud.net/api/facility/endorsements/solo", headers=eud_header
-    ).json()["data"]
+    if settings.USE_CORE_MOCK:
+        solos = [
+            {
+                "id": 1,
+                "user_cid": 1601613,
+                "instructor_cid": 1439797,
+                "position": "EDDL_APP",
+                "expiry": "2025-05-05T00:00:00.000000Z",
+                "max_days": 74,
+                "facility": 9,
+                "created_at": "2025-03-03T02:10:40.000000Z",
+                "updated_at": "2025-04-07T19:47:47.000000Z",
+            },
+        ]
+    else:
+        solos = requests.get(
+            "https://core.vateud.net/api/facility/endorsements/solo", headers=eud_header
+        ).json()["data"]
     res = []
     for solo in solos:
         expiry_date = datetime.fromisoformat(solo["expiry"].replace("Z", "+00:00"))
