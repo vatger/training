@@ -65,7 +65,6 @@ def overview(request):
                 if user not in course.active_trainees.all():
                     course.active_trainees.add(user)
                     enrol_into_required_moodles(user.username, course.moodle_course_ids)
-                    inform_user_course_start(int(user.username), course.name)
                     WaitingListEntry.objects.filter(user=user, course=course).delete()
 
                     log_admin_action(
