@@ -8,8 +8,9 @@ from lists.models import Course
 from overview.models import TraineeClaim
 from .models import Log
 
+from training.permissions import mentor_required
 
-@login_required
+@mentor_required
 def create_training_log(request, trainee_id: int, course_id: int):
     # Ensure the trainee and course exist
     trainee = get_object_or_404(User, id=trainee_id)

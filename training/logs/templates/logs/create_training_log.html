@@ -1,136 +1,841 @@
 {% extends "base.html" %}
+{% load tags %}
 
 {% block content %}
-    <div class="container mt-5">
-        <h1>Create Training Log</h1>
-        <form method="post" action="">
-            {% csrf_token %}
-            <div class="row">
-                <div class="col-4">
-                Date: {{ form.session_date }}
-                </div>
-            </div><br>
-    <div class="row">
-                <div class="col-4">
-                    <div class="mb-3">
-                        <label for="id_position" class="form-label">Position</label>
-                        {{ form.position }}
-                    </div>
-                </div>
-                <div class="col-4">
-                    <div class="mb-3">
-                        <label for="id_type" class="form-label">Type</label>
-                        {{ form.type }}
-                    </div>
-                </div>
-                <div class="col-4">
-                    <div class="mb-3 form-check">
-                        <label for="id_result" class="form-check-label">Training Passed</label>
-                        {{ form.result }}
-                    </div>
-                </div>
+<div class="container px-4 py-5" x-data="logCreationApp">
+  <!-- Breadcrumbs -->
+  {% include "components/breadcrumbs.html" with auto=True current_title="Create Training Log" %}
+
+  <!-- Header Section -->
+  <div class="mb-8">
+    <div class="flex flex-wrap justify-between items-start gap-4">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-800">Create Training Log</h1>
+        <p class="text-gray-600 mt-1">For {{ trainee.first_name }} {{ trainee.last_name }} - {{ course.name }}</p>
+      </div>
+      <div class="flex flex-col items-end">
+        <div class="flex space-x-2">
+          <div id="autosave-status" class="text-sm" :class="autosaveStatus.color">
+            <span x-text="autosaveStatus.message"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Form -->
+  <form method="post" action="" id="log-form" @submit="submitForm">
+    {% csrf_token %}
+    <div class="space-y-8">
+      <!-- Session Details Card -->
+      <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
+        <h2 class="text-xl font-semibold mb-6 text-gray-800">Session Details</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <!-- Date -->
+          <div>
+            <label for="id_session_date" class="block text-sm font-medium text-gray-700 mb-1">Session Date</label>
+            <input type="date" name="session_date" id="id_session_date" 
+                   class="input input-bordered w-full"
+                   x-model="formData.session_date"
+                   @change="saveFormState">
+          </div>
+          
+          <!-- Position -->
+          <div>
+            <label for="id_position" class="block text-sm font-medium text-gray-700 mb-1">Position</label>
+            <input type="text" name="position" id="id_position" 
+                   class="input input-bordered w-full" 
+                   placeholder="e.g. EDDF_APP"
+                   x-model="formData.position"
+                   @input="saveFormState">
+          </div>
+          
+          <!-- Type -->
+          <div>
+            <label for="id_type" class="block text-sm font-medium text-gray-700 mb-1">Session Type</label>
+            <select name="type" id="id_type" 
+                    class="select select-bordered w-full"
+                    x-model="formData.type"
+                    @change="saveFormState">
+              <option value="S">Simulator</option>
+              <option value="O">Online</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Evaluation Categories -->
+      <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
+        <h2 class="text-xl font-semibold mb-6 text-gray-800">Evaluation Categories</h2>
+        
+        <div class="space-y-8">
+          <!-- Theory -->
+          <div>
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-lg font-medium text-gray-800">Theory</h3>
+              <select name="theory" id="id_theory" 
+                      class="select select-sm select-bordered"
+                      x-model="formData.theory"
+                      @change="saveFormState">
+                <option value="0">Not rated</option>
+                <option value="1">Requirements not met</option>
+                <option value="2">Requirements partially met</option>
+                <option value="3">Requirements met</option>
+                <option value="4">Requirements exceeded</option>
+              </select>
             </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label for="theory_positives_editor" class="block text-sm font-medium text-green-600 mb-1">Strengths</label>
+                <div class="editor-container">
+                  <div class="editor-toolbar">
+                    <button type="button" class="toolbar-button" @click="formatText('theory_positives', 'bold')">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M8.21 13c2.106 0 3.412-1.087 3.412-2.823 0-1.306-.984-2.283-2.324-2.386v-.055a2.176 2.176 0 0 0 1.852-2.14c0-1.51-1.162-2.46-3.014-2.46H3.843V13H8.21zM5.908 4.674h1.696c.963 0 1.517.451 1.517 1.244 0 .834-.629 1.32-1.73 1.32H5.908V4.673zm0 6.788V8.598h1.73c1.217 0 1.88.492 1.88 1.415 0 .943-.643 1.449-1.832 1.449H5.907z"/>
+                      </svg>
+                    </button>
+                    <button type="button" class="toolbar-button" @click="formatText('theory_positives', 'italic')">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M7.991 11.674 9.53 4.455c.123-.595.246-.71 1.347-.807l.11-.52H7.211l-.11.52c1.06.096 1.128.212 1.005.807L6.57 11.674c-.123.595-.246.71-1.346.806l-.11.52h3.774l.11-.52c-1.06-.095-1.129-.211-1.006-.806z"/>
+                      </svg>
+                    </button>
+                    <button type="button" class="toolbar-button" @click="showImagePrompt('theory_positives')">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                        <path d="M1.5 2A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13zm13 1a.5.5 0 0 1 .5.5v6l-3.775-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12v.54A.505.505 0 0 1 1 12.5v-9a.5.5 0 0 1 .5-.5h13z"/>
+                      </svg>
+                    </button>
+                  </div>
+                  <div class="editor-content" 
+                       contenteditable="true"
+                       id="theory_positives_editor"
+                       x-ref="theory_positives_editor"
+                       @input="handleEditorInput($event, 'theory_positives')"
+                       @blur="saveEditorContent('theory_positives')"></div>
+                  <input type="hidden" name="theory_positives" id="id_theory_positives" x-ref="theory_positives">
+                </div>
+              </div>
+              
+              <div>
+                <label for="theory_negatives_editor" class="block text-sm font-medium text-red-600 mb-1">Areas for Improvement</label>
+                <div class="editor-container">
+                  <div class="editor-toolbar">
+                    <button type="button" class="toolbar-button" @click="formatText('theory_negatives', 'bold')">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M8.21 13c2.106 0 3.412-1.087 3.412-2.823 0-1.306-.984-2.283-2.324-2.386v-.055a2.176 2.176 0 0 0 1.852-2.14c0-1.51-1.162-2.46-3.014-2.46H3.843V13H8.21zM5.908 4.674h1.696c.963 0 1.517.451 1.517 1.244 0 .834-.629 1.32-1.73 1.32H5.908V4.673zm0 6.788V8.598h1.73c1.217 0 1.88.492 1.88 1.415 0 .943-.643 1.449-1.832 1.449H5.907z"/>
+                      </svg>
+                    </button>
+                    <button type="button" class="toolbar-button" @click="formatText('theory_negatives', 'italic')">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M7.991 11.674 9.53 4.455c.123-.595.246-.71 1.347-.807l.11-.52H7.211l-.11.52c1.06.096 1.128.212 1.005.807L6.57 11.674c-.123.595-.246.71-1.346.806l-.11.52h3.774l.11-.52c-1.06-.095-1.129-.211-1.006-.806z"/>
+                      </svg>
+                    </button>
+                    <button type="button" class="toolbar-button" @click="showImagePrompt('theory_negatives')">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                        <path d="M1.5 2A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13zm13 1a.5.5 0 0 1 .5.5v6l-3.775-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12v.54A.505.505 0 0 1 1 12.5v-9a.5.5 0 0 1 .5-.5h13z"/>
+                      </svg>
+                    </button>
+                  </div>
+                  <div class="editor-content" 
+                       contenteditable="true"
+                       id="theory_negatives_editor"
+                       x-ref="theory_negatives_editor"
+                       @input="handleEditorInput($event, 'theory_negatives')"
+                       @blur="saveEditorContent('theory_negatives')"></div>
+                  <input type="hidden" name="theory_negatives" id="id_theory_negatives" x-ref="theory_negatives">
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Phraseology -->
+          <div>
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-lg font-medium text-gray-800">Phraseology / Radiotelephony</h3>
+              <select name="phraseology" id="id_phraseology" 
+                      class="select select-sm select-bordered"
+                      x-model="formData.phraseology"
+                      @change="saveFormState">
+                <option value="0">Not rated</option>
+                <option value="1">Requirements not met</option>
+                <option value="2">Requirements partially met</option>
+                <option value="3">Requirements met</option>
+                <option value="4">Requirements exceeded</option>
+              </select>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label for="phraseology_positives_editor" class="block text-sm font-medium text-green-600 mb-1">Strengths</label>
+                <div class="editor-container">
+                  <div class="editor-toolbar">
+                    <button type="button" class="toolbar-button" @click="formatText('phraseology_positives', 'bold')">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M8.21 13c2.106 0 3.412-1.087 3.412-2.823 0-1.306-.984-2.283-2.324-2.386v-.055a2.176 2.176 0 0 0 1.852-2.14c0-1.51-1.162-2.46-3.014-2.46H3.843V13H8.21zM5.908 4.674h1.696c.963 0 1.517.451 1.517 1.244 0 .834-.629 1.32-1.73 1.32H5.908V4.673zm0 6.788V8.598h1.73c1.217 0 1.88.492 1.88 1.415 0 .943-.643 1.449-1.832 1.449H5.907z"/>
+                      </svg>
+                    </button>
+                    <button type="button" class="toolbar-button" @click="formatText('phraseology_positives', 'italic')">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M7.991 11.674 9.53 4.455c.123-.595.246-.71 1.347-.807l.11-.52H7.211l-.11.52c1.06.096 1.128.212 1.005.807L6.57 11.674c-.123.595-.246.71-1.346.806l-.11.52h3.774l.11-.52c-1.06-.095-1.129-.211-1.006-.806z"/>
+                      </svg>
+                    </button>
+                    <button type="button" class="toolbar-button" @click="showImagePrompt('phraseology_positives')">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                        <path d="M1.5 2A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13zm13 1a.5.5 0 0 1 .5.5v6l-3.775-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12v.54A.505.505 0 0 1 1 12.5v-9a.5.5 0 0 1 .5-.5h13z"/>
+                      </svg>
+                    </button>
+                  </div>
+                  <div class="editor-content" 
+                       contenteditable="true"
+                       id="phraseology_positives_editor"
+                       x-ref="phraseology_positives_editor"
+                       @input="handleEditorInput($event, 'phraseology_positives')"
+                       @blur="saveEditorContent('phraseology_positives')"></div>
+                  <input type="hidden" name="phraseology_positives" id="id_phraseology_positives" x-ref="phraseology_positives">
+                </div>
+              </div>
+              
+              <div>
+                <label for="phraseology_negatives_editor" class="block text-sm font-medium text-red-600 mb-1">Areas for Improvement</label>
+                <div class="editor-container">
+                  <div class="editor-toolbar">
+                    <button type="button" class="toolbar-button" @click="formatText('phraseology_negatives', 'bold')">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M8.21 13c2.106 0 3.412-1.087 3.412-2.823 0-1.306-.984-2.283-2.324-2.386v-.055a2.176 2.176 0 0 0 1.852-2.14c0-1.51-1.162-2.46-3.014-2.46H3.843V13H8.21zM5.908 4.674h1.696c.963 0 1.517.451 1.517 1.244 0 .834-.629 1.32-1.73 1.32H5.908V4.673zm0 6.788V8.598h1.73c1.217 0 1.88.492 1.88 1.415 0 .943-.643 1.449-1.832 1.449H5.907z"/>
+                      </svg>
+                    </button>
+                    <button type="button" class="toolbar-button" @click="formatText('phraseology_negatives', 'italic')">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M7.991 11.674 9.53 4.455c.123-.595.246-.71 1.347-.807l.11-.52H7.211l-.11.52c1.06.096 1.128.212 1.005.807L6.57 11.674c-.123.595-.246.71-1.346.806l-.11.52h3.774l.11-.52c-1.06-.095-1.129-.211-1.006-.806z"/>
+                      </svg>
+                    </button>
+                    <button type="button" class="toolbar-button" @click="showImagePrompt('phraseology_negatives')">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                        <path d="M1.5 2A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13zm13 1a.5.5 0 0 1 .5.5v6l-3.775-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12v.54A.505.505 0 0 1 1 12.5v-9a.5.5 0 0 1 .5-.5h13z"/>
+                      </svg>
+                    </button>
+                  </div>
+                  <div class="editor-content" 
+                       contenteditable="true"
+                       id="phraseology_negatives_editor"
+                       x-ref="phraseology_negatives_editor"
+                       @input="handleEditorInput($event, 'phraseology_negatives')"
+                       @blur="saveEditorContent('phraseology_negatives')"></div>
+                  <input type="hidden" name="phraseology_negatives" id="id_phraseology_negatives" x-ref="phraseology_negatives">
+                </div>
+              </div>
+            </div>
+          </div>
 
-            <!-- Categories -->
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Category</th>
-                    <th>Positives</th>
-                    <th>Negatives</th>
-                    <th>Rating</th>
-                </tr>
-            </thead>
-        <tr>
-            <td>Theory</td>
-            <td>{{ form.theory_positives }}</td>
-            <td>{{ form.theory_negatives }}</td>
-            <td>{{ form.theory }}</td>
-        </tr>
-        <tr>
-            <td>Phraseology / Radiotelephony</td>
-            <td>{{ form.phraseology_positives }}</td>
-            <td>{{ form.phraseology_negatives }}</td>
-            <td>{{ form.phraseology }}</td>
-        </tr>
-        <tr>
-            <td>Coordination</td>
-            <td>{{ form.coordination_positives }}</td>
-            <td>{{ form.coordination_negatives }}</td>
-            <td>{{ form.coordination }}</td>
-        </tr>
-        <tr>
-            <td>Tag Management / FPL Handling</td>
-            <td>{{ form.tag_management_positives }}</td>
-            <td>{{ form.tag_management_negatives }}</td>
-            <td>{{ form.tag_management }}</td>
-        </tr>
-        <tr>
-            <td>Situational Awareness</td>
-            <td>{{ form.situational_awareness_positives }}</td>
-            <td>{{ form.situational_awareness_negatives }}</td>
-            <td>{{ form.situational_awareness }}</td>
-        </tr>
-        <tr>
-            <td>Problem Recognition</td>
-            <td>{{ form.problem_recognition_positives }}</td>
-            <td>{{ form.problem_recognition_negatives }}</td>
-            <td>{{ form.problem_recognition }}</td>
-        </tr>
-        <tr>
-            <td>Traffic Planning</td>
-            <td>{{ form.traffic_planning_positives }}</td>
-            <td>{{ form.traffic_planning_negatives }}</td>
-            <td>{{ form.traffic_planning }}</td>
-        </tr>
-        <tr>
-            <td>Reaction</td>
-            <td>{{ form.reaction_positives }}</td>
-            <td>{{ form.reaction_negatives }}</td>
-            <td>{{ form.reaction }}</td>
-        </tr>
-        <tr>
-            <td>Separation</td>
-            <td>{{ form.separation_positives }}</td>
-            <td>{{ form.separation_negatives }}</td>
-            <td>{{ form.separation }}</td>
-        </tr>
-        <tr>
-            <td>Efficiency</td>
-            <td>{{ form.efficiency_positives }}</td>
-            <td>{{ form.efficiency_negatives }}</td>
-            <td>{{ form.efficiency }}</td>
-        </tr>
-        <tr>
-            <td>Ability to Work Under Pressure</td>
-            <td>{{ form.ability_to_work_under_pressure_positives }}</td>
-            <td>{{ form.ability_to_work_under_pressure_negatives }}</td>
-            <td>{{ form.ability_to_work_under_pressure }}</td>
-        </tr>
-        <tr>
-            <td>Motivation</td>
-            <td>{{ form.motivation_positives }}</td>
-            <td>{{ form.motivation_negatives }}</td>
-            <td>{{ form.motivation }}</td>
-        </tr>
-    </table>
-    <div class="row">
-        <div class="col-6">
-                <label for="id_final_comment" class="form-label">Final Comment</label>
-                {{ form.final_comment }}
+          <!-- Add more categories with the same pattern -->
         </div>
-        <div class="col-6">
-                <label for="id_internal_remarks" class="form-label">Internal Remarks</label>
-                {{ form.internal_remarks }}
+      </div>
+      
+      <!-- Final Assessment -->
+      <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
+        <h2 class="text-xl font-semibold mb-6 text-gray-800">Final Assessment</h2>
+        
+        <div class="space-y-6">
+          <div>
+            <label for="final_comment_editor" class="block text-sm font-medium text-gray-700 mb-1">Final Comment</label>
+            <div class="editor-container">
+              <div class="editor-toolbar">
+                <button type="button" class="toolbar-button" @click="formatText('final_comment', 'bold')">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M8.21 13c2.106 0 3.412-1.087 3.412-2.823 0-1.306-.984-2.283-2.324-2.386v-.055a2.176 2.176 0 0 0 1.852-2.14c0-1.51-1.162-2.46-3.014-2.46H3.843V13H8.21zM5.908 4.674h1.696c.963 0 1.517.451 1.517 1.244 0 .834-.629 1.32-1.73 1.32H5.908V4.673zm0 6.788V8.598h1.73c1.217 0 1.88.492 1.88 1.415 0 .943-.643 1.449-1.832 1.449H5.907z"/>
+                  </svg>
+                </button>
+                <button type="button" class="toolbar-button" @click="formatText('final_comment', 'italic')">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M7.991 11.674 9.53 4.455c.123-.595.246-.71 1.347-.807l.11-.52H7.211l-.11.52c1.06.096 1.128.212 1.005.807L6.57 11.674c-.123.595-.246.71-1.346.806l-.11.52h3.774l.11-.52c-1.06-.095-1.129-.211-1.006-.806z"/>
+                  </svg>
+                </button>
+                <button type="button" class="toolbar-button" @click="showImagePrompt('final_comment')">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                    <path d="M1.5 2A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13zm13 1a.5.5 0 0 1 .5.5v6l-3.775-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12v.54A.505.505 0 0 1 1 12.5v-9a.5.5 0 0 1 .5-.5h13z"/>
+                  </svg>
+                </button>
+              </div>
+              <div class="editor-content" 
+                   contenteditable="true"
+                   id="final_comment_editor"
+                   x-ref="final_comment_editor"
+                   @input="handleEditorInput($event, 'final_comment')"
+                   @blur="saveEditorContent('final_comment')"></div>
+              <input type="hidden" name="final_comment" id="id_final_comment" x-ref="final_comment">
+            </div>
+          </div>
+          
+          <div>
+            <label for="internal_remarks_editor" class="block text-sm font-medium text-gray-700 mb-1">Internal Remarks <span class="text-gray-500 text-xs">(not visible to the trainee)</span></label>
+            <div class="editor-container">
+              <div class="editor-toolbar">
+                <button type="button" class="toolbar-button" @click="formatText('internal_remarks', 'bold')">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M8.21 13c2.106 0 3.412-1.087 3.412-2.823 0-1.306-.984-2.283-2.324-2.386v-.055a2.176 2.176 0 0 0 1.852-2.14c0-1.51-1.162-2.46-3.014-2.46H3.843V13H8.21zM5.908 4.674h1.696c.963 0 1.517.451 1.517 1.244 0 .834-.629 1.32-1.73 1.32H5.908V4.673zm0 6.788V8.598h1.73c1.217 0 1.88.492 1.88 1.415 0 .943-.643 1.449-1.832 1.449H5.907z"/>
+                  </svg>
+                </button>
+                <button type="button" class="toolbar-button" @click="formatText('internal_remarks', 'italic')">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M7.991 11.674 9.53 4.455c.123-.595.246-.71 1.347-.807l.11-.52H7.211l-.11.52c1.06.096 1.128.212 1.005.807L6.57 11.674c-.123.595-.246.71-1.346.806l-.11.52h3.774l.11-.52c-1.06-.095-1.129-.211-1.006-.806z"/>
+                  </svg>
+                </button>
+                <button type="button" class="toolbar-button" @click="showImagePrompt('internal_remarks')">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                    <path d="M1.5 2A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13zm13 1a.5.5 0 0 1 .5.5v6l-3.775-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12v.54A.505.505 0 0 1 1 12.5v-9a.5.5 0 0 1 .5-.5h13z"/>
+                  </svg>
+                </button>
+              </div>
+              <div class="editor-content" 
+                   contenteditable="true"
+                   id="internal_remarks_editor"
+                   x-ref="internal_remarks_editor"
+                   @input="handleEditorInput($event, 'internal_remarks')"
+                   @blur="saveEditorContent('internal_remarks')"></div>
+              <input type="hidden" name="internal_remarks" id="id_internal_remarks" x-ref="internal_remarks">
+            </div>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label for="id_next_step" class="block text-sm font-medium text-gray-700 mb-1">Next Step</label>
+              <input type="text" name="next_step" id="id_next_step" 
+                     class="input input-bordered w-full" 
+                     placeholder="e.g. Online TWR with mentor"
+                     x-model="formData.next_step"
+                     @input="saveFormState">
+            </div>
+            
+            <div>
+              <label for="id_result" class="block text-sm font-medium text-gray-700 mb-1">Training Result</label>
+              <div class="flex items-center space-x-4 h-full pt-2">
+                <label class="flex items-center cursor-pointer">
+                  <input type="radio" name="result" value="true" class="radio radio-success"
+                         x-model="formData.result"
+                         @change="saveFormState">
+                  <span class="ml-2">Passed</span>
+                </label>
+                <label class="flex items-center cursor-pointer">
+                  <input type="radio" name="result" value="false" class="radio radio-error"
+                         x-model="formData.result"
+                         @change="saveFormState">
+                  <span class="ml-2">Not Passed</span>
+                </label>
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
+      
+      <!-- Submit Buttons -->
+      <div class="flex justify-between">
+        <a href="{% url 'overview:overview' %}" class="btn" @click="handleNavigation">Cancel</a>
+        <div class="space-x-2">
+          <button id="save-draft-btn" type="button" @click="saveDraft" class="btn btn-outline">Save Draft</button>
+          <button type="submit" class="btn btn-primary">Submit Log</button>
+        </div>
+      </div>
     </div>
-    <div class="row">
-        <label for="id_next_step" class="form-label">Next Step</label>
-                {{ form.next_step }}
+  </form>
+  
+  <!-- Image URL Dialog Modal -->
+  <div x-show="showImageModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" x-cloak>
+    <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+      <h3 class="text-lg font-semibold text-gray-900 mb-4">Insert Image</h3>
+      <div class="mb-4">
+        <label for="image-url-input" class="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
+        <input type="text" id="image-url-input" x-model="imageUrl" class="input input-bordered w-full" placeholder="https://example.com/image.jpg">
+      </div>
+      <div class="flex justify-end space-x-3">
+        <button @click="cancelImageInsert" class="btn btn-outline">Cancel</button>
+        <button @click="confirmImageInsert" class="btn btn-primary">Insert Image</button>
+      </div>
     </div>
-            <button type="submit" class="btn btn-primary">Submit</button>
-        </form>
+  </div>
+  
+  <!-- Confirmation Modal -->
+  <div x-show="showUnsavedChangesModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" x-cloak>
+    <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+      <h3 class="text-lg font-semibold text-gray-900 mb-4">Unsaved Changes</h3>
+      <p class="text-gray-700 mb-6">You have unsaved changes. Are you sure you want to leave this page?</p>
+      <div class="flex justify-end space-x-3">
+        <button @click="showUnsavedChangesModal = false" class="btn btn-outline">Stay on Page</button>
+        <button @click="proceedWithNavigation" class="btn btn-error">Leave Page</button>
+      </div>
     </div>
+  </div>
+  
+  <!-- Saved Draft Modal -->
+  <div x-show="showSavedDraftModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" x-cloak>
+    <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+      <div class="flex items-center justify-center mb-4 text-green-500">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-900 mb-2 text-center">Draft Saved Successfully</h3>
+      <p class="text-gray-700 mb-6 text-center">Your training log draft has been saved to your browser's storage.</p>
+      <div class="flex justify-center">
+        <button @click="showSavedDraftModal = false" class="btn btn-primary">Continue Editing</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  document.addEventListener('alpine:init', () => {
+    // Main Form Application
+    Alpine.data('logCreationApp', () => ({
+      formData: {
+        session_date: new Date().toISOString().split('T')[0],
+        position: '{{ form.position.value|default:"" }}',
+        type: '{{ form.type.value|default:"O" }}',
+        theory: '{{ form.theory.value|default:"0" }}',
+        phraseology: '{{ form.phraseology.value|default:"0" }}',
+        coordination: '{{ form.coordination.value|default:"0" }}',
+        tag_management: '{{ form.tag_management.value|default:"0" }}',
+        situational_awareness: '{{ form.situational_awareness.value|default:"0" }}',
+        problem_recognition: '{{ form.problem_recognition.value|default:"0" }}',
+        traffic_planning: '{{ form.traffic_planning.value|default:"0" }}',
+        reaction: '{{ form.reaction.value|default:"0" }}',
+        separation: '{{ form.separation.value|default:"0" }}',
+        efficiency: '{{ form.efficiency.value|default:"0" }}',
+        ability_to_work_under_pressure: '{{ form.ability_to_work_under_pressure.value|default:"0" }}',
+        motivation: '{{ form.motivation.value|default:"0" }}',
+        next_step: '{{ form.next_step.value|default:"" }}',
+        result: '{{ form.result.value|default:"" }}'
+      },
+      editorContentMap: {},
+      currentEditorField: null,
+      imageUrl: '',
+      showImageModal: false,
+      initialFormState: '',
+      hasChanges: false,
+      autosaveStatus: {
+        message: 'Ready',
+        color: 'text-gray-500'
+      },
+      autosaveTimer: null,
+      showUnsavedChangesModal: false,
+      showSavedDraftModal: false,
+      navigateTo: null,
+      draftKey: '',
+      
+      init() {
+        // Generate unique key for storing this log draft
+        this.draftKey = `log_draft_{{ trainee.id }}_{{ course.id }}`;
+        
+        // Load saved draft if exists
+        this.$nextTick(() => {
+          this.loadDraft();
+        });
+        
+        // Set up beforeunload handler for unsaved changes warning
+        this.setupBeforeUnload();
+        
+        // Set initial form state to detect changes
+        setTimeout(() => {
+          this.setInitialFormState();
+        }, 300);
+        
+        // Set up automatic list creation for "- " at the beginning of line
+        this.setupAutoLists();
+      },
+      
+      setupAutoLists() {
+        // Get all editor fields
+        const editorFields = [
+          'theory_positives', 'theory_negatives',
+          'phraseology_positives', 'phraseology_negatives',
+          'coordination_positives', 'coordination_negatives',
+          'final_comment', 'internal_remarks'
+        ];
+        
+        editorFields.forEach(field => {
+          const editor = this.$refs[`${field}_editor`];
+          
+          if (editor) {
+            editor.addEventListener('keyup', (e) => {
+              if (e.key === ' ') {
+                const selection = window.getSelection();
+                if (selection.rangeCount === 0) return;
+                
+                const range = selection.getRangeAt(0);
+                const startContainer = range.startContainer;
+                
+                // Check if we're in a text node and handle "- " at start of line
+                if (startContainer.nodeType === Node.TEXT_NODE) {
+                  const text = startContainer.textContent;
+                  
+                  // Check if the line starts with "- "
+                  if (text === "- ") {
+                    // Create a list item
+                    e.preventDefault();
+                    document.execCommand('delete', false);
+                    document.execCommand('delete', false);
+                    
+                    // Create a list if there isn't one already
+                    if (startContainer.parentNode.nodeName !== 'LI') {
+                      document.execCommand('insertUnorderedList', false, null);
+                    }
+                  }
+                }
+              }
+            });
+          }
+        });
+      },
+      
+      formatText(field, command) {
+        const editor = this.$refs[`${field}_editor`];
+        if (editor) {
+          editor.focus();
+          document.execCommand(command, false, null);
+          // Save the content after formatting
+          this.saveEditorContent(field);
+        }
+      },
+      
+      showImagePrompt(field) {
+        this.currentEditorField = field;
+        this.imageUrl = '';
+        this.showImageModal = true;
+      },
+      
+      confirmImageInsert() {
+        if (this.imageUrl && this.currentEditorField) {
+          const editor = this.$refs[`${this.currentEditorField}_editor`];
+          if (editor) {
+            editor.focus();
+            // Insert an image element
+            document.execCommand('insertHTML', false, `<img src="${this.imageUrl}" alt="Inserted image" style="max-width: 100%; height: auto;" />`);
+            
+            // Save the content after inserting the image
+            this.saveEditorContent(this.currentEditorField);
+          }
+          
+          // Clean up
+          this.showImageModal = false;
+          this.imageUrl = '';
+          this.currentEditorField = null;
+        }
+      },
+      
+      cancelImageInsert() {
+        this.showImageModal = false;
+        this.imageUrl = '';
+        this.currentEditorField = null;
+      },
+      
+      handleEditorInput(event, field) {
+        // Check if input includes "- " at the start of a line, which might need to be converted to a list
+        const content = event.target.innerHTML;
+        
+        // Update hidden input with HTML content
+        this.$refs[field].value = content;
+        
+        // Store in our content map
+        this.editorContentMap[field] = content;
+        
+        // Trigger autosave with delay
+        clearTimeout(this.autosaveTimer);
+        this.updateSaveStatus('Saving...', 'info');
+        this.hasChanges = true;
+        
+        this.autosaveTimer = setTimeout(() => {
+          this.saveFormState();
+        }, 1000);
+      },
+      
+      saveEditorContent(field) {
+        const editor = this.$refs[`${field}_editor`];
+        const input = this.$refs[field];
+        
+        if (editor && input) {
+          // Get the HTML content
+          const content = editor.innerHTML;
+          
+          // Update the hidden input
+          input.value = content;
+          
+          // Store in our content map
+          this.editorContentMap[field] = content;
+          
+          // Trigger save
+          this.saveFormState();
+        }
+      },
+      
+      setInitialFormState() {
+        // Store initial state of standard form fields
+        this.initialFormState = JSON.stringify(this.formData);
+        this.hasChanges = false;
+      },
+      
+      updateSaveStatus(message, type = 'info') {
+        const colors = {
+          'info': 'text-blue-500',
+          'success': 'text-green-500',
+          'error': 'text-red-500',
+          'default': 'text-gray-500'
+        };
+        
+        this.autosaveStatus = {
+          message: message,
+          color: colors[type] || colors['default']
+        };
+        
+        // Reset status after a delay for success messages
+        if (type === 'success') {
+          setTimeout(() => {
+            this.autosaveStatus = {
+              message: '',
+              color: ''
+            };
+          }, 3000);
+        }
+      },
+      
+      saveFormState() {
+        clearTimeout(this.autosaveTimer);
+        
+        this.updateSaveStatus('Saving...', 'info');
+        
+        // Mark that we have unsaved changes
+        this.hasChanges = true;
+        
+        try {
+          // Save basic form fields
+          localStorage.setItem(`${this.draftKey}_formData`, JSON.stringify(this.formData));
+          
+          // Save all editor content
+          Object.keys(this.editorContentMap).forEach(field => {
+            localStorage.setItem(`${this.draftKey}_${field}`, this.editorContentMap[field]);
+          });
+          
+          this.updateSaveStatus('Draft saved', 'success');
+        } catch (e) {
+          console.error('Error saving form state:', e);
+          this.updateSaveStatus('Error saving draft', 'error');
+        }
+      },
+      
+      loadDraft() {
+        try {
+          // Load basic form data
+          const savedFormData = localStorage.getItem(`${this.draftKey}_formData`);
+          if (savedFormData) {
+            const parsedData = JSON.parse(savedFormData);
+            this.formData = { ...this.formData, ...parsedData };
+          }
+          
+          // Load rich text editor content
+          const editorFields = [
+            'theory_positives', 'theory_negatives',
+            'phraseology_positives', 'phraseology_negatives',
+            'coordination_positives', 'coordination_negatives',
+            'final_comment', 'internal_remarks'
+          ];
+          
+          // Populate our content map and update editors
+          editorFields.forEach(field => {
+            const savedContent = localStorage.getItem(`${this.draftKey}_${field}`);
+            if (savedContent) {
+              // Store the content in our map
+              this.editorContentMap[field] = savedContent;
+              
+              // Update the editor content
+              const editor = this.$refs[`${field}_editor`];
+              const input = this.$refs[field];
+              
+              if (editor && input) {
+                editor.innerHTML = savedContent;
+                input.value = savedContent;
+              }
+            }
+          });
+          
+          this.updateSaveStatus('Draft loaded', 'success');
+        } catch (e) {
+          console.error('Error loading draft:', e);
+          this.updateSaveStatus('Error loading draft', 'error');
+        }
+      },
+      
+      saveDraft() {
+        // Make sure all editor content is saved
+        const editorFields = [
+          'theory_positives', 'theory_negatives',
+          'phraseology_positives', 'phraseology_negatives',
+          'coordination_positives', 'coordination_negatives',
+          'final_comment', 'internal_remarks'
+        ];
+        
+        editorFields.forEach(field => {
+          this.saveEditorContent(field);
+        });
+        
+        // Explicitly save all content
+        this.saveFormState();
+        this.showSavedDraftModal = true;
+      },
+      
+      setupBeforeUnload() {
+        // Add event listener for browser navigation
+        window.addEventListener('beforeunload', (e) => {
+          if (this.hasChanges) {
+            // Standard message for unsaved changes
+            const message = 'You have unsaved changes. Are you sure you want to leave?';
+            e.returnValue = message;
+            return message;
+          }
+        });
+        
+        // Intercept link clicks for in-app navigation
+        document.addEventListener('click', (e) => {
+          // Find if click was on a link or inside a link
+          const link = e.target.closest('a:not([type="submit"])');
+          if (link && !link.getAttribute('target') && this.hasChanges) {
+            e.preventDefault();
+            this.navigateTo = link.href;
+            this.showUnsavedChangesModal = true;
+          }
+        });
+      },
+      
+      handleNavigation(e) {
+        if (this.hasChanges) {
+          e.preventDefault();
+          this.navigateTo = e.target.href;
+          this.showUnsavedChangesModal = true;
+        }
+      },
+      
+      proceedWithNavigation() {
+        this.hasChanges = false; // Prevent beforeunload dialog
+        window.location.href = this.navigateTo;
+        this.showUnsavedChangesModal = false;
+      },
+      
+      submitForm(e) {
+        // Make sure all editor content is saved to hidden inputs before submission
+        const editorFields = [
+          'theory_positives', 'theory_negatives',
+          'phraseology_positives', 'phraseology_negatives',
+          'coordination_positives', 'coordination_negatives',
+          'final_comment', 'internal_remarks'
+        ];
+        
+        editorFields.forEach(field => {
+          const editor = this.$refs[`${field}_editor`];
+          const input = this.$refs[field];
+          
+          if (editor && input) {
+            input.value = editor.innerHTML;
+          }
+        });
+        
+        // Form will submit normally
+        return true;
+      }
+    }));
+  });
+</script>
+
+<style>
+  [x-cloak] { display: none !important; }
+  
+  /* Custom editor styling */
+  .editor-container {
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  }
+  
+  .editor-toolbar {
+    padding: 0.5rem;
+    background-color: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    gap: 0.25rem;
+  }
+  
+  .toolbar-button {
+    border: 1px solid #e5e7eb;
+    background-color: white;
+    color: #4b5563;
+    border-radius: 0.375rem;
+    padding: 0.375rem 0.5rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 150ms ease-in-out;
+  }
+  
+  .toolbar-button:hover {
+    background-color: #f3f4f6;
+  }
+  
+  .toolbar-button:active {
+    background-color: #e5e7eb;
+  }
+  
+  .editor-content {
+    min-height: 8rem;
+    max-height: 20rem;
+    overflow-y: auto;
+    padding: 0.75rem;
+    background-color: white;
+    color: #1f2937;
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+  
+  .editor-content:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+  }
+  
+  /* Style for lists */
+  .editor-content ul {
+    list-style-type: disc;
+    padding-left: 1.5rem;
+    margin: 0.5rem 0;
+  }
+  
+  .editor-content ol {
+    list-style-type: decimal;
+    padding-left: 1.5rem;
+    margin: 0.5rem 0;
+  }
+  
+  .editor-content li {
+    margin-bottom: 0.25rem;
+  }
+  
+  /* Style for inline formatting */
+  .editor-content b, .editor-content strong {
+    font-weight: 600;
+  }
+  
+  .editor-content i, .editor-content em {
+    font-style: italic;
+  }
+  
+  /* Style for images */
+  .editor-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 0.375rem;
+    margin: 0.5rem 0;
+  }
+</style>
 {% endblock %}
