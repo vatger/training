@@ -2,6 +2,7 @@ import os
 
 from authlib.integrations.django_client import OAuth
 from cachetools import cached, TTLCache
+from django.conf import settings
 from django.contrib.auth import login
 from django.contrib.auth import logout
 from django.contrib.auth.models import User, Group
@@ -38,6 +39,23 @@ oauth.register(
 
 @cached(cache=TTLCache(maxsize=1024, ttl=60 * 10))
 def get_training_staff():
+    if settings.USE_CORE_MOCK:
+        return [
+            {
+                "id": 104,
+                "cid": 1439797,
+                "access_type": 2,
+                "created_at": "2024-02-26T12:55:13.000000Z",
+                "updated_at": "2024-02-29T19:01:38.000000Z",
+            },
+            {
+                "id": 105,
+                "cid": 1601613,
+                "access_type": 0,
+                "created_at": "2024-02-26T13:15:01.000000Z",
+                "updated_at": "2024-11-26T21:01:34.000000Z",
+            },
+        ]
     r = requests.get(
         "https://core.vateud.net/api/facility/training/staff", headers=eud_header
     ).json()
@@ -92,6 +110,8 @@ def callback_view(request):
                     staff = get_training_staff()
                     selected = [d for d in staff if d["cid"] == int(profile["id"])]
                     if not selected:
+                        if settings.USE_CORE_MOCK:
+                            continue
                         requests.post(
                             f"https://core.vateud.net/api/facility/training/assign/{int(profile["id"])}/mentor",
                             headers=eud_header,
