@@ -12,6 +12,7 @@ from trainee.forms import UserDetailForm
 from .forms import CommentForm
 from overview.helpers import get_course_completion
 
+from training.permissions import mentor_required
 
 def split_active_inactive(logs, courses, trainee):
     active = {}
@@ -59,7 +60,7 @@ def home(request):
     )
 
 
-@login_required
+@mentor_required
 def mentor_view(request, vatsim_id: int):
     trainee = get_object_or_404(User, username=vatsim_id)
     courses = request.user.mentored_courses.all()
@@ -107,7 +108,7 @@ def mentor_view(request, vatsim_id: int):
         },
     )
 
-
+@mentor_required
 def find_user(request):
     if request.method == "POST":
         user_form = UserDetailForm(request.POST)

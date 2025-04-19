@@ -15,6 +15,8 @@ from overview.helpers import get_course_completion
 from .helpers import get_tier1_endorsements, get_tier2_endorsements
 from .models import EndorsementGroup, EndorsementActivity, Tier2Endorsement
 
+from training.permissions import mentor_required
+
 load_dotenv()
 
 
@@ -25,7 +27,7 @@ def valid_removal(endorsement: EndorsementActivity) -> bool:
     return no_min_hours and not_recent
 
 
-@login_required
+@mentor_required
 def overview(request):
     groups = EndorsementGroup.objects.filter(
         courses__in=request.user.mentored_courses.all()
@@ -69,7 +71,7 @@ def overview(request):
     )
 
 
-@login_required
+@mentor_required
 def remove_tier1(request, endorsement_id: int):
     try:
         endorsement = EndorsementActivity.objects.get(id=endorsement_id)

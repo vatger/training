@@ -2,7 +2,6 @@ import os
 
 import requests
 from cachetools import TTLCache, cached
-from django.contrib.auth.decorators import login_required
 from django.contrib.admin.models import CHANGE
 from django.shortcuts import (
     get_object_or_404,
@@ -15,6 +14,8 @@ from dotenv import load_dotenv
 from endorsements.helpers import get_tier1_endorsements
 from overview.helpers import inform_user_course_start
 from training.helpers import log_admin_action
+from training.permissions import mentor_required
+from django.contrib.auth.decorators import login_required
 
 from .models import Course, WaitingListEntry
 
@@ -160,7 +161,7 @@ def view_lists(request):
     )
 
 
-@login_required
+@mentor_required
 def join_leave_list(request, course_id):
     # Temporary diabling of course joining
     return redirect("lists:view_lists")
@@ -202,7 +203,7 @@ def join_leave_list(request, course_id):
     return HttpResponseRedirect(reverse("lists:view_lists"))
 
 
-@login_required
+@mentor_required
 def mentor_view(request):
     res = {}
     courses = request.user.mentored_courses.all()
@@ -218,7 +219,7 @@ def mentor_view(request):
     return render(request, "lists/mentor.html", {"coursedict": res})
 
 
-@login_required
+@mentor_required
 def start_training(request, waitlist_entry_id):
     entry = get_object_or_404(WaitingListEntry, pk=waitlist_entry_id)
     if request.user not in entry.course.mentors.all():

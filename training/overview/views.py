@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 
 import requests
 from django.contrib.admin.models import CHANGE
-from django.contrib.auth.decorators import login_required
+from training.permissions import mentor_required
 from django.contrib.auth.models import User
 from django.conf import settings
 from django.core.exceptions import MultipleObjectsReturned
@@ -66,7 +66,7 @@ def get_solos():
     return res
 
 
-@login_required
+@mentor_required
 def overview(request):
     if request.method == "POST":
         form = AddUserForm(request.POST)
@@ -158,7 +158,7 @@ def overview(request):
     return render(request, "overview/overview.html", {"overview": res})
 
 
-@login_required
+@mentor_required
 def claim_trainee(request, trainee_id, course_id):
     course = get_object_or_404(Course, id=course_id)
     if request.user not in course.mentors.all():
@@ -176,7 +176,7 @@ def claim_trainee(request, trainee_id, course_id):
     return redirect("overview:overview")
 
 
-@login_required
+@mentor_required
 def remove_trainee(request, trainee_id, course_id):
     try:
         course = Course.objects.get(id=course_id)
@@ -194,7 +194,7 @@ def remove_trainee(request, trainee_id, course_id):
     return redirect("overview:overview")
 
 
-@login_required
+@mentor_required
 def add_solo(request, vatsim_id, course_id):
     course = get_object_or_404(Course, id=course_id)
     if course.type != "RTG":
@@ -259,7 +259,7 @@ def add_solo(request, vatsim_id, course_id):
     )
 
 
-@login_required
+@mentor_required
 def finish_course(request, trainee_id, course_id):
     course = get_object_or_404(Course, id=course_id)
     trainee = get_object_or_404(User, id=trainee_id)
@@ -299,7 +299,7 @@ def finish_course(request, trainee_id, course_id):
     return redirect("overview:overview")
 
 
-@login_required
+@mentor_required
 def manage_mentors(request, course_id):
     course = get_object_or_404(Course, id=course_id)
     if request.user not in course.mentors.all():
@@ -336,7 +336,7 @@ def manage_mentors(request, course_id):
     )
 
 
-@login_required
+@mentor_required
 def remove_mentor(request, course_id, mentor_id):
     course = get_object_or_404(Course, id=course_id)
     mentor = get_object_or_404(User, id=mentor_id)
@@ -351,7 +351,7 @@ def remove_mentor(request, course_id, mentor_id):
     return redirect("overview:manage_mentors", course_id=course_id)
 
 
-@login_required
+@mentor_required
 def assign_core_test_view(request, vatsim_id: int, course_id: int):
     course = get_object_or_404(Course, id=course_id)
     if request.user not in course.mentors.all():
@@ -361,7 +361,7 @@ def assign_core_test_view(request, vatsim_id: int, course_id: int):
     assign_core_test(request.user.username, vatsim_id, course.position)
     return redirect("overview:overview")
 
-@login_required
+@mentor_required
 def overview(request):
     if request.method == "POST":
         form = AddUserForm(request.POST)
