@@ -13,7 +13,6 @@ COPY . .
 EXPOSE 80
 
 RUN chmod +x ./init.sh
-RUN cd /opt/training/training && python manage.py collectstatic --noinput
 
 RUN apk add --no-cache nginx
 COPY config/default.conf /etc/nginx/http.d/default.conf
