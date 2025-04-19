@@ -1,88 +1,356 @@
 {% extends "base.html" %}
-
 {% load tags %}
 
 {% block content %}
-{% for course, v in overview.items %}
-    <h5>{{ course }} <a href="{% url 'overview:manage_mentors' course.id %}"> ⚙ </a> </h5>
-    <table class="table table-striped">
-    <tr>
-        <th>Name</th>
-        <th>ID</th>
-        <th>Progress</th>
-        {% if course.type == "RTG" %}
-        <th>Solo</th>
-        {% else %}
-        <th>Moodle</th>
-        {% endif %}
-        <th>Next</th>
-        <th>Mentor</th>
-        <th>Actions</th>
-    </tr>
-    {% for a, b in v.items %}
-        <tr>
-            <td><a href="{% url 'trainee:mentor_view' a.username %}">{{ a }} </a></td>
-            <td><a href="https://stats.vatsim.net/stats/{{ a.username }}" target="_blank"> {{ a.username }} </a> </td>
-        <td>{% for log in b.logs %}
-            {% if log.result %}
-            <a class="btn btn-success btn-sm" href="{% url 'logs:log_detail' log.id %}">
-            {% else %}
-            <a class="btn btn-danger btn-sm" href="{% url 'logs:log_detail' log.id %}">
-            {% endif %}
-        {{ log.type }}</a> {% endfor %} {{ b.date_last|format_date }}
-        <a class="btn btn-sm btn-info" href="{% url 'logs:new_log' a.id course.id %}">+</a>
-        </td>
-        {% if course.type == "RTG" %}
-            <td>
-            {% if b.solo == "Add Solo" %}
-                <a href="{% url 'overview:add_solo' a.username course.id %}">{{ b.solo }} </a>
-                {% else %}
-                {{ b.solo }}
-                {% endif %}
-            </td>
-        {% else %}
-            <td>{% if b.moodle %} ✅ {% else %} ❌ {% endif %}</td>
-        {% endif %}
-        <td>{{ b.next_step }}</td>
-        <td>
-        <a href="{% url 'overview:claim' a.id course.id %}">{% if b.claimed %}{{ b.claimed_by }}{% else %}Claim{% endif %}</a></td>
-        <td>
-            <a href="{% url 'overview:finish' a.id course.id %}" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#confirmModal"
-   data-href="{% url 'overview:finish' a.id course.id %}" data-message="Do you want to give {{ a }} the endorsements for {{ course }}?">✓</a>
-            <a href="{% url 'overview:remove' a.id course.id %}" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#confirmModal"
-   data-href="{% url 'overview:remove' a.id course.id %}" data-message="Are you sure you want to remove {{ a }} from {{ course }}?">X</a>
-        </td>
-        </tr>
-    {% endfor %}
-    </table>
-    <form method="POST">
-        {% csrf_token %}
-        <input type="hidden" name="course_id" value="{{ course.id }}">
-        <label for="username-{{ course.id }}">ID:</label>
-        <input type="text" name="username" id="username-{{ course.id }}">
+<div class="container px-4 py-5">
+  <!-- Breadcrumbs -->
+  {% include "components/breadcrumbs.html" with auto=True current_title="Mentor Overview" %}
 
-        <button class="btn btn-primary btn-sm" type="submit">Add</button>
+  <!-- Page Title -->
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-800">Mentor Overview</h1>
+    <p class="text-gray-600 mt-2">Manage your trainees and training sessions across all your courses.</p>
+  </div>
 
-    {% if form.errors %}
-            <div style="color: red;">
-                {{ form.errors.username }}
+  <!-- Summary Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <!-- Active Trainees Card -->
+    <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-lg font-semibold text-gray-800">Active Trainees</h3>
+          <p class="text-gray-500 text-sm mt-1">Across all your courses</p>
+        </div>
+        <div class="bg-blue-100 p-3 rounded-full">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+          </svg>
+        </div>
+      </div>
+      <div class="mt-4">
+        <span class="text-3xl font-bold text-gray-800">{{ active_trainees_count }}</span>
+      </div>
+    </div>
+    
+    <!-- Pending Sessions Card -->
+    <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-lg font-semibold text-gray-800">Claimed Trainees</h3>
+          <p class="text-gray-500 text-sm mt-1">Awaiting your training sessions</p>
+        </div>
+        <div class="bg-yellow-100 p-3 rounded-full">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+      </div>
+      <div class="mt-4">
+        <span class="text-3xl font-bold text-gray-800">{{ claimed_trainees_count }}</span>
+      </div>
+    </div>
+    
+    <!-- Waiting List Card -->
+    <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-lg font-semibold text-gray-800">Waiting List</h3>
+          <p class="text-gray-500 text-sm mt-1">Students waiting to start training</p>
+        </div>
+        <div class="bg-purple-100 p-3 rounded-full">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+          </svg>
+        </div>
+      </div>
+      <div class="mt-4">
+        <span class="text-3xl font-bold text-gray-800">{{ waiting_trainees_count }}</span>
+        <a href="{% url 'lists:mentor_view' %}" class="text-sm text-blue-600 hover:text-blue-800 ml-2">View list</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Course Navigation Tabs -->
+  <div class="mb-6" x-data="{ activeTab: '{{ courses.0.id }}' }">
+    <div class="border-b border-gray-200">
+      <nav class="flex -mb-px space-x-8 overflow-x-auto">
+        {% for course in courses %}
+        <button @click="activeTab = '{{ course.id }}'" :class="{'border-blue-500 text-blue-600': activeTab === '{{ course.id }}', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== '{{ course.id }}'}" class="py-4 px-1 border-b-2 font-medium text-sm focus:outline-none whitespace-nowrap">
+          {{ course.name }} 
+          <span class="bg-gray-100 text-gray-700 ml-2 py-1 px-2 rounded-full text-xs">{{ course.active_trainees.count }}</span>
+        </button>
+        {% endfor %}
+      </nav>
+    </div>
+
+    <!-- Course Content Panels -->
+    {% for course in courses %}
+    <div x-show="activeTab === '{{ course.id }}'" 
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         class="bg-white rounded-xl shadow-md border border-gray-200 mt-4">
+      
+      <div class="p-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
+        <div>
+          <h3 class="font-medium text-lg text-gray-800">{{ course.name }}</h3>
+          <p class="text-sm text-gray-500">{{ course.get_position_display }} {{ course.get_type_display }}</p>
+        </div>
+        <a href="{% url 'overview:manage_mentors' course.id %}" class="text-sm text-blue-600 hover:text-blue-500 flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          Manage Mentors
+        </a>
+      </div>
+
+      <!-- Trainees List -->
+      <div class="p-4">
+        {% with course_trainees=coursedict|get_item:course %}
+          {% if course_trainees %}
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trainee</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progress</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {% if course.type == "RTG" %}Solo{% else %}Moodle{% endif %}
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Next Step</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200" x-data="{ openModal: null, modalAction: '', modalMessage: '', modalHref: '' }">
+                  {% for trainee, data in course_trainees.items %}
+                    <tr>
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                          <div class="flex-shrink-0 h-10 w-10">
+                            <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-medium">
+                              {{ trainee.first_name|slice:":1" }}{{ trainee.last_name|slice:":1" }}
+                            </div>
+                          </div>
+                          <div class="ml-4">
+                            <div class="text-sm font-medium text-gray-900">
+                              <a href="{% url 'trainee:mentor_view' trainee.username %}" class="hover:text-blue-600">
+                                {{ trainee.first_name }} {{ trainee.last_name }}
+                              </a>
+                            </div>
+                            <div class="text-sm text-gray-500">
+                              <a href="https://stats.vatsim.net/stats/{{ trainee.username }}" target="_blank" class="hover:text-blue-600">
+                                {{ trainee.username }}
+                              </a>
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex flex-wrap gap-1">
+                          {% for log in data.logs %}
+                            <a href="{% url 'logs:log_detail' log.id %}" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if log.result %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                              {{ log.type }}
+                            </a>
+                          {% endfor %}
+                          
+                          {% if data.logs %}
+                            <span class="text-gray-500 text-xs ml-2">{{ data.date_last|format_date }}</span>
+                          {% endif %}
+                          
+                          <a href="{% url 'logs:new_log' trainee.id course.id %}" class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 hover:bg-blue-200 ml-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>
+                          </a>
+                        </div>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        {% if course.type == "RTG" %}
+                          <span class="{% if data.solo == 'Add Solo' %}text-yellow-600 hover:text-yellow-800 cursor-pointer{% else %}text-gray-600{% endif %}">
+                            {% if data.solo == "Add Solo" %}
+                              <a href="{% url 'overview:add_solo' trainee.username course.id %}" class="text-yellow-600 hover:text-yellow-800 inline-flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                </svg>
+                                Add Solo
+                              </a>
+                            {% else %}
+                              {{ data.solo }}
+                            {% endif %}
+                          </span>
+                        {% else %}
+                          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if data.moodle %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                            {{ data.moodle|yesno:"Completed,Incomplete" }}
+                          </span>
+                        {% endif %}
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="text-sm text-gray-600">{{ data.next_step|default_if_none:"-" }}</span>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        {% if data.claimed %}
+                          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                            </svg>
+                            Claimed by {{ data.claimed_by }}
+                          </span>
+                        {% else %}
+                          <a href="{% url 'overview:claim' trainee.id course.id %}" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                            Claim
+                          </a>
+                        {% endif %}
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div class="flex items-center space-x-2">
+                          <!-- Finish Button -->
+                          <button 
+                            @click="openModal = 'finish-{{ trainee.id }}'; modalAction = 'finish'; modalMessage = 'Are you sure you want to give {{ trainee.first_name }} {{ trainee.last_name }} the endorsements for {{ course.name }}?'; modalHref = '{% url 'overview:finish' trainee.id course.id %}';" 
+                            class="inline-flex items-center px-2 py-1 border border-transparent rounded-md shadow-sm text-xs font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            Finish
+                          </button>
+                          
+                          <!-- Remove Button -->
+                          <button 
+                            @click="openModal = 'remove-{{ trainee.id }}'; modalAction = 'remove'; modalMessage = 'Are you sure you want to remove {{ trainee.first_name }} {{ trainee.last_name }} from {{ course.name }}?'; modalHref = '{% url 'overview:remove' trainee.id course.id %}';" 
+                            class="inline-flex items-center px-2 py-1 border border-transparent rounded-md shadow-sm text-xs font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                            Remove
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
             </div>
-        {% endif %}
-    </form>
-    <hr>
-    <br>
 
-{% endfor %}
-    <div class="container">
-    <div class="row">
-    <div class="col-12">
-        <a class="btn btn-success btn-sm">✓</a> Finish course, add endorsement
-    | <a class="btn btn-danger btn-sm">X</a> Remove trainee from course
-    | Solo: Current Remaining / Remaining extension days
+            <!-- Add Trainee Form -->
+            <div class="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <h4 class="text-sm font-medium text-gray-700 mb-2">Add Trainee to Course</h4>
+              <form method="POST" class="flex justify-start space-x-2">
+                {% csrf_token %}
+                <input type="hidden" name="course_id" value="{{ course.id }}">
+                <div class="">
+                  <input type="text" name="username" id="username-{{ course.id }}" class="input" placeholder="VATSIM ID">
+                </div>
+                <button type="submit" class="btn btn-primary">
+                  Add Trainee
+                </button>
+              </form>
+              {% if form.errors %}
+                <div class="mt-2 text-sm text-red-600">{{ form.errors.username }}</div>
+              {% endif %}
+            </div>
+          {% else %}
+            <div class="text-center py-12">
+              <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <h3 class="mt-2 text-sm font-medium text-gray-900">No trainees found</h3>
+              <p class="mt-1 text-sm text-gray-500">You don't have any trainees for this course yet.</p>
+              <div class="mt-6">
+                <form method="POST" class="flex items-end space-x-2 justify-center">
+                  {% csrf_token %}
+                  <input type="hidden" name="course_id" value="{{ course.id }}">
+                  <div>
+                    <label for="username-empty-{{ course.id }}" class="block text-xs font-medium text-gray-700">VATSIM ID:</label>
+                    <input placeholder="VATSIM ID" type="number" name="username" id="username-empty-{{ course.id }}" class="input">
+                  </div>
+                  <button type="submit" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    Add Trainee
+                  </button>
+                </form>
+              </div>
+            </div>
+          {% endif %}
+        {% endwith %}
+      </div>
     </div>
-    </div>
-    </div>
+    {% endfor %}
+  </div>
 
-    {% include "modal.html" %}
+  <!-- Confirmation Modal -->
+  <div 
+    x-show="openModal" 
+    x-cloak
+    class="fixed z-10 inset-0 overflow-y-auto" 
+    aria-labelledby="modal-title" 
+    role="dialog" 
+    aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+      <!-- Background overlay -->
+      <div 
+        x-show="openModal"
+        x-transition:enter="ease-out duration-300"
+        x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100"
+        x-transition:leave="ease-in duration-200"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
+        class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" 
+        aria-hidden="true"></div>
 
+      <!-- Modal panel -->
+      <div 
+        x-show="openModal"
+        x-transition:enter="ease-out duration-300"
+        x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+        x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+        x-transition:leave="ease-in duration-200"
+        x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+        x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+        class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+          <div class="sm:flex sm:items-start">
+            <div x-show="modalAction === 'finish'" class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-green-100 sm:mx-0 sm:h-10 sm:w-10">
+              <svg class="h-6 w-6 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <div x-show="modalAction === 'remove'" class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+              <svg class="h-6 w-6 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+              <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                <span x-show="modalAction === 'finish'">Complete Training</span>
+                <span x-show="modalAction === 'remove'">Remove Trainee</span>
+              </h3>
+              <div class="mt-2">
+                <p class="text-sm text-gray-500" x-text="modalMessage"></p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+          <a :href="modalHref" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
+            :class="{'bg-green-600 hover:bg-green-700 focus:ring-green-500': modalAction === 'finish', 'bg-red-600 hover:bg-red-700 focus:ring-red-500': modalAction === 'remove'}">
+            Confirm
+          </a>
+          <button type="button" @click="openModal = null" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    /* Hide elements with x-cloak when Alpine.js is present */
+    [x-cloak] { display: none !important; }
+  </style>
+</div>
 {% endblock %}
