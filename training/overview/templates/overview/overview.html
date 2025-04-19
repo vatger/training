@@ -32,7 +32,7 @@
       </div>
     </div>
     
-    <!-- Pending Sessions Card -->
+    <!-- Claimed Trainees Card -->
     <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
       <div class="flex items-center justify-between">
         <div>
@@ -148,38 +148,72 @@
                         </div>
                       </td>
                       <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex flex-wrap gap-1">
-                          {% for log in data.logs %}
-                            <a href="{% url 'logs:log_detail' log.id %}" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if log.result %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
-                              {{ log.type }}
-                            </a>
-                          {% endfor %}
+                        <!-- IMPROVED PROGRESS DISPLAY -->
+                        <div class="space-y-1">
+                          <!-- Training Sessions Summary -->
+                          <div class="flex items-center">
+                            <div class="mr-1">
+                              {% if data.logs|length > 0 %}
+                                <div class="flex space-x-1 items-center">
+                                  {% for log in data.logs|slice:":3" %}
+                                    <span class="inline-flex h-2.5 w-2.5 rounded-full {% if log.result %}bg-green-500{% else %}bg-red-500{% endif %}" 
+                                          title="{{ log.session_date|date:'d M Y' }} - {{ log.get_type_display }} - {{ log.result|yesno:'Passed,Failed' }}"></span>
+                                  {% endfor %}
+                                  {% if data.logs|length > 3 %}
+                                    <button @click="$dispatch('open-progress', {traineeId: '{{ trainee.id }}'})"
+                                            class="text-xs text-blue-600 hover:text-blue-800 font-medium">
+                                      +{{ data.logs|length|add:"-3" }}
+                                    </button>
+                                  {% endif %}
+                                </div>
+                              {% else %}
+                                <span class="text-xs text-gray-500">No sessions yet</span>
+                              {% endif %}
+                            </div>
+                            
+                            <!-- View Progress Button -->
+                            {% if data.logs|length > 0 %}
+                                <button @click="$dispatch('open-progress', {traineeId: '{{ trainee.id }}'})" 
+                                      class="ml-1 btn btn-info p-1 m-0 w-fit h-fit btn-sm gap-x-0.5">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                                Details
+                              </button>
+                            {% endif %}
+                          </div>
                           
-                          {% if data.logs %}
-                            <span class="text-gray-500 text-xs ml-2">{{ data.date_last|format_date }}</span>
+                          <!-- Last Session Date - Small text below indicators -->
+                          {% if data.date_last %}
+                            <div class="text-xs text-gray-500">
+                              Last: {{ data.date_last|date:"d M Y" }}
+                            </div>
                           {% endif %}
-                          
-                          <a href="{% url 'logs:new_log' trainee.id course.id %}" class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 hover:bg-blue-200 ml-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                            </svg>
-                          </a>
                         </div>
                       </td>
                       <td class="px-6 py-4 whitespace-nowrap">
                         {% if course.type == "RTG" %}
-                          <span class="{% if data.solo == 'Add Solo' %}text-yellow-600 hover:text-yellow-800 cursor-pointer{% else %}text-gray-600{% endif %}">
+                            <div class="flex items-center">
                             {% if data.solo == "Add Solo" %}
-                              <a href="{% url 'overview:add_solo' trainee.username course.id %}" class="text-yellow-600 hover:text-yellow-800 inline-flex items-center">
+                            <a href="{% url 'overview:add_solo' trainee.username course.id %}" 
+                                class="inline-flex items-center text-amber-600 hover:text-amber-800">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                                 </svg>
                                 Add Solo
-                              </a>
+                            </a>
                             {% else %}
-                              {{ data.solo }}
+                            {% with remaining=data.solo|split_solo_data:"remaining" %}
+                                <span class="px-2 py-1 h-6 text-xs rounded-full font-medium 
+                                {% if remaining < 10 %}bg-red-100 text-red-700
+                                {% elif remaining < 20 %}bg-amber-100 text-amber-700
+                                {% else %}bg-green-100 text-green-700{% endif %}">
+                                {{ remaining }} days remaining
+                                </span>
+                            {% endwith %}
                             {% endif %}
-                          </span>
+                        </div>
                         {% else %}
                           <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if data.moodle %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
                             {{ data.moodle|yesno:"Completed,Incomplete" }}
@@ -190,29 +224,48 @@
                         <span class="text-sm text-gray-600">{{ data.next_step|default_if_none:"-" }}</span>
                       </td>
                       <td class="px-6 py-4 whitespace-nowrap">
-                        {% if data.claimed %}
-                          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                            </svg>
-                            Claimed by {{ data.claimed_by }}
-                          </span>
-                        {% else %}
-                          <a href="{% url 'overview:claim' trainee.id course.id %}" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                            </svg>
-                            Claim
-                          </a>
-                        {% endif %}
+                        <!-- IMPROVED CLAIM TOGGLE BUTTON -->
+                        <div class="flex items-center">
+                            {% if data.claimed %}
+                              {% if data.claimed_by == user.first_name|add:" "|add:user.last_name %}
+                                <!-- User has claimed this trainee -->
+                                <a href="{% url 'overview:claim' trainee.id course.id %}" 
+                                  class="inline-flex items-center h-6 px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 hover:bg-blue-200 transition-colors">
+                                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                  </svg>
+                                  <span class="mr-1">Claimed by you</span>
+                                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                  </svg>
+                                </a>
+                              {% else %}
+                                <!-- Another mentor has claimed this trainee -->
+                                <span class="inline-flex items-center h-6 px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                  </svg>
+                                  Claimed by {{ data.claimed_by }}
+                                </span>
+                              {% endif %}
+                            {% else %}
+                              <a href="{% url 'overview:claim' trainee.id course.id %}" 
+                                class="inline-flex items-center h-6 px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                                Claim
+                              </a>
+                            {% endif %}
+                          </div>
                       </td>
                       <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div class="flex items-center space-x-2">
                           <!-- Finish Button -->
                           <button 
                             @click="openModal = 'finish-{{ trainee.id }}'; modalAction = 'finish'; modalMessage = 'Are you sure you want to give {{ trainee.first_name }} {{ trainee.last_name }} the endorsements for {{ course.name }}?'; modalHref = '{% url 'overview:finish' trainee.id course.id %}';" 
-                            class="inline-flex items-center px-2 py-1 border border-transparent rounded-md shadow-sm text-xs font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                            class="btn btn-success py-0 h-8">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                             </svg>
@@ -222,11 +275,10 @@
                           <!-- Remove Button -->
                           <button 
                             @click="openModal = 'remove-{{ trainee.id }}'; modalAction = 'remove'; modalMessage = 'Are you sure you want to remove {{ trainee.first_name }} {{ trainee.last_name }} from {{ course.name }}?'; modalHref = '{% url 'overview:remove' trainee.id course.id %}';" 
-                            class="inline-flex items-center px-2 py-1 border border-transparent rounded-md shadow-sm text-xs font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            class="btn btn-error p-0 h-8 w-8">
+                            <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z"/>
                             </svg>
-                            Remove
                           </button>
                         </div>
                       </td>
@@ -281,6 +333,107 @@
     {% endfor %}
   </div>
 
+  <!-- Progress Modal -->
+  <div 
+    x-data="{ showProgressModal: false, traineeId: null }"
+    @open-progress.window="showProgressModal = true; traineeId = $event.detail.traineeId;"
+    x-show="showProgressModal"
+    x-cloak
+    class="fixed inset-0 z-50 overflow-y-auto">
+    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+      <!-- Background overlay -->
+      <div 
+        x-show="showProgressModal"
+        @click="showProgressModal = false"
+        x-transition:enter="ease-out duration-300"
+        x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100"
+        x-transition:leave="ease-in duration-200"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
+        class="fixed inset-0 transition-opacity">
+        <div class="absolute inset-0 bg-gray-500 opacity-75 z-10"></div>
+      </div>
+
+      <!-- Modal panel -->
+      <div 
+        x-show="showProgressModal"
+        x-transition:enter="ease-out duration-300"
+        x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+        x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+        x-transition:leave="ease-in duration-200"
+        x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+        x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+        class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full z-20 relative">
+        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+          <div class="sm:flex sm:items-start">
+            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+              <h3 class="text-lg leading-6 font-medium text-gray-900">
+                Training Progress
+              </h3>
+              
+              <!-- Progress Timeline with direct Django template handling -->
+              <div class="mt-4 space-y-4 max-h-96 overflow-y-auto">
+                <div class="relative border-l-2 border-gray-200 ml-1.5 pl-6 space-y-6">
+                  {% for course in courses %}
+                    {% with course_trainees=coursedict|get_item:course %}
+                      {% for trainee, data in course_trainees.items %}
+                        <div x-show="traineeId == '{{ trainee.id }}'">
+                            {% for log in data.logs reversed %}
+                              <div class="relative">
+                                <!-- Timeline dot -->
+                                <div class="absolute -left-8 mt-1.5 h-4 w-4 rounded-full flex items-center justify-center 
+                                    {% if log.result %}bg-green-500{% else %}bg-red-500{% endif %}">
+                                </div>
+                                
+                                <!-- Session card -->
+                                <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-4 mb-2">
+                                  <div class="flex justify-between items-start mb-2">
+                                    <div>
+                                      <h4 class="font-medium text-gray-900">{{ log.position }}</h4>
+                                      <div class="flex space-x-2 mt-1">
+                                        <span class="px-2 py-0.5 rounded-full text-xs font-medium 
+                                            {% if log.type == 'O' %}bg-blue-100 text-blue-800{% else %}bg-green-100 text-green-800{% endif %}">
+                                          {{ log.get_type_display }}
+                                        </span>
+                                        <span class="px-2 py-0.5 rounded-full text-xs font-medium 
+                                            {% if log.result %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                                          {{ log.result|yesno:"Passed,Not Passed" }}
+                                        </span>
+                                      </div>
+                                      <p class="text-xs text-gray-500 mt-1">{{ log.session_date|date:"d M Y" }}</p>
+                                    </div>
+                                    <a href="{% url 'logs:log_detail' log.id %}" class="text-sm text-blue-600 hover:text-blue-800">View Details</a>
+                                  </div>
+                                  
+                                  <div class="mt-2">
+                                    <p class="text-sm">
+                                      <span class="font-medium">Next step:</span> 
+                                      <span>{{ log.next_step|default:"Not specified" }}</span>
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            {% endfor %}
+                        </div>
+                      {% endfor %}
+                    {% endwith %}
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+          <button type="button" @click="showProgressModal = false"
+                  class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Confirmation Modal -->
   <div 
     x-show="openModal" 
@@ -319,7 +472,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <div x-show="modalAction === 'remove'" class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+            <div x-show="modalAction === 'remove' || modalAction === 'unclaim'" class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
               <svg class="h-6 w-6 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
@@ -328,6 +481,7 @@
               <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
                 <span x-show="modalAction === 'finish'">Complete Training</span>
                 <span x-show="modalAction === 'remove'">Remove Trainee</span>
+                <span x-show="modalAction === 'unclaim'">Unclaim Trainee</span>
               </h3>
               <div class="mt-2">
                 <p class="text-sm text-gray-500" x-text="modalMessage"></p>
@@ -337,7 +491,7 @@
         </div>
         <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
           <a :href="modalHref" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
-            :class="{'bg-green-600 hover:bg-green-700 focus:ring-green-500': modalAction === 'finish', 'bg-red-600 hover:bg-red-700 focus:ring-red-500': modalAction === 'remove'}">
+            :class="{'bg-green-600 hover:bg-green-700 focus:ring-green-500': modalAction === 'finish', 'bg-red-600 hover:bg-red-700 focus:ring-red-500': modalAction === 'remove' || modalAction === 'unclaim'}">
             Confirm
           </a>
           <button type="button" @click="openModal = null" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
@@ -353,4 +507,6 @@
     [x-cloak] { display: none !important; }
   </style>
 </div>
+
+<!-- Add the split_solo_data filter to the template tags if not already present -->
 {% endblock %}
