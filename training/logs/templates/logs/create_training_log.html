@@ -1,7 +1,4 @@
-{% extends "base.html" %}
-{% load tags %}
-
-{% block content %}
+{% extends "base.html" %} {% load tags %} {% block content %}
 <div class="container px-4 py-5" x-data="logCreationApp">
   <!-- Breadcrumbs -->
   {% include "components/breadcrumbs.html" with auto=True current_title="Create Training Log" %}
@@ -11,11 +8,17 @@
     <div class="flex flex-wrap justify-between items-start gap-4">
       <div>
         <h1 class="text-3xl font-bold text-gray-800">Create Training Log</h1>
-        <p class="text-gray-600 mt-1">For {{ trainee.first_name }} {{ trainee.last_name }} - {{ course.name }}</p>
+        <p class="text-gray-600 mt-1">
+          For {{ trainee.first_name }} {{ trainee.last_name }} - {{ course.name}}
+        </p>
       </div>
       <div class="flex flex-col items-end">
         <div class="flex space-x-2">
-          <div id="autosave-status" class="text-sm" :class="autosaveStatus.color">
+          <div
+            id="autosave-status"
+            class="text-sm"
+            :class="autosaveStatus.color"
+          >
             <span x-text="autosaveStatus.message"></span>
           </div>
         </div>
@@ -29,35 +32,60 @@
     <div class="space-y-8">
       <!-- Session Details Card -->
       <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
-        <h2 class="text-xl font-semibold mb-6 text-gray-800">Session Details</h2>
-        
+        <h2 class="text-xl font-semibold mb-6 text-gray-800">
+          Session Details
+        </h2>
+
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <!-- Date -->
           <div>
-            <label for="id_session_date" class="block text-sm font-medium text-gray-700 mb-1">Session Date</label>
-            <input type="date" name="session_date" id="id_session_date" 
-                   class="input input-bordered w-full"
-                   x-model="formData.session_date"
-                   @change="saveFormState">
+            <label
+              for="id_session_date"
+              class="block text-sm font-medium text-gray-700 mb-1"
+              >Session Date</label
+            >
+            <input
+              type="date"
+              name="session_date"
+              id="id_session_date"
+              class="input input-bordered w-full"
+              x-model="formData.session_date"
+              @change="saveFormState"
+            />
           </div>
-          
+
           <!-- Position -->
           <div>
-            <label for="id_position" class="block text-sm font-medium text-gray-700 mb-1">Position</label>
-            <input type="text" name="position" id="id_position" 
-                   class="input input-bordered w-full" 
-                   placeholder="e.g. EDDF_APP"
-                   x-model="formData.position"
-                   @input="saveFormState">
+            <label
+              for="id_position"
+              class="block text-sm font-medium text-gray-700 mb-1"
+              >Position</label
+            >
+            <input
+              type="text"
+              name="position"
+              id="id_position"
+              class="input input-bordered w-full"
+              placeholder="e.g. EDDF_APP"
+              x-model="formData.position"
+              @input="saveFormState"
+            />
           </div>
-          
+
           <!-- Type -->
           <div>
-            <label for="id_type" class="block text-sm font-medium text-gray-700 mb-1">Session Type</label>
-            <select name="type" id="id_type" 
-                    class="select select-bordered w-full"
-                    x-model="formData.type"
-                    @change="saveFormState">
+            <label
+              for="id_type"
+              class="block text-sm font-medium text-gray-700 mb-1"
+              >Session Type</label
+            >
+            <select
+              name="type"
+              id="id_type"
+              class="select select-bordered w-full"
+              x-model="formData.type"
+              @change="saveFormState"
+            >
               <option value="S">Simulator</option>
               <option value="O">Online</option>
             </select>
@@ -67,17 +95,22 @@
 
       <!-- Evaluation Categories -->
       <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
-        <h2 class="text-xl font-semibold mb-6 text-gray-800">Evaluation Categories</h2>
-        
+        <h2 class="text-xl font-semibold mb-6 text-gray-800">
+          Evaluation Categories
+        </h2>
+
         <div class="space-y-8">
           <!-- Theory -->
           <div>
             <div class="flex justify-between items-center mb-4">
               <h3 class="text-lg font-medium text-gray-800">Theory</h3>
-              <select name="theory" id="id_theory" 
-                      class="select select-sm select-bordered"
-                      x-model="formData.theory"
-                      @change="saveFormState">
+              <select
+                name="theory"
+                id="id_theory"
+                class="select select-sm select-bordered"
+                x-model="formData.theory"
+                @change="saveFormState"
+              >
                 <option value="0">Not rated</option>
                 <option value="1">Requirements not met</option>
                 <option value="2">Requirements partially met</option>
@@ -85,405 +118,702 @@
                 <option value="4">Requirements exceeded</option>
               </select>
             </div>
-            
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label for="theory_positives_editor" class="block text-sm font-medium text-green-600 mb-1">Strengths</label>
-                <div class="editor-container">
+                <label
+                  for="theory_positives_editor"
+                  class="block text-sm font-medium text-green-600 mb-1"
+                  >Strengths</label
+                >
+                <div class="enhanced-editor-container">
                   <div class="editor-toolbar">
-                    <button type="button" class="toolbar-button" @click="formatText('theory_positives', 'bold')">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M8.21 13c2.106 0 3.412-1.087 3.412-2.823 0-1.306-.984-2.283-2.324-2.386v-.055a2.176 2.176 0 0 0 1.852-2.14c0-1.51-1.162-2.46-3.014-2.46H3.843V13H8.21zM5.908 4.674h1.696c.963 0 1.517.451 1.517 1.244 0 .834-.629 1.32-1.73 1.32H5.908V4.673zm0 6.788V8.598h1.73c1.217 0 1.88.492 1.88 1.415 0 .943-.643 1.449-1.832 1.449H5.907z"/>
+                    <button
+                      type="button"
+                      class="toolbar-button"
+                      @click="formatText('theory_positives', 'bold')"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        fill="currentColor"
+                        viewBox="0 0 16 16"
+                      >
+                        <path
+                          d="M8.21 13c2.106 0 3.412-1.087 3.412-2.823 0-1.306-.984-2.283-2.324-2.386v-.055a2.176 2.176 0 0 0 1.852-2.14c0-1.51-1.162-2.46-3.014-2.46H3.843V13H8.21zM5.908 4.674h1.696c.963 0 1.517.451 1.517 1.244 0 .834-.629 1.32-1.73 1.32H5.908V4.673zm0 6.788V8.598h1.73c1.217 0 1.88.492 1.88 1.415 0 .943-.643 1.449-1.832 1.449H5.907z"
+                        />
                       </svg>
                     </button>
-                    <button type="button" class="toolbar-button" @click="formatText('theory_positives', 'italic')">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M7.991 11.674 9.53 4.455c.123-.595.246-.71 1.347-.807l.11-.52H7.211l-.11.52c1.06.096 1.128.212 1.005.807L6.57 11.674c-.123.595-.246.71-1.346.806l-.11.52h3.774l.11-.52c-1.06-.095-1.129-.211-1.006-.806z"/>
+                    <button
+                      type="button"
+                      class="toolbar-button"
+                      @click="formatText('theory_positives', 'italic')"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        fill="currentColor"
+                        viewBox="0 0 16 16"
+                      >
+                        <path
+                          d="M7.991 11.674 9.53 4.455c.123-.595.246-.71 1.347-.807l.11-.52H7.211l-.11.52c1.06.096 1.128.212 1.005.807L6.57 11.674c-.123.595-.246.71-1.346.806l-.11.52h3.774l.11-.52c-1.06-.095-1.129-.211-1.006-.806z"
+                        />
                       </svg>
                     </button>
-                    <button type="button" class="toolbar-button" @click="showImagePrompt('theory_positives')">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
-                        <path d="M1.5 2A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13zm13 1a.5.5 0 0 1 .5.5v6l-3.775-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12v.54A.505.505 0 0 1 1 12.5v-9a.5.5 0 0 1 .5-.5h13z"/>
+                    <div class="toolbar-divider"></div>
+                    <button
+                      type="button"
+                      class="toolbar-button"
+                      @click="formatList('theory_positives', 'insertUnorderedList')"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        fill="currentColor"
+                        viewBox="0 0 16 16"
+                      >
+                        <path
+                          fill-rule="evenodd"
+                          d="M5 11.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm-3 1a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm0 4a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm0 4a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"
+                        />
+                      </svg>
+                    </button>
+                    <button
+                      type="button"
+                      class="toolbar-button"
+                      @click="formatList('theory_positives', 'insertOrderedList')"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        fill="currentColor"
+                        viewBox="0 0 16 16"
+                      >
+                        <path
+                          fill-rule="evenodd"
+                          d="M5 11.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5z"
+                        />
+                        <path
+                          d="M1.713 11.865v-.474H2c.217 0 .363-.137.363-.317 0-.185-.158-.31-.361-.31-.223 0-.367.152-.373.31h-.59c.016-.467.373-.787.986-.787.588-.002.954.291.957.703a.595.595 0 0 1-.492.594v.033a.615.615 0 0 1 .569.631c.003.533-.502.8-1.051.8-.656 0-1-.37-1.008-.794h.582c.008.178.186.306.422.309.254 0 .424-.145.422-.35-.002-.195-.155-.348-.414-.348h-.3zm-.004-4.699h-.604v-.035c0-.408.295-.844.958-.844.583 0 .96.326.96.756 0 .389-.257.617-.476.848l-.537.572v.03h1.054V9H1.143v-.395l.957-.99c.138-.142.293-.304.293-.508 0-.18-.147-.32-.342-.32a.33.33 0 0 0-.342.338v.041zM2.564 5h-.635V2.924h-.031l-.598.42v-.567l.629-.443h.635V5z"
+                        />
+                      </svg>
+                    </button>
+                    <div class="toolbar-divider"></div>
+                    <button
+                      type="button"
+                      class="toolbar-button"
+                      @click="showImagePrompt('theory_positives')"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        fill="currentColor"
+                        viewBox="0 0 16 16"
+                      >
+                        <path
+                          d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"
+                        />
+                        <path
+                          d="M1.5 2A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13zm13 1a.5.5 0 0 1 .5.5v6l-3.775-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12v.54A.505.505 0 0 1 1 12.5v-9a.5.5 0 0 1 .5-.5h13z"
+                        />
                       </svg>
                     </button>
                   </div>
-                  <div class="editor-content" 
-                       contenteditable="true"
-                       id="theory_positives_editor"
-                       x-ref="theory_positives_editor"
-                       @input="handleEditorInput($event, 'theory_positives')"
-                       @blur="saveEditorContent('theory_positives')"></div>
-                  <input type="hidden" name="theory_positives" id="id_theory_positives" x-ref="theory_positives">
+                  <div
+                    class="editor-content"
+                    contenteditable="true"
+                    id="theory_positives_editor"
+                    x-ref="theory_positives_editor"
+                    @input="handleEditorInput($event, 'theory_positives')"
+                    @paste="handlePaste($event, 'theory_positives')"
+                    @blur="saveEditorContent('theory_positives')"
+                  ></div>
+                  <input
+                    type="hidden"
+                    name="theory_positives"
+                    id="id_theory_positives"
+                    x-ref="theory_positives"
+                  />
                 </div>
               </div>
-              
+
               <div>
-                <label for="theory_negatives_editor" class="block text-sm font-medium text-red-600 mb-1">Areas for Improvement</label>
-                <div class="editor-container">
+                <label
+                  for="theory_negatives_editor"
+                  class="block text-sm font-medium text-red-600 mb-1"
+                  >Areas for Improvement</label
+                >
+                <div class="enhanced-editor-container">
                   <div class="editor-toolbar">
-                    <button type="button" class="toolbar-button" @click="formatText('theory_negatives', 'bold')">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M8.21 13c2.106 0 3.412-1.087 3.412-2.823 0-1.306-.984-2.283-2.324-2.386v-.055a2.176 2.176 0 0 0 1.852-2.14c0-1.51-1.162-2.46-3.014-2.46H3.843V13H8.21zM5.908 4.674h1.696c.963 0 1.517.451 1.517 1.244 0 .834-.629 1.32-1.73 1.32H5.908V4.673zm0 6.788V8.598h1.73c1.217 0 1.88.492 1.88 1.415 0 .943-.643 1.449-1.832 1.449H5.907z"/>
+                    <button
+                      type="button"
+                      class="toolbar-button"
+                      @click="formatText('theory_negatives', 'bold')"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        fill="currentColor"
+                        viewBox="0 0 16 16"
+                      >
+                        <path
+                          d="M8.21 13c2.106 0 3.412-1.087 3.412-2.823 0-1.306-.984-2.283-2.324-2.386v-.055a2.176 2.176 0 0 0 1.852-2.14c0-1.51-1.162-2.46-3.014-2.46H3.843V13H8.21zM5.908 4.674h1.696c.963 0 1.517.451 1.517 1.244 0 .834-.629 1.32-1.73 1.32H5.908V4.673zm0 6.788V8.598h1.73c1.217 0 1.88.492 1.88 1.415 0 .943-.643 1.449-1.832 1.449H5.907z"
+                        />
                       </svg>
                     </button>
-                    <button type="button" class="toolbar-button" @click="formatText('theory_negatives', 'italic')">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M7.991 11.674 9.53 4.455c.123-.595.246-.71 1.347-.807l.11-.52H7.211l-.11.52c1.06.096 1.128.212 1.005.807L6.57 11.674c-.123.595-.246.71-1.346.806l-.11.52h3.774l.11-.52c-1.06-.095-1.129-.211-1.006-.806z"/>
+                    <button
+                      type="button"
+                      class="toolbar-button"
+                      @click="formatText('theory_negatives', 'italic')"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        fill="currentColor"
+                        viewBox="0 0 16 16"
+                      >
+                        <path
+                          d="M7.991 11.674 9.53 4.455c.123-.595.246-.71 1.347-.807l.11-.52H7.211l-.11.52c1.06.096 1.128.212 1.005.807L6.57 11.674c-.123.595-.246.71-1.346.806l-.11.52h3.774l.11-.52c-1.06-.095-1.129-.211-1.006-.806z"
+                        />
                       </svg>
                     </button>
-                    <button type="button" class="toolbar-button" @click="showImagePrompt('theory_negatives')">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
-                        <path d="M1.5 2A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13zm13 1a.5.5 0 0 1 .5.5v6l-3.775-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12v.54A.505.505 0 0 1 1 12.5v-9a.5.5 0 0 1 .5-.5h13z"/>
+                    <div class="toolbar-divider"></div>
+                    <button
+                      type="button"
+                      class="toolbar-button"
+                      @click="formatList('theory_negatives', 'insertUnorderedList')"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        fill="currentColor"
+                        viewBox="0 0 16 16"
+                      >
+                        <path
+                          fill-rule="evenodd"
+                          d="M5 11.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm-3 1a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm0 4a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm0 4a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"
+                        />
+                      </svg>
+                    </button>
+                    <button
+                      type="button"
+                      class="toolbar-button"
+                      @click="formatList('theory_negatives', 'insertOrderedList')"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        fill="currentColor"
+                        viewBox="0 0 16 16"
+                      >
+                        <path
+                          fill-rule="evenodd"
+                          d="M5 11.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5z"
+                        />
+                        <path
+                          d="M1.713 11.865v-.474H2c.217 0 .363-.137.363-.317 0-.185-.158-.31-.361-.31-.223 0-.367.152-.373.31h-.59c.016-.467.373-.787.986-.787.588-.002.954.291.957.703a.595.595 0 0 1-.492.594v.033a.615.615 0 0 1 .569.631c.003.533-.502.8-1.051.8-.656 0-1-.37-1.008-.794h.582c.008.178.186.306.422.309.254 0 .424-.145.422-.35-.002-.195-.155-.348-.414-.348h-.3zm-.004-4.699h-.604v-.035c0-.408.295-.844.958-.844.583 0 .96.326.96.756 0 .389-.257.617-.476.848l-.537.572v.03h1.054V9H1.143v-.395l.957-.99c.138-.142.293-.304.293-.508 0-.18-.147-.32-.342-.32a.33.33 0 0 0-.342.338v.041zM2.564 5h-.635V2.924h-.031l-.598.42v-.567l.629-.443h.635V5z"
+                        />
+                      </svg>
+                    </button>
+                    <div class="toolbar-divider"></div>
+                    <button
+                      type="button"
+                      class="toolbar-button"
+                      @click="showImagePrompt('theory_negatives')"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        fill="currentColor"
+                        viewBox="0 0 16 16"
+                      >
+                        <path
+                          d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"
+                        />
+                        <path
+                          d="M1.5 2A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13zm13 1a.5.5 0 0 1 .5.5v6l-3.775-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12v.54A.505.505 0 0 1 1 12.5v-9a.5.5 0 0 1 .5-.5h13z"
+                        />
                       </svg>
                     </button>
                   </div>
-                  <div class="editor-content" 
-                       contenteditable="true"
-                       id="theory_negatives_editor"
-                       x-ref="theory_negatives_editor"
-                       @input="handleEditorInput($event, 'theory_negatives')"
-                       @blur="saveEditorContent('theory_negatives')"></div>
-                  <input type="hidden" name="theory_negatives" id="id_theory_negatives" x-ref="theory_negatives">
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <!-- Phraseology -->
-          <div>
-            <div class="flex justify-between items-center mb-4">
-              <h3 class="text-lg font-medium text-gray-800">Phraseology / Radiotelephony</h3>
-              <select name="phraseology" id="id_phraseology" 
-                      class="select select-sm select-bordered"
-                      x-model="formData.phraseology"
-                      @change="saveFormState">
-                <option value="0">Not rated</option>
-                <option value="1">Requirements not met</option>
-                <option value="2">Requirements partially met</option>
-                <option value="3">Requirements met</option>
-                <option value="4">Requirements exceeded</option>
-              </select>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label for="phraseology_positives_editor" class="block text-sm font-medium text-green-600 mb-1">Strengths</label>
-                <div class="editor-container">
-                  <div class="editor-toolbar">
-                    <button type="button" class="toolbar-button" @click="formatText('phraseology_positives', 'bold')">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M8.21 13c2.106 0 3.412-1.087 3.412-2.823 0-1.306-.984-2.283-2.324-2.386v-.055a2.176 2.176 0 0 0 1.852-2.14c0-1.51-1.162-2.46-3.014-2.46H3.843V13H8.21zM5.908 4.674h1.696c.963 0 1.517.451 1.517 1.244 0 .834-.629 1.32-1.73 1.32H5.908V4.673zm0 6.788V8.598h1.73c1.217 0 1.88.492 1.88 1.415 0 .943-.643 1.449-1.832 1.449H5.907z"/>
-                      </svg>
-                    </button>
-                    <button type="button" class="toolbar-button" @click="formatText('phraseology_positives', 'italic')">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M7.991 11.674 9.53 4.455c.123-.595.246-.71 1.347-.807l.11-.52H7.211l-.11.52c1.06.096 1.128.212 1.005.807L6.57 11.674c-.123.595-.246.71-1.346.806l-.11.52h3.774l.11-.52c-1.06-.095-1.129-.211-1.006-.806z"/>
-                      </svg>
-                    </button>
-                    <button type="button" class="toolbar-button" @click="showImagePrompt('phraseology_positives')">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
-                        <path d="M1.5 2A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13zm13 1a.5.5 0 0 1 .5.5v6l-3.775-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12v.54A.505.505 0 0 1 1 12.5v-9a.5.5 0 0 1 .5-.5h13z"/>
-                      </svg>
-                    </button>
-                  </div>
-                  <div class="editor-content" 
-                       contenteditable="true"
-                       id="phraseology_positives_editor"
-                       x-ref="phraseology_positives_editor"
-                       @input="handleEditorInput($event, 'phraseology_positives')"
-                       @blur="saveEditorContent('phraseology_positives')"></div>
-                  <input type="hidden" name="phraseology_positives" id="id_phraseology_positives" x-ref="phraseology_positives">
-                </div>
-              </div>
-              
-              <div>
-                <label for="phraseology_negatives_editor" class="block text-sm font-medium text-red-600 mb-1">Areas for Improvement</label>
-                <div class="editor-container">
-                  <div class="editor-toolbar">
-                    <button type="button" class="toolbar-button" @click="formatText('phraseology_negatives', 'bold')">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M8.21 13c2.106 0 3.412-1.087 3.412-2.823 0-1.306-.984-2.283-2.324-2.386v-.055a2.176 2.176 0 0 0 1.852-2.14c0-1.51-1.162-2.46-3.014-2.46H3.843V13H8.21zM5.908 4.674h1.696c.963 0 1.517.451 1.517 1.244 0 .834-.629 1.32-1.73 1.32H5.908V4.673zm0 6.788V8.598h1.73c1.217 0 1.88.492 1.88 1.415 0 .943-.643 1.449-1.832 1.449H5.907z"/>
-                      </svg>
-                    </button>
-                    <button type="button" class="toolbar-button" @click="formatText('phraseology_negatives', 'italic')">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M7.991 11.674 9.53 4.455c.123-.595.246-.71 1.347-.807l.11-.52H7.211l-.11.52c1.06.096 1.128.212 1.005.807L6.57 11.674c-.123.595-.246.71-1.346.806l-.11.52h3.774l.11-.52c-1.06-.095-1.129-.211-1.006-.806z"/>
-                      </svg>
-                    </button>
-                    <button type="button" class="toolbar-button" @click="showImagePrompt('phraseology_negatives')">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
-                        <path d="M1.5 2A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13zm13 1a.5.5 0 0 1 .5.5v6l-3.775-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12v.54A.505.505 0 0 1 1 12.5v-9a.5.5 0 0 1 .5-.5h13z"/>
-                      </svg>
-                    </button>
-                  </div>
-                  <div class="editor-content" 
-                       contenteditable="true"
-                       id="phraseology_negatives_editor"
-                       x-ref="phraseology_negatives_editor"
-                       @input="handleEditorInput($event, 'phraseology_negatives')"
-                       @blur="saveEditorContent('phraseology_negatives')"></div>
-                  <input type="hidden" name="phraseology_negatives" id="id_phraseology_negatives" x-ref="phraseology_negatives">
+                  <div
+                    class="editor-content"
+                    contenteditable="true"
+                    id="theory_negatives_editor"
+                    x-ref="theory_negatives_editor"
+                    @input="handleEditorInput($event, 'theory_negatives')"
+                    @paste="handlePaste($event, 'theory_negatives')"
+                    @blur="saveEditorContent('theory_negatives')"
+                  ></div>
+                  <input
+                    type="hidden"
+                    name="theory_negatives"
+                    id="id_theory_negatives"
+                    x-ref="theory_negatives"
+                  />
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- Add more categories with the same pattern -->
+          <!-- Add more evaluation categories with the same pattern -->
         </div>
       </div>
-      
+
       <!-- Final Assessment -->
       <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
-        <h2 class="text-xl font-semibold mb-6 text-gray-800">Final Assessment</h2>
-        
+        <h2 class="text-xl font-semibold mb-6 text-gray-800">
+          Final Assessment
+        </h2>
+
         <div class="space-y-6">
           <div>
-            <label for="final_comment_editor" class="block text-sm font-medium text-gray-700 mb-1">Final Comment</label>
-            <div class="editor-container">
+            <label
+              for="final_comment_editor"
+              class="block text-sm font-medium text-gray-700 mb-1"
+              >Final Comment</label
+            >
+            <div class="enhanced-editor-container">
               <div class="editor-toolbar">
-                <button type="button" class="toolbar-button" @click="formatText('final_comment', 'bold')">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                    <path d="M8.21 13c2.106 0 3.412-1.087 3.412-2.823 0-1.306-.984-2.283-2.324-2.386v-.055a2.176 2.176 0 0 0 1.852-2.14c0-1.51-1.162-2.46-3.014-2.46H3.843V13H8.21zM5.908 4.674h1.696c.963 0 1.517.451 1.517 1.244 0 .834-.629 1.32-1.73 1.32H5.908V4.673zm0 6.788V8.598h1.73c1.217 0 1.88.492 1.88 1.415 0 .943-.643 1.449-1.832 1.449H5.907z"/>
+                <button
+                  type="button"
+                  class="toolbar-button"
+                  @click="formatText('final_comment', 'bold')"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    fill="currentColor"
+                    viewBox="0 0 16 16"
+                  >
+                    <path
+                      d="M8.21 13c2.106 0 3.412-1.087 3.412-2.823 0-1.306-.984-2.283-2.324-2.386v-.055a2.176 2.176 0 0 0 1.852-2.14c0-1.51-1.162-2.46-3.014-2.46H3.843V13H8.21zM5.908 4.674h1.696c.963 0 1.517.451 1.517 1.244 0 .834-.629 1.32-1.73 1.32H5.908V4.673zm0 6.788V8.598h1.73c1.217 0 1.88.492 1.88 1.415 0 .943-.643 1.449-1.832 1.449H5.907z"
+                    />
                   </svg>
                 </button>
-                <button type="button" class="toolbar-button" @click="formatText('final_comment', 'italic')">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                    <path d="M7.991 11.674 9.53 4.455c.123-.595.246-.71 1.347-.807l.11-.52H7.211l-.11.52c1.06.096 1.128.212 1.005.807L6.57 11.674c-.123.595-.246.71-1.346.806l-.11.52h3.774l.11-.52c-1.06-.095-1.129-.211-1.006-.806z"/>
+                <button
+                  type="button"
+                  class="toolbar-button"
+                  @click="formatText('final_comment', 'italic')"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    fill="currentColor"
+                    viewBox="0 0 16 16"
+                  >
+                    <path
+                      d="M7.991 11.674 9.53 4.455c.123-.595.246-.71 1.347-.807l.11-.52H7.211l-.11.52c1.06.096 1.128.212 1.005.807L6.57 11.674c-.123.595-.246.71-1.346.806l-.11.52h3.774l.11-.52c-1.06-.095-1.129-.211-1.006-.806z"
+                    />
                   </svg>
                 </button>
-                <button type="button" class="toolbar-button" @click="showImagePrompt('final_comment')">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                    <path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
-                    <path d="M1.5 2A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13zm13 1a.5.5 0 0 1 .5.5v6l-3.775-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12v.54A.505.505 0 0 1 1 12.5v-9a.5.5 0 0 1 .5-.5h13z"/>
+                <div class="toolbar-divider"></div>
+                <button
+                  type="button"
+                  class="toolbar-button"
+                  @click="formatList('final_comment', 'insertUnorderedList')"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    fill="currentColor"
+                    viewBox="0 0 16 16"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M5 11.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm-3 1a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm0 4a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm0 4a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"
+                    />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  class="toolbar-button"
+                  @click="formatList('final_comment', 'insertOrderedList')"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    fill="currentColor"
+                    viewBox="0 0 16 16"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M5 11.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5z"
+                    />
+                    <path
+                      d="M1.713 11.865v-.474H2c.217 0 .363-.137.363-.317 0-.185-.158-.31-.361-.31-.223 0-.367.152-.373.31h-.59c.016-.467.373-.787.986-.787.588-.002.954.291.957.703a.595.595 0 0 1-.492.594v.033a.615.615 0 0 1 .569.631c.003.533-.502.8-1.051.8-.656 0-1-.37-1.008-.794h.582c.008.178.186.306.422.309.254 0 .424-.145.422-.35-.002-.195-.155-.348-.414-.348h-.3zm-.004-4.699h-.604v-.035c0-.408.295-.844.958-.844.583 0 .96.326.96.756 0 .389-.257.617-.476.848l-.537.572v.03h1.054V9H1.143v-.395l.957-.99c.138-.142.293-.304.293-.508 0-.18-.147-.32-.342-.32a.33.33 0 0 0-.342.338v.041zM2.564 5h-.635V2.924h-.031l-.598.42v-.567l.629-.443h.635V5z"
+                    />
+                  </svg>
+                </button>
+                <div class="toolbar-divider"></div>
+                <button
+                  type="button"
+                  class="toolbar-button"
+                  @click="showImagePrompt('final_comment')"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    fill="currentColor"
+                    viewBox="0 0 16 16"
+                  >
+                    <path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z" />
+                    <path
+                      d="M1.5 2A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13zm13 1a.5.5 0 0 1 .5.5v6l-3.775-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12v.54A.505.505 0 0 1 1 12.5v-9a.5.5 0 0 1 .5-.5h13z"
+                    />
                   </svg>
                 </button>
               </div>
-              <div class="editor-content" 
-                   contenteditable="true"
-                   id="final_comment_editor"
-                   x-ref="final_comment_editor"
-                   @input="handleEditorInput($event, 'final_comment')"
-                   @blur="saveEditorContent('final_comment')"></div>
-              <input type="hidden" name="final_comment" id="id_final_comment" x-ref="final_comment">
+              <div
+                class="editor-content"
+                contenteditable="true"
+                id="final_comment_editor"
+                x-ref="final_comment_editor"
+                @input="handleEditorInput($event, 'final_comment')"
+                @paste="handlePaste($event, 'final_comment')"
+                @blur="saveEditorContent('final_comment')"
+              ></div>
+              <input
+                type="hidden"
+                name="final_comment"
+                id="id_final_comment"
+                x-ref="final_comment"
+              />
             </div>
           </div>
-          
-          <div>
-            <label for="internal_remarks_editor" class="block text-sm font-medium text-gray-700 mb-1">Internal Remarks <span class="text-gray-500 text-xs">(not visible to the trainee)</span></label>
-            <div class="editor-container">
-              <div class="editor-toolbar">
-                <button type="button" class="toolbar-button" @click="formatText('internal_remarks', 'bold')">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                    <path d="M8.21 13c2.106 0 3.412-1.087 3.412-2.823 0-1.306-.984-2.283-2.324-2.386v-.055a2.176 2.176 0 0 0 1.852-2.14c0-1.51-1.162-2.46-3.014-2.46H3.843V13H8.21zM5.908 4.674h1.696c.963 0 1.517.451 1.517 1.244 0 .834-.629 1.32-1.73 1.32H5.908V4.673zm0 6.788V8.598h1.73c1.217 0 1.88.492 1.88 1.415 0 .943-.643 1.449-1.832 1.449H5.907z"/>
-                  </svg>
-                </button>
-                <button type="button" class="toolbar-button" @click="formatText('internal_remarks', 'italic')">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                    <path d="M7.991 11.674 9.53 4.455c.123-.595.246-.71 1.347-.807l.11-.52H7.211l-.11.52c1.06.096 1.128.212 1.005.807L6.57 11.674c-.123.595-.246.71-1.346.806l-.11.52h3.774l.11-.52c-1.06-.095-1.129-.211-1.006-.806z"/>
-                  </svg>
-                </button>
-                <button type="button" class="toolbar-button" @click="showImagePrompt('internal_remarks')">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                    <path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
-                    <path d="M1.5 2A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13zm13 1a.5.5 0 0 1 .5.5v6l-3.775-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12v.54A.505.505 0 0 1 1 12.5v-9a.5.5 0 0 1 .5-.5h13z"/>
-                  </svg>
-                </button>
-              </div>
-              <div class="editor-content" 
-                   contenteditable="true"
-                   id="internal_remarks_editor"
-                   x-ref="internal_remarks_editor"
-                   @input="handleEditorInput($event, 'internal_remarks')"
-                   @blur="saveEditorContent('internal_remarks')"></div>
-              <input type="hidden" name="internal_remarks" id="id_internal_remarks" x-ref="internal_remarks">
-            </div>
-          </div>
-          
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label for="id_next_step" class="block text-sm font-medium text-gray-700 mb-1">Next Step</label>
-              <input type="text" name="next_step" id="id_next_step" 
-                     class="input input-bordered w-full" 
-                     placeholder="e.g. Online TWR with mentor"
-                     x-model="formData.next_step"
-                     @input="saveFormState">
-            </div>
-            
-            <div>
-              <label for="id_result" class="block text-sm font-medium text-gray-700 mb-1">Training Result</label>
-              <div class="flex items-center space-x-4 h-full pt-2">
-                <label class="flex items-center cursor-pointer">
-                  <input type="radio" name="result" value="true" class="radio radio-success"
-                         x-model="formData.result"
-                         @change="saveFormState">
-                  <span class="ml-2">Passed</span>
-                </label>
-                <label class="flex items-center cursor-pointer">
-                  <input type="radio" name="result" value="false" class="radio radio-error"
-                         x-model="formData.result"
-                         @change="saveFormState">
-                  <span class="ml-2">Not Passed</span>
-                </label>
-              </div>
-            </div>
-          </div>
+
+          <!-- Additional fields... -->
         </div>
       </div>
-      
+
       <!-- Submit Buttons -->
       <div class="flex justify-between">
-        <a href="{% url 'overview:overview' %}" class="btn" @click="handleNavigation">Cancel</a>
+        <a
+          href="{% url 'overview:overview' %}"
+          class="btn"
+          @click="handleNavigation"
+          >Cancel</a
+        >
         <div class="space-x-2">
-          <button id="save-draft-btn" type="button" @click="saveDraft" class="btn btn-outline">Save Draft</button>
+          <button
+            id="save-draft-btn"
+            type="button"
+            @click="saveDraft"
+            class="btn btn-outline"
+          >
+            Save Draft
+          </button>
           <button type="submit" class="btn btn-primary">Submit Log</button>
         </div>
       </div>
     </div>
   </form>
-  
-  <!-- Image URL Dialog Modal -->
-  <div x-show="showImageModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" x-cloak>
-    <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+
+  <!-- Image URL/Upload Dialog Modal -->
+  <div
+    x-show="showImageModal"
+    class="fixed inset-0 flex items-center justify-center"
+    x-cloak
+  >
+    <div style="background-color: rgba(0, 0, 0, 0.4);" class="size-full fixed"></div>
+    <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6 z-50 relative">
       <h3 class="text-lg font-semibold text-gray-900 mb-4">Insert Image</h3>
+
       <div class="mb-4">
-        <label for="image-url-input" class="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
-        <input type="text" id="image-url-input" x-model="imageUrl" class="input input-bordered w-full" placeholder="https://example.com/image.jpg">
+        <div x-show="imageUploadTab === 'url'">
+          <label
+            for="image-url-input"
+            class="block text-sm font-medium text-gray-700 mb-1"
+            >Image URL</label
+          >
+          <input
+            type="text"
+            id="image-url-input"
+            x-model="imageUrl"
+            class="input input-bordered w-full"
+            placeholder="https://example.com/image.jpg"
+          />
+        </div>
+
+        <div x-show="imageUploadTab === 'upload'" class="space-y-2">
+          <label class="block text-sm font-medium text-gray-700 mb-1"
+            >Upload Image</label
+          >
+          <div class="flex items-center justify-center w-full">
+            <label
+              class="flex flex-col w-full h-32 border-2 border-dashed hover:bg-gray-50 hover:border-gray-300 rounded-lg cursor-pointer"
+            >
+              <div
+                class="flex flex-col items-center justify-center pt-5 pb-6"
+                x-show="!previewImage"
+              >
+                <svg
+                  class="w-8 h-8 mb-4 text-gray-500"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 20 16"
+                >
+                  <path
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"
+                  />
+                </svg>
+                <p class="mb-2 text-sm text-gray-500">
+                  <span class="font-semibold">Click to upload</span> or drag and
+                  drop
+                </p>
+                <p class="text-xs text-gray-500">SVG, PNG, JPG or GIF</p>
+              </div>
+              <div
+                class="flex items-center justify-center"
+                x-show="previewImage"
+              >
+                <img :src="previewImage" class="h-28 object-contain" />
+              </div>
+              <input
+                id="image-upload"
+                type="file"
+                class="hidden"
+                accept="image/*"
+                @change="handleFileUpload($event)"
+              />
+            </label>
+          </div>
+        </div>
       </div>
+
+      <!-- Options for the image -->
+      <div class="mb-4">
+        <h4 class="text-sm font-medium text-gray-700 mb-2">Image Options</h4>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label
+              for="image-width"
+              class="block text-xs font-medium text-gray-700 mb-1"
+              >Width (%)</label
+            >
+            <input
+              type="range"
+              id="image-width"
+              x-model="imageWidth"
+              min="10"
+              max="100"
+              step="10"
+              class="range range-xs"
+            />
+            <div class="flex justify-between text-xs mt-1">
+              <span>10%</span>
+              <span>100%</span>
+            </div>
+          </div>
+          <div>
+            <label
+              for="image-align"
+              class="block text-xs font-medium text-gray-700 mb-1"
+              >Alignment</label
+            >
+            <select
+              id="image-align"
+              x-model="imageAlign"
+              class="select select-bordered select-sm w-full"
+            >
+              <option value="left">Left</option>
+              <option value="center">Center</option>
+              <option value="right">Right</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
       <div class="flex justify-end space-x-3">
-        <button @click="cancelImageInsert" class="btn btn-outline">Cancel</button>
-        <button @click="confirmImageInsert" class="btn btn-primary">Insert Image</button>
+        <button @click="cancelImageInsert" class="btn btn-outline">
+          Cancel
+        </button>
+        <button @click="confirmImageInsert" class="btn btn-primary">
+          Insert Image
+        </button>
       </div>
     </div>
   </div>
-  
-  <!-- Confirmation Modal -->
-  <div x-show="showUnsavedChangesModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" x-cloak>
-    <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+
+  <!-- Confirmation Modal for Leaving Page -->
+  <div
+    x-show="showUnsavedChangesModal"
+    class="fixed inset-0 flex items-center justify-center"
+    x-cloak
+  >
+    <div style="background-color: rgba(0, 0, 0, 0.4);" class="size-full fixed"></div>
+    <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6 z-50 relative">
       <h3 class="text-lg font-semibold text-gray-900 mb-4">Unsaved Changes</h3>
-      <p class="text-gray-700 mb-6">You have unsaved changes. Are you sure you want to leave this page?</p>
+      <p class="text-gray-700 mb-6">
+        You have unsaved changes. Are you sure you want to leave this page?
+      </p>
       <div class="flex justify-end space-x-3">
-        <button @click="showUnsavedChangesModal = false" class="btn btn-outline">Stay on Page</button>
-        <button @click="proceedWithNavigation" class="btn btn-error">Leave Page</button>
+        <button
+          @click="showUnsavedChangesModal = false"
+          class="btn btn-outline"
+        >
+          Stay on Page
+        </button>
+        <button @click="proceedWithNavigation" class="btn btn-error">
+          Leave Page
+        </button>
       </div>
     </div>
   </div>
-  
+
   <!-- Saved Draft Modal -->
-  <div x-show="showSavedDraftModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" x-cloak>
-    <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+  <div
+    x-show="showSavedDraftModal"
+    class="fixed inset-0 flex items-center justify-center z-50"
+    x-cloak
+  >
+    <div style="background-color: rgba(0, 0, 0, 0.4);" class="size-full fixed"></div>
+    <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6 z-50 relative">
       <div class="flex items-center justify-center mb-4 text-green-500">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-12 w-12"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M5 13l4 4L19 7"
+          />
         </svg>
       </div>
-      <h3 class="text-lg font-semibold text-gray-900 mb-2 text-center">Draft Saved Successfully</h3>
-      <p class="text-gray-700 mb-6 text-center">Your training log draft has been saved to your browser's storage.</p>
+      <h3 class="text-lg font-semibold text-gray-900 mb-2 text-center">
+        Draft Saved Successfully
+      </h3>
+      <p class="text-gray-700 mb-6 text-center">
+        Your training log draft has been saved to your browser's storage.
+      </p>
       <div class="flex justify-center">
-        <button @click="showSavedDraftModal = false" class="btn btn-primary">Continue Editing</button>
+        <button @click="showSavedDraftModal = false" class="btn btn-primary">
+          Continue Editing
+        </button>
       </div>
     </div>
   </div>
 </div>
 
 <script>
-  document.addEventListener('alpine:init', () => {
+  document.addEventListener("alpine:init", () => {
     // Main Form Application
-    Alpine.data('logCreationApp', () => ({
+    Alpine.data("logCreationApp", () => ({
       formData: {
-        session_date: new Date().toISOString().split('T')[0],
+        session_date: new Date().toISOString().split("T")[0],
         position: '{{ form.position.value|default:"" }}',
         type: '{{ form.type.value|default:"O" }}',
         theory: '{{ form.theory.value|default:"0" }}',
-        phraseology: '{{ form.phraseology.value|default:"0" }}',
-        coordination: '{{ form.coordination.value|default:"0" }}',
-        tag_management: '{{ form.tag_management.value|default:"0" }}',
-        situational_awareness: '{{ form.situational_awareness.value|default:"0" }}',
-        problem_recognition: '{{ form.problem_recognition.value|default:"0" }}',
-        traffic_planning: '{{ form.traffic_planning.value|default:"0" }}',
-        reaction: '{{ form.reaction.value|default:"0" }}',
-        separation: '{{ form.separation.value|default:"0" }}',
-        efficiency: '{{ form.efficiency.value|default:"0" }}',
-        ability_to_work_under_pressure: '{{ form.ability_to_work_under_pressure.value|default:"0" }}',
-        motivation: '{{ form.motivation.value|default:"0" }}',
+        // Add more fields as needed...
         next_step: '{{ form.next_step.value|default:"" }}',
-        result: '{{ form.result.value|default:"" }}'
+        result: '{{ form.result.value|default:"" }}',
       },
       editorContentMap: {},
       currentEditorField: null,
-      imageUrl: '',
+      savedRange: null, // Store the cursor position/selection
+      imageUrl: "",
+      imageUploadTab: "url", // 'url' or 'upload'
+      previewImage: null,
+      imageFile: null,
+      imageWidth: 100,
+      imageAlign: "center",
       showImageModal: false,
-      initialFormState: '',
+      initialFormState: "",
       hasChanges: false,
       autosaveStatus: {
-        message: 'Ready',
-        color: 'text-gray-500'
+        message: "Ready",
+        color: "text-gray-500",
       },
       autosaveTimer: null,
       showUnsavedChangesModal: false,
       showSavedDraftModal: false,
       navigateTo: null,
-      draftKey: '',
-      
+      draftKey: "",
+
       init() {
         // Generate unique key for storing this log draft
         this.draftKey = `log_draft_{{ trainee.id }}_{{ course.id }}`;
-        
+
         // Load saved draft if exists
         this.$nextTick(() => {
           this.loadDraft();
         });
-        
+
         // Set up beforeunload handler for unsaved changes warning
         this.setupBeforeUnload();
-        
+
         // Set initial form state to detect changes
         setTimeout(() => {
           this.setInitialFormState();
         }, 300);
-        
+
         // Set up automatic list creation for "- " at the beginning of line
         this.setupAutoLists();
       },
-      
+
       setupAutoLists() {
-        // Get all editor fields
         const editorFields = [
-          'theory_positives', 'theory_negatives',
-          'phraseology_positives', 'phraseology_negatives',
-          'coordination_positives', 'coordination_negatives',
-          'final_comment', 'internal_remarks'
+          "theory_positives",
+          "theory_negatives",
+          "phraseology_positives",
+          "phraseology_negatives",
+          "coordination_positives",
+          "coordination_negatives",
+          "final_comment",
+          "internal_remarks",
         ];
-        
-        editorFields.forEach(field => {
+
+        editorFields.forEach((field) => {
           const editor = this.$refs[`${field}_editor`];
-          
+
           if (editor) {
-            editor.addEventListener('keyup', (e) => {
-              if (e.key === ' ') {
+            editor.addEventListener("keyup", (e) => {
+              if (e.key === " ") {
                 const selection = window.getSelection();
                 if (selection.rangeCount === 0) return;
-                
+
                 const range = selection.getRangeAt(0);
                 const startContainer = range.startContainer;
-                
+
                 // Check if we're in a text node and handle "- " at start of line
                 if (startContainer.nodeType === Node.TEXT_NODE) {
                   const text = startContainer.textContent;
-                  
+
                   // Check if the line starts with "- "
                   if (text === "- ") {
                     // Create a list item
                     e.preventDefault();
-                    document.execCommand('delete', false);
-                    document.execCommand('delete', false);
-                    
+                    document.execCommand("delete", false);
+                    document.execCommand("delete", false);
+
                     // Create a list if there isn't one already
-                    if (startContainer.parentNode.nodeName !== 'LI') {
-                      document.execCommand('insertUnorderedList', false, null);
+                    if (startContainer.parentNode.nodeName !== "LI") {
+                      document.execCommand("insertUnorderedList", false, null);
                     }
                   }
                 }
@@ -492,7 +822,128 @@
           }
         });
       },
-      
+
+      // Save the current selection/cursor position
+      saveSelection() {
+        const selection = window.getSelection();
+        if (selection.rangeCount > 0) {
+          this.savedRange = selection.getRangeAt(0).cloneRange();
+        }
+      },
+
+      // Restore the saved selection/cursor position
+      restoreSelection() {
+        if (this.savedRange) {
+          const selection = window.getSelection();
+          selection.removeAllRanges();
+          selection.addRange(this.savedRange);
+        }
+      },
+
+      setupImageResizeHandlers() {
+        // This will be called after the content is loaded
+        const setupResizableImages = (field) => {
+          const editor = this.$refs[`${field}_editor`];
+          if (!editor) return;
+
+          // Find all images in this editor
+          const images = editor.querySelectorAll("img:not(.resize-handled)");
+
+          images.forEach((img) => {
+            // Mark this image as handled
+            img.classList.add("resize-handled");
+
+            // Make image resizable by dragging
+            img.addEventListener("mousedown", (e) => {
+              // If we click on the right-bottom corner (resize handle)
+              if (
+                e.offsetX > img.offsetWidth - 20 &&
+                e.offsetY > img.offsetHeight - 20
+              ) {
+                e.preventDefault();
+
+                const startX = e.clientX;
+                const startY = e.clientY;
+                const startWidth = img.offsetWidth;
+                const startHeight = img.offsetHeight;
+
+                const onMouseMove = (moveEvent) => {
+                  // Calculate new dimensions while maintaining aspect ratio
+                  const newWidth = startWidth + (moveEvent.clientX - startX);
+                  const aspectRatio = startHeight / startWidth;
+                  const newHeight = newWidth * aspectRatio;
+
+                  img.style.width = `${newWidth}px`;
+                  img.style.height = `${newHeight}px`;
+                };
+
+                const onMouseUp = () => {
+                  document.removeEventListener("mousemove", onMouseMove);
+                  document.removeEventListener("mouseup", onMouseUp);
+                  this.saveEditorContent(field);
+                };
+
+                document.addEventListener("mousemove", onMouseMove);
+                document.addEventListener("mouseup", onMouseUp);
+              }
+            });
+
+            // Add resize handle indicator
+            const originalPosition = img.style.position;
+            img.style.position = "relative";
+
+            const resizeHandle = document.createElement("div");
+            resizeHandle.style.position = "absolute";
+            resizeHandle.style.bottom = "0";
+            resizeHandle.style.right = "0";
+            resizeHandle.style.width = "10px";
+            resizeHandle.style.height = "10px";
+            resizeHandle.style.cursor = "nwse-resize";
+            resizeHandle.style.backgroundColor = "rgba(0, 120, 212, 0.7)";
+
+            // Wrap the image to add the resize handle
+            const wrapper = document.createElement("div");
+            wrapper.style.display = "inline-block";
+            wrapper.style.position = originalPosition;
+            img.parentNode.insertBefore(wrapper, img);
+            wrapper.appendChild(img);
+            wrapper.appendChild(resizeHandle);
+          });
+        };
+
+        // Set up a MutationObserver to detect when new images are added
+        const editorFields = [
+          "theory_positives",
+          "theory_negatives",
+          "phraseology_positives",
+          "phraseology_negatives",
+          "coordination_positives",
+          "coordination_negatives",
+          "final_comment",
+          "internal_remarks",
+        ];
+
+        editorFields.forEach((field) => {
+          const editor = this.$refs[`${field}_editor`];
+          if (!editor) return;
+
+          // Process existing images
+          setupResizableImages(field);
+
+          // Set up observer for new images
+          const observer = new MutationObserver(() => {
+            setupResizableImages(field);
+          });
+
+          observer.observe(editor, {
+            childList: true,
+            subtree: true,
+            characterData: true,
+            attributes: true,
+          });
+        });
+      },
+
       formatText(field, command) {
         const editor = this.$refs[`${field}_editor`];
         if (editor) {
@@ -502,272 +953,403 @@
           this.saveEditorContent(field);
         }
       },
-      
-      showImagePrompt(field) {
-        this.currentEditorField = field;
-        this.imageUrl = '';
-        this.showImageModal = true;
+
+      formatList(field, listType) {
+        const editor = this.$refs[`${field}_editor`];
+        if (editor) {
+          editor.focus();
+          document.execCommand(listType, false, null);
+          // Save the content after formatting
+          this.saveEditorContent(field);
+        }
       },
-      
+
+      showImagePrompt(field) {
+        const editor = this.$refs[`${field}_editor`];
+        if (editor) {
+          // Focus the editor first to ensure we have a selection
+          editor.focus();
+
+          // Save the current selection/cursor position
+          this.saveSelection();
+
+          // Now set up the modal
+          this.currentEditorField = field;
+          this.imageUrl = "";
+          this.previewImage = null;
+          this.imageFile = null;
+          this.imageWidth = 100;
+          this.imageAlign = "center";
+          this.imageUploadTab = "url";
+          this.showImageModal = true;
+        }
+      },
+
+      handleFileUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        this.imageFile = file;
+
+        // Create a preview
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          this.previewImage = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      },
+
       confirmImageInsert() {
-        if (this.imageUrl && this.currentEditorField) {
+        if (this.currentEditorField) {
           const editor = this.$refs[`${this.currentEditorField}_editor`];
           if (editor) {
+            // Focus the editor
             editor.focus();
-            // Insert an image element
-            document.execCommand('insertHTML', false, `<img src="${this.imageUrl}" alt="Inserted image" style="max-width: 100%; height: auto;" />`);
-            
+
+            // Restore the saved selection/cursor position
+            this.restoreSelection();
+
+            // Get the source for the image
+            let imgSrc = "";
+            if (this.imageUploadTab === "url" && this.imageUrl) {
+              imgSrc = this.imageUrl;
+            } else if (this.imageUploadTab === "upload" && this.previewImage) {
+              imgSrc = this.previewImage;
+            } else {
+              this.showImageModal = false;
+              return; // No image to insert
+            }
+
+            // Create alignment style
+            let alignStyle = "";
+            let wrapperStyle = "";
+
+            if (this.imageAlign === "left") {
+              alignStyle = "float: left; margin-right: 10px;";
+              wrapperStyle = "display: block; clear: both;";
+            } else if (this.imageAlign === "right") {
+              alignStyle = "float: right; margin-left: 10px;";
+              wrapperStyle = "display: block; clear: both;";
+            } else if (this.imageAlign === "center") {
+              alignStyle =
+                "display: block; margin-left: auto; margin-right: auto;";
+              wrapperStyle = "text-align: center;";
+            }
+
+            // Create the image HTML with all attributes
+            const imgHtml = `<div style="${wrapperStyle}"><img src="${imgSrc}" alt="Inserted image" style="max-width: 100%; width: ${this.imageWidth}%; ${alignStyle}" class="editor-image" /></div>`;
+
+            // Insert at the current selection point
+            document.execCommand("insertHTML", false, imgHtml);
+
+            // Set up resizable images
+            setTimeout(() => {
+              this.setupImageResizeHandlers();
+            }, 100);
+
             // Save the content after inserting the image
             this.saveEditorContent(this.currentEditorField);
           }
-          
+
           // Clean up
           this.showImageModal = false;
-          this.imageUrl = '';
+          this.imageUrl = "";
+          this.previewImage = null;
+          this.imageFile = null;
           this.currentEditorField = null;
+          this.savedRange = null;
         }
       },
-      
+
       cancelImageInsert() {
         this.showImageModal = false;
-        this.imageUrl = '';
+        this.imageUrl = "";
+        this.previewImage = null;
+        this.imageFile = null;
         this.currentEditorField = null;
+        this.savedRange = null;
       },
-      
+
       handleEditorInput(event, field) {
         // Check if input includes "- " at the start of a line, which might need to be converted to a list
         const content = event.target.innerHTML;
-        
+
         // Update hidden input with HTML content
         this.$refs[field].value = content;
-        
+
         // Store in our content map
         this.editorContentMap[field] = content;
-        
+
         // Trigger autosave with delay
         clearTimeout(this.autosaveTimer);
-        this.updateSaveStatus('Saving...', 'info');
+        this.updateSaveStatus("Saving...", "info");
         this.hasChanges = true;
-        
+
         this.autosaveTimer = setTimeout(() => {
           this.saveFormState();
         }, 1000);
       },
-      
+
+      handlePaste(event, field) {
+        // Handle pasting images
+        const items = (event.clipboardData || event.originalEvent.clipboardData)
+          .items;
+
+        let foundImage = false;
+
+        for (const item of items) {
+          if (item.type.indexOf("image") === 0) {
+            foundImage = true;
+
+            // Prevent the default paste
+            event.preventDefault();
+
+            const blob = item.getAsFile();
+            const reader = new FileReader();
+
+            reader.onload = (e) => {
+              const img = document.createElement("img");
+              img.src = e.target.result;
+              img.style.maxWidth = "100%";
+              img.classList.add("editor-image");
+
+              // Insert the image
+              const editor = this.$refs[`${field}_editor`];
+              if (editor) {
+                editor.focus();
+                document.execCommand("insertHTML", false, img.outerHTML);
+
+                // Set up resizable images
+                setTimeout(() => {
+                  this.setupImageResizeHandlers();
+                }, 100);
+
+                // Save the content after inserting the image
+                this.saveEditorContent(field);
+              }
+            };
+
+            reader.readAsDataURL(blob);
+            break;
+          }
+        }
+
+        // If no image was found, just let the default paste happen
+        if (!foundImage) {
+          // Clean pasted text (remove unwanted formatting)
+          setTimeout(() => {
+            this.saveEditorContent(field);
+          }, 0);
+        }
+      },
+
       saveEditorContent(field) {
         const editor = this.$refs[`${field}_editor`];
         const input = this.$refs[field];
-        
+
         if (editor && input) {
           // Get the HTML content
           const content = editor.innerHTML;
-          
+
           // Update the hidden input
           input.value = content;
-          
+
           // Store in our content map
           this.editorContentMap[field] = content;
-          
+
           // Trigger save
           this.saveFormState();
         }
       },
-      
+
       setInitialFormState() {
         // Store initial state of standard form fields
         this.initialFormState = JSON.stringify(this.formData);
         this.hasChanges = false;
       },
-      
-      updateSaveStatus(message, type = 'info') {
+
+      updateSaveStatus(message, type = "info") {
         const colors = {
-          'info': 'text-blue-500',
-          'success': 'text-green-500',
-          'error': 'text-red-500',
-          'default': 'text-gray-500'
+          info: "text-blue-500",
+          success: "text-green-500",
+          error: "text-red-500",
+          default: "text-gray-500",
         };
-        
+
         this.autosaveStatus = {
           message: message,
-          color: colors[type] || colors['default']
+          color: colors[type] || colors["default"],
         };
-        
+
         // Reset status after a delay for success messages
-        if (type === 'success') {
+        if (type === "success") {
           setTimeout(() => {
             this.autosaveStatus = {
-              message: '',
-              color: ''
+              message: "",
+              color: "",
             };
           }, 3000);
         }
       },
-      
+
       saveFormState() {
         clearTimeout(this.autosaveTimer);
-        
-        this.updateSaveStatus('Saving...', 'info');
-        
+
+        this.updateSaveStatus("Saving...", "info");
+
         // Mark that we have unsaved changes
         this.hasChanges = true;
-        
+
         try {
           // Save basic form fields
-          localStorage.setItem(`${this.draftKey}_formData`, JSON.stringify(this.formData));
-          
+          localStorage.setItem(
+            `${this.draftKey}_formData`,
+            JSON.stringify(this.formData)
+          );
+
           // Save all editor content
-          Object.keys(this.editorContentMap).forEach(field => {
-            localStorage.setItem(`${this.draftKey}_${field}`, this.editorContentMap[field]);
+          Object.keys(this.editorContentMap).forEach((field) => {
+            localStorage.setItem(
+              `${this.draftKey}_${field}`,
+              this.editorContentMap[field]
+            );
           });
-          
-          this.updateSaveStatus('Draft saved', 'success');
+
+          this.updateSaveStatus("Draft saved", "success");
         } catch (e) {
-          console.error('Error saving form state:', e);
-          this.updateSaveStatus('Error saving draft', 'error');
+          console.error("Error saving form state:", e);
+          this.updateSaveStatus("Error saving draft", "error");
         }
       },
-      
+
       loadDraft() {
         try {
           // Load basic form data
-          const savedFormData = localStorage.getItem(`${this.draftKey}_formData`);
+          const savedFormData = localStorage.getItem(
+            `${this.draftKey}_formData`
+          );
           if (savedFormData) {
             const parsedData = JSON.parse(savedFormData);
             this.formData = { ...this.formData, ...parsedData };
           }
-          
+
           // Load rich text editor content
           const editorFields = [
-            'theory_positives', 'theory_negatives',
-            'phraseology_positives', 'phraseology_negatives',
-            'coordination_positives', 'coordination_negatives',
-            'final_comment', 'internal_remarks'
+            "theory_positives",
+            "theory_negatives",
+            "phraseology_positives",
+            "phraseology_negatives",
+            "coordination_positives",
+            "coordination_negatives",
+            "final_comment",
+            "internal_remarks",
           ];
-          
+
           // Populate our content map and update editors
-          editorFields.forEach(field => {
-            const savedContent = localStorage.getItem(`${this.draftKey}_${field}`);
+          editorFields.forEach((field) => {
+            const savedContent = localStorage.getItem(
+              `${this.draftKey}_${field}`
+            );
             if (savedContent) {
               // Store the content in our map
               this.editorContentMap[field] = savedContent;
-              
+
               // Update the editor content
               const editor = this.$refs[`${field}_editor`];
               const input = this.$refs[field];
-              
+
               if (editor && input) {
                 editor.innerHTML = savedContent;
                 input.value = savedContent;
+
+                // Set up resizable images after loading content
+                setTimeout(() => {
+                  this.setupImageResizeHandlers();
+                }, 100);
               }
             }
           });
-          
-          this.updateSaveStatus('Draft loaded', 'success');
+
+          this.updateSaveStatus("Draft loaded", "success");
         } catch (e) {
-          console.error('Error loading draft:', e);
-          this.updateSaveStatus('Error loading draft', 'error');
+          console.error("Error loading draft:", e);
+          this.updateSaveStatus("Error loading draft", "error");
         }
       },
-      
+
       saveDraft() {
         // Make sure all editor content is saved
         const editorFields = [
-          'theory_positives', 'theory_negatives',
-          'phraseology_positives', 'phraseology_negatives',
-          'coordination_positives', 'coordination_negatives',
-          'final_comment', 'internal_remarks'
+          "theory_positives",
+          "theory_negatives",
+          "phraseology_positives",
+          "phraseology_negatives",
+          "coordination_positives",
+          "coordination_negatives",
+          "final_comment",
+          "internal_remarks",
         ];
-        
-        editorFields.forEach(field => {
+
+        editorFields.forEach((field) => {
           this.saveEditorContent(field);
         });
-        
+
         // Explicitly save all content
         this.saveFormState();
         this.showSavedDraftModal = true;
       },
-      
-      setupBeforeUnload() {
-        // Add event listener for browser navigation
-        window.addEventListener('beforeunload', (e) => {
-          if (this.hasChanges) {
-            // Standard message for unsaved changes
-            const message = 'You have unsaved changes. Are you sure you want to leave?';
-            e.returnValue = message;
-            return message;
-          }
-        });
-        
-        // Intercept link clicks for in-app navigation
-        document.addEventListener('click', (e) => {
-          // Find if click was on a link or inside a link
-          const link = e.target.closest('a:not([type="submit"])');
-          if (link && !link.getAttribute('target') && this.hasChanges) {
-            e.preventDefault();
-            this.navigateTo = link.href;
-            this.showUnsavedChangesModal = true;
-          }
-        });
-      },
-      
-      handleNavigation(e) {
-        if (this.hasChanges) {
-          e.preventDefault();
-          this.navigateTo = e.target.href;
-          this.showUnsavedChangesModal = true;
-        }
-      },
-      
-      proceedWithNavigation() {
-        this.hasChanges = false; // Prevent beforeunload dialog
-        window.location.href = this.navigateTo;
-        this.showUnsavedChangesModal = false;
-      },
-      
+
       submitForm(e) {
         // Make sure all editor content is saved to hidden inputs before submission
         const editorFields = [
-          'theory_positives', 'theory_negatives',
-          'phraseology_positives', 'phraseology_negatives',
-          'coordination_positives', 'coordination_negatives',
-          'final_comment', 'internal_remarks'
+          "theory_positives",
+          "theory_negatives",
+          "phraseology_positives",
+          "phraseology_negatives",
+          "coordination_positives",
+          "coordination_negatives",
+          "final_comment",
+          "internal_remarks",
         ];
-        
-        editorFields.forEach(field => {
+
+        editorFields.forEach((field) => {
           const editor = this.$refs[`${field}_editor`];
           const input = this.$refs[field];
-          
+
           if (editor && input) {
             input.value = editor.innerHTML;
           }
         });
-        
+
         // Form will submit normally
         return true;
-      }
+      },
     }));
   });
 </script>
 
 <style>
-  [x-cloak] { display: none !important; }
-  
+  [x-cloak] {
+    display: none !important;
+  }
+
   /* Custom editor styling */
-  .editor-container {
+  .enhanced-editor-container {
     border: 1px solid #e5e7eb;
     border-radius: 0.5rem;
     overflow: hidden;
     box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   }
-  
+
   .editor-toolbar {
     padding: 0.5rem;
     background-color: #f9fafb;
     border-bottom: 1px solid #e5e7eb;
     display: flex;
     gap: 0.25rem;
+    flex-wrap: wrap;
   }
-  
+
   .toolbar-button {
     border: 1px solid #e5e7eb;
     background-color: white;
@@ -779,18 +1361,24 @@
     justify-content: center;
     transition: all 150ms ease-in-out;
   }
-  
+
   .toolbar-button:hover {
     background-color: #f3f4f6;
   }
-  
+
   .toolbar-button:active {
     background-color: #e5e7eb;
   }
-  
+
+  .toolbar-divider {
+    width: 1px;
+    height: 24px;
+    background-color: #e5e7eb;
+    margin: 0 0.25rem;
+  }
+
   .editor-content {
     min-height: 8rem;
-    max-height: 20rem;
     overflow-y: auto;
     padding: 0.75rem;
     background-color: white;
@@ -798,44 +1386,59 @@
     font-size: 0.875rem;
     line-height: 1.5;
   }
-  
+
   .editor-content:focus {
     outline: none;
     box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
   }
-  
+
   /* Style for lists */
   .editor-content ul {
     list-style-type: disc;
     padding-left: 1.5rem;
     margin: 0.5rem 0;
   }
-  
+
   .editor-content ol {
     list-style-type: decimal;
     padding-left: 1.5rem;
     margin: 0.5rem 0;
   }
-  
+
   .editor-content li {
     margin-bottom: 0.25rem;
   }
-  
+
   /* Style for inline formatting */
-  .editor-content b, .editor-content strong {
+  .editor-content b,
+  .editor-content strong {
     font-weight: 600;
   }
-  
-  .editor-content i, .editor-content em {
+
+  .editor-content i,
+  .editor-content em {
     font-style: italic;
   }
-  
+
   /* Style for images */
   .editor-content img {
     max-width: 100%;
     height: auto;
     border-radius: 0.375rem;
     margin: 0.5rem 0;
+    cursor: move;
+  }
+
+  /* Image resize handle indicator */
+  .editor-content img::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 10px;
+    height: 10px;
+    background-color: rgba(0, 120, 212, 0.7);
+    cursor: nwse-resize;
   }
 </style>
 {% endblock %}
