@@ -19,19 +19,20 @@ def create_training_log(request, trainee_id: int, course_id: int):
     if request.user not in course.mentors.all():
         return redirect("overview:overview")
 
+    # Define all evaluation categories
     category_list = [
-        {"name": "theory", "label": "Theory"},
-        {"name": "phraseology", "label": "Phraseology"},
-        {"name": "coordination", "label": "Coordination"},
-        {"name": "tag_management", "label": "Tag Management"},
-        {"name": "situational_awareness", "label": "Situational Awareness"},
-        {"name": "traffic_flow", "label": "Traffic Flow"},
-        {"name": "separation", "label": "Separation"},
-        {
-            "name": "ability_to_work_under_pressure",
-            "label": "Ability to Work Under Pressure",
-        },
-        {"name": "motivation", "label": "Motivation"},
+        {"name": "theory", "label": "Theory", "description": "Applies required knowledge including airspace structure, SOPs, LoAs."},
+        {"name": "phraseology", "label": "Phraseology/Radiotelephony", "description": "Applies correct phraseology in English and German."},
+        {"name": "coordination", "label": "Coordination", "description": "Performs the required coordination with neighboring stations clearly and effectively. Hands/takes over station correctly."},
+        {"name": "tag_management", "label": "Tag Management/FPL Handling", "description": "Keeps flight plan and tag up to date at all times."},
+        {"name": "situational_awareness", "label": "Situational Awareness", "description": "Aware of the current and future traffic situation. Takes new information into account."},
+        {"name": "problem_recognition", "label": "Problem Recognition", "description": "Recognizes problems early and reacts accordingly."},
+        {"name": "traffic_planning", "label": "Traffic Planning", "description": "Looks ahead and plans a secure and efficient traffic flow."},
+        {"name": "reaction", "label": "Reaction", "description": "Reacts in a timely manner, flexible and appropriate to changes in the current traffic situation."},
+        {"name": "separation", "label": "Separation", "description": "Applies prescribed separation minima at all times (i.e. runway, radar, wake turbulence, separation etc.)."},
+        {"name": "efficiency", "label": "Efficiency", "description": "Takes pilot's requests into account, handles traffic in an efficient way for himself, the downstream sector and the pilot."},
+        {"name": "ability_to_work_under_pressure", "label": "Ability to Work Under Pressure", "description": "Shows consistent performance regardless of traffic volume. Recovery from mistakes."},
+        {"name": "motivation", "label": "Manner and Motivation", "description": "Is open to feedback and makes a realistic assessment of own performance. Deals respectfully with others and is well prepared for the session."},
     ]
 
     if request.method == "POST":
@@ -58,7 +59,7 @@ def create_training_log(request, trainee_id: int, course_id: int):
         "logs/create_training_log.html",
         {
             "form": form,
-            "category_list": category_list,
+            "categories": category_list,
             "trainee": trainee,
             "course": course,
         },
