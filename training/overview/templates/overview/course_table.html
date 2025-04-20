@@ -1,0 +1,70 @@
+{% load tags %}
+<div class="container">
+<h5>{{ course }} <a href="{% url 'overview:manage_mentors' course.id %}"> ⚙ </a> </h5>
+    <table class="table table-striped">
+    <tr>
+        <th>Name</th>
+        <th>ID</th>
+        <th>Progress</th>
+        {% if course.type == "RTG" %}
+        <th>Solo</th>
+        {% else %}
+        <th>Moodle</th>
+        {% endif %}
+        <th>Next</th>
+        <th>Mentor</th>
+        <th>Actions</th>
+    </tr>
+    {% for a, b in v.items %}
+        <tr>
+            <td><a href="{% url 'trainee:mentor_view' a.username %}">{{ a }} </a></td>
+            <td><a href="https://stats.vatsim.net/stats/{{ a.username }}" target="_blank"> {{ a.username }} </a> </td>
+        <td>{% for log in b.logs %}
+            {% if log.result %}
+            <a class="btn btn-success btn-sm" href="{% url 'logs:log_detail' log.id %}">
+            {% else %}
+            <a class="btn btn-danger btn-sm" href="{% url 'logs:log_detail' log.id %}">
+            {% endif %}
+        {{ log.type }}</a> {% endfor %} {{ b.date_last|format_date }}
+        <a class="btn btn-sm btn-info" href="{% url 'logs:new_log' a.id course.id %}">+</a>
+        </td>
+        {% if course.type == "RTG" %}
+            <td>
+            {% if b.solo == "Add Solo" %}
+                <a href="{% url 'overview:add_solo' a.username course.id %}">{{ b.solo }} </a>
+                {% else %}
+                {{ b.solo }}
+                {% endif %}
+            </td>
+        {% else %}
+            <td>{% if b.moodle %} ✅ {% else %} ❌ {% endif %}</td>
+        {% endif %}
+        <td>{{ b.next_step }}</td>
+        <td>
+        <a href="{% url 'overview:claim' a.id course.id %}">{% if b.claimed %}{{ b.claimed_by }}{% else %}Claim{% endif %}</a></td>
+        <td>
+            <a href="{% url 'overview:finish' a.id course.id %}" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#confirmModal"
+   data-href="{% url 'overview:finish' a.id course.id %}" data-message="Do you want to give {{ a }} the endorsements for {{ course }}?">✓</a>
+            <a href="{% url 'overview:remove' a.id course.id %}" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#confirmModal"
+   data-href="{% url 'overview:remove' a.id course.id %}" data-message="Are you sure you want to remove {{ a }} from {{ course }}?">X</a>
+        </td>
+        </tr>
+    {% endfor %}
+    </table>
+    <form method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="course_id" value="{{ course.id }}">
+        <label for="username-{{ course.id }}">ID:</label>
+        <input type="text" name="username" id="username-{{ course.id }}">
+
+        <button class="btn btn-primary btn-sm" type="submit">Add</button>
+
+    {% if form.errors %}
+            <div style="color: red;">
+                {{ form.errors.username }}
+            </div>
+        {% endif %}
+    </form>
+    <hr>
+    <br>
+</div>
