@@ -166,7 +166,8 @@ def claim_trainee(request, trainee_id, course_id):
     try:
         # If trainee is already claimed by someone else, continue without doing anything
         obj = TraineeClaim.objects.get(trainee_id=trainee_id, course_id=course_id)
-        return redirect("overview:overview")
+        if obj.mentor != request.user:
+            return redirect("overview:overview")
     except TraineeClaim.DoesNotExist:
         pass
     try:
