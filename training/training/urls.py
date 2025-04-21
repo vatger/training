@@ -14,5 +14,6 @@ urlpatterns = [
     path("lists/", include("lists.urls")),
     path("trainee/", include("trainee.urls")),
     path("endorsements/", include("endorsements.urls")),
+    path("familiarisations/", include("familiarisations.urls")),
     path("", group_based_redirect, name="group_redirect"),
 ]

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Familiarisations</title>
+        <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    {% block extra_styles %}{% endblock %}
+
+
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .content-wrapper {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+<div class="container content-wrapper">
+    <div class="row">
+        <table class="table table-striped table-bordered">
+    <thead>
+        <tr>
+            <th>Controller</th>
+            <th>Familiarisation</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user, fam in fams.items %}
+        <tr>
+            <td>{{ user }}</td>
+            <td>
+                {{ fam|slice:":-2" }}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+    </div>
+</div>
+
+
+
+    <footer class="bg-light text-center text-muted py-3" style="border-top: 1px solid #ddd;">
+        <div class="container">
+            <a href="https://vatsim-germany.org/policies/gdpr" target="_blank" class="text-muted mx-2">GDPR</a> |
+            <a href="https://vatsim-germany.org/policies/imprint" target="_blank" class="text-muted mx-2">Imprint</a>
+        </div>
+    </footer>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    {% block extra_scripts %}{% endblock %}
+
+</body>
+</html>
