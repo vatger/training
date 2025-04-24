@@ -26,9 +26,15 @@
     </div>
   </div>
 
-  <!-- Form -->
-  <form method="post" action="" id="log-form" @submit="submitForm">
-    {% csrf_token %}
+  <form 
+  method="post" 
+  action="" 
+  id="log-form" 
+  @submit="submitForm"
+  data-draft-key="{{ draft_key }}"
+  data-should-clear-draft="{{ should_clear_draft }}"
+  data-continue-draft="{{ continue_draft }}">
+  {% csrf_token %}
     <div class="space-y-8">
       <!-- Session Details Card -->
       <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
@@ -44,14 +50,13 @@
               class="block text-sm font-medium text-gray-700 mb-1"
               >Session Date</label
             >
-            <input
-              type="date"
-              name="session_date"
-              id="id_session_date"
+            <input 
+              type="date" 
+              name="session_date" 
+              id="id_session_date" 
               class="input input-bordered w-full"
               x-model="formData.session_date"
-              @change="saveFormState"
-            />
+              @change="saveFormState">
           </div>
 
           <!-- Position -->
@@ -390,63 +395,113 @@
       draftKey: "",
 
       init() {
-        // Generate unique key for storing this log draft
-        this.draftKey = `log_draft_{{ trainee.id }}_{{ course.id }}`;
-
-        // Load saved draft if exists
-        this.$nextTick(() => {
-          this.loadDraft();
+        const formElement = document.getElementById('log-form');
+        this.draftKey = formElement.dataset.draftKey;
+        
+        // Get string values
+        const continueDraftStr = formElement.dataset.continueDraft;
+        const shouldClearDraftStr = formElement.dataset.shouldClearDraft;
+        
+        console.log('Init with draft params:', {
+          draftKey: this.draftKey,
+          continueDraft: continueDraftStr,
+          shouldClearDraft: shouldClearDraftStr
         });
+        
+        // Convert to booleans with explicit string comparison
+        const continueDraft = continueDraftStr === 'true';
+        const shouldClearDraft = shouldClearDraftStr === 'true';
+        
+        // IMPORTANT: Handle drafts BEFORE any form initialization
+        if (continueDraft) {
+          console.log('Loading draft...');
+          // We leave the draft in localStorage when continuing
+        } else {
+          console.log('Clearing draft...');
+          this.clearDraft();
+        }
+        
+        // Load form data AFTER draft decisions
+        this.$nextTick(() => {
+          if (continueDraft) {
+            this.loadDraft();
+          }
+          
+          // Set initial form state
+          setTimeout(() => {
+            this.setInitialFormState();
+          }, 300);
+        });
+      },
 
-        // Set initial form state to detect changes
-        setTimeout(() => {
-          this.setInitialFormState();
-        }, 300);
+      clearDraft() {
+        Object.keys(localStorage).forEach(key => {
+          // Clear our custom draft entries
+          if (key.startsWith(this.draftKey)) {
+            localStorage.removeItem(key);
+          }
+          
+          // Also clear EasyMDE's autosaved drafts
+          if (key.startsWith('smde_' + this.draftKey)) {
+            localStorage.removeItem(key);
+          }
+        });
+        
+        this.updateSaveStatus("Draft cleared", "info");
       },
 
       setupEasyMDE(element, fieldName) {
-        if (!element) return;
-        
-        // Configure EasyMDE options for this field
-        const instance = new EasyMDE({
-          element: element,
-          status: false,
-          spellChecker: false,
-          autoDownloadFontAwesome: true, // Force download Font Awesome to ensure icons are visible
-          placeholder: `Write your ${fieldName.includes('positives') ? 'strengths' : fieldName.includes('negatives') ? 'improvement areas' : 'content'} here...`,
-          autosave: {
-            enabled: true,
-            uniqueId: `${this.draftKey}_${fieldName}`,
-            delay: 1000,
-          },
-          toolbar: [
-            "bold", "italic", "heading", "|",
-            "unordered-list", "ordered-list", "|",
-            "link", "image", "|",
-            "preview"
-          ],
-          minHeight: "100px",
-          hideIcons: ["side-by-side", "fullscreen"],
-          previewImagesInEditor: true,
-          lineWrapping: true,
-        });
-        
-        this.easyMDEInstances[fieldName] = instance;
-        
-        // Load any saved content from localStorage
-        const savedContent = localStorage.getItem(`${this.draftKey}_${fieldName}_content`);
-        if (savedContent) {
-          instance.value(savedContent);
-        }
-        
-        // Listen for changes and save them
-        instance.codemirror.on("change", () => {
-          localStorage.setItem(`${this.draftKey}_${fieldName}_content`, instance.value());
-          this.saveFormState();
-        });
-        
-        return instance;
-      },
+  if (!element) return;
+  
+  // Get form element to check if we're continuing a draft
+  const formElement = document.getElementById('log-form');
+  const continueDraftStr = formElement.dataset.continueDraft;
+  const continueDraft = continueDraftStr === 'true';
+  
+  // Configure EasyMDE options
+  const instance = new EasyMDE({
+    element: element,
+    status: false,
+    spellChecker: false,
+    autoDownloadFontAwesome: true,
+    placeholder: `Write your ${fieldName.includes('positives') ? 'strengths' : fieldName.includes('negatives') ? 'improvement areas' : 'content'} here...`,
+    // IMPORTANT: Only enable autosave when continuing a draft
+    autosave: {
+      enabled: continueDraft,
+      uniqueId: `${this.draftKey}_${fieldName}`,
+      delay: 1000,
+    },
+    toolbar: [
+      "bold", "italic", "heading", "|",
+      "unordered-list", "ordered-list", "|",
+      "link", "image", "|",
+      "preview"
+    ],
+    minHeight: "100px",
+    hideIcons: ["side-by-side", "fullscreen"],
+    previewImagesInEditor: true,
+    lineWrapping: true,
+  });
+  
+  this.easyMDEInstances[fieldName] = instance;
+  
+  // Only load content when continuing a draft
+  if (continueDraft) {
+    const storageKey = `${this.draftKey}_${fieldName}_content`;
+    const savedContent = localStorage.getItem(storageKey);
+    if (savedContent) {
+      instance.value(savedContent);
+    }
+  }
+  
+  // Always set up change listener
+  instance.codemirror.on("change", () => {
+    localStorage.setItem(`${this.draftKey}_${fieldName}_content`, instance.value());
+    this.saveFormState();
+  });
+  
+  return instance;
+},
 
       setupBeforeUnload() {
         window.addEventListener("beforeunload", (e) => {
@@ -515,7 +570,10 @@
             const parsedData = JSON.parse(savedFormData);
             this.formData = { ...this.formData, ...parsedData };
           }
-
+          
+          // Don't need to explicitly load EasyMDE content here - 
+          // that's handled in setupEasyMDE for each editor
+          
           this.updateSaveStatus("Draft loaded", "success");
         } catch (e) {
           console.error("Error loading draft:", e);
@@ -539,8 +597,23 @@
           }
         });
         
+        // Clear all drafts from localStorage after form submission
+        this.clearAllDrafts();
+        
         // Form will submit normally
         return true;
+      },
+
+      clearAllDrafts() {
+        // Schedule deletion after successful submission
+        setTimeout(() => {
+          // Clear all related draft keys
+          Object.keys(localStorage).forEach(key => {
+            if (key.startsWith(this.draftKey) || key.startsWith('smde_' + this.draftKey)) {
+              localStorage.removeItem(key);
+            }
+          });
+        }, 1000);
       },
 
       handleNavigation(e) {

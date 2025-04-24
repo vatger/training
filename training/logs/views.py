@@ -19,6 +19,9 @@ def create_training_log(request, trainee_id: int, course_id: int):
     if request.user not in course.mentors.all():
         return redirect("overview:overview")
 
+    # Check if we should continue a draft
+    continue_draft = request.GET.get('continue', 'false').lower() == 'true'
+
     # Define all evaluation categories
     category_list = [
         {"name": "theory", "label": "Theory", "description": "Applies required knowledge including airspace structure, SOPs, LoAs."},
@@ -50,9 +53,19 @@ def create_training_log(request, trainee_id: int, course_id: int):
                 claim.delete()
             except TraineeClaim.DoesNotExist:
                 pass
-            return redirect("overview:overview")
+            
+            # Clear the draft when successfully saved
+            response = redirect("overview:overview")
+            response.delete_cookie(f'log_draft_{trainee_id}_{course_id}')
+            return response
     else:
         form = TrainingLogForm()
+
+    draft_context = {
+        'draft_key': f'log_draft_{trainee_id}_{course_id}',
+        'continue_draft': 'true' if continue_draft else 'false',
+        'should_clear_draft': 'true' if not continue_draft else 'false',
+    }
 
     return render(
         request,
@@ -62,6 +75,7 @@ def create_training_log(request, trainee_id: int, course_id: int):
             "categories": category_list,
             "trainee": trainee,
             "course": course,
+            **draft_context,
         },
     )
 
