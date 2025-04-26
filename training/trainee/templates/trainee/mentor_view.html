@@ -119,7 +119,7 @@
           Moodle Courses
         </button>
         <button @click="activeTab = 'familiarisations'" :class="{'border-blue-500 text-blue-600': activeTab === 'familiarisations', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'familiarisations'}" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap">
-          Center Familiarisations
+          Centre Familiarisations
         </button>
         <button @click="activeTab = 'comments'" :class="{'border-blue-500 text-blue-600': activeTab === 'comments', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'comments'}" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap">
           Mentor Comments
@@ -391,7 +391,7 @@
     <div x-show="activeTab === 'familiarisations'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
       <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
         <div class="p-4 bg-gray-50 border-b border-gray-200">
-          <h3 class="font-semibold text-lg text-gray-800">Center Familiarisations</h3>
+          <h3 class="font-semibold text-lg text-gray-800">Centre Familiarisations</h3>
           <p class="text-sm text-gray-500">Trainee's center sector familiarisations</p>
         </div>
 
@@ -423,8 +423,8 @@
               <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
               </svg>
-              <h3 class="mt-2 text-sm font-medium text-gray-900">No Center Familiarisations</h3>
-              <p class="mt-1 text-sm text-gray-500">This trainee doesn't have any center familiarisations.</p>
+              <h3 class="mt-2 text-sm font-medium text-gray-900">No Centre Familiarisations</h3>
+              <p class="mt-1 text-sm text-gray-500">This trainee doesn't have any centre familiarisations.</p>
               
               {% if active %}
                 <div class="mt-4">
