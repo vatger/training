@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     "endorsements.apps.EndorsementsConfig",
     "api.apps.ApiConfig",
     "roster.apps.RosterConfig",
+    "familiarisations.apps.FamiliarisationsConfig",
     "django_vite"
 ]
 
@@ -146,7 +147,7 @@ LOGIN_URL = "/connect/login"
 
 DJANGO_VITE = {
     "default": {
-        "dev_mode": False,
+        "dev_mode": True,
         "manifest_path": BASE_DIR / "frontend" / "dist" / "manifest.json",
     }
 }

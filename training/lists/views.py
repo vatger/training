@@ -13,6 +13,7 @@ from django.shortcuts import (
 from dotenv import load_dotenv
 from endorsements.helpers import get_tier1_endorsements
 from overview.helpers import inform_user_course_start
+from familiarisations.models import Familiarisation
 from training.helpers import log_admin_action
 from training.permissions import mentor_required
 from django.contrib.auth.decorators import login_required
@@ -129,6 +130,13 @@ def view_lists(request):
 
     # Get Tier 1 Endorsement, do not show course if user already has it
     user_endorsements = get_user_endorsements(int(request.user.username))
+    
+    # Do not show familarisation courses if user already has the familiarisation
+    familiarisations = list(
+        Familiarisation.objects.filter(user=request.user).values_list(
+            "sector", flat=True
+        )
+    )
 
     for course in courses:
         endorsement_groups = set(
@@ -139,6 +147,12 @@ def view_lists(request):
             and len(endorsement_groups) > 0
         ):
             continue
+        
+        # Familiarisation check
+        if course.type == "FAM":
+            if course.familiarisation_sector.id in familiarisations:
+                continue
+            
         res = {"course": course, "hours_reached": True}
         if course.type == "RTG":
             if hours_dict[course.position] < min_hours:

@@ -380,5 +380,5 @@ pyrightconfig.json
 
 # End of https://www.toptal.com/developers/gitignore/api/python,django,pycharm
 
-frontend/node_modules
+training/frontend/node_modules
 training/staticfiles

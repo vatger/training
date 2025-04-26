@@ -8,6 +8,7 @@ from django.conf import settings
 from django.core.exceptions import MultipleObjectsReturned
 from django.shortcuts import redirect, get_object_or_404
 from django.shortcuts import render
+from familiarisations.models import Familiarisation, FamiliarisationSector, FIR
 from dotenv import load_dotenv
 from lists.models import Course, WaitingListEntry
 from lists.views import enrol_into_required_moodles
@@ -295,6 +296,27 @@ def finish_course(request, trainee_id, course_id):
                 "position": endorsement_group.name,
                 "instructor_cid": request.user.username,
             },
+        )
+        
+        # Add familiarisations if centre course
+    if course.type == "RTG" and course.position == "CTR":
+        fir = course.mentor_group.name[:4]  # Gepfuscht, aber wcyd
+        sectors = FamiliarisationSector.objects.filter(fir=fir)
+        for sector in sectors:
+            if not Familiarisation.objects.filter(user=trainee, sector=sector).exists():
+                Familiarisation.objects.create(user=trainee, sector=sector)
+                log_admin_action(
+                    request.user,
+                    course,
+                    CHANGE,
+                    f"Added familiarisation {sector} ({sector.name}) to trainee {trainee} ({trainee.username})",
+                )
+    elif course.type == "FAM":
+        # Create familiarisation if does not exist
+        if course.familiarisation_sector is None:
+            return redirect("overview:overview")
+        _, _ = Familiarisation.objects.get_or_create(
+            user=trainee, sector=course.familiarisation_sector
         )
     return redirect("overview:overview")
 
