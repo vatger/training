@@ -51,18 +51,18 @@
 }
 
 /* Main Django templates directory */
-@source "../../training/templates/**/*.html";
+@source "../../templates/**/*.html";
 
 /* App-specific template directories */
-@source "../../training/connect/templates/**/*.html";
-@source "../../training/endorsements/templates/**/*.html";
-@source "../../training/lists/templates/**/*.html";
-@source "../../training/logs/templates/**/*.html";
-@source "../../training/overview/templates/**/*.html";
-@source "../../training/trainee/templates/**/*.html";
+@source "../../connect/templates/**/*.html";
+@source "../../endorsements/templates/**/*.html";
+@source "../../lists/templates/**/*.html";
+@source "../../logs/templates/**/*.html";
+@source "../../overview/templates/**/*.html";
+@source "../../trainee/templates/**/*.html";
 
 /* Or more generally, catch all app template directories */
-@source "../../training/*/templates/**/*.html";
+@source "../../*/templates/**/*.html";
 
 /* Include frontend source files */
 @source "../**/*.{js,jsx}";

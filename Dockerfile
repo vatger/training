@@ -4,17 +4,23 @@ RUN mkdir /opt/training
 
 WORKDIR /opt/training
 
-COPY requirements.txt .
+RUN apk add --no-cache nginx nodejs npm
+
+COPY . .
 
 RUN pip3 install -r requirements.txt
 
-COPY . .
+WORKDIR /opt/training/training/frontend
+
+RUN npm ci
+RUN npm run build
+
+WORKDIR /opt/training
 
 EXPOSE 80
 
 RUN chmod +x ./init.sh
 
-RUN apk add --no-cache nginx
 COPY config/default.conf /etc/nginx/http.d/default.conf
 
 CMD ["/bin/sh", "-c", "./init.sh"]

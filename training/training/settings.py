@@ -146,7 +146,8 @@ LOGIN_URL = "/connect/login"
 
 DJANGO_VITE = {
     "default": {
-        "dev_mode": True,
+        "dev_mode": False,
+        "manifest_path": BASE_DIR / "frontend" / "dist" / "manifest.json",
     }
 }
 
