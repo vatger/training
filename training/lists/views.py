@@ -175,7 +175,7 @@ def view_lists(request):
     )
 
 
-@mentor_required
+@login_required
 def join_leave_list(request, course_id):
     # Temporary diabling of course joining
     return redirect("lists:view_lists")
