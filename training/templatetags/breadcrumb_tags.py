@@ -72,3 +72,4 @@ def breadcrumb_item(title, url=None, active=False):
         'url': url if url is not None else '#',
         'active': active
     }
+    

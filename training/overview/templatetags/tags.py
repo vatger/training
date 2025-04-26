@@ -96,3 +96,17 @@ def calculate_progress(logs):
         
     # Ensure progress is between 0-100 and rounded to nearest integer
     return min(100, max(0, round(progress)))
+
+@register.filter
+def log_count(active_dict, inactive_dict):
+    count = 0
+    
+    # Count logs in active courses
+    for logs in active_dict.values():
+        count += len(logs)
+        
+    # Count logs in inactive courses
+    for logs in inactive_dict.values():
+        count += len(logs)
+        
+    return count
