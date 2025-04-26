@@ -52,9 +52,9 @@ INSTALLED_APPS = [
     "connect.apps.ConnectConfig",
     "trainee.apps.TraineeConfig",
     "endorsements.apps.EndorsementsConfig",
+    "familiarisations.apps.FamiliarisationsConfig",
     "api.apps.ApiConfig",
     "roster.apps.RosterConfig",
-    "familiarisations.apps.FamiliarisationsConfig",
     "django_vite"
 ]
 

@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from familiarisations.models import FamiliarisationSector
 
 # Create your models here.
 

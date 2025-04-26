@@ -59,7 +59,12 @@ def home(request):
     return render(
         request,
         "trainee/home.html",
-        {"active": active, "inactive": inactive, "moodles": moodles},
+        {
+            "active": active, 
+            "inactive": inactive, 
+            "moodles": moodles,
+            "fams": fams
+        },
     )
 
 
@@ -98,6 +103,13 @@ def mentor_view(request, vatsim_id: int):
 
     moodles = get_moodles(trainee)
     fams = get_familiarisations(trainee.username)
+    
+    # Get all courses the mentor can assign
+    available_courses = Course.objects.filter(mentors=request.user)
+    if request.user.is_superuser:
+        available_courses = Course.objects.all()
+    # Exclude courses the trainee is already in
+    available_courses = available_courses.exclude(active_trainees=trainee)
 
     return render(
         request,
@@ -109,6 +121,8 @@ def mentor_view(request, vatsim_id: int):
             "comments": comments,
             "form": form,
             "moodles": moodles,
+            "fams": fams,
+            "available_courses": available_courses
         },
     )
 
