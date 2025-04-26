@@ -321,10 +321,9 @@
                   {% csrf_token %}
                   <input type="hidden" name="course_id" value="{{ course.id }}">
                   <div>
-                    <label for="username-empty-{{ course.id }}" class="block text-xs font-medium text-gray-700">VATSIM ID:</label>
                     <input placeholder="VATSIM ID" type="number" name="username" id="username-empty-{{ course.id }}" class="input">
                   </div>
-                  <button type="submit" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                  <button type="submit" class="btn btn-primary">
                     Add Trainee
                   </button>
                 </form>
