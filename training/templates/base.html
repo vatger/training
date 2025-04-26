@@ -89,7 +89,24 @@
             >
               Training
             </div>
-            <a href="{% url 'lists:view_lists' %}" class="btn btn-ghost w-full justify-start text-gray-600 hover:text-base-content pl-2 h-[36px]">
+            <!--<a href="{% url 'lists:view_lists' %}" class="btn btn-ghost w-full justify-start text-gray-600 hover:text-base-content pl-2 h-[36px]">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                />
+              </svg>
+              <span>Courses</span>
+            </a>-->
+            <a href="javascript:void(0)" class="btn btn-ghost w-full justify-start text-gray-500 cursor-not-allowed pl-2 h-[36px] opacity-60 pointer-events-none">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 class="h-5 w-5"
@@ -106,26 +123,7 @@
               </svg>
               <span>Courses</span>
             </a>
-            <!--
             <a href="{% url 'endorsements:trainee_view' %}" class="btn btn-ghost w-full justify-start text-gray-600 hover:text-base-content pl-2 h-[36px]">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              <span>Endorsements</span>
-            </a>
-            -->
-            <a href="javascript:void(0)" class="btn btn-ghost w-full justify-start text-gray-500 cursor-not-allowed pl-2 h-[36px] opacity-60 pointer-events-none">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 class="h-5 w-5"
@@ -231,9 +229,9 @@
           {% endif %}
         </nav>
 
-        <div class="px-4 mt-auto mb-2">
+        <div class="px-4 mt-auto mb-2 w-full">
           <div class="dropdown dropdown-right dropdown-end">
-            <button role="button" class="flex justify-start items-center space-x-1 p-0 px-2 -ml-2 text-left btn btn-ghost h-14">
+            <button role="button" class="flex justify-start items-center space-x-1 p-0 px-2 -ml-2 text-left btn btn-ghost h-14 w-56">
               <div class="avatar avatar-placeholder">
                 <div class="bg-base-300 text-base-content w-10 rounded-full">
                   <span>{{ user.first_name|slice:"1" }}{{ user.last_name|slice:"1" }}</span>
