@@ -19,7 +19,7 @@ from training.permissions import mentor_required
 
 load_dotenv()
 
-min_hours_required = float(os.getenv("T1_MIN_MINUTES", "25")) / 60
+min_hours_required = float(os.getenv("T1_MIN_MINUTES")) / 60
 
 
 def valid_removal(endorsement: EndorsementActivity) -> bool:
