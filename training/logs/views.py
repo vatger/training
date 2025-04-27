@@ -1,3 +1,5 @@
+from django.http import HttpResponseForbidden
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.shortcuts import render, redirect, get_object_or_404, reverse
@@ -7,8 +9,9 @@ from overview.models import TraineeClaim
 from .forms import TrainingLogForm
 from .models import Log
 
+from training.permissions import mentor_required
 
-@login_required
+@mentor_required
 def create_training_log(request, trainee_id: int, course_id: int):
     # Ensure the trainee and course exist
     trainee = get_object_or_404(User, id=trainee_id)
@@ -17,19 +20,23 @@ def create_training_log(request, trainee_id: int, course_id: int):
     if request.user not in course.mentors.all():
         return redirect("overview:overview")
 
+    # Check if we should continue a draft
+    continue_draft = request.GET.get('continue', 'false').lower() == 'true'
+
+    # Define all evaluation categories
     category_list = [
-        {"name": "theory", "label": "Theory"},
-        {"name": "phraseology", "label": "Phraseology"},
-        {"name": "coordination", "label": "Coordination"},
-        {"name": "tag_management", "label": "Tag Management"},
-        {"name": "situational_awareness", "label": "Situational Awareness"},
-        {"name": "traffic_flow", "label": "Traffic Flow"},
-        {"name": "separation", "label": "Separation"},
-        {
-            "name": "ability_to_work_under_pressure",
-            "label": "Ability to Work Under Pressure",
-        },
-        {"name": "motivation", "label": "Motivation"},
+        {"name": "theory", "label": "Theory", "description": "Applies required knowledge including airspace structure, SOPs, LoAs."},
+        {"name": "phraseology", "label": "Phraseology/Radiotelephony", "description": "Applies correct phraseology in English and German."},
+        {"name": "coordination", "label": "Coordination", "description": "Performs the required coordination with neighboring stations clearly and effectively. Hands/takes over station correctly."},
+        {"name": "tag_management", "label": "Tag Management/FPL Handling", "description": "Keeps flight plan and tag up to date at all times."},
+        {"name": "situational_awareness", "label": "Situational Awareness", "description": "Aware of the current and future traffic situation. Takes new information into account."},
+        {"name": "problem_recognition", "label": "Problem Recognition", "description": "Recognizes problems early and reacts accordingly."},
+        {"name": "traffic_planning", "label": "Traffic Planning", "description": "Looks ahead and plans a secure and efficient traffic flow."},
+        {"name": "reaction", "label": "Reaction", "description": "Reacts in a timely manner, flexible and appropriate to changes in the current traffic situation."},
+        {"name": "separation", "label": "Separation", "description": "Applies prescribed separation minima at all times (i.e. runway, radar, wake turbulence, separation etc.)."},
+        {"name": "efficiency", "label": "Efficiency", "description": "Takes pilot's requests into account, handles traffic in an efficient way for himself, the downstream sector and the pilot."},
+        {"name": "ability_to_work_under_pressure", "label": "Ability to Work Under Pressure", "description": "Shows consistent performance regardless of traffic volume. Recovery from mistakes."},
+        {"name": "motivation", "label": "Manner and Motivation", "description": "Is open to feedback and makes a realistic assessment of own performance. Deals respectfully with others and is well prepared for the session."},
     ]
 
     if request.method == "POST":
@@ -47,18 +54,29 @@ def create_training_log(request, trainee_id: int, course_id: int):
                 claim.delete()
             except TraineeClaim.DoesNotExist:
                 pass
-            return redirect("overview:overview")
+            
+            # Clear the draft when successfully saved
+            response = redirect("overview:overview")
+            response.delete_cookie(f'log_draft_{trainee_id}_{course_id}')
+            return response
     else:
         form = TrainingLogForm()
+
+    draft_context = {
+        'draft_key': f'log_draft_{trainee_id}_{course_id}',
+        'continue_draft': 'true' if continue_draft else 'false',
+        'should_clear_draft': 'true' if not continue_draft else 'false',
+    }
 
     return render(
         request,
         "logs/create_training_log.html",
         {
             "form": form,
-            "category_list": category_list,
+            "categories": category_list,
             "trainee": trainee,
             "course": course,
+            **draft_context,
         },
     )
 
@@ -67,9 +85,28 @@ def create_training_log(request, trainee_id: int, course_id: int):
 def log_detail(request, log_id):
     log = get_object_or_404(Log, pk=log_id)
     course = log.course
-    if request.user not in course.mentors.all():
-        return redirect("overview:overview")
-    admin_edit_url = reverse("admin:logs_log_change", args=[log.pk])
-    return render(
-        request, "logs/log_detail.html", {"form": log, "admin_edit_url": admin_edit_url}
-    )
+
+    is_own_log = request.user == log.trainee
+    is_log_mentor = request.user == log.mentor
+    is_course_mentor = course is not None and request.user in course.mentors.all()
+    is_admin = request.user.is_superuser
+    
+    # If none of the permission conditions are met, deny access
+    if not (is_own_log or is_log_mentor or is_course_mentor or is_admin):
+        return HttpResponseForbidden("You do not have permission to view this log.")
+    
+    # Determine if the user can view internal remarks
+    can_view_internal = is_log_mentor or is_course_mentor or is_admin
+    
+    # Define custom breadcrumbs for this view
+    breadcrumbs = [
+        {'title': 'Dashboard', 'url': '/'},
+        {'title': 'Training Logs', 'url': '#'},
+        {'title': f'{log.position} Training Log', 'url': None}
+    ]
+    
+    return render(request, "logs/log_detail.html", {
+        'form': log,
+        'breadcrumbs': breadcrumbs,
+        'render_internal': can_view_internal  # Only true for mentors and admins
+    })

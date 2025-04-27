@@ -1,0 +1,72 @@
+@import "tailwindcss";
+@plugin "daisyui";
+@plugin "daisyui/theme" {
+  name: "vatger";
+  default: true; /* set as default */
+  prefersdark: false; /* set as default dark mode (prefers-color-scheme:dark) */
+  color-scheme: light; /* color of browser-provided UI */
+
+  /* Keep original base colors */
+  --color-base-100: hsl(0, 0%, 100%);
+  --color-base-200: hsl(0, 0%, 98%);
+  --color-base-300: hsl(0, 0%, 95%);
+  --color-base-content: oklch(41.886% 0.053 255.824);
+  --color-primary: oklch(56.86% 0.255 257.57);
+  --color-primary-content: oklch(91.372% 0.051 257.57);
+  --color-secondary: oklch(42.551% 0.161 282.339);
+  --color-secondary-content: oklch(88.51% 0.032 282.339);
+  --color-accent: oklch(59.939% 0.191 335.171);
+  --color-accent-content: oklch(11.988% 0.038 335.171);
+  --color-neutral: oklch(19.616% 0.063 257.651);
+  --color-neutral-content: oklch(83.923% 0.012 257.651);
+
+  /* Updated colors to match the UI improvements */
+  --color-info: hsl(210, 90%, 90%); /* Lighter blue for backgrounds */
+  --color-info-content: hsl(210, 90%, 30%); /* Darker blue for text */
+  
+  --color-success: hsl(142, 76%, 90%); /* Lighter green for backgrounds */
+  --color-success-content: hsl(142, 76%, 35%); /* Darker green for text */
+  
+  --color-warning: hsl(45, 100%, 90%); /* Lighter amber for backgrounds */
+  --color-warning-content: hsl(45, 100%, 40%); /* Darker amber for text */
+  
+  --color-error: hsl(0, 100%, 90%); /* Lighter red for backgrounds */
+  --color-error-content: hsl(0, 100%, 40%); /* Darker red for text */
+
+  /* border radius */
+  --radius-selector: 1rem;
+  --radius-field: 0.5rem;
+  --radius-box: 1rem;
+
+  /* base sizes */
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+
+  /* border size */
+  --border: 1px;
+
+  /* effects */
+  --depth: 1;
+  --noise: 0;
+}
+
+/* Main Django templates directory */
+@source "../../templates/**/*.html";
+
+/* App-specific template directories */
+@source "../../connect/templates/**/*.html";
+@source "../../endorsements/templates/**/*.html";
+@source "../../lists/templates/**/*.html";
+@source "../../logs/templates/**/*.html";
+@source "../../overview/templates/**/*.html";
+@source "../../trainee/templates/**/*.html";
+
+/* Or more generally, catch all app template directories */
+@source "../../*/templates/**/*.html";
+
+/* Include frontend source files */
+@source "../**/*.{js,jsx}";
+
+@source inline("bg-blue-500 text-white p-4 rounded-lg");
+@source inline("container mx-auto");
+@source inline("grid grid-cols-1 md:grid-cols-2 gap-4");

@@ -2,12 +2,13 @@ from datetime import datetime, timezone
 
 import requests
 from django.contrib.admin.models import CHANGE
-from django.contrib.auth.decorators import login_required
+from training.permissions import mentor_required
 from django.contrib.auth.models import User
 from django.conf import settings
 from django.core.exceptions import MultipleObjectsReturned
 from django.shortcuts import redirect, get_object_or_404
 from django.shortcuts import render
+from familiarisations.models import Familiarisation, FamiliarisationSector, FIR
 from dotenv import load_dotenv
 from familiarisations.models import Familiarisation, FamiliarisationSector, FIR
 from lists.models import Course, WaitingListEntry
@@ -35,7 +36,7 @@ def get_solos():
         solos = [
             {
                 "id": 1,
-                "user_cid": 1000000,
+                "user_cid": 1601613,
                 "instructor_cid": 1439797,
                 "position": "EDDL_APP",
                 "expiry": "2025-05-05T00:00:00.000000Z",
@@ -67,98 +68,7 @@ def get_solos():
     return res
 
 
-@login_required
-def overview(request):
-    if request.method == "POST":
-        form = AddUserForm(request.POST)
-        if form.is_valid():
-            course_id = form.cleaned_data["course_id"]
-            username = form.cleaned_data["username"]
-            course = get_object_or_404(Course, id=course_id)
-
-            try:
-                user = User.objects.get(username=username)
-                if user not in course.active_trainees.all():
-                    course.active_trainees.add(user)
-                    enrol_into_required_moodles(user.username, course.moodle_course_ids)
-                    WaitingListEntry.objects.filter(user=user, course=course).delete()
-
-                    log_admin_action(
-                        request.user,
-                        course,
-                        CHANGE,
-                        f"Added trainee {user} ({user.username}) to course {course}",
-                    )
-            except User.DoesNotExist:
-                form.add_error("username", "User not found.")
-
-        return redirect("overview:overview")
-
-    courses = request.user.mentored_courses.all()
-    courses = sorted(courses, key=lambda course: str(course))
-    solos = get_solos()
-    res = {}
-    for course in courses:
-        course_trainees = {}
-        trainees = course.active_trainees.all()
-        for trainee in trainees:
-            claim = TraineeClaim.objects.filter(trainee=trainee, course=course).exists()
-
-            # Moodle check for EDMT and GST
-            moodle_completed = True
-            if course.type != "RTG":
-                for moodle_course_id in course.moodle_course_ids:
-                    moodle_completed = moodle_completed and get_course_completion(
-                        trainee.username, moodle_course_id
-                    )
-
-            solo = [
-                solo
-                for solo in solos
-                if solo["position"] == course.solo_station
-                and solo["user_cid"] == int(trainee.username)
-            ]
-            solo_info = (
-                f"{solo[0]["remaining_days"]}/{solo[0]["delta"]}"
-                if solo
-                else "Add Solo"
-            )
-            if claim:
-                try:
-                    claimer = TraineeClaim.objects.get(
-                        trainee=trainee, course=course
-                    ).mentor
-                except MultipleObjectsReturned:
-                    print(f"Multiple claims for trainee {trainee} in course {course}")
-                    claimer = (
-                        TraineeClaim.objects.filter(trainee=trainee, course=course)
-                        .first()
-                        .mentor
-                    )
-            course_trainees[trainee] = {
-                "logs": Log.objects.filter(trainee=trainee, course=course).order_by(
-                    "session_date"
-                ),
-                "claimed": claim,
-                "claimed_by": (
-                    claimer.first_name + " " + claimer.last_name if claim else None
-                ),
-                "solo": solo_info,
-            }
-            try:
-                next_step = course_trainees[trainee]["logs"].last().next_step
-                date_last = course_trainees[trainee]["logs"].last().session_date
-            except:
-                next_step = ""
-                date_last = None
-            course_trainees[trainee]["next_step"] = next_step
-            course_trainees[trainee]["date_last"] = date_last
-            course_trainees[trainee]["moodle"] = moodle_completed
-        res[course] = course_trainees
-    return render(request, "overview/overview.html", {"overview": res})
-
-
-@login_required
+@mentor_required
 def claim_trainee(request, trainee_id, course_id):
     course = get_object_or_404(Course, id=course_id)
     if request.user not in course.mentors.all():
@@ -183,7 +93,7 @@ def claim_trainee(request, trainee_id, course_id):
     return redirect("overview:overview")
 
 
-@login_required
+@mentor_required
 def remove_trainee(request, trainee_id, course_id):
     try:
         course = Course.objects.get(id=course_id)
@@ -201,7 +111,7 @@ def remove_trainee(request, trainee_id, course_id):
     return redirect("overview:overview")
 
 
-@login_required
+@mentor_required
 def add_solo(request, vatsim_id, course_id):
     course = get_object_or_404(Course, id=course_id)
     if course.type != "RTG":
@@ -266,7 +176,7 @@ def add_solo(request, vatsim_id, course_id):
     )
 
 
-@login_required
+@mentor_required
 def finish_course(request, trainee_id, course_id):
     course = get_object_or_404(Course, id=course_id)
     trainee = get_object_or_404(User, id=trainee_id)
@@ -290,7 +200,7 @@ def finish_course(request, trainee_id, course_id):
             endorsement
             for endorsement in endorsements
             if endorsement["user_cid"] == int(trainee.username)
-            and endorsement["position"] == endorsement_group.name
+               and endorsement["position"] == endorsement_group.name
         ]:
             continue
 
@@ -304,7 +214,6 @@ def finish_course(request, trainee_id, course_id):
             },
         )
 
-    # Add familiarisations if centre course
     if course.type == "RTG" and course.position == "CTR":
         fir = course.mentor_group.name[:4]  # Gepfuscht, aber wcyd
         sectors = FamiliarisationSector.objects.filter(fir=fir)
@@ -324,11 +233,10 @@ def finish_course(request, trainee_id, course_id):
         _, _ = Familiarisation.objects.get_or_create(
             user=trainee, sector=course.familiarisation_sector
         )
-
     return redirect("overview:overview")
 
 
-@login_required
+@mentor_required
 def manage_mentors(request, course_id):
     course = get_object_or_404(Course, id=course_id)
     if request.user not in course.mentors.all():
@@ -365,7 +273,7 @@ def manage_mentors(request, course_id):
     )
 
 
-@login_required
+@mentor_required
 def remove_mentor(request, course_id, mentor_id):
     course = get_object_or_404(Course, id=course_id)
     mentor = get_object_or_404(User, id=mentor_id)
@@ -380,7 +288,7 @@ def remove_mentor(request, course_id, mentor_id):
     return redirect("overview:manage_mentors", course_id=course_id)
 
 
-@login_required
+@mentor_required
 def assign_core_test_view(request, vatsim_id: int, course_id: int):
     course = get_object_or_404(Course, id=course_id)
     if request.user not in course.mentors.all():
@@ -389,3 +297,141 @@ def assign_core_test_view(request, vatsim_id: int, course_id: int):
         return redirect("overview:overview")
     assign_core_test(request.user.username, vatsim_id, course.position)
     return redirect("overview:overview")
+
+
+@mentor_required
+def overview(request):
+    if request.method == "POST":
+        form = AddUserForm(request.POST)
+        if form.is_valid():
+            course_id = form.cleaned_data["course_id"]
+            username = form.cleaned_data["username"]
+            course = get_object_or_404(Course, id=course_id)
+
+            try:
+                user = User.objects.get(username=username)
+                if user not in course.active_trainees.all():
+                    course.active_trainees.add(user)
+                    enrol_into_required_moodles(user.username, course.moodle_course_ids)
+                    inform_user_course_start(int(user.username), course.name)
+                    WaitingListEntry.objects.filter(user=user, course=course).delete()
+
+                    log_admin_action(
+                        request.user,
+                        course,
+                        CHANGE,
+                        f"Added trainee {user} ({user.username}) to course {course}",
+                    )
+            except User.DoesNotExist:
+                form.add_error("username", "User not found.")
+
+        return redirect("overview:overview")
+
+    # Get all courses mentored by current user
+    courses = request.user.mentored_courses.all()
+    courses = sorted(courses, key=lambda course: str(course))
+
+    solos = get_solos()
+    res = {}
+
+    # Counters for summary metrics
+    active_trainees_count = 0
+    claimed_trainees_count = 0
+    waiting_trainees_count = 0
+
+    for course in courses:
+        course_trainees = {}
+        trainees = course.active_trainees.all()
+        active_trainees_count += trainees.count()
+
+        for trainee in trainees:
+            # Check if trainee is claimed
+            claim = TraineeClaim.objects.filter(trainee=trainee, course=course)
+            if claim.exists():
+                if claim[0].mentor == request.user:
+                    claimed_trainees_count += 1
+
+            # Moodle check for EDMT and GST
+            moodle_completed = True
+            if course.type != "RTG":
+                for moodle_course_id in course.moodle_course_ids:
+                    moodle_completed = moodle_completed and get_course_completion(
+                        trainee.username, moodle_course_id
+                    )
+
+            # Check solo status
+            solo = [
+                solo
+                for solo in solos
+                if solo["position"] == course.solo_station
+                   and solo["user_cid"] == int(trainee.username)
+            ]
+            solo_info = (
+                f"{solo[0]['remaining_days']}/{solo[0]['delta']}"
+                if solo
+                else "Add Solo"
+            )
+
+            # Get the mentor who claimed this trainee
+            if claim.exists():
+                try:
+                    claimer = TraineeClaim.objects.get(
+                        trainee=trainee, course=course
+                    ).mentor
+                except MultipleObjectsReturned:
+                    print(f"Multiple claims for trainee {trainee} in course {course}")
+                    claimer = (
+                        TraineeClaim.objects.filter(trainee=trainee, course=course)
+                        .first()
+                        .mentor
+                    )
+
+            # Get training logs for this trainee in this course
+            logs = Log.objects.filter(trainee=trainee, course=course).order_by(
+                "session_date"
+            )
+
+            course_trainees[trainee] = {
+                "logs": logs,
+                "claimed": claim.exists(),
+                "claimed_by": (
+                    claimer.first_name + " " + claimer.last_name if claim.exists() else None
+                ),
+                "solo": solo_info,
+                "moodle": moodle_completed,
+            }
+
+            # Get the next step and last training date
+            try:
+                next_step = logs.last().next_step
+                date_last = logs.last().session_date
+            except:
+                next_step = ""
+                date_last = None
+
+            course_trainees[trainee]["next_step"] = next_step
+            course_trainees[trainee]["date_last"] = date_last
+
+        res[course] = course_trainees
+
+    # Count waiting list entries
+    for course in courses:
+        if course.type == "RTG":
+            waiting_trainees_count += WaitingListEntry.objects.filter(
+                course=course, activity__gte=10
+            ).count()
+        else:
+            waiting_trainees_count += WaitingListEntry.objects.filter(course=course).count()
+
+    return render(
+        request,
+        "overview/overview.html",
+        {
+            "overview": res,
+            "coursedict": res,
+            "courses": courses,
+            "active_trainees_count": active_trainees_count,
+            "claimed_trainees_count": claimed_trainees_count,
+            "waiting_trainees_count": waiting_trainees_count,
+        }
+    )

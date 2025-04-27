@@ -1,90 +1,331 @@
+{% load django_vite %}
 <!DOCTYPE html>
-<html lang="en" style="height: 100%;">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<html lang="en" style="height: 100%" data-theme="vatger">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>VATSIM Germany Training</title>
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-    {% block extra_styles %}{% endblock %}
 
-<style>
-        body {
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-        .content-wrapper {
-            flex: 1;
-        }
-    </style>
-
-</head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" href="#">Training</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav">
-                <li class="nav-item active">
-                    <a class="nav-link" href="{% url 'trainee:home' %}">Home <span class="sr-only">(current)</span></a>
-                </li>
-                <li class="nac-item active">
-                    <a class="nav-link" href="{% url 'lists:view_lists' %}">Courses <span class="sr-only">(current)</span></a>
-                </li>
-                <li class="nac-item active">
-                    <a class="nav-link" href="{% url 'endorsements:trainee_view' %}">Endorsements <span class="sr-only">(current)</span></a>
-                </li>
-                {% if request.user.is_staff %}
-                <li class="nav-item active">
-                    <a class="nav-link" href="{% url 'overview:overview' %}">Trainee Overview <span class="sr-only">(current)</span></a>
-                </li>
-                <li class="nav-item active">
-                    <a class="nav-link" href="{% url 'lists:mentor_view' %}">List Overview <span class="sr-only">(current)</span></a>
-                </li>
-                <li class="nav-item active">
-                    <a class="nav-link" href="{% url 'endorsements:overview' %}">Endorsement Management <span class="sr-only">(current)</span></a>
-                </li>
-                <li class="nav-item active">
-                    <a class="nav-link" href="{% url 'trainee:find_user' %}">Find User <span class="sr-only">(current)</span></a>
-                </li>
-                {% endif %}
-            </ul>
+    {% vite_hmr_client %} {% vite_asset 'src/main.js' %}
+  </head>
+  <body class="">
+    <div class="flex h-screen bg-base-200" x-data="{ sidebarOpen: false }">
+      <div
+        class="sidebar w-64 space-y-6 py-4 px-2 absolute inset-y-0 left-0 transform transition duration-200 ease-in-out z-30 md:relative md:translate-x-0 flex flex-col justify-between"
+        :class="{'translate-x-0': sidebarOpen, '-translate-x-full': !sidebarOpen}"
+      >
+        <div class="flex items-center justify-start px-4 space-x-2 py-2">
+          <a href="{% url 'trainee:home' %}" class="flex items-center justify-start space-x-2 w-full"> <div class="w-10 p-[5px] rounded-xl bg-[#2b3c91] aspect-square flex justify-center items-center">
+            <svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 367.31 204.81">
+              <defs>
+                <style>
+                  .cls-1 {
+                    fill: #fafbfb;
+                  }
+                </style>
+              </defs>
+              <g id="Layer_1-2" data-name="Layer 1">
+                <g>
+                  <path class="cls-1" d="M41.13,116.94c-1.92-1.4-1.74-1.33-3-2.3-1.95-1.53-5.46-4.96-7.99-7.4C9.63,87.39,3.05,80.44.51,68.74c-1.08-4.97-.26-14.34.69-17.84.74-3.1.71-3.19,1.44-5,.97-2.42,1.11-2.49,1.66-3.55.32-.62,3.33-4.69,5.49-6.78C24.62,21.23,47.43,11.32,78.04,5.93c1.99-.35,3.96-.7,4.37-.77.42-.08,1.2-.19,1.75-.26.55-.07,1.6-.24,2.34-.39.73-.15,1.39-.2,1.47-.13.07.08.33.04.56-.09.23-.12,1.16-.29,2.06-.36.9-.08,2.19-.25,2.86-.37.67-.12,1.39-.23,1.59-.23.21-.01.83-.07,1.38-.13.55-.07,1.9-.19,3-.29,1.1-.1,2.06-.22,2.15-.27.09-.05,1.16-.17,2.38-.26,1.22-.08,2.29-.19,2.37-.24.08-.05,1.43-.16,3-.24,1.57-.08,3.64-.24,4.61-.35.96-.12,1.97-.21,2.25-.22,1.26-.01,6.85-.33,7.75-.44,1.16-.15,5.79-.33,12.94-.5,2.79-.07,6.92-.19,9.19-.26,5.2-.17,20.96-.18,32.39-.02,12.83.19,20,.37,31.76.8,7.34.27,9.15.34,12.13.48,1.72.08,4.42.2,6,.26,1.59.06,4.01.17,5.38.25,1.38.07,3.68.19,5.13.25,1.44.06,3.92.18,5.5.27,1.58.09,3.04.16,3.25.15.21,0,2.12.1,4.25.23,3.93.23,8.49.45,12.13.6,1.1.04,3.24.15,4.75.23,2.91.17,7.25.39,10.38.52,2.98.13,7.68.38,13.88.73,3.17.18,6.09.34,6.51.35.41,0,1.98.09,3.5.17,1.51.09,2.92.16,3.12.17.21,0,2.12.11,4.26.24,2.13.12,5.9.29,8.37.37.36.01.68.02.99.03.3,0,.58,0,.85.02.26,0,.51.02.75.04.82.03-.01-.04,2.15.09,1.36.75,0,0,1.36.75,2.1,1.17,5.53,3.11,12.91,7.6.96.58,5.69,3.42,10.5,6.29,4.82,2.88,10.56,6.32,12.76,7.64l4,2.41,2.22,1.81c-1.03,1.07-1.66,1.27-9.92,5.34-4.15,2.04-14.19,7.02-22.31,11.05l-14.76,7.34-5-.4c-2.75-.23-6.29-.52-7.88-.65-1.58-.13-6.47-.52-10.87-.87-4.41-.34-9.41-.74-11.13-.88-1.72-.14-5.32-.42-8.01-.62-2.68-.21-6.96-.54-9.5-.75-8.7-.71-21.2-1.59-48.14-3.4-3.55-.23-7.04-.43-17.89-1.01-115.01-6.15-168.44,5.25-171.06,36.5-.15,1.77-.22,3.3-.15,3.41.07.11.19,1.04.27,2.06.44,5.76,4.06,15.71,7.49,22.18.55,1.3,2.7,4.57,2.78,4.81-.01,0-.02-.02-.03-.03Z"/>
+                  <path class="cls-1" d="M351.64,88.94c14.94,9.32,16.56,9.74,15.34,10.43-1.41.8-1.36.51-20.59,9.07-9.84,4.37-18.65,8.3-19.59,8.73l-1.7.78-3.05-.31c-1.68-.18-3.95-.41-5.05-.53-1.1-.12-3.18-.35-4.62-.5-1.45-.16-3.59-.39-4.76-.51-4.36-.48-12.22-1.3-23.88-2.51-10.89-1.12-14.51-1.48-26.89-2.66-2.13-.2-6.12-.59-8.87-.86-4.21-.41-14.69-1.3-29.39-2.5-1.72-.14-4.14-.32-5.38-.39-1.23-.08-2.81-.19-3.5-.25-3.75-.35-20.87-1.31-27.26-1.52-2.61-.09-5.03-.21-5.38-.27-1.3-.22-32.1-.3-36.76-.09-56.91,2.55-78.04,16.15-68.32,43.97,1.32,3.77,4.26,9.97,5.97,12.55.11.15.72,1.17.49.92-.34-.18-.09.14-2.53-1.8-1.24-1.1-4.28-4.05-6.76-6.34-16.8-15.56-20.99-21.7-24.51-29.71-.95-2.16-1.56-6.69-1.59-9.17-.02-1.58.12-2.67,1-7.79.14-.83.48-1.98.74-2.56.26-.58.39-1.23.47-1.41,2.1-4.64,3.54-6.62,4.8-8.19,8.11-10.09,28.42-21.11,59.48-26.02,2.27-.36,4.74-.76,5.5-.89,1.86-.32,14.27-1.61,18.01-1.87.89-.06,2.58-.18,3.75-.26,1.17-.09,2.74-.2,3.5-.25,7.08-.49,37.81-.68,49.64-.3,3.03.1,7.14.23,9.13.29,2,.06,4.59.18,5.76.25,1.16.08,3.25.19,4.62.25,1.38.06,3.4.17,4.5.24,1.1.07,3.47.19,5.26.28,5.37.27,6.66.34,8.62.49,1.04.08,2.05.15,2.25.16.21.01,2.58.18,5.27.37,2.69.2,5.95.41,7.25.48,1.3.07,2.98.17,3.74.24.76.06,2.28.17,3.38.24,1.1.07,2.73.19,3.62.27,2.26.18,4.29.33,6.63.49,1.1.07,2.68.19,3.5.26.83.08,2.24.19,3.13.25,1.5.1,3.7.27,6.5.5,2.24.19,5.89.43,6.5.44.35,0,1.14.1,1.75.22.62.12,2.37.27,3.88.33,1.51.07,3.99.23,5.5.37,1.52.14,5.23.44,8.26.66,3.02.22,6.79.5,8.37.63,1.59.12,7.1.48,12.26.88,9.45.72,9.41.7,9.44.72,3.41,1.89,3.43,1.9,5.56,3.22,2.14,1.32,9.81,6,17.01,10.48Z"/>
+                  <path class="cls-1" d="M360.82,159.37l1.58,1.13c-1.28.53-.72.75-19,7.74-9.28,3.54-17.42,6.63-17.68,6.72-.07.02-.03-.02-17.22-2.2-8.08-1.03-29.78-4.13-38.39-5.26-17.07-2.23-17.49-2.29-30.26-3.81-111.39-13.24-151.29-2.25-132.04,36.36.72,1.44,1.47,2.97,1.65,3.38.17.4.35.78.48,1.03-.14-.21-.15-.13.06.11.01,0,.01,0,.01,0,.03.07.06.13.08.16,0,0,0,.02,0,.02-.25-.19-1.17-1.02-2.5-2.22-1.78-1.71-10.81-10.69-13.52-13.21-10.15-9.41-15.11-20.26-13.08-29.61.85-3.94,1.41-5.04,3.41-8.71,5.61-10.32,33.07-19.48,37.4-20.43,9.98-2.21,17.72-3.22,18.82-3.36,1.88-.24,8.97-.95,13.19-1.23,7.74-.53,25.2-.39,32.63,0,2.07.1,5.11.24,6.76.3,5.26.19,10.98.52,18.13,1.02,3.04.21,5.25.36,7.38.49,1.1.06,3.07.23,4.37.37,1.31.13,3.28.31,4.38.39,1.1.09,2.56.2,3.25.27.69.06,1.42.12,1.63.14.2,0,4.82.46,10.25.99,5.43.54,10.5,1.04,11.25,1.11,1.25.11,2.5.25,4.63.49.78.08,7.69.85,9,.99.42.05,3.01.34,5.76.64,2.75.31,5.39.59,5.87.63.49.04,2.51.27,4.51.51,1.99.23,3.96.46,4.37.5.41.03,2.38.26,4.38.5,1.99.24,4.02.47,4.5.51.48.03,2.45.25,4.38.48,1.92.24,5.41.64,7.75.9,2.34.27,6.39.72,9,1.01,2.62.29,6.56.73,8.78.96l4.02.43,10.36,6.7c5.69,3.68,12.49,8.1,15.11,9.8l4.55,3.26Z"/>
+                  <path class="cls-1" d="M110.01,204.58c.19.22.21.27.09.18,0,0,0,0,0-.02-.01-.03-.04-.08-.08-.16Z"/>
+                </g>
+              </g>
+            </svg>
+          </div>
+          <div class="flex flex-col">
+            <span class="text-lg font-bold text-[#2b3c91] -mt-[4px]">Training</span>
+            <span class="text-xs">VATSIM Germany</span>
+          </div></a>
+         
+      
+          <button @click="sidebarOpen = !sidebarOpen" class="md:hidden">
+            <svg
+              class="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
         </div>
 
-        <div class="navbar-collapse collapse w-100 order-3 dual-collapse2">
-            <ul class="navbar-nav ml-auto">
-            {% if request.user.is_authenticated %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'logout' %}">Logout <span class="sr-only">(current)</span></a>
-                </li>
-                {% else %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'login' %}">Login <span class="sr-only">(current)</span></a>
-                </li>
-                {% endif %}
-            </ul>
-        </div>
-    </nav>
+        <nav class="space-y-4 px-4">
+          <div class="space-y-2">
+            <div
+              class="text-xs font-semibold text-gray-500"
+            >
+              Dashboard
+            </div>
+            <a href="{% url 'trainee:home' %}" class="btn btn-ghost w-full justify-start text-gray-600 hover:text-base-content pl-2 h-[36px]">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+                />
+              </svg>
+              <span>Dashboard</span>
+            </a>
+          </div>
 
-    <div class="container content-wrapper">
-        {% block content %}{% endblock %}
+          <div class="space-y-2">
+            <div
+              class="text-xs font-semibold text-gray-500"
+            >
+              Training
+            </div>
+            <!--<a href="{% url 'lists:view_lists' %}" class="btn btn-ghost w-full justify-start text-gray-600 hover:text-base-content pl-2 h-[36px]">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                />
+              </svg>
+              <span>Courses</span>
+            </a>-->
+            <a href="javascript:void(0)" class="btn btn-ghost w-full justify-start text-gray-500 cursor-not-allowed pl-2 h-[36px] opacity-60 pointer-events-none">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                />
+              </svg>
+              <span>Courses</span>
+            </a>
+            <a href="{% url 'endorsements:trainee_view' %}" class="btn btn-ghost w-full justify-start text-gray-600 hover:text-base-content pl-2 h-[36px]">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <span>Endorsements</span>
+            </a>
+          </div>
+
+          {% if 'EDGG Mentor' in user.groups.all|stringformat:'s' or 'EDMM Mentor' in user.groups.all|stringformat:'s' or 'EDWW Mentor' in user.groups.all|stringformat:'s' or user.is_superuser %}
+          <div class="space-y-2">
+            <div
+              class="text-xs font-semibold text-gray-500"
+            >
+              Management
+            </div>
+            <a href="{% url 'overview:overview' %}" class="btn btn-ghost w-full justify-start text-gray-600 hover:text-base-content pl-2 h-[36px]">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                />
+              </svg>
+              <span>Trainee Overview</span>
+            </a>
+            <a href="{% url 'lists:mentor_view' %}" class="btn btn-ghost w-full justify-start text-gray-600 hover:text-base-content pl-2 h-[36px]">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                />
+              </svg>
+              <span>List Overview</span>
+            </a>
+            <a href="{% url 'endorsements:overview' %}" class="btn btn-ghost w-full justify-start text-gray-600 hover:text-base-content pl-2 h-[36px]">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+              <span>Endorsement Manager</span>
+            </a>
+          </div>
+
+          <div class="space-y-2">
+            <div
+              class="text-xs font-semibold text-gray-500"
+            >
+              Tools
+            </div>
+            <a href="{% url 'trainee:find_user' %}" class="btn btn-ghost w-full justify-start text-gray-600 hover:text-base-content pl-2 h-[36px]">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+              <span>Find User</span>
+            </a>
+          </div>
+          {% endif %}
+        </nav>
+
+        <div class="px-4 mt-auto mb-2 w-full">
+          <div class="dropdown dropdown-right dropdown-end">
+            <button role="button" class="flex justify-start items-center space-x-1 p-0 px-2 -ml-2 text-left btn btn-ghost h-14 w-56">
+              <div class="avatar avatar-placeholder">
+                <div class="bg-base-300 text-base-content w-10 rounded-full">
+                  <span>{{ user.first_name|slice:"1" }}{{ user.last_name|slice:"1" }}</span>
+                </div>
+              </div>
+              <div>
+                <p class="text-base font-medium">
+                  {{ user.first_name }} {{ user.last_name }}
+                </p>
+                <p class="text-xs text-base-content">
+                  {{ user.email }}
+                </p>
+              </div>
+            </button>
+            <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-1 w-64 p-2 shadow-sm">
+              <div class="flex items-center justify-start space-x-2 py-2 px-2">
+                <div class="avatar avatar-placeholder">
+                  <div class="bg-base-300 text-base-content w-10 rounded-full">
+                    <span>{{ user.first_name|slice:"1" }}{{ user.last_name|slice:"1" }}</span>
+                  </div>
+                </div>
+                <div>
+                  <p class="text-base font-medium">
+                    {{ user.first_name }} {{ user.last_name }}
+                  </p>
+                  <p class="text-xs text-base-content">
+                    {{ user.email }}
+                  </p>
+                </div>
+              </div>
+              
+              <hr class="dropdown-divider my-2 text-gray-300">
+              <li><a href="{% url 'logout' %}" class="flex justify-start items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24px" viewBox="0 0 24 24" fill="none">
+                  <path d="M21 12L13 12" stroke="#323232" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M18 15L20.913 12.087V12.087C20.961 12.039 20.961 11.961 20.913 11.913V11.913L18 9" stroke="#323232" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M16 5V4.5V4.5C16 3.67157 15.3284 3 14.5 3H5C3.89543 3 3 3.89543 3 5V19C3 20.1046 3.89543 21 5 21H14.5C15.3284 21 16 20.3284 16 19.5V19.5V19" stroke="#323232" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="font-medium">Logout</span>
+                </a></li>
+            </ul>
+          </div>
+          
+        </div>
+      </div>
+
+      <!-- Main content -->
+      <main
+        class="flex-1 overflow-x-hidden overflow-y-auto bg-base-100 shadow p-6 m-2 rounded-xl"
+      >
+        <div class="container mx-auto content-wrapper">
+          {% block content %}{% endblock %}
+        </div>
+        <footer class="border-t border-gray-200 py-4 px-6">
+          <div class="container mx-auto text-center text-gray-500 text-sm">
+            <a
+              href="https://vatsim-germany.org/policies/gdpr"
+              target="_blank"
+              class="mx-2 hover:text-gray-700"
+              >GDPR</a
+            >
+            |
+            <a
+              href="https://vatsim-germany.org/policies/imprint"
+              target="_blank"
+              class="mx-2 hover:text-gray-700"
+              >Imprint</a
+            >
+          </div>
+        </footer>
+      </main>
     </div>
-
-
-    <!-- Footer -->
-    <footer class="bg-light text-center text-muted py-3" style="border-top: 1px solid #ddd;">
-        <div class="container">
-            <a href="https://vatsim-germany.org/policies/gdpr" target="_blank" class="text-muted mx-2">GDPR</a> |
-            <a href="https://vatsim-germany.org/policies/imprint" target="_blank" class="text-muted mx-2">Imprint</a>
+    {% if messages %}
+    <div class="messages-container mt-4 mb-6">
+      {% for message in messages %}
+        <div class="alert {% if message.tags == 'error' %}alert-error{% elif message.tags == 'success' %}alert-success{% elif message.tags == 'warning' %}alert-warning{% else %}alert-info{% endif %} shadow-lg mb-2">
+          <div>
+            {% if message.tags == 'error' %}
+              <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            {% elif message.tags == 'success' %}
+              <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            {% elif message.tags == 'warning' %}
+              <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+            {% else %}
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current flex-shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            {% endif %}
+            <span>{{ message }}</span>
+          </div>
+          <div class="flex-none">
+            <button onclick="this.parentElement.parentElement.remove()" class="btn btn-sm btn-ghost">✕</button>
+          </div>
         </div>
-    </footer>
-
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    {% block extra_scripts %}{% endblock %}
-</body>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </body>
 </html>

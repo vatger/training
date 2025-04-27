@@ -13,6 +13,7 @@ from trainee.forms import UserDetailForm
 from .forms import CommentForm
 from overview.helpers import get_course_completion
 
+from training.permissions import mentor_required
 
 def split_active_inactive(logs, courses, trainee):
     active = {}
@@ -54,15 +55,21 @@ def home(request):
     # Get required Moodle courses
     moodles = get_moodles(request.user)
     fams = get_familiarisations(request.user.username)
-
+    
     return render(
         request,
         "trainee/home.html",
-        {"active": active, "inactive": inactive, "moodles": moodles, "fams": fams},
+        {
+            "active": active, 
+            "inactive": inactive, 
+            "moodles": moodles,
+            "fams": fams
+        },
+
     )
 
 
-@login_required
+@mentor_required
 def mentor_view(request, vatsim_id: int):
     trainee = get_object_or_404(User, username=vatsim_id)
     courses = request.user.mentored_courses.all()
@@ -97,6 +104,13 @@ def mentor_view(request, vatsim_id: int):
 
     moodles = get_moodles(trainee)
     fams = get_familiarisations(trainee.username)
+    
+    # Get all courses the mentor can assign
+    available_courses = Course.objects.filter(mentors=request.user)
+    if request.user.is_superuser:
+        available_courses = Course.objects.all()
+    # Exclude courses the trainee is already in
+    available_courses = available_courses.exclude(active_trainees=trainee)
 
     return render(
         request,
@@ -109,10 +123,11 @@ def mentor_view(request, vatsim_id: int):
             "form": form,
             "moodles": moodles,
             "fams": fams,
+            "available_courses": available_courses
         },
     )
 
-
+@mentor_required
 def find_user(request):
     if request.method == "POST":
         user_form = UserDetailForm(request.POST)
@@ -130,3 +145,4 @@ def find_user(request):
         user_form = UserDetailForm()
 
     return render(request, "trainee/find_user.html", {"user_form": user_form})
+

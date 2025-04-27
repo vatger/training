@@ -2,6 +2,7 @@ import requests
 from cachetools import cached, TTLCache
 from django.conf import settings
 from dotenv import load_dotenv
+from django.conf import settings
 from training.eud_header import eud_header
 
 load_dotenv()
@@ -13,18 +14,18 @@ def get_tier1_endorsements():
         return [
             {
                 "id": 1,
-                "user_cid": 1439797,
+                "user_cid": 1601613,
                 "instructor_cid": 1439797,
-                "position": "EDDB_TWR",
+                "position": "EDDL_TWR",
                 "facility": 9,
                 "created_at": "2025-04-19T12:02:38.000000Z",
                 "updated_at": "2025-04-19T12:02:38.000000Z",
             },
             {
                 "id": 2,
-                "user_cid": 1000000,
+                "user_cid": 1601613,
                 "instructor_cid": 1439797,
-                "position": "EDDF_TWR",
+                "position": "EDDL_APP",
                 "facility": 9,
                 "created_at": "2025-04-19T12:02:38.000000Z",
                 "updated_at": "2025-04-19T12:02:38.000000Z",

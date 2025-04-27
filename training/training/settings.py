@@ -53,8 +53,10 @@ INSTALLED_APPS = [
     "connect.apps.ConnectConfig",
     "trainee.apps.TraineeConfig",
     "endorsements.apps.EndorsementsConfig",
+    "familiarisations.apps.FamiliarisationsConfig",
     "api.apps.ApiConfig",
     "roster.apps.RosterConfig",
+    "django_vite"
     "familiarisations.apps.FamiliarisationsConfig",
 ]
 
@@ -81,6 +83,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                'training.context_processors.breadcrumbs',
             ],
         },
     },
@@ -135,8 +138,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = "/static/"
-STATIC_ROOT = BASE_DIR / "staticfiles"
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -144,3 +146,19 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 LOGIN_URL = "/connect/login"
+
+DJANGO_VITE = {
+    "default": {
+        "dev_mode": False,
+        "manifest_path": BASE_DIR / "frontend" / "dist" / "manifest.json",
+    }
+}
+
+STATICFILES_DIRS = [
+    BASE_DIR / "frontend" / "dist",
+]
+
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
+USE_CORE_MOCK = True
