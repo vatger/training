@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 
 {% block content %}
+    {% set half_min_hours = min_hours / 2 %}
+
 <div class="container px-4 py-5">
   <!-- Breadcrumbs -->
   {% include "components/breadcrumbs.html" with auto=True current_title="My Endorsements" %}
@@ -48,7 +50,7 @@
                           class="h-full rounded-full
                             {% if endorsement.activity >= min_hours %}
                               bg-green-500
-                            {% elif endorsement.activity >= 1.5 %}
+                            {% elif endorsement.activity >= half_min_hours %}
                               bg-yellow-500
                             {% else %}
                               bg-red-500
@@ -58,9 +60,9 @@
                       </div>
                       
                       <span class="text-sm font-medium 
-                        {% if endorsement.activity >= 25 %}
+                        {% if endorsement.activity >= min_hours %}
                           text-green-700
-                        {% elif endorsement.activity >= 12.5 %}
+                        {% elif endorsement.activity >= half_min_hours %}
                           text-yellow-700
                         {% else %}
                           text-red-700
@@ -74,7 +76,7 @@
                       <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
                         ⚠️ Endorsement will be removed on {{ endorsement.removal_date|date:"d M Y" }}
                       </span>
-                    {% elif endorsement.activity < 25 %}
+                    {% elif endorsement.activity < min_hours %}
                       <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
                         ⚠️ Activity below required minimum
                       </span>
