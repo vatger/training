@@ -112,19 +112,38 @@
               <h3 class="text-lg font-medium text-gray-800">
                 {{ category.label }}
               </h3>
-              <select
-                name="{{ category.name }}"
-                id="id_{{ category.name }}"
-                class="select select-sm select-bordered"
-                x-model="formData.{{ category.name }}"
-                @change="saveFormState"
-              >
-                <option value="0">Not rated</option>
-                <option value="1">Requirements not met</option>
-                <option value="2">Requirements partially met</option>
-                <option value="3">Requirements met</option>
-                <option value="4">Requirements exceeded</option>
-              </select>
+              <div class="flex space-x-1">
+                <div class="tooltip tooltip-bottom" data-tip="Not rated">
+                  <label class="rating-option cursor-pointer">
+                    <input type="radio" name="{{ category.name }}" value="0" x-model="formData.{{ category.name }}" @change="saveFormState" class="hidden" />
+                    <span class="inline-flex items-center justify-center h-8 w-8 rounded-md text-xs border transition-colors" :class="formData.{{ category.name }} == '0' ? 'bg-gray-100 border-gray-300 text-gray-700 font-medium' : 'bg-white border-gray-200 text-gray-400'">N/A</span>
+                  </label>
+                </div>
+                <div class="tooltip tooltip-bottom" data-tip="Requirements not met">
+                  <label class="rating-option cursor-pointer">
+                    <input type="radio" name="{{ category.name }}" value="1" x-model="formData.{{ category.name }}" @change="saveFormState" class="hidden" />
+                    <span class="inline-flex items-center justify-center h-8 w-8 rounded-md text-xs border-2 transition-colors" :class="formData.{{ category.name }} == '1' ? 'bg-red-100 border-red-400 text-red-700 font-medium' : 'bg-white border-gray-200 text-gray-400'">1</span>
+                  </label>
+                </div>
+                <div class="tooltip tooltip-bottom" data-tip="Requirements partially met">
+                  <label class="rating-option cursor-pointer">
+                    <input type="radio" name="{{ category.name }}" value="2" x-model="formData.{{ category.name }}" @change="saveFormState" class="hidden" />
+                    <span class="inline-flex items-center justify-center h-8 w-8 rounded-md text-xs border-2 transition-colors" :class="formData.{{ category.name }} == '2' ? 'bg-yellow-100 border-yellow-400 text-yellow-700 font-medium' : 'bg-white border-gray-200 text-gray-400'">2</span>
+                  </label>
+                </div>
+                <div class="tooltip tooltip-bottom" data-tip="Requirements met">
+                  <label class="rating-option cursor-pointer">
+                    <input type="radio" name="{{ category.name }}" value="3" x-model="formData.{{ category.name }}" @change="saveFormState" class="hidden" />
+                    <span class="inline-flex items-center justify-center h-8 w-8 rounded-md text-xs border-2 transition-colors" :class="formData.{{ category.name }} == '3' ? 'bg-blue-100 border-blue-400 text-blue-700 font-medium' : 'bg-white border-gray-200 text-gray-400'">3</span>
+                  </label>
+                </div>
+                <div class="tooltip tooltip-bottom" data-tip="Requirements exceeded">
+                  <label class="rating-option cursor-pointer">
+                    <input type="radio" name="{{ category.name }}" value="4" x-model="formData.{{ category.name }}" @change="saveFormState" class="hidden" />
+                    <span class="inline-flex items-center justify-center h-8 w-8 rounded-md text-xs border-2 transition-colors" :class="formData.{{ category.name }} == '4' ? 'bg-green-100 border-green-400 text-green-700 font-medium' : 'bg-white border-gray-200 text-gray-400'">4</span>
+                  </label>
+                </div>
+              </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
