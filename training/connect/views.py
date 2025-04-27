@@ -50,8 +50,8 @@ def get_training_staff():
             },
             {
                 "id": 105,
-                "cid": 1000000,
-                "access_type": 2,
+                "cid": 1601613,
+                "access_type": 0,
                 "created_at": "2024-02-26T13:15:01.000000Z",
                 "updated_at": "2024-11-26T21:01:34.000000Z",
             },

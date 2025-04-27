@@ -65,6 +65,7 @@ def home(request):
             "moodles": moodles,
             "fams": fams
         },
+
     )
 
 

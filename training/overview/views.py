@@ -10,6 +10,7 @@ from django.shortcuts import redirect, get_object_or_404
 from django.shortcuts import render
 from familiarisations.models import Familiarisation, FamiliarisationSector, FIR
 from dotenv import load_dotenv
+from familiarisations.models import Familiarisation, FamiliarisationSector, FIR
 from lists.models import Course, WaitingListEntry
 from lists.views import enrol_into_required_moodles
 from logs.models import Log
@@ -72,6 +73,13 @@ def claim_trainee(request, trainee_id, course_id):
     course = get_object_or_404(Course, id=course_id)
     if request.user not in course.mentors.all():
         return redirect("overview:overview")
+    try:
+        # If trainee is already claimed by someone else, continue without doing anything
+        obj = TraineeClaim.objects.get(trainee_id=trainee_id, course_id=course_id)
+        if obj.mentor != request.user:
+            return redirect("overview:overview")
+    except TraineeClaim.DoesNotExist:
+        pass
     try:
         obj = TraineeClaim.objects.get(
             mentor=request.user, trainee_id=trainee_id, course_id=course_id
@@ -206,7 +214,6 @@ def finish_course(request, trainee_id, course_id):
             },
         )
 
-        # Add familiarisations if centre course
     if course.type == "RTG" and course.position == "CTR":
         fir = course.mentor_group.name[:4]  # Gepfuscht, aber wcyd
         sectors = FamiliarisationSector.objects.filter(fir=fir)

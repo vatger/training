@@ -29,6 +29,7 @@ class CourseType(models.TextChoices):
     EDMT = "EDMT", "Endorsement"
     RTG = "RTG", "Rating"
     GST = "GST", "Visitor"
+    FAM = "FAM", "Familiarisation"
 
 
 class Course(models.Model):
@@ -51,6 +52,10 @@ class Course(models.Model):
     )
     moodle_course_ids = models.JSONField(default=list, blank=True)
     
+    familiarisation_sector = models.ForeignKey(
+        FamiliarisationSector, null=True, blank=True, on_delete=models.SET_NULL
+    )
+
     familiarisation_sector = models.ForeignKey(
         FamiliarisationSector, null=True, blank=True, on_delete=models.SET_NULL
     )

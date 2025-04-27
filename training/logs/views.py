@@ -2,10 +2,11 @@ from django.http import HttpResponseForbidden
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-
-from .forms import TrainingLogForm
+from django.shortcuts import render, redirect, get_object_or_404, reverse
 from lists.models import Course
 from overview.models import TraineeClaim
+
+from .forms import TrainingLogForm
 from .models import Log
 
 from training.permissions import mentor_required
@@ -84,7 +85,7 @@ def create_training_log(request, trainee_id: int, course_id: int):
 def log_detail(request, log_id):
     log = get_object_or_404(Log, pk=log_id)
     course = log.course
-    
+
     is_own_log = request.user == log.trainee
     is_log_mentor = request.user == log.mentor
     is_course_mentor = course is not None and request.user in course.mentors.all()
