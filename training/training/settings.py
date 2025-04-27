@@ -29,7 +29,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True  # False
+DEBUG = False
 USE_CORE_MOCK = os.getenv("CORE_API") == ""
 
 ALLOWED_HOSTS = ast.literal_eval(os.getenv("ALLOWED_HOSTS"))
@@ -56,7 +56,8 @@ INSTALLED_APPS = [
     "familiarisations.apps.FamiliarisationsConfig",
     "api.apps.ApiConfig",
     "roster.apps.RosterConfig",
-    "django_vite" "familiarisations.apps.FamiliarisationsConfig",
+    "django_vite",
+    "familiarisations.apps.FamiliarisationsConfig",
 ]
 
 MIDDLEWARE = [
