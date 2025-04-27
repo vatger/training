@@ -57,7 +57,6 @@ INSTALLED_APPS = [
     "api.apps.ApiConfig",
     "roster.apps.RosterConfig",
     "django_vite",
-    "familiarisations.apps.FamiliarisationsConfig",
 ]
 
 MIDDLEWARE = [
