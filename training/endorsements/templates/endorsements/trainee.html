@@ -19,7 +19,7 @@
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          Minimum activity required: 3 hours / 6 months
+          Minimum activity required: {{ min_hours }} hours / 6 months
         </span>
       </div>
     </div>
@@ -46,9 +46,9 @@
                       <div class="flex-1 h-2 bg-gray-200 rounded-full mr-2 w-32">
                         <div 
                           class="h-full rounded-full
-                            {% if endorsement.activity >= 25 %}
+                            {% if endorsement.activity >= min_hours %}
                               bg-green-500
-                            {% elif endorsement.activity >= 12.5 %}
+                            {% elif endorsement.activity >= min_hours / 2 %}
                               bg-yellow-500
                             {% else %}
                               bg-red-500

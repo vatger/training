@@ -108,6 +108,7 @@ def overview(request):
             "total_endorsements": total_endorsements,
             "inactive_count": inactive_count,
             "removal_count": removal_count,
+            "min_hours": min_hours_required,
         },
     )
 
