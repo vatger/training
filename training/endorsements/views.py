@@ -109,6 +109,7 @@ def overview(request):
             "inactive_count": inactive_count,
             "removal_count": removal_count,
             "min_hours": min_hours_required,
+            "half_min_hours": min_hours_required / 2,
         },
     )
 
