@@ -44,16 +44,19 @@
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="flex items-center">
                       <div class="flex-1 h-2 bg-gray-200 rounded-full mr-2 w-32">
-                        <div class="h-full rounded-full 
-                          {% if endorsement.activity >= 25 %}
-                            bg-green-500
-                          {% elif endorsement.activity >= 12.5 %}
-                            bg-yellow-500
-                          {% else %}
-                            bg-red-500
-                          {% endif %}" 
-                          style="width: {% if endorsement.activity > 25 %}100{% else %}{{ endorsement.activity|floatformat:0|default:0 }}{% endif %}%;"></div>
+                        <div 
+                          class="h-full rounded-full
+                            {% if endorsement.activity >= 25 %}
+                              bg-green-500
+                            {% elif endorsement.activity >= 12.5 %}
+                              bg-yellow-500
+                            {% else %}
+                              bg-red-500
+                            {% endif %}"
+                          style="width: {{ endorsement.bar_width }}%">
+                        </div>
                       </div>
+                      
                       <span class="text-sm font-medium 
                         {% if endorsement.activity >= 25 %}
                           text-green-700

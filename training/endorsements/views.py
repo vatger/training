@@ -74,12 +74,15 @@ def overview(request):
             if activity_hours < min_hours_required:
                 inactive_count += 1
                 
+            bar_width = 100 if activity_hours >= 3 else min(100, (activity_hours / 3) * 100)
+
             group_endorsements.append({
                 "id": endorsement["user_cid"],
                 "activity": activity_hours,
                 "name": name,
                 "removal": removal_days,
                 "endorsement_id": activity.id,
+                "bar_width": round(bar_width, 0),
             })
             
             total_endorsements += 1
@@ -153,9 +156,16 @@ def trainee_view(request):
         except EndorsementActivity.DoesNotExist:
             continue
             
+        activity_hours = round(activity.activity / 60, 1)
         entry["activity"] = round(activity.activity / 60, 1)
         entry["position"] = endorsement["position"]
         entry["removal_date"] = activity.removal_date
+        
+        if activity_hours >= 3:
+            entry["bar_width"] = 100
+        else:
+            entry["bar_width"] = int((activity_hours / 3) * 100)
+        
         res_t1.append(entry)
 
     tier_2 = get_tier2_endorsements()
@@ -166,6 +176,7 @@ def trainee_view(request):
     available_t2 = Tier2Endorsement.objects.all()
     available_t2 = sorted(available_t2, key=lambda x: x.name)
     res_t2 = []
+    
     
     for endorsement in available_t2:
         entry = {
