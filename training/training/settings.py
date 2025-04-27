@@ -29,7 +29,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True  # False
 USE_CORE_MOCK = os.getenv("CORE_API") == ""
 
 ALLOWED_HOSTS = ast.literal_eval(os.getenv("ALLOWED_HOSTS"))
@@ -56,8 +56,7 @@ INSTALLED_APPS = [
     "familiarisations.apps.FamiliarisationsConfig",
     "api.apps.ApiConfig",
     "roster.apps.RosterConfig",
-    "django_vite"
-    "familiarisations.apps.FamiliarisationsConfig",
+    "django_vite" "familiarisations.apps.FamiliarisationsConfig",
 ]
 
 MIDDLEWARE = [
@@ -83,7 +82,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                'training.context_processors.breadcrumbs',
+                "training.context_processors.breadcrumbs",
             ],
         },
     },
@@ -139,7 +138,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 
-
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
@@ -160,5 +158,3 @@ STATICFILES_DIRS = [
 
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
-
-USE_CORE_MOCK = True
