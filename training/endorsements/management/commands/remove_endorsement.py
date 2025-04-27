@@ -38,7 +38,7 @@ class Command(BaseCommand):
                 # Wait for VATSIM API (:
                 sleep(15)
                 hours = get_hours(tier1_entry)
-            if hours < float(os.getenv("T1_MIN_HOURS")):
+            if hours < float(os.getenv("T1_MIN_MINUTES")):
                 self.stdout.write(
                     self.style.SUCCESS(f"Endorsement {tier1_entry} removed")
                 )
