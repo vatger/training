@@ -116,7 +116,7 @@ class Command(BaseCommand):
             if hours == -1:
                 self.stdout.write("Error fetching hours from VATSIM API.")
                 return
-            if hours >= float(os.getenv("T1_MIN_HOURS")):
+            if hours >= float(os.getenv("T1_MIN_MINUTES")):
                 # Set removal_date field to blank
                 endorsement.removal_date = None
             else:

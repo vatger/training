@@ -19,8 +19,10 @@ from training.permissions import mentor_required
 
 load_dotenv()
 
+min_hours_required = float(os.getenv("T1_MIN_MINUTES", "25")) / 60
+
 def valid_removal(endorsement: EndorsementActivity) -> bool:
-    no_min_hours = endorsement.activity < float(os.getenv("T1_MIN_HOURS"))
+    no_min_hours = endorsement.activity < float(os.getenv("T1_MIN_MINUTES"))
     six_months_ago = timezone.now() - timedelta(days=180)
     not_recent = endorsement.created < six_months_ago
     return no_min_hours and not_recent
@@ -37,8 +39,6 @@ def overview(request):
     total_endorsements = 0
     inactive_count = 0
     removal_count = 0
-    
-    min_hours_required = float(os.getenv("T1_MIN_HOURS", "25"))
     
     endorsements_by_group = {}
     
@@ -74,12 +74,15 @@ def overview(request):
             if activity_hours < min_hours_required:
                 inactive_count += 1
                 
+            bar_width = 100 if activity_hours >= min_hours_required else min(100, (activity_hours / min_hours_required) * 100)
+
             group_endorsements.append({
                 "id": endorsement["user_cid"],
                 "activity": activity_hours,
                 "name": name,
                 "removal": removal_days,
                 "endorsement_id": activity.id,
+                "bar_width": round(bar_width, 0),
             })
             
             total_endorsements += 1
@@ -153,9 +156,16 @@ def trainee_view(request):
         except EndorsementActivity.DoesNotExist:
             continue
             
+        activity_hours = round(activity.activity / 60, 1)
         entry["activity"] = round(activity.activity / 60, 1)
         entry["position"] = endorsement["position"]
         entry["removal_date"] = activity.removal_date
+        
+        if activity_hours >= min_hours_required
+            entry["bar_width"] = 100
+        else:
+            entry["bar_width"] = int((activity_hours / min_hours_required) * 100)
+        
         res_t1.append(entry)
 
     tier_2 = get_tier2_endorsements()
@@ -166,6 +176,7 @@ def trainee_view(request):
     available_t2 = Tier2Endorsement.objects.all()
     available_t2 = sorted(available_t2, key=lambda x: x.name)
     res_t2 = []
+    
     
     for endorsement in available_t2:
         entry = {

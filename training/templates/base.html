@@ -229,15 +229,20 @@
           {% endif %}
         </nav>
 
+        <!-- Custom dropdown implementation that opens to the right side -->
         <div class="px-4 mt-auto mb-2 w-full">
-          <div class="dropdown dropdown-right dropdown-end">
-            <button role="button" class="flex justify-start items-center space-x-1 p-0 px-2 -ml-2 text-left btn btn-ghost h-14 w-56">
+          <div x-data="{ open: false }" class="relative w-full">
+            <!-- Profile button -->
+            <button 
+              @click="open = !open" 
+              type="button" 
+              class="flex items-center w-full px-2 -ml-2 text-left btn btn-ghost h-14">
               <div class="avatar avatar-placeholder">
                 <div class="bg-base-300 text-base-content w-10 rounded-full">
                   <span>{{ user.first_name|slice:"1" }}{{ user.last_name|slice:"1" }}</span>
                 </div>
               </div>
-              <div>
+              <div class="ml-2">
                 <p class="text-base font-medium">
                   {{ user.first_name }} {{ user.last_name }}
                 </p>
@@ -246,35 +251,52 @@
                 </p>
               </div>
             </button>
-            <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-1 w-64 p-2 shadow-sm">
-              <div class="flex items-center justify-start space-x-2 py-2 px-2">
-                <div class="avatar avatar-placeholder">
-                  <div class="bg-base-300 text-base-content w-10 rounded-full">
-                    <span>{{ user.first_name|slice:"1" }}{{ user.last_name|slice:"1" }}</span>
+
+            <!-- Custom menu that opens at fixed position to the right -->
+            <div
+              x-show="open"
+              @click.away="open = false"
+              x-transition:enter="transition ease-out duration-100"
+              x-transition:enter-start="transform opacity-0 scale-95"
+              x-transition:enter-end="transform opacity-100 scale-100"
+              x-transition:leave="transition ease-in duration-75"
+              x-transition:leave-start="transform opacity-100 scale-100" 
+              x-transition:leave-end="transform opacity-0 scale-95"
+              class="fixed z-50 bg-white rounded-md shadow-lg"
+              style="display: none; bottom: 20px; left: 100%; width: 250px;">
+              
+              <!-- User info section -->
+              <div class="border-b border-gray-200 p-4">
+                <div class="flex items-center">
+                  <div class="avatar avatar-placeholder mr-3">
+                    <div class="bg-base-300 text-base-content w-10 rounded-full">
+                      <span>{{ user.first_name|slice:"1" }}{{ user.last_name|slice:"1" }}</span>
+                    </div>
                   </div>
-                </div>
-                <div>
-                  <p class="text-base font-medium">
-                    {{ user.first_name }} {{ user.last_name }}
-                  </p>
-                  <p class="text-xs text-base-content">
-                    {{ user.email }}
-                  </p>
+                  <div>
+                    <p class="text-base font-medium">
+                      {{ user.first_name }} {{ user.last_name }}
+                    </p>
+                    <p class="text-xs text-gray-500">
+                      {{ user.email }}
+                    </p>
+                  </div>
                 </div>
               </div>
               
-              <hr class="dropdown-divider my-2 text-gray-300">
-              <li><a href="{% url 'logout' %}" class="flex justify-start items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24px" viewBox="0 0 24 24" fill="none">
-                  <path d="M21 12L13 12" stroke="#323232" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M18 15L20.913 12.087V12.087C20.961 12.039 20.961 11.961 20.913 11.913V11.913L18 9" stroke="#323232" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M16 5V4.5V4.5C16 3.67157 15.3284 3 14.5 3H5C3.89543 3 3 3.89543 3 5V19C3 20.1046 3.89543 21 5 21H14.5C15.3284 21 16 20.3284 16 19.5V19.5V19" stroke="#323232" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <span class="font-medium">Logout</span>
-                </a></li>
-            </ul>
+              <!-- Menu items -->
+              <div class="">
+                <a href="{% url 'logout' %}" class=" btn btn-ghost w-full justify-start">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-3 text-gray-600">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                  </svg>
+                  <span class="font-medium text-gray-700">Logout</span>
+                </a>
+              </div>
+            </div>
           </div>
-          
         </div>
       </div>
 

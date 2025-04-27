@@ -10,7 +10,7 @@ services:
       - "8016:8016/tcp"
     environment:
       - CORE_API
-      - T1_MIN_HOURS
+      - T1_MIN_MINUTES
       - VATGER_API_KEY
       - GDPR_KEY
       - OAUTH_CLIENT_ID
