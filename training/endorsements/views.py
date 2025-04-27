@@ -206,7 +206,14 @@ def trainee_view(request):
         res_t2.append(entry)
 
     return render(
-        request, "endorsements/trainee.html", {"tier_1": res_t1, "tier_2": res_t2}
+        request,
+        "endorsements/trainee.html",
+        {
+            "tier_1": res_t1,
+            "tier_2": res_t2,
+            "min_hours": min_hours_required,
+            "half_min_hours": min_hours_required / 2,
+        },
     )
 
 
