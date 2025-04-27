@@ -339,9 +339,10 @@ def overview(request):
 
         for trainee in trainees:
             # Check if trainee is claimed
-            claim = TraineeClaim.objects.filter(trainee=trainee, course=course).exists()
-            if claim.mentor == request.user:
-                claimed_trainees_count += 1
+            claim = TraineeClaim.objects.filter(trainee=trainee, course=course)
+            if claim.exists():
+                if claim[0].mentor == request.user:
+                    claimed_trainees_count += 1
 
             # Moodle check for EDMT and GST
             moodle_completed = True
@@ -365,7 +366,7 @@ def overview(request):
             )
 
             # Get the mentor who claimed this trainee
-            if claim:
+            if claim.exists():
                 try:
                     claimer = TraineeClaim.objects.get(
                         trainee=trainee, course=course
@@ -385,9 +386,9 @@ def overview(request):
 
             course_trainees[trainee] = {
                 "logs": logs,
-                "claimed": claim,
+                "claimed": claim.exists(),
                 "claimed_by": (
-                    claimer.first_name + " " + claimer.last_name if claim else None
+                    claimer.first_name + " " + claimer.last_name if claim.exists() else None
                 ),
                 "solo": solo_info,
                 "moodle": moodle_completed,
