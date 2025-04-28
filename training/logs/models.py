@@ -78,7 +78,7 @@ class Log(models.Model):
     final_comment = models.TextField(blank=True, null=True)
     result = models.BooleanField()
 
-    next_step = models.TextField(blank=True, null=True, max_length=30)
+    next_step = models.TextField(blank=True, null=True, max_length=35)
 
     def __str__(self):
         return f"Training Log - {self.session_date.strftime('%Y-%m-%d')} - {self.trainee.username} ({self.position})"
