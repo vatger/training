@@ -11,8 +11,8 @@
   <body class="">
     <div class="flex h-screen bg-base-200" x-data="{ sidebarOpen: false }">
       <div
-        class="sidebar w-64 space-y-6 py-4 px-2 absolute inset-y-0 left-0 transform transition duration-200 ease-in-out z-30 md:relative md:translate-x-0 flex flex-col justify-between"
-        :class="{'translate-x-0': sidebarOpen, '-translate-x-full': !sidebarOpen}"
+        class="sidebar bg-white w-64 space-y-6 transition-transform py-4 px-2 fixed inset-y-0 left-0 transform z-30 md:relative md:translate-x-0 flex flex-col justify-between"
+        :class="{'translate-x-0 shadow-xl': sidebarOpen, '-translate-x-full': !sidebarOpen}"
       >
         <div class="flex items-center justify-start px-4 space-x-2 py-2">
           <a href="{% url 'trainee:home' %}" class="flex items-center justify-start space-x-2 w-full"> <div class="w-10 p-[5px] rounded-xl bg-[#2b3c91] aspect-square flex justify-center items-center">
@@ -229,7 +229,6 @@
           {% endif %}
         </nav>
 
-        <!-- Custom dropdown implementation that opens to the right side -->
         <div class="px-4 mt-auto mb-2 w-full">
           <div x-data="{ open: false }" class="relative w-full">
             <!-- Profile button -->
@@ -298,6 +297,19 @@
             </div>
           </div>
         </div>
+      </div>
+
+      <div class="md:hidden absolute top-4 left-4 z-20">
+        <button @click="sidebarOpen = !sidebarOpen" class="p-2 rounded-md text-gray-600 hover:bg-gray-100">
+          <svg 
+            class="w-6 h-6" 
+            :class="{'hidden': sidebarOpen, 'block': !sidebarOpen}"
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+        </button>
       </div>
 
       <!-- Main content -->
