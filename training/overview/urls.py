@@ -26,4 +26,9 @@ urlpatterns = [
         views.assign_core_test_view,
         name="assign_course",
     ),
+    path(
+        "remark/<int:trainee_id>/<int:course_id>/",
+        views.update_remark,
+        name="update_remark",
+    ),
 ]

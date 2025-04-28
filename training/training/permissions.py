@@ -5,9 +5,6 @@ from django.shortcuts import redirect
 mentor_groups = ["EDGG Mentor", "EDMM Mentor", "EDWW Mentor"]
 
 def is_mentor_or_admin(user):
-    """
-    Check if the user is a mentor or an admin
-    """
     return user.groups.filter(name__in=mentor_groups).exists() or user.is_superuser
 
 def mentor_required(view_func):
