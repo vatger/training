@@ -8,13 +8,12 @@ from django.conf import settings
 from django.core.exceptions import MultipleObjectsReturned
 from django.shortcuts import redirect, get_object_or_404
 from django.shortcuts import render
-from familiarisations.models import Familiarisation, FamiliarisationSector, FIR
 from dotenv import load_dotenv
 from familiarisations.models import Familiarisation, FamiliarisationSector, FIR
 from lists.models import Course, WaitingListEntry
 from lists.views import enrol_into_required_moodles
 from logs.models import Log
-from overview.models import TraineeClaim
+from overview.models import TraineeClaim, TraineeRemark
 from training.eud_header import eud_header
 from training.helpers import log_admin_action
 
@@ -391,6 +390,17 @@ def overview(request):
                 "session_date"
             )
 
+            # Get trainee remark for this course
+            try:
+                remark = TraineeRemark.objects.get(trainee=trainee, course=course)
+                remark_text = remark.remark
+                remark_updated = remark.last_updated
+                remark_updated_by = remark.last_updated_by
+            except TraineeRemark.DoesNotExist:
+                remark_text = ""
+                remark_updated = None
+                remark_updated_by = None
+
             course_trainees[trainee] = {
                 "logs": logs,
                 "claimed": claim.exists(),
@@ -399,6 +409,9 @@ def overview(request):
                 ),
                 "solo": solo_info,
                 "moodle": moodle_completed,
+                "remark": remark_text,
+                "remark_updated": remark_updated,
+                "remark_updated_by": remark_updated_by
             }
 
             # Get the next step and last training date
@@ -435,3 +448,53 @@ def overview(request):
             "waiting_trainees_count": waiting_trainees_count,
         }
     )
+
+@mentor_required
+def update_remark(request, trainee_id, course_id):
+    """
+    View to handle updating or creating trainee remarks by mentors.
+    """
+    if request.method == "POST":
+        trainee = get_object_or_404(User, id=trainee_id)
+        course = get_object_or_404(Course, id=course_id)
+
+        # Make sure the mentor has access to this course
+        if request.user not in course.mentors.all() and not request.user.is_superuser:
+            return redirect("overview:overview")
+
+        remark_text = request.POST.get("remark", "").strip()
+
+        # Try to get an existing remark or create a new one
+        try:
+            remark = TraineeRemark.objects.get(trainee=trainee, course=course)
+
+            # If remark is empty, set remark to null to ensure last_updated
+            # doesn't display in the UI when there's no content
+            if not remark_text:
+                remark.remark = None
+            else:
+                remark.remark = remark_text
+
+            remark.last_updated_by = request.user
+            remark.save()
+        except TraineeRemark.DoesNotExist:
+            # Only create a new remark if there's content
+            if remark_text:
+                TraineeRemark.objects.create(
+                    trainee=trainee,
+                    course=course,
+                    remark=remark_text,
+                    last_updated_by=request.user
+                )
+
+        # Log the action
+        action_type = "Updated" if remark_text else "Removed"
+        log_admin_action(
+            request.user,
+            course,
+            CHANGE,
+            f"{action_type} remark for trainee {trainee} ({trainee.username}) in course {course}"
+        )
+
+    # Redirect back to the overview page
+    return redirect("overview:overview")
