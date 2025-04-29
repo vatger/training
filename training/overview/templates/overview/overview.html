@@ -75,28 +75,152 @@
             </div>
         </div>
 
-        <!-- Course Navigation Tabs -->
-        <div class="mb-6" x-data="{ activeTab: '{{ courses.0.id }}' }">
+         <div class="mb-6"
+         x-data="{
+             activeCategory: null,
+             selectedCourseId: null,
+             selectedCourse: null,
+
+             // Course data
+             courses: [
+                {% for course in courses %}
+                {
+                    id: '{{ course.id }}',
+                    name: '{{ course.name|escapejs }}',
+                    position: '{{ course.get_position_display|escapejs }}',
+                    type: '{{ course.type }}',
+                    typeName: '{{ course.get_type_display|escapejs }}'
+                }{% if not forloop.last %},{% endif %}
+                {% endfor %}
+             ],
+
+             // Initialize component
+             init() {
+                 // Count courses by type first
+                 const rtgCourses = this.courses.filter(c => c.type === 'RTG');
+                 const edmtCourses = this.courses.filter(c => c.type === 'EDMT');
+                 const famCourses = this.courses.filter(c => c.type === 'FAM');
+
+                 // Determine initial active category
+                 if (rtgCourses.length > 0) {
+                     this.activeCategory = 'RTG';
+                 } else if (edmtCourses.length > 0) {
+                     this.activeCategory = 'EDMT';
+                 } else if (famCourses.length > 0) {
+                     this.activeCategory = 'FAM';
+                 }
+
+                 // Try to restore saved course from localStorage
+                 const savedCourseId = localStorage.getItem('lastSelectedCourseId');
+                 if (savedCourseId) {
+                     const savedCourse = this.courses.find(c => c.id === savedCourseId);
+                     if (savedCourse) {
+                         this.selectedCourseId = savedCourseId;
+                         this.selectedCourse = savedCourse;
+                         this.activeCategory = savedCourse.type;
+                     }
+                 } else if (this.getCoursesByType(this.activeCategory).length > 0) {
+                     // Select first course in active category if none is already selected
+                     const firstCourse = this.getCoursesByType(this.activeCategory)[0];
+                     this.selectedCourseId = firstCourse.id;
+                     this.selectedCourse = firstCourse;
+                 }
+             },
+
+             // Get courses filtered by type
+             getCoursesByType(type) {
+                 return this.courses.filter(course => course.type === type);
+             },
+
+             // Count courses by type
+             getTypeCount(type) {
+                 return this.getCoursesByType(type).length;
+             },
+
+             // Select a course
+             selectCourse(course) {
+                 this.selectedCourseId = course.id;
+                 this.selectedCourse = course;
+                 localStorage.setItem('lastSelectedCourseId', course.id);
+             }
+         }">
+
+        <div class="bg-white rounded-xl shadow-md border border-gray-200">
+            <!-- Course Type Tabs -->
             <div class="border-b border-gray-200">
-                <nav class="flex -mb-px space-x-8 overflow-x-auto">
-                    {% for course in courses %}
-                        <button @click="activeTab = '{{ course.id }}'"
-                                :class="{'border-blue-500 text-blue-600': activeTab === '{{ course.id }}', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== '{{ course.id }}'}"
-                                class="py-4 px-1 border-b-2 font-medium text-sm focus:outline-none whitespace-nowrap">
-                            {{ course.name }}
-                            <span class="bg-gray-100 text-gray-700 ml-2 py-1 px-2 rounded-full text-xs">{{ course.active_trainees.count }}</span>
-                        </button>
-                    {% endfor %}
+                <nav class="flex -mb-px space-x-8 px-4 overflow-x-auto">
+                    <button
+                        x-show="getTypeCount('RTG') > 0"
+                        @click="activeCategory = 'RTG'"
+                        :class="{'border-blue-500 text-blue-600 font-medium': activeCategory === 'RTG', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeCategory !== 'RTG'}"
+                        class="py-4 px-1 border-b-2 text-sm transition-colors whitespace-nowrap duration-200 ease-in-out focus:outline-none">
+                        Ratings (<span x-text="getTypeCount('RTG')"></span>)
+                    </button>
+
+                    <button
+                        x-show="getTypeCount('EDMT') > 0"
+                        @click="activeCategory = 'EDMT'"
+                        :class="{'border-blue-500 text-blue-600 font-medium': activeCategory === 'EDMT', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeCategory !== 'EDMT'}"
+                        class="py-4 px-1 border-b-2 text-sm transition-colors whitespace-nowrap duration-200 ease-in-out focus:outline-none">
+                        Endorsements (<span x-text="getTypeCount('EDMT')"></span>)
+                    </button>
+
+                    <button
+                        x-show="getTypeCount('FAM') > 0"
+                        @click="activeCategory = 'FAM'"
+                        :class="{'border-blue-500 text-blue-600 font-medium': activeCategory === 'FAM', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeCategory !== 'FAM'}"
+                        class="py-4 px-1 border-b-2 text-sm transition-colors whitespace-nowrap duration-200 ease-in-out focus:outline-none">
+                        Familiarisation (<span x-text="getTypeCount('FAM')"></span>)
+                    </button>
                 </nav>
             </div>
 
-            <!-- Course Content Panels -->
-            {% for course in courses %}
-                <div x-show="activeTab === '{{ course.id }}'"
-                     x-transition:enter="transition ease-out duration-200"
-                     x-transition:enter-start="opacity-0"
-                     x-transition:enter-end="opacity-100"
-                     class="bg-white rounded-xl shadow-md border border-gray-200 mt-4">
+            <!-- Course Selection Pills -->
+            <div class="px-4 py-3 overflow-x-auto">
+                <div x-show="activeCategory === 'RTG'" class="flex flex-wrap gap-2 py-1">
+                    <template x-for="course in getCoursesByType('RTG').sort((a, b) => a.position.localeCompare(b.position))" :key="course.id">
+                        <button
+                            @click="selectCourse(course)"
+                            :class="{'bg-blue-50 border-blue-500 text-blue-700': selectedCourseId === course.id, 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50': selectedCourseId !== course.id}"
+                            class="course-pill inline-flex items-center px-3 py-1.5 border rounded-full text-sm font-medium transition-colors duration-200 ease-in-out">
+                            <span x-text="course.name"></span>
+                        </button>
+                    </template>
+                </div>
+
+                <div x-show="activeCategory === 'EDMT'" class="flex flex-wrap gap-2 py-1">
+                    <template x-for="course in getCoursesByType('EDMT').sort((a, b) => a.position.localeCompare(b.position))" :key="course.id">
+                        <button
+                            @click="selectCourse(course)"
+                            :class="{'bg-blue-50 border-blue-500 text-blue-700': selectedCourseId === course.id, 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50': selectedCourseId !== course.id}"
+                            class="course-pill inline-flex items-center px-3 py-1.5 border rounded-full text-sm font-medium transition-colors duration-200 ease-in-out">
+                            <span x-text="course.name"></span>
+                        </button>
+                    </template>
+                </div>
+
+                <div x-show="activeCategory === 'FAM'" class="flex flex-wrap gap-2 py-1">
+                    <template x-for="course in getCoursesByType('FAM').sort((a, b) => a.position.localeCompare(b.position))" :key="course.id">
+                        <button
+                            @click="selectCourse(course)"
+                            :class="{'bg-blue-50 border-blue-500 text-blue-700': selectedCourseId === course.id, 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50': selectedCourseId !== course.id}"
+                            class="course-pill inline-flex items-center px-3 py-1.5 border rounded-full text-sm font-medium transition-colors duration-200 ease-in-out">
+                            <span x-text="course.name"></span>
+                        </button>
+                    </template>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Course Content Panels -->
+        {% for course in courses %}
+            <div
+                x-show="selectedCourseId === '{{ course.id }}'"
+                x-transition:enter="transition ease-out duration-200"
+                x-transition:enter-start="opacity-0"
+                x-transition:enter-end="opacity-100"
+                class="bg-white rounded-xl shadow-md border border-gray-200 mt-4">
 
                     <div class="p-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
                         <div>
@@ -907,6 +1031,46 @@
                     traineeName: '',
                     courseId: null,
                     courseName: ''
+                }));
+
+                Alpine.data('courseSelector', ({ courses }) => ({
+                    courses: courses,
+                    selectedCourseId: courses.length > 0 ? courses[0].id : null,
+                    selectedCourse: courses.length > 0 ? courses[0] : null,
+                    dropdownOpen: false,
+
+                    initializeSelector() {
+                        const savedCourseId = localStorage.getItem('lastSelectedCourseId');
+
+                        if (savedCourseId) {
+                            const courseExists = this.courses.some(course => course.id === savedCourseId);
+
+                            if (courseExists) {
+                                this.selectCourse(savedCourseId);
+                            }
+                        }
+                    },
+
+                    selectCourse(courseId) {
+                        this.selectedCourseId = courseId;
+                        this.selectedCourse = this.courses.find(course => course.id === courseId);
+                        this.dropdownOpen = false;
+
+                        localStorage.setItem('lastSelectedCourseId', courseId);
+                    },
+
+                    getCoursesByType(type) {
+                        console.log(courses)
+                        return this.courses.filter(course => course.type === type);
+                    },
+
+                    hasCoursesByType(type) {
+                        return this.getCoursesByType(type).length > 0;
+                    },
+
+                    getSelectedCourseName() {
+                        return this.selectedCourse ? this.selectedCourse.name : 'Select a course';
+                    }
                 }));
             });
         </script>
