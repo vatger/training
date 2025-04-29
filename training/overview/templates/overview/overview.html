@@ -75,7 +75,6 @@
             </div>
         </div>
 
-        <!-- Improved Course Navigation with Category Tabs -->
          <div class="mb-6"
          x-data="{
              activeCategory: null,
@@ -150,7 +149,6 @@
             <!-- Course Type Tabs -->
             <div class="border-b border-gray-200">
                 <nav class="flex -mb-px space-x-8 px-4 overflow-x-auto">
-                    <!-- Rating Tab -->
                     <button
                         x-show="getTypeCount('RTG') > 0"
                         @click="activeCategory = 'RTG'"
@@ -159,7 +157,6 @@
                         Ratings (<span x-text="getTypeCount('RTG')"></span>)
                     </button>
 
-                    <!-- Endorsement Tab -->
                     <button
                         x-show="getTypeCount('EDMT') > 0"
                         @click="activeCategory = 'EDMT'"
@@ -168,7 +165,6 @@
                         Endorsements (<span x-text="getTypeCount('EDMT')"></span>)
                     </button>
 
-                    <!-- Familiarisation Tab -->
                     <button
                         x-show="getTypeCount('FAM') > 0"
                         @click="activeCategory = 'FAM'"
@@ -181,7 +177,6 @@
 
             <!-- Course Selection Pills -->
             <div class="px-4 py-3 overflow-x-auto">
-                <!-- Rating Courses (sorted by airport/position) -->
                 <div x-show="activeCategory === 'RTG'" class="flex flex-wrap gap-2 py-1">
                     <template x-for="course in getCoursesByType('RTG').sort((a, b) => a.position.localeCompare(b.position))" :key="course.id">
                         <button
@@ -193,7 +188,6 @@
                     </template>
                 </div>
 
-                <!-- Endorsement Courses (sorted by airport/position) -->
                 <div x-show="activeCategory === 'EDMT'" class="flex flex-wrap gap-2 py-1">
                     <template x-for="course in getCoursesByType('EDMT').sort((a, b) => a.position.localeCompare(b.position))" :key="course.id">
                         <button
@@ -205,7 +199,6 @@
                     </template>
                 </div>
 
-                <!-- Familiarisation Courses (sorted by airport/position) -->
                 <div x-show="activeCategory === 'FAM'" class="flex flex-wrap gap-2 py-1">
                     <template x-for="course in getCoursesByType('FAM').sort((a, b) => a.position.localeCompare(b.position))" :key="course.id">
                         <button
@@ -1041,46 +1034,43 @@
                 }));
 
                 Alpine.data('courseSelector', ({ courses }) => ({
-                courses: courses,
-                selectedCourseId: courses.length > 0 ? courses[0].id : null,
-                selectedCourse: courses.length > 0 ? courses[0] : null,
-                dropdownOpen: false,
+                    courses: courses,
+                    selectedCourseId: courses.length > 0 ? courses[0].id : null,
+                    selectedCourse: courses.length > 0 ? courses[0] : null,
+                    dropdownOpen: false,
 
-                initializeSelector() {
-                    // Try to get the last selected course from localStorage
-                    const savedCourseId = localStorage.getItem('lastSelectedCourseId');
+                    initializeSelector() {
+                        const savedCourseId = localStorage.getItem('lastSelectedCourseId');
 
-                    if (savedCourseId) {
-                        // Check if the saved course is in the available courses
-                        const courseExists = this.courses.some(course => course.id === savedCourseId);
+                        if (savedCourseId) {
+                            const courseExists = this.courses.some(course => course.id === savedCourseId);
 
-                        if (courseExists) {
-                            this.selectCourse(savedCourseId);
+                            if (courseExists) {
+                                this.selectCourse(savedCourseId);
+                            }
                         }
+                    },
+
+                    selectCourse(courseId) {
+                        this.selectedCourseId = courseId;
+                        this.selectedCourse = this.courses.find(course => course.id === courseId);
+                        this.dropdownOpen = false;
+
+                        localStorage.setItem('lastSelectedCourseId', courseId);
+                    },
+
+                    getCoursesByType(type) {
+                        console.log(courses)
+                        return this.courses.filter(course => course.type === type);
+                    },
+
+                    hasCoursesByType(type) {
+                        return this.getCoursesByType(type).length > 0;
+                    },
+
+                    getSelectedCourseName() {
+                        return this.selectedCourse ? this.selectedCourse.name : 'Select a course';
                     }
-                },
-
-                selectCourse(courseId) {
-                    this.selectedCourseId = courseId;
-                    this.selectedCourse = this.courses.find(course => course.id === courseId);
-                    this.dropdownOpen = false;
-
-                    // Save selection to localStorage
-                    localStorage.setItem('lastSelectedCourseId', courseId);
-                },
-
-                getCoursesByType(type) {
-                    console.log(courses)
-                    return this.courses.filter(course => course.type === type);
-                },
-
-                hasCoursesByType(type) {
-                    return this.getCoursesByType(type).length > 0;
-                },
-
-                getSelectedCourseName() {
-                    return this.selectedCourse ? this.selectedCourse.name : 'Select a course';
-                }
                 }));
             });
         </script>
