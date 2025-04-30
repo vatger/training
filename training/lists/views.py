@@ -1,5 +1,7 @@
 import json
 import os
+
+from django.core.checks import messages
 from django.shortcuts import render, redirect, get_object_or_404, HttpResponseRedirect, reverse
 from django.contrib.auth.decorators import login_required
 from django.utils.html import escape
@@ -120,37 +122,41 @@ def join_leave_list(request, course_id):
         entry = WaitingListEntry.objects.get(user=request.user, course=course)
         entry.delete()
     except WaitingListEntry.DoesNotExist:
-        n_rtg = WaitingListEntry.objects.filter(
-            user=request.user, course__type="RTG"
-        ).count()
-        if course.type == "RTG" and n_rtg >= 1:
+        # Check if user is already in another RTG course waiting list
+        if course.type == "RTG" and WaitingListEntry.objects.filter(
+                user=request.user, course__type="RTG"
+        ).exists():
+            # User is already in a rating course waiting list, redirect with error message
+            messages.error(
+                request,
+                "You are already on the waiting list for a rating course. You can only join one rating course at a time."
+            )
             return HttpResponseRedirect(reverse("lists:view_lists"))
+
         if course.min_rating <= request.user.userdetail.rating <= course.max_rating:
             if course.type == "RTG":
                 try:
                     twr_s1, twr_s2, app_s3 = get_connections(request.user)
-                    match course.position:
-                        case "TWR":
-                            if twr_s1 >= MIN_HOURS:
-                                WaitingListEntry.objects.create(
-                                    user=request.user, course=course
-                                )
-                        case "APP":
-                            if twr_s2 >= MIN_HOURS:
-                                WaitingListEntry.objects.create(
-                                    user=request.user, course=course
-                                )
-                        case "CTR":
-                            if app_s3 >= MIN_HOURS:
-                                WaitingListEntry.objects.create(
-                                    user=request.user, course=course
-                                )
+                    if (course.position == "TWR"):
+                        if twr_s1 >= MIN_HOURS:
+                            WaitingListEntry.objects.create(
+                                user=request.user, course=course
+                            )
+                    elif (course.position == "APP"):
+                        if twr_s2 >= MIN_HOURS:
+                            WaitingListEntry.objects.create(
+                                user=request.user, course=course
+                            )
+                    elif (course.position == "CTR"):
+                        if app_s3 >= MIN_HOURS:
+                            WaitingListEntry.objects.create(
+                                user=request.user, course=course
+                            )
                 except:
                     pass
             else:
                 WaitingListEntry.objects.create(user=request.user, course=course)
     return HttpResponseRedirect(reverse("lists:view_lists"))
-
 
 @mentor_required
 def mentor_view(request):
