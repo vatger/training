@@ -1,6 +1,10 @@
 import json
 import os
 
+import requests
+from cachetools import TTLCache, cached
+from django.contrib.admin.models import CHANGE
+from django.contrib.auth.decorators import login_required
 from django.core.checks import messages
 from django.shortcuts import (
     render,
@@ -9,28 +13,89 @@ from django.shortcuts import (
     HttpResponseRedirect,
     reverse,
 )
-from django.contrib.auth.decorators import login_required
-from django.utils.html import escape
 from django.utils.safestring import mark_safe
-import requests
-from cachetools import TTLCache, cached
-from django.contrib.auth.models import User
-
-from training.permissions import mentor_required
-from django.contrib.admin.models import CHANGE
-from training.helpers import log_admin_action
-
-from familiarisations.models import Familiarisation
-from .models import Course, WaitingListEntry
+from dotenv import load_dotenv
 from endorsements.helpers import get_tier1_endorsements
-from overview.helpers import inform_user_course_star
+from familiarisations.models import Familiarisation
+from overview.helpers import inform_user_course_start
+from training.helpers import log_admin_action
+from training.permissions import mentor_required
+
+from .models import Course, WaitingListEntry
+
+load_dotenv()
 
 # Minimum required activity hours
 ACTIVITY_MIN = 8
 MIN_HOURS = 25
 
 
-# Fix for trainee signup issue
+def enrol_into_required_moodles(user_id, course_ids: list):
+    header = {"Authorization": f"Token {os.getenv("VATGER_API_KEY")}"}
+    for course_id in course_ids:
+        requests.get(
+            f"http://vatsim-germany.org/api/moodle/course/{course_id}/user/{user_id}/enrol",
+            headers=header,
+        )
+
+
+@cached(cache=TTLCache(maxsize=1024, ttl=60 * 60))
+def get_user_endorsements(user_id: int) -> set:
+    return set(
+        [
+            end["position"]
+            for end in get_tier1_endorsements()
+            if end["user_cid"] == user_id
+        ]
+    )
+
+
+connections_cache = TTLCache(maxsize=float("inf"), ttl=10 * 60 * 60)
+
+
+def get_connections(user):
+    api_url = f"https://api.vatsim.net/api/ratings/{user.username}/atcsessions"
+    try:
+        res = requests.get(api_url).json()
+        response = res["results"]
+    except:
+        print("Error fetching data from VATSIM API")
+        return -1
+
+    twr_s1 = sum(
+        float(session["minutes_on_callsign"])
+        for session in response
+        if session["callsign"].split("_")[-1] == "TWR"
+        and session["rating"] == 2
+        and session["callsign"].split("_")[1] != "I"
+    )
+    twr_s2 = sum(
+        float(session["minutes_on_callsign"])
+        for session in response
+        if session["callsign"].split("_")[-1] == "TWR"
+        and session["rating"] == 3
+        and session["callsign"].split("_")[1] != "I"
+    )
+    app_s3 = sum(
+        float(session["minutes_on_callsign"])
+        for session in response
+        if session["callsign"].split("_")[-1] == "APP"
+    )
+
+    result = (twr_s1 / 60, twr_s2 / 60, app_s3 / 60)
+
+    # Store in cache only if the request was successful
+    connections_cache[user.username] = result
+    return result
+
+
+# Wrapper function to check cache first
+def get_cached_connections(user):
+    if user.username in connections_cache:
+        return connections_cache[user.username]
+    return get_connections(user)
+
+
 @login_required
 def view_lists(request):
     # make sure user is not currently active_trainee
@@ -69,7 +134,7 @@ def view_lists(request):
     # Get Tier 1 Endorsement, do not show course if user already has it
     user_endorsements = get_user_endorsements(int(request.user.username))
 
-    # Get user's familiarizations
+    # Do not show familarisation courses if user already has the familiarisation
     familiarisations = list(
         Familiarisation.objects.filter(user=request.user).values_list(
             "sector", flat=True
@@ -125,6 +190,9 @@ def view_lists(request):
 
 @login_required
 def join_leave_list(request, course_id):
+    # Temporary diabling of course joining
+    return redirect("lists:view_lists")
+
     course = get_object_or_404(Course, pk=course_id)
     try:
         entry = WaitingListEntry.objects.get(user=request.user, course=course)
@@ -148,21 +216,22 @@ def join_leave_list(request, course_id):
             if course.type == "RTG":
                 try:
                     twr_s1, twr_s2, app_s3 = get_connections(request.user)
-                    if course.position == "TWR":
-                        if twr_s1 >= MIN_HOURS:
-                            WaitingListEntry.objects.create(
-                                user=request.user, course=course
-                            )
-                    elif course.position == "APP":
-                        if twr_s2 >= MIN_HOURS:
-                            WaitingListEntry.objects.create(
-                                user=request.user, course=course
-                            )
-                    elif course.position == "CTR":
-                        if app_s3 >= MIN_HOURS:
-                            WaitingListEntry.objects.create(
-                                user=request.user, course=course
-                            )
+                    match course.position:
+                        case "TWR":
+                            if twr_s1 >= MIN_HOURS:
+                                WaitingListEntry.objects.create(
+                                    user=request.user, course=course
+                                )
+                        case "APP":
+                            if twr_s2 >= MIN_HOURS:
+                                WaitingListEntry.objects.create(
+                                    user=request.user, course=course
+                                )
+                        case "CTR":
+                            if app_s3 >= MIN_HOURS:
+                                WaitingListEntry.objects.create(
+                                    user=request.user, course=course
+                                )
                 except:
                     pass
             else:
@@ -283,70 +352,3 @@ def remove_trainee(request, waitlist_entry_id):
         entry.delete()
 
     return redirect("lists:mentor_view")
-
-
-# Helper functions
-@cached(cache=TTLCache(maxsize=1024, ttl=60 * 60))
-def get_user_endorsements(user_id: int) -> set:
-
-    return set(
-        [
-            end["position"]
-            for end in get_tier1_endorsements()
-            if end["user_cid"] == user_id
-        ]
-    )
-
-
-connections_cache = TTLCache(maxsize=float("inf"), ttl=10 * 60 * 60)
-
-
-def get_connections(user):
-    api_url = f"https://api.vatsim.net/api/ratings/{user.username}/atcsessions"
-    try:
-        res = requests.get(api_url).json()
-        response = res["results"]
-    except:
-        print("Error fetching data from VATSIM API")
-        return -1
-
-    twr_s1 = sum(
-        float(session["minutes_on_callsign"])
-        for session in response
-        if session["callsign"].split("_")[-1] == "TWR"
-        and session["rating"] == 2
-        and session["callsign"].split("_")[1] != "I"
-    )
-    twr_s2 = sum(
-        float(session["minutes_on_callsign"])
-        for session in response
-        if session["callsign"].split("_")[-1] == "TWR"
-        and session["rating"] == 3
-        and session["callsign"].split("_")[1] != "I"
-    )
-    app_s3 = sum(
-        float(session["minutes_on_callsign"])
-        for session in response
-        if session["callsign"].split("_")[-1] == "APP"
-    )
-
-    result = (twr_s1 / 60, twr_s2 / 60, app_s3 / 60)
-
-    # Store in cache only if the request was successful
-    connections_cache[user.username] = result
-    return result
-
-
-def get_cached_connections(user):
-    if user.username in connections_cache:
-        return connections_cache[user.username]
-    return get_connections(user)
-
-
-def enrol_into_required_moodles(user_id, course_ids: list):
-    header = {"Authorization": f"Token {os.getenv('VATGER_API_KEY')}"}
-    for course_id in course_ids:
-        requests.get(
-            f"http://vatsim-germany.org/api/moodle/course/{course_id}/user/{user_id}/enrol",
-            headers=header,
-        )
