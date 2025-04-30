@@ -1,41 +1,294 @@
 {% extends "base.html" %}
+{% load tags %}
 
 {% block content %}
-<h1>Courses</h1>
-<div class="container">
-    {% if error %}
-        <div class="row">
-            <div class="col">
-                <div class="alert alert-danger" role="alert">
-                    Error fetching data from the VATSIM API. Try again in a few minutes.
-                </div>
-            </div>
-        </div>
-    {% endif %}
+<div class="container px-4 py-5">
+  <!-- Breadcrumbs -->
+  {% include "components/breadcrumbs.html" with auto=True current_title="Available Courses" %}
 
-    <div class="row">
-        {% for course, res in courses.items %}
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ course.name }}</h5>
-                        <p class="card-text">{{ course.get_position_display }} {{ course.get_type_display }}</p>
-                        {% if res.entered %}
-                            <a class="btn btn-outline-danger btn-sm" href="{% url 'lists:join_leave_list' course.id %}" data-bs-toggle="modal" data-bs-target="#confirmModal"
-   data-href="{% url 'lists:join_leave_list' course.id %}" data-message="Are you sure you want to leave the waiting list of {{ course }}?">Leave</a>
-                        {% else %}
-                            {% if not res.hours_reached %}
-                                You have not reached the required hours to join this course.
-                            {% elif rating_reached and course.type == "RTG" %}
-                                You can only join one rating course at a time.
-                            {% else %}
-                            <a class="btn btn-outline-info btn-sm" href="{% url 'lists:join_leave_list' course.id %}">Join (currently disabled)</a>
-                            {% endif %}
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-        {% endfor %}
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-800">Available Courses</h1>
+    <p class="text-gray-600 mt-2">View and join waiting lists for available training courses.</p>
+  </div>
+
+  {% if error %}
+  <div class="bg-red-100 border border-red-300 text-red-700 px-4 py-3 rounded mb-6" role="alert">
+    <div class="flex items-center">
+      <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+      </svg>
+      <p>Error fetching data from the VATSIM API. Try again in a few minutes.</p>
     </div>
+  </div>
+  {% endif %}
+
+  <!-- Filter Section -->
+  <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200 mb-8">
+    <div x-data="{ activeFilter: 'all' }">
+      <div class="flex flex-wrap gap-2 mb-4">
+        <button
+          @click="activeFilter = 'all'; $dispatch('filter-changed', { filter: 'all' })"
+          :class="{'bg-blue-100 text-blue-800 border-blue-300': activeFilter === 'all', 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200': activeFilter !== 'all'}"
+          class="px-4 py-2 rounded-lg text-sm font-medium border transition-colors">
+          All Courses
+        </button>
+        <button
+          @click="activeFilter = 'RTG'; $dispatch('filter-changed', { filter: 'RTG' })"
+          :class="{'bg-blue-100 text-blue-800 border-blue-300': activeFilter === 'RTG', 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200': activeFilter !== 'RTG'}"
+          class="px-4 py-2 rounded-lg text-sm font-medium border transition-colors">
+          Rating Courses
+        </button>
+        <button
+          @click="activeFilter = 'EDMT'; $dispatch('filter-changed', { filter: 'EDMT' })"
+          :class="{'bg-blue-100 text-blue-800 border-blue-300': activeFilter === 'EDMT', 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200': activeFilter !== 'EDMT'}"
+          class="px-4 py-2 rounded-lg text-sm font-medium border transition-colors">
+          Endorsement Courses
+        </button>
+        <button
+          @click="activeFilter = 'FAM'; $dispatch('filter-changed', { filter: 'FAM' })"
+          :class="{'bg-blue-100 text-blue-800 border-blue-300': activeFilter === 'FAM', 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200': activeFilter !== 'FAM'}"
+          class="px-4 py-2 rounded-lg text-sm font-medium border transition-colors">
+          Familiarisation Courses
+        </button>
+      </div>
+
+      <div class="relative">
+        <input
+          type="text"
+          placeholder="Search courses..."
+          class="input input-bordered w-full"
+          x-data="{ searchTerm: '' }"
+          x-model="searchTerm"
+          @input="$dispatch('search-updated', { term: searchTerm.toLowerCase() })">
+        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Course Cards -->
+  <div
+    x-data="{
+      searchTerm: '',
+      activeFilter: 'all',
+
+      filterCourses(course) {
+        const typeMatch = this.activeFilter === 'all' || course.dataset.type === this.activeFilter;
+        const searchMatch = !this.searchTerm || course.textContent.toLowerCase().includes(this.searchTerm);
+        return typeMatch && searchMatch;
+      }
+    }"
+    @search-updated.window="searchTerm = $event.detail.term"
+    @filter-changed.window="activeFilter = $event.detail.filter"
+    class="grid max-xl:grid-cols-1 max-[1800px]:grid-cols-2 min-[1800px]:grid-cols-3 gap-6">
+
+    {% for course, res in courses.items %}
+      <div
+        x-show="filterCourses($el)"
+        x-transition:enter="transition ease-out duration-200"
+        x-transition:enter-start="opacity-0 transform scale-95"
+        x-transition:enter-end="opacity-100 transform scale-100"
+        x-transition:leave="transition ease-in duration-100"
+        x-transition:leave-start="opacity-100 transform scale-100"
+        x-transition:leave-end="opacity-0 transform scale-95"
+        data-type="{{ course.type }}"
+        class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden ">
+
+        <div class="p-5 min-w-md">
+          <div class="flex items-center mb-3">
+            <!-- Position Icon -->
+            {% if course.position == 'GND' %}
+              <div class="bg-gray-100 p-2 rounded-lg mr-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+                </svg>
+              </div>
+            {% elif course.position == 'TWR' %}
+              <div class="bg-blue-100 p-2 rounded-lg mr-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+              </div>
+            {% elif course.position == 'APP' %}
+              <div class="bg-green-100 p-2 rounded-lg mr-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                </svg>
+              </div>
+            {% elif course.position == 'CTR' %}
+              <div class="bg-purple-100 p-2 rounded-lg mr-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+            {% endif %}
+
+            <div>
+              <h3 class="text-lg font-semibold text-gray-800">{{ course.name }}</h3>
+              <div class="flex items-center space-x-2 mt-1">
+                <span class="text-sm text-gray-500">{{ course.get_position_display }}</span>
+                <span class="text-gray-400">•</span>
+                <span class="text-sm text-gray-500">{{ course.get_type_display }}</span>
+              </div>
+            </div>
+          </div>
+
+          <p class="text-sm text-gray-600 mb-4">{{ course.description|default:"Training for controlling at this position." }}</p>
+
+          <div class="flex justify-between items-center">
+            <div class="text-sm">
+              {% if course.type == "RTG" %}
+                <div class="flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span class="text-gray-600">
+                    Minimum activity:
+                    <span class="font-medium">{{ min_hours }} hours</span>
+                  </span>
+                </div>
+              {% endif %}
+            </div>
+
+            <div>
+              {% if res.entered %}
+                <a class="btn btn-sm btn-error" href="{% url 'lists:join_leave_list' course.id %}" data-bs-toggle="modal" data-bs-target="#confirmModal" data-href="{% url 'lists:join_leave_list' course.id %}" data-message="Are you sure you want to leave the waiting list of {{ course }}?">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                  Leave Waitlist
+                </a>
+              {% else %}
+                {% if not res.hours_reached and course.type == "RTG" %}
+                  <div class="">
+                    <button class="btn btn-sm btn-disabled">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                      </svg>
+                      Insufficient Hours
+                    </button>
+                  </div>
+                {% elif rating_reached and course.type == "RTG" %}
+                  <div class="tooltip" data-tip="You can only join one rating course at a time">
+                    <button class="btn btn-sm btn-disabled">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                      </svg>
+                      Already in Queue
+                    </button>
+                  </div>
+                {% else %}
+                  <a class="btn btn-sm btn-primary" href="{% url 'lists:join_leave_list' course.id %}">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    Join Waitlist
+                  </a>
+                {% endif %}
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        {% if res.entered or not res.hours_reached and course.type == "RTG" %}
+          <div class="px-5 py-3 bg-gray-50 border-t border-gray-200">
+            {% if res.entered %}
+              <div class="flex items-center text-sm text-green-700">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                <span>You are on the waiting list</span>
+              </div>
+            {% elif not res.hours_reached and course.type == "RTG" %}
+              <div class="flex items-center text-sm text-yellow-700">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-500 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>Need more activity: {{ res.current_hours|default:0 }}/{{ min_hours }} hours</span>
+              </div>
+            {% endif %}
+          </div>
+        {% endif %}
+      </div>
+    {% empty %}
+      <div class="col-span-3 bg-white rounded-xl shadow-md p-8 border border-gray-200 text-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+        </svg>
+        <h3 class="text-lg font-medium text-gray-900">No courses available</h3>
+        <p class="mt-2 text-sm text-gray-500">There are no courses available for your current rating level.</p>
+      </div>
+    {% endfor %}
+  </div>
+
+  <!-- Confirmation Modal -->
+  <div 
+    x-data="{ open: false, message: '', href: '' }"
+    @open-confirm.window="open = true; message = $event.detail.message; href = $event.detail.href"
+    x-show="open" 
+    x-cloak
+    class="fixed inset-0 z-50 overflow-y-auto" 
+    aria-labelledby="modal-title" 
+    role="dialog" 
+    aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+      <div 
+        x-show="open"
+        x-transition:enter="ease-out duration-300"
+        x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100"
+        x-transition:leave="ease-in duration-200"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
+        class="fixed inset-0 transition-opacity z-10"
+        @click="open = false"
+        style="background-color: rgba(0, 0, 0, 0.4);"
+        aria-hidden="true"></div>
+
+      <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+      <div 
+        x-show="open"
+        x-transition:enter="ease-out duration-300"
+        x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+        x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+        x-transition:leave="ease-in duration-200"
+        x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+        x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+        class="inline-block align-middle bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-lg sm:w-full z-20 relative">
+        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+          <div class="sm:flex sm:items-start">
+            <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+              <svg class="h-6 w-6 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+              <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                Confirm Action
+              </h3>
+              <div class="mt-2">
+                <p class="text-sm text-gray-500" x-text="message"></p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+          <a :href="href" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm">
+            Confirm
+          </a>
+          <button type="button" @click="open = false" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
+
+<style>
+  [x-cloak] { display: none !important; }
+</style>
 {% endblock %}

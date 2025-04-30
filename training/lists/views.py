@@ -14,7 +14,6 @@ from dotenv import load_dotenv
 from endorsements.helpers import get_tier1_endorsements
 from familiarisations.models import Familiarisation
 from overview.helpers import inform_user_course_start
-from familiarisations.models import Familiarisation
 from training.helpers import log_admin_action
 from training.permissions import mentor_required
 from django.contrib.auth.decorators import login_required
@@ -23,13 +22,12 @@ from .models import Course, WaitingListEntry
 
 load_dotenv()
 
-
 min_hours = 25
 activity_min = 8  # Policy says 10 hours, but we are more lenient here
 
 
 def enrol_into_required_moodles(user_id, course_ids: list):
-    header = {"Authorization": f"Token {os.getenv("VATGER_API_KEY")}"}
+    header = {"Authorization": f"Token {os.getenv('VATGER_API_KEY')}"}
     for course_id in course_ids:
         requests.get(
             f"http://vatsim-germany.org/api/moodle/course/{course_id}/user/{user_id}/enrol",
@@ -131,15 +129,8 @@ def view_lists(request):
 
     # Get Tier 1 Endorsement, do not show course if user already has it
     user_endorsements = get_user_endorsements(int(request.user.username))
-    
-    # Do not show familarisation courses if user already has the familiarisation
-    familiarisations = list(
-        Familiarisation.objects.filter(user=request.user).values_list(
-            "sector", flat=True
-        )
-    )
 
-    # Do not show familarisation courses if user already has the familiarisation
+    # Get user's familiarizations
     familiarisations = list(
         Familiarisation.objects.filter(user=request.user).values_list(
             "sector", flat=True
@@ -151,33 +142,45 @@ def view_lists(request):
             course.endorsement_groups.all().values_list("name", flat=True)
         )
         if (
-            len(endorsement_groups & user_endorsements) == len(endorsement_groups)
-            and len(endorsement_groups) > 0
+                len(endorsement_groups & user_endorsements) == len(endorsement_groups)
+                and len(endorsement_groups) > 0
         ):
             continue
-        # Familiarisation check
-        if course.type == "FAM":
+
+        if course.type == "FAM" and course.familiarisation_sector is not None:
             if course.familiarisation_sector.id in familiarisations:
                 continue
-        res = {"course": course, "hours_reached": True}
+
+        res = {
+            "current_hours": hours_dict.get(course.position, 0),
+            "hours_reached": True
+        }
+
         if course.type == "RTG":
-            if hours_dict[course.position] < min_hours:
+            if hours_dict.get(course.position, 0) < min_hours:
                 res["hours_reached"] = False
             else:
                 res["hours_reached"] = True
+
         try:
             WaitingListEntry.objects.get(user=request.user, course=course)
             res["entered"] = True
-            res["rtg_limit_reached"] = False
             if course.type == "RTG":
                 n_rtg += 1
         except WaitingListEntry.DoesNotExist:
             res["entered"] = False
+
         courses_dict[course] = res
+
     return render(
         request,
         "lists/overview.html",
-        {"courses": courses_dict, "error": error, "rating_reached": n_rtg >= 1},
+        {
+            "courses": courses_dict,
+            "error": error,
+            "rating_reached": n_rtg >= 1,
+            "min_hours": min_hours
+        },
     )
 
 
