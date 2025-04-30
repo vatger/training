@@ -38,7 +38,7 @@ def get_solos():
                 "user_cid": 1601613,
                 "instructor_cid": 1439797,
                 "position": "EDDL_APP",
-                "expiry": "2025-05-05T00:00:00.000000Z",
+                "expiry": "2025-04-30T00:00:00.000000Z",
                 "max_days": 74,
                 "facility": 9,
                 "created_at": "2025-03-03T02:10:40.000000Z",
@@ -53,7 +53,7 @@ def get_solos():
     for solo in solos:
         expiry_date = datetime.fromisoformat(solo["expiry"].replace("Z", "+00:00"))
         created_date = datetime.fromisoformat(solo["created_at"].replace("Z", "+00:00"))
-        remaining_days = (expiry_date - datetime.now(timezone.utc)).days
+        remaining_days = (expiry_date.date() - datetime.now(timezone.utc).date()).days
         delta = solo["max_days"] - (expiry_date - created_date).days
         res.append(
             {
