@@ -335,20 +335,3 @@ def start_training(request, waitlist_entry_id):
     inform_user_course_start(int(entry.user.username), entry.course.name)
 
     return HttpResponseRedirect(reverse("lists:mentor_view"))
-
-
-@mentor_required
-def remove_trainee(request, waitlist_entry_id):
-    entry = get_object_or_404(WaitingListEntry, pk=waitlist_entry_id)
-
-    if request.user in entry.course.mentors.all():
-        # Log the action
-        log_admin_action(
-            request.user,
-            entry.course,
-            CHANGE,
-            f"Removed trainee {entry.user} ({entry.user.username}) from waiting list for insufficient activity",
-        )
-        entry.delete()
-
-    return redirect("lists:mentor_view")

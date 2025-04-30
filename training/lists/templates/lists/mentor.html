@@ -456,19 +456,6 @@
                         </svg>
                         Start Training
                       </a>
-                      <button
-                          @click="$dispatch('open-confirm', {
-                            action: 'remove',
-                            message: course.type === 'RTG' && trainee.activity < {{ activity_min }} ?
-                              'Remove this trainee from the waiting list? They will need to rejoin when they have sufficient activity.' :
-                              'Remove this trainee from the waiting list?',
-                            href: '/lists/remove_trainee/' + trainee.id + '/'
-                          })"
-                          class="btn btn-error btn-sm px-2">
-                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </button>
                     </td>
                   </tr>
                 </template>
@@ -531,9 +518,6 @@
               </svg>
             </div>
             <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-              <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
-                <span x-show="action === 'remove'">Remove Trainee</span>
-              </h3>
               <div class="mt-2">
                 <p class="text-sm text-gray-500" x-text="message"></p>
               </div>
