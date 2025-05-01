@@ -26,7 +26,8 @@ from .models import Course, WaitingListEntry
 load_dotenv()
 
 # Minimum required activity hours
-ACTIVITY_MIN = 8
+ACTIVITY_MIN = 10
+DISPLAY_ACTIVITY = 8  # Display activity, 20% leniency
 MIN_HOURS = 25
 
 
@@ -247,21 +248,28 @@ def mentor_view(request):
     rtg_waiting = 0
     edmt_waiting = 0
     fam_waiting = 0
+    gst_waiting = 0
 
     course_list = []
 
     for course in courses:
         if course.type == "RTG":
-            waiting_entries = WaitingListEntry.objects.filter(course=course).order_by(
+            waiting_entries = WaitingListEntry.objects.filter(
+                course=course, activity__gte=DISPLAY_ACTIVITY
+            ).order_by(
                 "date_added"
             )  # Sort by join date, oldest first
-            rtg_waiting += waiting_entries.filter(activity__gte=ACTIVITY_MIN).count()
+            rtg_waiting += waiting_entries.count()
         else:
-            waiting_entries = WaitingListEntry.objects.filter(course=course)
+            waiting_entries = WaitingListEntry.objects.filter(course=course).order_by(
+                "date_added"
+            )
             if course.type == "EDMT":
                 edmt_waiting += waiting_entries.count()
             elif course.type == "FAM":
                 fam_waiting += waiting_entries.count()
+            elif course.type == "GST":
+                gst_waiting += waiting_entries.count()
 
         total_waiting += waiting_entries.count()
 
@@ -304,6 +312,7 @@ def mentor_view(request):
         "edmt_waiting": edmt_waiting,
         "fam_waiting": fam_waiting,
         "activity_min": ACTIVITY_MIN,
+        "activity_display": DISPLAY_ACTIVITY,
     }
 
     return render(request, "lists/mentor.html", context)
@@ -315,7 +324,7 @@ def start_training(request, waitlist_entry_id):
     if request.user not in entry.course.mentors.all():
         return HttpResponseRedirect(reverse("lists:mentor_view"))
 
-    if entry.activity < ACTIVITY_MIN and entry.course.type == "RTG":
+    if entry.activity < DISPLAY_ACTIVITY and entry.course.type == "RTG":
         return HttpResponseRedirect(reverse("lists:mentor_view"))
 
     entry.course.active_trainees.add(entry.user)
