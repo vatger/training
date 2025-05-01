@@ -2,9 +2,16 @@ from django.contrib import admin
 from .models import Course, WaitingListEntry
 
 
+class CourseAdmin(admin.ModelAdmin):
+    search_fields = [
+        "name",
+        "airport_name",
+    ]  # or whatever field you want to search by
+
+
 class WaitingListEntryAdmin(admin.ModelAdmin):
     list_display = ("user_username", "course", "date_added", "activity")
-    autocomplete_fields = ["user"]
+    autocomplete_fields = ["user", "course"]
 
     def user_username(self, obj):
         return obj.user.username
@@ -12,5 +19,5 @@ class WaitingListEntryAdmin(admin.ModelAdmin):
     user_username.short_description = "Username"
 
 
-admin.site.register(Course)
+admin.site.register(Course, CourseAdmin)
 admin.site.register(WaitingListEntry, WaitingListEntryAdmin)
