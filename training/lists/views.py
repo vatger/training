@@ -242,7 +242,10 @@ def join_leave_list(request, course_id):
 
 @mentor_required
 def mentor_view(request):
-    courses = request.user.mentored_courses.all()
+    if request.user.is_superuser:
+        courses = Course.objects.all()
+    else:
+        courses = request.user.mentored_courses.all()
 
     total_waiting = 0
     rtg_waiting = 0
