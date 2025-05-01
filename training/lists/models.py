@@ -51,10 +51,6 @@ class Course(models.Model):
         EndorsementGroup, blank=True, related_name="courses"
     )
     moodle_course_ids = models.JSONField(default=list, blank=True)
-    
-    familiarisation_sector = models.ForeignKey(
-        FamiliarisationSector, null=True, blank=True, on_delete=models.SET_NULL
-    )
 
     familiarisation_sector = models.ForeignKey(
         FamiliarisationSector, null=True, blank=True, on_delete=models.SET_NULL
