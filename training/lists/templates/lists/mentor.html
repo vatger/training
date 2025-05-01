@@ -1,51 +1,543 @@
 {% extends "base.html" %}
+{% load tags %}
 
 {% block content %}
-<div class="container">
-    <h5>List Overview</h5>
-<div id="accordion">
-    {% for course, waitlists in coursedict.items %}
-  <div class="card">
-    <div class="card-header" id="headingOne">
-      <h5 class="mb-0">
-        <button class="btn btn-link" data-toggle="collapse" data-target="#collapse{{ forloop.counter }}" aria-expanded="false" aria-controls="collapse{{ forloop.counter }}">
-          {{ course }}, {{ waitlists|length }} waiting
-        </button>
-      </h5>
+<div class="container px-4 py-5">
+  {% include "components/breadcrumbs.html" with auto=True current_title="Waiting Lists" %}
+
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-800">Waiting Lists</h1>
+    <p class="text-gray-600 mt-2">Manage students waiting to start training across your courses.</p>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-lg font-semibold text-gray-800">Total Waiting</h3>
+          <p class="text-gray-500 text-sm mt-1">Across all courses</p>
+        </div>
+        <div class="bg-blue-100 p-3 rounded-full">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+          </svg>
+        </div>
+      </div>
+      <div class="mt-4">
+        <span class="text-3xl font-bold text-gray-800">{{ total_waiting }}</span>
+      </div>
     </div>
 
-    <div id="collapse{{ forloop.counter }}" class="collapse" aria-labelledby="headingOne" data-parent="#accordion">
-      <div class="card-body">
-          <table class="table table-striped">
-              <thead>
-              <tr>
-                  <td>#</td>
-                  <td>Name</td>
-                  <td>ID</td>
-                  <td>Action</td>
-                  <td>Activity</td>
-              </tr>
-              </thead>
-                <tbody>
-                {% for list_entry in waitlists %}
-                <tr>
-                    <td>{{ forloop.counter }}</td>
-                    <td>{{ list_entry.user.get_full_name }}</td>
-                    <td>{{ list_entry.user.username }}</td>
-                    <td>
-                        <a href="{% url 'lists:start_training' list_entry.id %}" class="btn btn-primary btn-sm">Start Training</a>
-                    </td>
-                    <td>
-                        <a target="_blank" href="https://stats.vatsim.net/stats/{{ list_entry.user.username }}?range=2months">{{ list_entry.activity }}</a>
-                    </td>
-                </tr>
-                    {% endfor %}
-                </tbody>
-          </table>
+    <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-lg font-semibold text-gray-800">Rating Courses</h3>
+          <p class="text-gray-500 text-sm mt-1">Students ready for training</p>
+        </div>
+        <div class="bg-green-100 p-3 rounded-full">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+      </div>
+      <div class="mt-4">
+        <span class="text-3xl font-bold text-gray-800">{{ rtg_waiting }}</span>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-lg font-semibold text-gray-800">Endorsements</h3>
+          <p class="text-gray-500 text-sm mt-1">Students waiting for Endorsements</p>
+        </div>
+        <div class="bg-purple-100 p-3 rounded-full">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        </div>
+      </div>
+      <div class="mt-4">
+        <span class="text-3xl font-bold text-gray-800">{{ edmt_waiting }}</span>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-lg font-semibold text-gray-800">Familiarisation</h3>
+          <p class="text-gray-500 text-sm mt-1">Students waiting for Familiarisations</p>
+        </div>
+        <div class="bg-yellow-100 p-3 rounded-full">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+      </div>
+      <div class="mt-4">
+        <span class="text-3xl font-bold text-gray-800">{{ fam_waiting }}</span>
       </div>
     </div>
   </div>
-{% endfor %}
+
+  <!-- Course List Section -->
+  <div
+    x-data="{
+      activeFilter: 'all',
+      searchTerm: '',
+      courseList: [],
+      selectedCourseId: null,
+
+      filterCourses(course) {
+        const typeMatch = this.activeFilter === 'all' || course.type === this.activeFilter;
+        const searchMatch = !this.searchTerm ||
+          course.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+          course.position.toLowerCase().includes(this.searchTerm.toLowerCase());
+        return typeMatch && searchMatch;
+      },
+
+      openWaitingListModal(courseId) {
+        this.selectedCourseId = courseId;
+        $dispatch('open-waiting-list-modal', { courseId: courseId });
+      },
+
+      init() {
+        // Initialize courseList from the Django context
+        this.courseList = JSON.parse(document.getElementById('course-data').textContent);
+      }
+    }"
+  >
+    <div id="course-data" class="hidden">
+      {{ course_list_json|safe }}
+    </div>
+
+    <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200 mb-8">
+      <div class="flex flex-wrap gap-2 mb-4">
+        <button
+          @click="activeFilter = 'all'"
+          :class="{'bg-blue-100 text-blue-800 border-blue-300': activeFilter === 'all', 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200': activeFilter !== 'all'}"
+          class="px-4 py-2 rounded-lg text-sm font-medium border transition-colors">
+          All Courses
+        </button>
+        <button
+          @click="activeFilter = 'RTG'"
+          :class="{'bg-blue-100 text-blue-800 border-blue-300': activeFilter === 'RTG', 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200': activeFilter !== 'RTG'}"
+          class="px-4 py-2 rounded-lg text-sm font-medium border transition-colors">
+          Rating Courses
+        </button>
+        <button
+          @click="activeFilter = 'EDMT'"
+          :class="{'bg-blue-100 text-blue-800 border-blue-300': activeFilter === 'EDMT', 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200': activeFilter !== 'EDMT'}"
+          class="px-4 py-2 rounded-lg text-sm font-medium border transition-colors">
+          Endorsement Courses
+        </button>
+        <button
+          @click="activeFilter = 'FAM'"
+          :class="{'bg-blue-100 text-blue-800 border-blue-300': activeFilter === 'FAM', 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200': activeFilter !== 'FAM'}"
+          class="px-4 py-2 rounded-lg text-sm font-medium border transition-colors">
+          Familiarisation Courses
+        </button>
+      </div>
+
+      <div class="relative">
+        <input
+          type="text"
+          placeholder="Search courses..."
+          class="input input-bordered w-full"
+          x-model="searchTerm">
+        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <template x-for="course in courseList" :key="course.id">
+        <div
+          x-show="filterCourses(course)"
+          x-transition:enter="transition ease-out duration-200"
+          x-transition:enter-start="opacity-0 transform scale-95"
+          x-transition:enter-end="opacity-100 transform scale-100"
+          class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
+
+          <div class="p-6">
+            <div class="flex items-center mb-4">
+              <div
+                :class="{
+                  'bg-gray-100 text-gray-600': course.position === 'GND',
+                  'bg-blue-100 text-blue-600': course.position === 'TWR',
+                  'bg-green-100 text-green-600': course.position === 'APP',
+                  'bg-purple-100 text-purple-600': course.position === 'CTR'
+                }"
+                class="p-3 rounded-lg mr-3">
+                <svg x-show="course.position === 'GND'" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+                </svg>
+                <svg x-show="course.position === 'TWR'" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+                <svg x-show="course.position === 'APP'" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                </svg>
+                <svg x-show="course.position === 'CTR'" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+
+              <div>
+                <h3 class="text-lg font-semibold text-gray-800" x-text="course.name"></h3>
+                <div class="flex flex-wrap items-center gap-2 mt-1">
+                  <span
+                    :class="{
+                      'bg-gray-100 text-gray-700': course.position === 'GND',
+                      'bg-blue-100 text-blue-700': course.position === 'TWR',
+                      'bg-green-100 text-green-700': course.position === 'APP',
+                      'bg-purple-100 text-purple-700': course.position === 'CTR'
+                    }"
+                    class="px-2 py-0.5 rounded-full text-xs font-medium"
+                    x-text="course.position_display">
+                  </span>
+                  <span
+                    :class="{
+                      'bg-blue-100 text-blue-700': course.type === 'RTG',
+                      'bg-purple-100 text-purple-700': course.type === 'EDMT',
+                      'bg-yellow-100 text-yellow-700': course.type === 'FAM',
+                      'bg-gray-100 text-gray-700': course.type === 'GST'
+                    }"
+                    class="px-2 py-0.5 rounded-full text-xs font-medium"
+                    x-text="course.type_display">
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-4 mb-6">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-sm font-medium text-gray-700">Waiting trainees</span>
+                <span
+                  :class="{
+                    'bg-red-100 text-red-700': course.waiting_count > 40,
+                    'bg-yellow-100 text-yellow-700': course.waiting_count > 0 && course.waiting_count <= 40,
+                    'bg-gray-100 text-gray-700': course.waiting_count === 0
+                  }"
+                  class="px-2 py-1 rounded-full text-xs font-medium">
+                  <span x-text="course.waiting_count"></span> trainees
+                </span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-2.5">
+                <div
+                  :class="{
+                    'bg-red-500': course.waiting_count > 40,
+                    'bg-yellow-500': course.waiting_count > 0 && course.waiting_count <= 40,
+                    'bg-gray-400': course.waiting_count === 0
+                  }"
+                  class="h-2.5 rounded-full"
+                  :style="'width: ' + Math.min(course.waiting_count * 2, 100) + '%'"> {# Scaling from 0 to 50 #}
+                </div>
+              </div>
+            </div>
+
+            <div class="flex justify-center">
+              <button
+                @click="openWaitingListModal(course.id)"
+                :disabled="course.waiting_count === 0"
+                :class="{'btn-primary': course.waiting_count > 0, 'btn-disabled': course.waiting_count === 0}"
+                class="btn w-full gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+                View Waiting List
+              </button>
+            </div>
+          </div>
+        </div>
+      </template>
+    </div>
+
+    <div
+      x-show="!courseList.some(course => filterCourses(course))"
+      class="bg-white rounded-xl shadow-md p-8 border border-gray-200 text-center mt-4">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+      </svg>
+      <h3 class="text-lg font-medium text-gray-900">No courses found</h3>
+      <p class="mt-2 text-sm text-gray-500">Try adjusting your search or filter criteria.</p>
+    </div>
+  </div>
+
+  <!-- Waiting List Modal -->
+  <div
+    x-data="{
+      open: false,
+      courseId: null,
+      course: null,
+
+      init() {
+        this.$watch('courseId', value => {
+          if (value) {
+            this.course = JSON.parse(document.getElementById('course-data').textContent)
+              .find(c => c.id === value);
+          } else {
+            this.course = null;
+          }
+        });
+      }
+    }"
+    @open-waiting-list-modal.window="open = true; courseId = $event.detail.courseId"
+    x-show="open"
+    x-cloak
+    class="fixed inset-0 z-50 overflow-y-auto"
+    aria-labelledby="modal-title"
+    role="dialog"
+    aria-modal="true">
+
+    <div
+      x-show="open"
+      @click="open = false"
+      x-transition:enter="ease-out duration-300"
+      x-transition:enter-start="opacity-0"
+      x-transition:enter-end="opacity-100"
+      x-transition:leave="ease-in duration-200"
+      x-transition:leave-start="opacity-100"
+      x-transition:leave-end="opacity-0"
+      class="fixed inset-0 transition-opacity z-10"
+      style="background-color: rgba(0, 0, 0, 0.4);"
+      aria-hidden="true">
+    </div>
+
+    <div class="flex items-center justify-center min-h-screen">
+      <div
+        x-show="open"
+        x-transition:enter="ease-out duration-300"
+        x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+        x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+        x-transition:leave="ease-in duration-200"
+        x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+        x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+        class="bg-white rounded-lg overflow-hidden shadow-xl transform transition-all sm:max-w-5xl w-full mx-4 z-20 relative">
+
+        <div class="px-6 py-4 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
+          <div class="flex items-center">
+            <div
+              x-show="course"
+              :class="{
+                'bg-gray-100 text-gray-600': course?.position === 'GND',
+                'bg-blue-100 text-blue-600': course?.position === 'TWR',
+                'bg-green-100 text-green-600': course?.position === 'APP',
+                'bg-purple-100 text-purple-600': course?.position === 'CTR'
+              }"
+              class="p-2 rounded-lg mr-3">
+              <svg x-show="course?.position === 'GND'" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+              </svg>
+              <svg x-show="course?.position === 'TWR'" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+              <svg x-show="course?.position === 'APP'" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+              </svg>
+              <svg x-show="course?.position === 'CTR'" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-xl font-semibold text-gray-800" x-text="course?.name"></h3>
+              <div class="flex items-center space-x-2 mt-1">
+                <span
+                  x-show="course"
+                  :class="{
+                    'bg-blue-100 text-blue-700': course?.type === 'RTG',
+                    'bg-purple-100 text-purple-700': course?.type === 'EDMT',
+                    'bg-yellow-100 text-yellow-700': course?.type === 'FAM',
+                    'bg-gray-100 text-gray-700': course?.type === 'GST'
+                  }"
+                  class="px-2 py-0.5 rounded-full text-xs font-medium"
+                  x-text="course?.type_display">
+                </span>
+                <span
+                  x-show="course"
+                  :class="{
+                    'bg-red-100 text-red-700': course?.waiting_count > 40,
+                    'bg-yellow-100 text-yellow-700': course?.waiting_count > 0 && course?.waiting_count <= 40,
+                    'bg-gray-100 text-gray-700': course?.waiting_count === 0
+                  }"
+                  class="px-2 py-0.5 rounded-full text-xs font-medium">
+                  <span x-text="course?.waiting_count"></span> waiting
+                </span>
+              </div>
+            </div>
+          </div>
+          <button
+            @click="open = false"
+            class="text-gray-400 hover:text-gray-500 focus:outline-none">
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="p-6 max-h-[70vh] overflow-y-auto">
+          <div x-show="course?.waiting_list.length === 0" class="py-8 text-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-300 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+            <h3 class="text-lg font-medium text-gray-700">No students waiting</h3>
+            <p class="text-gray-500 mt-2">There are no students on the waiting list for this course.</p>
+          </div>
+
+          <div x-show="course?.waiting_list.length > 0" class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Position</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">VATSIM ID</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" x-show="course.type === 'RTG'">Activity</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" x-show="course.type === 'RTG'">Status</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <template x-for="(trainee, index) in course.waiting_list" :key="trainee.id">
+                  <tr
+                    :class="{
+                      'bg-red-50': course.type === 'RTG' && trainee.activity < {{ activity_min }},
+                      'bg-white': !(course.type === 'RTG' && trainee.activity < {{ activity_min }})
+                    }">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <span class="text-sm font-medium text-gray-900" x-text="index + 1"></span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="flex items-center">
+                        <div class="flex-shrink-0 h-8 w-8">
+                          <div class="bg-blue-100 text-blue-600 h-8 w-8 rounded-full flex items-center justify-center">
+                            <span x-text="trainee.initials"></span>
+                          </div>
+                        </div>
+                        <div class="ml-4">
+                          <div class="text-sm font-medium text-gray-900" x-text="trainee.name"></div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="text-sm text-gray-900" x-text="trainee.vatsim_id"></div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap" x-show="course.type === 'RTG'">
+                      <a :href="'https://stats.vatsim.net/stats/' + trainee.vatsim_id + '?range=2months'" target="_blank" class="text-sm text-blue-600 hover:text-blue-800">
+                        <span x-text="trainee.activity + ' hours'"></span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 inline ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                      </a>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap" x-show="course.type === 'RTG'">
+                      <span
+                        x-show="course.type === 'RTG' && trainee.activity < {{ activity_min }}"
+                        class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                        Insufficient Activity
+                      </span>
+                      <span
+                        x-show="!(course.type === 'RTG' && trainee.activity < {{ activity_min }})"
+                        class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                        Ready for Training
+                      </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <a
+                        x-show="!(course.type === 'RTG' && trainee.activity < {{ activity_display }})"
+                        :href="'/lists/start/' + trainee.id + '/'"
+                        class="btn btn-primary btn-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                        </svg>
+                        Start Training
+                      </a>
+                    </td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end">
+          <button @click="open = false" class="btn btn-ghost gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirmation Modal -->
+  <div
+    x-data="{ open: false, action: '', message: '', href: '' }"
+    @open-confirm.window="open = true; action = $event.detail.action; message = $event.detail.message; href = $event.detail.href"
+    x-show="open"
+    x-cloak
+    class="fixed z-50 inset-0 overflow-y-auto"
+    aria-labelledby="modal-title"
+    role="dialog"
+    aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+      <div
+        x-show="open"
+        x-transition:enter="ease-out duration-300"
+        x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100"
+        x-transition:leave="ease-in duration-200"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
+        class="fixed inset-0 transition-opacity z-10"
+        @click="open = false"
+        style="background-color: rgba(0, 0, 0, 0.4);"
+        aria-hidden="true"></div>
+
+      <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+      <div
+        x-show="open"
+        x-transition:enter="ease-out duration-300"
+        x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+        x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+        x-transition:leave="ease-in duration-200"
+        x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+        x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+        class="inline-block align-middle bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-lg sm:w-full z-20 relative">
+        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+          <div class="sm:flex sm:items-start">
+            <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+              <svg class="h-6 w-6 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+              <div class="mt-2">
+                <p class="text-sm text-gray-500" x-text="message"></p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+          <a :href="href" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm">
+            Confirm
+          </a>
+          <button type="button" @click="open = false" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
-</div>
+
+<style>
+  [x-cloak] { display: none !important; }
+</style>
 {% endblock %}

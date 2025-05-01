@@ -1,31 +1,34 @@
+import json
 import os
 
 import requests
 from cachetools import TTLCache, cached
 from django.contrib.admin.models import CHANGE
+from django.contrib.auth.decorators import login_required
+from django.core.checks import messages
 from django.shortcuts import (
-    get_object_or_404,
     render,
+    redirect,
+    get_object_or_404,
     HttpResponseRedirect,
     reverse,
-    redirect,
 )
+from django.utils.safestring import mark_safe
 from dotenv import load_dotenv
 from endorsements.helpers import get_tier1_endorsements
 from familiarisations.models import Familiarisation
 from overview.helpers import inform_user_course_start
-from familiarisations.models import Familiarisation
 from training.helpers import log_admin_action
 from training.permissions import mentor_required
-from django.contrib.auth.decorators import login_required
 
 from .models import Course, WaitingListEntry
 
 load_dotenv()
 
-
-min_hours = 25
-activity_min = 8  # Policy says 10 hours, but we are more lenient here
+# Minimum required activity hours
+ACTIVITY_MIN = 10
+DISPLAY_ACTIVITY = 8  # Display activity, 20% leniency
+MIN_HOURS = 25
 
 
 def enrol_into_required_moodles(user_id, course_ids: list):
@@ -131,13 +134,6 @@ def view_lists(request):
 
     # Get Tier 1 Endorsement, do not show course if user already has it
     user_endorsements = get_user_endorsements(int(request.user.username))
-    
-    # Do not show familarisation courses if user already has the familiarisation
-    familiarisations = list(
-        Familiarisation.objects.filter(user=request.user).values_list(
-            "sector", flat=True
-        )
-    )
 
     # Do not show familarisation courses if user already has the familiarisation
     familiarisations = list(
@@ -155,29 +151,41 @@ def view_lists(request):
             and len(endorsement_groups) > 0
         ):
             continue
-        # Familiarisation check
-        if course.type == "FAM":
+
+        if course.type == "FAM" and course.familiarisation_sector is not None:
             if course.familiarisation_sector.id in familiarisations:
                 continue
-        res = {"course": course, "hours_reached": True}
+
+        res = {
+            "current_hours": hours_dict.get(course.position, 0),
+            "hours_reached": True,
+        }
+
         if course.type == "RTG":
-            if hours_dict[course.position] < min_hours:
+            if hours_dict.get(course.position, 0) < MIN_HOURS:
                 res["hours_reached"] = False
             else:
                 res["hours_reached"] = True
+
         try:
             WaitingListEntry.objects.get(user=request.user, course=course)
             res["entered"] = True
-            res["rtg_limit_reached"] = False
             if course.type == "RTG":
                 n_rtg += 1
         except WaitingListEntry.DoesNotExist:
             res["entered"] = False
+
         courses_dict[course] = res
+
     return render(
         request,
         "lists/overview.html",
-        {"courses": courses_dict, "error": error, "rating_reached": n_rtg >= 1},
+        {
+            "courses": courses_dict,
+            "error": error,
+            "rating_reached": n_rtg >= 1,
+            "min_hours": MIN_HOURS,
+        },
     )
 
 
@@ -191,28 +199,37 @@ def join_leave_list(request, course_id):
         entry = WaitingListEntry.objects.get(user=request.user, course=course)
         entry.delete()
     except WaitingListEntry.DoesNotExist:
-        n_rtg = WaitingListEntry.objects.filter(
-            user=request.user, course__type="RTG"
-        ).count()
-        if course.type == "RTG" and n_rtg >= 1:
+        # Check if user is already in another RTG course waiting list
+        if (
+            course.type == "RTG"
+            and WaitingListEntry.objects.filter(
+                user=request.user, course__type="RTG"
+            ).exists()
+        ):
+            # User is already in a rating course waiting list, redirect with error message
+            messages.error(
+                request,
+                "You are already on the waiting list for a rating course. You can only join one rating course at a time.",
+            )
             return HttpResponseRedirect(reverse("lists:view_lists"))
+
         if course.min_rating <= request.user.userdetail.rating <= course.max_rating:
             if course.type == "RTG":
                 try:
                     twr_s1, twr_s2, app_s3 = get_connections(request.user)
                     match course.position:
                         case "TWR":
-                            if twr_s1 >= min_hours:
+                            if twr_s1 >= MIN_HOURS:
                                 WaitingListEntry.objects.create(
                                     user=request.user, course=course
                                 )
                         case "APP":
-                            if twr_s2 >= min_hours:
+                            if twr_s2 >= MIN_HOURS:
                                 WaitingListEntry.objects.create(
                                     user=request.user, course=course
                                 )
                         case "CTR":
-                            if app_s3 >= min_hours:
+                            if app_s3 >= MIN_HOURS:
                                 WaitingListEntry.objects.create(
                                     user=request.user, course=course
                                 )
@@ -225,18 +242,80 @@ def join_leave_list(request, course_id):
 
 @mentor_required
 def mentor_view(request):
-    res = {}
     courses = request.user.mentored_courses.all()
+
+    total_waiting = 0
+    rtg_waiting = 0
+    edmt_waiting = 0
+    fam_waiting = 0
+    gst_waiting = 0
+
+    course_list = []
+
     for course in courses:
         if course.type == "RTG":
-            res[course] = list(
-                WaitingListEntry.objects.filter(
-                    course=course, activity__gte=activity_min
-                )
-            )
+            waiting_entries = WaitingListEntry.objects.filter(
+                course=course, activity__gte=DISPLAY_ACTIVITY
+            ).order_by(
+                "date_added"
+            )  # Sort by join date, oldest first
+            rtg_waiting += waiting_entries.count()
         else:
-            res[course] = list(WaitingListEntry.objects.filter(course=course))
-    return render(request, "lists/mentor.html", {"coursedict": res})
+            waiting_entries = WaitingListEntry.objects.filter(course=course).order_by(
+                "date_added"
+            )
+            if course.type == "EDMT":
+                edmt_waiting += waiting_entries.count()
+            elif course.type == "FAM":
+                fam_waiting += waiting_entries.count()
+            elif course.type == "GST":
+                gst_waiting += waiting_entries.count()
+
+        total_waiting += waiting_entries.count()
+
+        waiting_list = []
+        for entry in waiting_entries:
+            first_initial = entry.user.first_name[0] if entry.user.first_name else ""
+            last_initial = entry.user.last_name[0] if entry.user.last_name else ""
+
+            waiting_list.append(
+                {
+                    "id": entry.id,
+                    "name": f"{entry.user.first_name} {entry.user.last_name}",
+                    "initials": f"{first_initial}{last_initial}",
+                    "vatsim_id": entry.user.username,
+                    "activity": round(entry.activity, 1),
+                }
+            )
+
+        course_list.append(
+            {
+                "id": course.id,
+                "name": course.name,
+                "position": course.position,
+                "position_display": course.get_position_display(),
+                "type": course.type,
+                "type_display": course.get_type_display(),
+                "waiting_count": len(waiting_list),
+                "waiting_list": waiting_list,
+            }
+        )
+
+    course_list.sort(key=lambda x: (x["type"], x["position"]))
+
+    course_list_json = mark_safe(json.dumps(course_list))
+
+    context = {
+        "course_list_json": course_list_json,
+        "total_waiting": total_waiting,
+        "rtg_waiting": rtg_waiting,
+        "edmt_waiting": edmt_waiting,
+        "fam_waiting": fam_waiting,
+        "activity_min": ACTIVITY_MIN,
+        "activity_display": DISPLAY_ACTIVITY,
+    }
+
+    return render(request, "lists/mentor.html", context)
 
 
 @mentor_required
@@ -244,17 +323,24 @@ def start_training(request, waitlist_entry_id):
     entry = get_object_or_404(WaitingListEntry, pk=waitlist_entry_id)
     if request.user not in entry.course.mentors.all():
         return HttpResponseRedirect(reverse("lists:mentor_view"))
-    if entry.activity < activity_min and entry.course.type == "RTG":
+
+    if entry.activity < DISPLAY_ACTIVITY and entry.course.type == "RTG":
         return HttpResponseRedirect(reverse("lists:mentor_view"))
-    # Add user to active_trainees
+
     entry.course.active_trainees.add(entry.user)
-    entry.delete()
-    enrol_into_required_moodles(entry.user.username, entry.course.moodle_course_ids)
-    inform_user_course_start(int(entry.user.username), entry.course.name)
+
+    # Log the action
     log_admin_action(
         request.user,
         entry.course,
         CHANGE,
         f"Added trainee {entry.user} ({entry.user.username}) to course {entry.course}",
     )
+
+    entry.delete()
+
+    enrol_into_required_moodles(entry.user.username, entry.course.moodle_course_ids)
+
+    inform_user_course_start(int(entry.user.username), entry.course.name)
+
     return HttpResponseRedirect(reverse("lists:mentor_view"))
