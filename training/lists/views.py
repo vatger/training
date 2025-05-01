@@ -255,7 +255,7 @@ def mentor_view(request):
     for course in courses:
         if course.type == "RTG":
             waiting_entries = WaitingListEntry.objects.filter(
-                course=course, activity__gte=DISPLAY_ACTIVITY
+                course=course,  # activity__gte=DISPLAY_ACTIVITY
             ).order_by(
                 "date_added"
             )  # Sort by join date, oldest first
