@@ -38,10 +38,10 @@ def get_solos():
                 "user_cid": 1601613,
                 "instructor_cid": 1439797,
                 "position": "EDDL_APP",
-                "expiry": "2025-04-30T00:00:00.000000Z",
+                "expiry": "2025-05-01T00:00:00.000000Z",
                 "max_days": 74,
                 "facility": 9,
-                "created_at": "2025-03-03T02:10:40.000000Z",
+                "created_at": "2025-03-05T02:10:40.000000Z",
                 "updated_at": "2025-04-07T19:47:47.000000Z",
             },
         ]
@@ -367,7 +367,7 @@ def overview(request):
             ]
             solo_info = (
                 f"{solo[0]['remaining_days']}/{solo[0]['delta']}"
-                if solo
+                if solo and solo[0]['remaining_days'] >= 0
                 else "Add Solo"
             )
 

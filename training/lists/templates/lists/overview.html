@@ -60,16 +60,16 @@
           Rating Courses
         </button>
         <button
-          @click="activeFilter = 'EDMT'; $dispatch('filter-changed', { filter: 'EDMT' })"
-          :class="{'bg-blue-100 text-blue-800 border-blue-300': activeFilter === 'EDMT', 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200': activeFilter !== 'EDMT'}"
-          class="px-4 py-2 rounded-lg text-sm font-medium border transition-colors">
-          Endorsement Courses
+            @click="activeFilter = 'EDMT_FAM'; $dispatch('filter-changed', { filter: 'EDMT_FAM' })"
+            :class="{'bg-blue-100 text-blue-800 border-blue-300': activeFilter === 'EDMT_FAM', 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200': activeFilter !== 'EDMT_FAM'}"
+            class="px-4 py-2 rounded-lg text-sm font-medium border transition-colors">
+            Endorsements & Familiarisation
         </button>
         <button
-          @click="activeFilter = 'FAM'; $dispatch('filter-changed', { filter: 'FAM' })"
-          :class="{'bg-blue-100 text-blue-800 border-blue-300': activeFilter === 'FAM', 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200': activeFilter !== 'FAM'}"
+          @click="activeFilter = 'GST'; $dispatch('filter-changed', { filter: 'GST' })"
+          :class="{'bg-blue-100 text-blue-800 border-blue-300': activeFilter === 'GST', 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200': activeFilter !== 'GST'}"
           class="px-4 py-2 rounded-lg text-sm font-medium border transition-colors">
-          Familiarisation Courses
+          Visitor Courses
         </button>
       </div>
 
@@ -97,10 +97,12 @@
       activeFilter: 'all',
 
       filterCourses(course) {
-        const typeMatch = this.activeFilter === 'all' || course.dataset.type === this.activeFilter;
+        const typeMatch = this.activeFilter === 'all' ||
+                         (this.activeFilter === 'EDMT_FAM' && (course.dataset.type === 'EDMT' || course.dataset.type === 'FAM')) ||
+                         course.dataset.type === this.activeFilter;
         const searchMatch = !this.searchTerm || course.textContent.toLowerCase().includes(this.searchTerm);
         return typeMatch && searchMatch;
-      }
+    }
     }"
     @search-updated.window="searchTerm = $event.detail.term"
     @filter-changed.window="activeFilter = $event.detail.filter"

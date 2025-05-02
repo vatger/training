@@ -15,12 +15,12 @@ from django.shortcuts import (
 )
 from django.utils.safestring import mark_safe
 from dotenv import load_dotenv
-from endorsements.helpers import get_tier1_endorsements
-from familiarisations.models import Familiarisation
-from overview.helpers import inform_user_course_start
 from training.helpers import log_admin_action
 from training.permissions import mentor_required
 
+from endorsements.helpers import get_tier1_endorsements
+from familiarisations.models import Familiarisation
+from overview.helpers import inform_user_course_start
 from .models import Course, WaitingListEntry
 
 load_dotenv()
