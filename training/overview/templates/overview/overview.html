@@ -76,75 +76,84 @@
         </div>
 
          <div class="mb-6"
-         x-data="{
-             activeCategory: null,
-             selectedCourseId: null,
-             selectedCourse: null,
+x-data="{
+    activeCategory: null,
+    selectedCourseId: null,
+    selectedCourse: null,
 
-             // Course data
-             courses: [
-                {% for course in courses %}
-                {
-                    id: '{{ course.id }}',
-                    name: '{{ course.name|escapejs }}',
-                    position: '{{ course.get_position_display|escapejs }}',
-                    type: '{{ course.type }}',
-                    typeName: '{{ course.get_type_display|escapejs }}'
-                }{% if not forloop.last %},{% endif %}
-                {% endfor %}
-             ],
+    // Course data
+    courses: [
+       {% for course in courses %}
+       {
+           id: '{{ course.id }}',
+           name: '{{ course.name|escapejs }}',
+           position: '{{ course.get_position_display|escapejs }}',
+           type: '{{ course.type }}',
+           typeName: '{{ course.get_type_display|escapejs }}'
+       }{% if not forloop.last %},{% endif %}
+       {% endfor %}
+    ],
 
-             // Initialize component
-             init() {
-                 // Count courses by type first
-                 const rtgCourses = this.courses.filter(c => c.type === 'RTG');
-                 const edmtCourses = this.courses.filter(c => c.type === 'EDMT');
-                 const famCourses = this.courses.filter(c => c.type === 'FAM');
+    // Initialize component
+    init() {
+        // Count courses by type first
+        const rtgCourses = this.courses.filter(c => c.type === 'RTG');
+        const edmtCourses = this.courses.filter(c => c.type === 'EDMT');
+        const famCourses = this.courses.filter(c => c.type === 'FAM');
 
-                 // Determine initial active category
-                 if (rtgCourses.length > 0) {
-                     this.activeCategory = 'RTG';
-                 } else if (edmtCourses.length > 0) {
-                     this.activeCategory = 'EDMT';
-                 } else if (famCourses.length > 0) {
-                     this.activeCategory = 'FAM';
-                 }
+        // Determine initial active category
+        if (rtgCourses.length > 0) {
+            this.activeCategory = 'RTG';
+        } else if (edmtCourses.length > 0 || famCourses.length > 0) {
+            this.activeCategory = 'EDMT_FAM';
+        }
 
-                 // Try to restore saved course from localStorage
-                 const savedCourseId = localStorage.getItem('lastSelectedCourseId');
-                 if (savedCourseId) {
-                     const savedCourse = this.courses.find(c => c.id === savedCourseId);
-                     if (savedCourse) {
-                         this.selectedCourseId = savedCourseId;
-                         this.selectedCourse = savedCourse;
-                         this.activeCategory = savedCourse.type;
-                     }
-                 } else if (this.getCoursesByType(this.activeCategory).length > 0) {
-                     // Select first course in active category if none is already selected
-                     const firstCourse = this.getCoursesByType(this.activeCategory)[0];
-                     this.selectedCourseId = firstCourse.id;
-                     this.selectedCourse = firstCourse;
-                 }
-             },
+        // Try to restore saved course from localStorage
+        const savedCourseId = localStorage.getItem('lastSelectedCourseId');
+        if (savedCourseId) {
+            const savedCourse = this.courses.find(c => c.id === savedCourseId);
+            if (savedCourse) {
+                this.selectedCourseId = savedCourseId;
+                this.selectedCourse = savedCourse;
 
-             // Get courses filtered by type
-             getCoursesByType(type) {
-                 return this.courses.filter(course => course.type === type);
-             },
+                // Set the active category based on the course type
+                if (savedCourse.type === 'EDMT' || savedCourse.type === 'FAM') {
+                    this.activeCategory = 'EDMT_FAM';
+                } else {
+                    this.activeCategory = savedCourse.type;
+                }
+            }
+        } else if (this.getCoursesByType(this.activeCategory).length > 0) {
+            // Select first course in active category if none is already selected
+            const firstCourse = this.getCoursesByType(this.activeCategory)[0];
+            this.selectedCourseId = firstCourse.id;
+            this.selectedCourse = firstCourse;
+        }
+    },
 
-             // Count courses by type
-             getTypeCount(type) {
-                 return this.getCoursesByType(type).length;
-             },
+    // Get courses filtered by type
+    getCoursesByType(type) {
+        if (type === 'EDMT_FAM') {
+            return this.courses.filter(course => course.type === 'EDMT' || course.type === 'FAM');
+        }
+        return this.courses.filter(course => course.type === type);
+    },
 
-             // Select a course
-             selectCourse(course) {
-                 this.selectedCourseId = course.id;
-                 this.selectedCourse = course;
-                 localStorage.setItem('lastSelectedCourseId', course.id);
-             }
-         }">
+    // Count courses by type
+    getTypeCount(type) {
+        if (type === 'EDMT_FAM') {
+            return this.courses.filter(course => course.type === 'EDMT' || course.type === 'FAM').length;
+        }
+        return this.getCoursesByType(type).length;
+    },
 
+    // Select a course
+    selectCourse(course) {
+        this.selectedCourseId = course.id;
+        this.selectedCourse = course;
+        localStorage.setItem('lastSelectedCourseId', course.id);
+    }
+}">
         <div class="bg-white rounded-xl shadow-md border border-gray-200">
             <!-- Course Type Tabs -->
             <div class="border-b border-gray-200">
@@ -158,19 +167,19 @@
                     </button>
 
                     <button
-                        x-show="getTypeCount('EDMT') > 0"
-                        @click="activeCategory = 'EDMT'"
-                        :class="{'border-blue-500 text-blue-600 font-medium': activeCategory === 'EDMT', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeCategory !== 'EDMT'}"
+                        x-show="getTypeCount('EDMT') > 0 || getTypeCount('FAM') > 0"
+                        @click="activeCategory = 'EDMT_FAM'"
+                        :class="{'border-blue-500 text-blue-600 font-medium': activeCategory === 'EDMT_FAM', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeCategory !== 'EDMT_FAM'}"
                         class="py-4 px-1 border-b-2 text-sm transition-colors whitespace-nowrap duration-200 ease-in-out focus:outline-none">
-                        Endorsements (<span x-text="getTypeCount('EDMT')"></span>)
+                        Endorsements & Familiarisation (<span x-text="getTypeCount('EDMT') + getTypeCount('FAM')"></span>)
                     </button>
 
-                    <button
-                        x-show="getTypeCount('FAM') > 0"
-                        @click="activeCategory = 'FAM'"
-                        :class="{'border-blue-500 text-blue-600 font-medium': activeCategory === 'FAM', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeCategory !== 'FAM'}"
+                     <button
+                        x-show="getTypeCount('GST') > 0"
+                        @click="activeCategory = 'GST'"
+                        :class="{'border-blue-500 text-blue-600 font-medium': activeCategory === 'GST', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeCategory !== 'GST'}"
                         class="py-4 px-1 border-b-2 text-sm transition-colors whitespace-nowrap duration-200 ease-in-out focus:outline-none">
-                        Familiarisation (<span x-text="getTypeCount('FAM')"></span>)
+                        Visitor (<span x-text="getTypeCount('GST')"></span>)
                     </button>
                 </nav>
             </div>
@@ -188,8 +197,8 @@
                     </template>
                 </div>
 
-                <div x-show="activeCategory === 'EDMT'" class="flex flex-wrap gap-2 py-1">
-                    <template x-for="course in getCoursesByType('EDMT').sort((a, b) => a.position.localeCompare(b.position))" :key="course.id">
+                <div x-show="activeCategory === 'EDMT_FAM'" class="flex flex-wrap gap-2 py-1">
+                    <template x-for="course in [...getCoursesByType('EDMT'), ...getCoursesByType('FAM')].sort((a, b) => a.position.localeCompare(b.position))" :key="course.id">
                         <button
                             @click="selectCourse(course)"
                             :class="{'bg-blue-50 border-blue-500 text-blue-700': selectedCourseId === course.id, 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50': selectedCourseId !== course.id}"
@@ -199,8 +208,8 @@
                     </template>
                 </div>
 
-                <div x-show="activeCategory === 'FAM'" class="flex flex-wrap gap-2 py-1">
-                    <template x-for="course in getCoursesByType('FAM').sort((a, b) => a.position.localeCompare(b.position))" :key="course.id">
+                <div x-show="activeCategory === 'GST'" class="flex flex-wrap gap-2 py-1">
+                    <template x-for="course in getCoursesByType('GST').sort((a, b) => a.position.localeCompare(b.position))" :key="course.id">
                         <button
                             @click="selectCourse(course)"
                             :class="{'bg-blue-50 border-blue-500 text-blue-700': selectedCourseId === course.id, 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50': selectedCourseId !== course.id}"
@@ -209,7 +218,6 @@
                         </button>
                     </template>
                 </div>
-
             </div>
         </div>
 
@@ -1060,9 +1068,11 @@
                     },
 
                     getCoursesByType(type) {
-                        console.log(courses)
+                        if (type === 'EDMT_FAM') {
+                            return this.courses.filter(course => course.type === 'EDMT' || course.type === 'FAM');
+                        }
                         return this.courses.filter(course => course.type === type);
-                    },
+                    }
 
                     hasCoursesByType(type) {
                         return this.getCoursesByType(type).length > 0;

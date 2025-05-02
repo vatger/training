@@ -112,8 +112,6 @@ def view_lists(request):
     # If a user is not assigned to VATSIM Germany, they cannot see RTG courses
     if request.user.userdetail.subdivision != "GER":
         courses = courses.exclude(type="RTG")
-    if request.user.userdetail.subdivision == "GER":
-        courses = courses.exclude(type="GST")
 
     try:
         twr_s1, twr_s2, app_s3 = get_cached_connections(request.user)

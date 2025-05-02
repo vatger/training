@@ -89,14 +89,6 @@
       courseList: [],
       selectedCourseId: null,
 
-      filterCourses(course) {
-        const typeMatch = this.activeFilter === 'all' || course.type === this.activeFilter;
-        const searchMatch = !this.searchTerm ||
-          course.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-          course.position.toLowerCase().includes(this.searchTerm.toLowerCase());
-        return typeMatch && searchMatch;
-      },
-
       openWaitingListModal(courseId) {
         this.selectedCourseId = courseId;
         $dispatch('open-waiting-list-modal', { courseId: courseId });
@@ -105,6 +97,16 @@
       init() {
         // Initialize courseList from the Django context
         this.courseList = JSON.parse(document.getElementById('course-data').textContent);
+      },
+
+      filterCourses(course) {
+          const typeMatch = this.activeFilter === 'all' ||
+                           (this.activeFilter === 'EDMT_FAM' && (course.type === 'EDMT' || course.type === 'FAM')) ||
+                           course.type === this.activeFilter;
+          const searchMatch = !this.searchTerm ||
+            course.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+            course.position.toLowerCase().includes(this.searchTerm.toLowerCase());
+          return typeMatch && searchMatch;
       }
     }"
   >
@@ -127,16 +129,16 @@
           Rating Courses
         </button>
         <button
-          @click="activeFilter = 'EDMT'"
-          :class="{'bg-blue-100 text-blue-800 border-blue-300': activeFilter === 'EDMT', 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200': activeFilter !== 'EDMT'}"
+          @click="activeFilter = 'EDMT_FAM'"
+          :class="{'bg-blue-100 text-blue-800 border-blue-300': activeFilter === 'EDMT_FAM', 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200': activeFilter !== 'EDMT_FAM'}"
           class="px-4 py-2 rounded-lg text-sm font-medium border transition-colors">
-          Endorsement Courses
+          Endorsement & Familiarisation
         </button>
         <button
-          @click="activeFilter = 'FAM'"
-          :class="{'bg-blue-100 text-blue-800 border-blue-300': activeFilter === 'FAM', 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200': activeFilter !== 'FAM'}"
+          @click="activeFilter = 'GST'"
+          :class="{'bg-blue-100 text-blue-800 border-blue-300': activeFilter === 'GST', 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200': activeFilter !== 'GST'}"
           class="px-4 py-2 rounded-lg text-sm font-medium border transition-colors">
-          Familiarisation Courses
+          Visitor Courses
         </button>
       </div>
 
