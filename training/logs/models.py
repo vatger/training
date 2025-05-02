@@ -8,6 +8,7 @@ class Log(models.Model):
     class Type(models.TextChoices):
         ONLINE = "O", "Online"
         SIM = "S", "Sim"
+        LESSON = "L", "Lesson"
 
     class Rating(models.IntegerChoices):
         ZERO = 0, "Not rated"
