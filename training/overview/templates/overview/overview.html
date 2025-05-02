@@ -429,12 +429,13 @@
                                                                     Add Solo
                                                                 </a>
                                                             {% else %}
-                                                                {% with remaining=data.solo|split_solo_data:"remaining" %}
+                                                                {% with remaining=data.solo.solo_info|split_solo_data:"remaining" %}
                                                                     <span class="px-2 py-1 h-6 text-xs rounded-full font-medium
                                 {% if remaining < 10 %}bg-red-100 text-red-700
                                 {% elif remaining < 20 %}bg-amber-100 text-amber-700
                                 {% else %}bg-green-100 text-green-700{% endif %}">
-                                {{ remaining }} days remaining
+                                {{ remaining }} days remaining <a href="{% url 'overview:delete_solo' data.solo.id %}">Remove Solo</a>
+{#                                                                    TODO: make this pretty#}
                                 </span>
                                                                 {% endwith %}
                                                             {% endif %}
