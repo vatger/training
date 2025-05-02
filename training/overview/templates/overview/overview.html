@@ -75,8 +75,8 @@
             </div>
         </div>
 
-         <div class="mb-6"
-x-data="{
+        <div class="mb-6"
+             x-data="{
     activeCategory: null,
     selectedCourseId: null,
     selectedCourse: null,
@@ -154,81 +154,88 @@ x-data="{
         localStorage.setItem('lastSelectedCourseId', course.id);
     }
 }">
-        <div class="bg-white rounded-xl shadow-md border border-gray-200">
-            <!-- Course Type Tabs -->
-            <div class="border-b border-gray-200">
-                <nav class="flex -mb-px space-x-8 px-4 overflow-x-auto">
-                    <button
-                        x-show="getTypeCount('RTG') > 0"
-                        @click="activeCategory = 'RTG'"
-                        :class="{'border-blue-500 text-blue-600 font-medium': activeCategory === 'RTG', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeCategory !== 'RTG'}"
-                        class="py-4 px-1 border-b-2 text-sm transition-colors whitespace-nowrap duration-200 ease-in-out focus:outline-none">
-                        Ratings (<span x-text="getTypeCount('RTG')"></span>)
-                    </button>
+            <div class="bg-white rounded-xl shadow-md border border-gray-200">
+                <!-- Course Type Tabs -->
+                <div class="border-b border-gray-200">
+                    <nav class="flex -mb-px space-x-8 px-4 overflow-x-auto">
+                        <button
+                                x-show="getTypeCount('RTG') > 0"
+                                @click="activeCategory = 'RTG'"
+                                :class="{'border-blue-500 text-blue-600 font-medium': activeCategory === 'RTG', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeCategory !== 'RTG'}"
+                                class="py-4 px-1 border-b-2 text-sm transition-colors whitespace-nowrap duration-200 ease-in-out focus:outline-none">
+                            Ratings (<span x-text="getTypeCount('RTG')"></span>)
+                        </button>
 
-                    <button
-                        x-show="getTypeCount('EDMT') > 0 || getTypeCount('FAM') > 0"
-                        @click="activeCategory = 'EDMT_FAM'"
-                        :class="{'border-blue-500 text-blue-600 font-medium': activeCategory === 'EDMT_FAM', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeCategory !== 'EDMT_FAM'}"
-                        class="py-4 px-1 border-b-2 text-sm transition-colors whitespace-nowrap duration-200 ease-in-out focus:outline-none">
-                        Endorsements & Familiarisation (<span x-text="getTypeCount('EDMT') + getTypeCount('FAM')"></span>)
-                    </button>
+                        <button
+                                x-show="getTypeCount('EDMT') > 0 || getTypeCount('FAM') > 0"
+                                @click="activeCategory = 'EDMT_FAM'"
+                                :class="{'border-blue-500 text-blue-600 font-medium': activeCategory === 'EDMT_FAM', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeCategory !== 'EDMT_FAM'}"
+                                class="py-4 px-1 border-b-2 text-sm transition-colors whitespace-nowrap duration-200 ease-in-out focus:outline-none">
+                            Endorsements & Familiarisation (<span
+                                x-text="getTypeCount('EDMT') + getTypeCount('FAM')"></span>)
+                        </button>
 
-                     <button
-                        x-show="getTypeCount('GST') > 0"
-                        @click="activeCategory = 'GST'"
-                        :class="{'border-blue-500 text-blue-600 font-medium': activeCategory === 'GST', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeCategory !== 'GST'}"
-                        class="py-4 px-1 border-b-2 text-sm transition-colors whitespace-nowrap duration-200 ease-in-out focus:outline-none">
-                        Visitor (<span x-text="getTypeCount('GST')"></span>)
-                    </button>
-                </nav>
+                        <button
+                                x-show="getTypeCount('GST') > 0"
+                                @click="activeCategory = 'GST'"
+                                :class="{'border-blue-500 text-blue-600 font-medium': activeCategory === 'GST', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeCategory !== 'GST'}"
+                                class="py-4 px-1 border-b-2 text-sm transition-colors whitespace-nowrap duration-200 ease-in-out focus:outline-none">
+                            Visitor (<span x-text="getTypeCount('GST')"></span>)
+                        </button>
+                    </nav>
+                </div>
+
+                <!-- Course Selection Pills -->
+                <div class="px-4 py-3 overflow-x-auto">
+                    <div x-show="activeCategory === 'RTG'" class="flex flex-wrap gap-2 py-1">
+                        <template
+                                x-for="course in getCoursesByType('RTG').sort((a, b) => a.position.localeCompare(b.position))"
+                                :key="course.id">
+                            <button
+                                    @click="selectCourse(course)"
+                                    :class="{'bg-blue-50 border-blue-500 text-blue-700': selectedCourseId === course.id, 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50': selectedCourseId !== course.id}"
+                                    class="course-pill inline-flex items-center px-3 py-1.5 border rounded-full text-sm font-medium transition-colors duration-200 ease-in-out">
+                                <span x-text="course.name"></span>
+                            </button>
+                        </template>
+                    </div>
+
+                    <div x-show="activeCategory === 'EDMT_FAM'" class="flex flex-wrap gap-2 py-1">
+                        <template
+                                x-for="course in [...getCoursesByType('EDMT'), ...getCoursesByType('FAM')].sort((a, b) => a.position.localeCompare(b.position))"
+                                :key="course.id">
+                            <button
+                                    @click="selectCourse(course)"
+                                    :class="{'bg-blue-50 border-blue-500 text-blue-700': selectedCourseId === course.id, 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50': selectedCourseId !== course.id}"
+                                    class="course-pill inline-flex items-center px-3 py-1.5 border rounded-full text-sm font-medium transition-colors duration-200 ease-in-out">
+                                <span x-text="course.name"></span>
+                            </button>
+                        </template>
+                    </div>
+
+                    <div x-show="activeCategory === 'GST'" class="flex flex-wrap gap-2 py-1">
+                        <template
+                                x-for="course in getCoursesByType('GST').sort((a, b) => a.position.localeCompare(b.position))"
+                                :key="course.id">
+                            <button
+                                    @click="selectCourse(course)"
+                                    :class="{'bg-blue-50 border-blue-500 text-blue-700': selectedCourseId === course.id, 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50': selectedCourseId !== course.id}"
+                                    class="course-pill inline-flex items-center px-3 py-1.5 border rounded-full text-sm font-medium transition-colors duration-200 ease-in-out">
+                                <span x-text="course.name"></span>
+                            </button>
+                        </template>
+                    </div>
+                </div>
             </div>
 
-            <!-- Course Selection Pills -->
-            <div class="px-4 py-3 overflow-x-auto">
-                <div x-show="activeCategory === 'RTG'" class="flex flex-wrap gap-2 py-1">
-                    <template x-for="course in getCoursesByType('RTG').sort((a, b) => a.position.localeCompare(b.position))" :key="course.id">
-                        <button
-                            @click="selectCourse(course)"
-                            :class="{'bg-blue-50 border-blue-500 text-blue-700': selectedCourseId === course.id, 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50': selectedCourseId !== course.id}"
-                            class="course-pill inline-flex items-center px-3 py-1.5 border rounded-full text-sm font-medium transition-colors duration-200 ease-in-out">
-                            <span x-text="course.name"></span>
-                        </button>
-                    </template>
-                </div>
-
-                <div x-show="activeCategory === 'EDMT_FAM'" class="flex flex-wrap gap-2 py-1">
-                    <template x-for="course in [...getCoursesByType('EDMT'), ...getCoursesByType('FAM')].sort((a, b) => a.position.localeCompare(b.position))" :key="course.id">
-                        <button
-                            @click="selectCourse(course)"
-                            :class="{'bg-blue-50 border-blue-500 text-blue-700': selectedCourseId === course.id, 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50': selectedCourseId !== course.id}"
-                            class="course-pill inline-flex items-center px-3 py-1.5 border rounded-full text-sm font-medium transition-colors duration-200 ease-in-out">
-                            <span x-text="course.name"></span>
-                        </button>
-                    </template>
-                </div>
-
-                <div x-show="activeCategory === 'GST'" class="flex flex-wrap gap-2 py-1">
-                    <template x-for="course in getCoursesByType('GST').sort((a, b) => a.position.localeCompare(b.position))" :key="course.id">
-                        <button
-                            @click="selectCourse(course)"
-                            :class="{'bg-blue-50 border-blue-500 text-blue-700': selectedCourseId === course.id, 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50': selectedCourseId !== course.id}"
-                            class="course-pill inline-flex items-center px-3 py-1.5 border rounded-full text-sm font-medium transition-colors duration-200 ease-in-out">
-                            <span x-text="course.name"></span>
-                        </button>
-                    </template>
-                </div>
-            </div>
-        </div>
-
-        <!-- Course Content Panels -->
-        {% for course in courses %}
-            <div
-                x-show="selectedCourseId === '{{ course.id }}'"
-                x-transition:enter="transition ease-out duration-200"
-                x-transition:enter-start="opacity-0"
-                x-transition:enter-end="opacity-100"
-                class="bg-white rounded-xl shadow-md border border-gray-200 mt-4">
+            <!-- Course Content Panels -->
+            {% for course in courses %}
+                <div
+                        x-show="selectedCourseId === '{{ course.id }}'"
+                        x-transition:enter="transition ease-out duration-200"
+                        x-transition:enter-start="opacity-0"
+                        x-transition:enter-end="opacity-100"
+                        class="bg-white rounded-xl shadow-md border border-gray-200 mt-4">
 
                     <div class="p-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
                         <div>
@@ -1041,7 +1048,7 @@ x-data="{
                     courseName: ''
                 }));
 
-                Alpine.data('courseSelector', ({ courses }) => ({
+                Alpine.data('courseSelector', ({courses}) => ({
                     courses: courses,
                     selectedCourseId: courses.length > 0 ? courses[0].id : null,
                     selectedCourse: courses.length > 0 ? courses[0] : null,
@@ -1072,7 +1079,7 @@ x-data="{
                             return this.courses.filter(course => course.type === 'EDMT' || course.type === 'FAM');
                         }
                         return this.courses.filter(course => course.type === type);
-                    }
+                    },
 
                     hasCoursesByType(type) {
                         return this.getCoursesByType(type).length > 0;
