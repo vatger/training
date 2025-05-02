@@ -790,18 +790,38 @@
                                                                         <p class="text-xs text-gray-500 mt-1">{{ log.session_date|date:"d M Y" }}</p>
                                                                         <p class="text-xs text-gray-500 mt-1">{{ log.mentor }}</p>
                                                                     </div>
-                                                                    <a href="{% url 'logs:log_detail' log.id %}"
-                                                                       class="inline-flex items-center text-sm text-blue-600 hover:text-blue-800 transition-colors">
-                                                                        <span>View</span>
-                                                                        <svg xmlns="http://www.w3.org/2000/svg"
-                                                                             class="h-4 w-4 ml-0.5" fill="none"
-                                                                             viewBox="0 0 24 24" stroke="currentColor">
-                                                                            <path stroke-linecap="round"
-                                                                                  stroke-linejoin="round"
-                                                                                  stroke-width="2"
-                                                                                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
-                                                                        </svg>
-                                                                    </a>
+                                                                    <div class="flex space-x-2">
+                                                                        <a href="{% url 'logs:log_detail' log.id %}"
+                                                                           class="inline-flex items-center text-sm text-blue-600 hover:text-blue-800 transition-colors">
+                                                                            <span>View</span>
+                                                                            <svg xmlns="http://www.w3.org/2000/svg"
+                                                                                 class="h-4 w-4 ml-0.5" fill="none"
+                                                                                 viewBox="0 0 24 24"
+                                                                                 stroke="currentColor">
+                                                                                <path stroke-linecap="round"
+                                                                                      stroke-linejoin="round"
+                                                                                      stroke-width="2"
+                                                                                      d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                                                                            </svg>
+                                                                        </a>
+
+                                                                        <!-- Add Edit button, only visible if the current user is the mentor of this log -->
+                                                                        {% if log.mentor == user or user.is_superuser %}
+                                                                            <a href="{% url 'logs:edit_log' log.id %}"
+                                                                               class="inline-flex items-center text-sm text-green-600 hover:text-green-800 transition-colors ml-2">
+                                                                                <span>Edit</span>
+                                                                                <svg xmlns="http://www.w3.org/2000/svg"
+                                                                                     class="h-4 w-4 ml-0.5" fill="none"
+                                                                                     viewBox="0 0 24 24"
+                                                                                     stroke="currentColor">
+                                                                                    <path stroke-linecap="round"
+                                                                                          stroke-linejoin="round"
+                                                                                          stroke-width="2"
+                                                                                          d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                                                                                </svg>
+                                                                            </a>
+                                                                        {% endif %}
+                                                                    </div>
                                                                 </div>
 
                                                                 {% if log.next_step %}

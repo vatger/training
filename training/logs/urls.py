@@ -2,7 +2,6 @@ from django.urls import path
 
 from . import views
 
-
 app_name = "logs"
 
 urlpatterns = [
@@ -12,4 +11,5 @@ urlpatterns = [
         name="new_log",
     ),
     path("<int:log_id>/", views.log_detail, name="log_detail"),
+    path("edit/<int:log_id>/", views.edit_training_log, name="edit_log"),
 ]
