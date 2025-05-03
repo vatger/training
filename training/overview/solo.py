@@ -2,10 +2,10 @@ from datetime import datetime
 
 import requests
 from django.shortcuts import render, redirect, get_object_or_404
-from lists.models import Course
 from training.eud_header import eud_header
 from training.permissions import mentor_required
 
+from lists.models import Course
 from .forms import SoloForm
 from .helpers import get_core_theory_passed, get_course_completion
 
@@ -80,8 +80,38 @@ def add_solo(request, vatsim_id, course_id):
 
 @mentor_required
 def delete_solo(request, solo_id: int):
+    extend = request.GET.get("extend", "false").lower() == "true"
+
     requests.delete(
         f"https://core.vateud.net/api/facility/endorsements/solo/{solo_id}",
         headers=eud_header,
     )
+
+    if extend:
+        trainee_id = request.GET.get("trainee_id")
+        course_id = request.GET.get("course_id")
+        expiry_date = request.GET.get("expiry")
+
+        if trainee_id and course_id and expiry_date:
+            course = get_object_or_404(Course, id=course_id)
+
+            try:
+                dt = datetime.strptime(expiry_date, "%Y-%m-%d")
+                dt_with_time = datetime(dt.year, dt.month, dt.day, 23, 59, 00)
+                formatted_str = dt_with_time.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
+
+                data = {
+                    "user_cid": trainee_id,
+                    "position": course.solo_station,
+                    "expire_at": formatted_str,
+                    "instructor_cid": request.user.username,
+                }
+                requests.post(
+                    "https://core.vateud.net/api/facility/endorsements/solo",
+                    headers=eud_header,
+                    json=data,
+                )
+            except Exception as e:
+                print(f"Error extending solo: {e}")
+
     return redirect("overview:overview")

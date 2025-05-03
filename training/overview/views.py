@@ -8,15 +8,15 @@ from django.core.exceptions import MultipleObjectsReturned
 from django.shortcuts import redirect, get_object_or_404
 from django.shortcuts import render
 from dotenv import load_dotenv
+from training.eud_header import eud_header
+from training.helpers import log_admin_action
+from training.permissions import mentor_required
+
 from familiarisations.models import Familiarisation, FamiliarisationSector
 from lists.models import Course, WaitingListEntry
 from lists.views import enrol_into_required_moodles
 from logs.models import Log
 from overview.models import TraineeClaim, TraineeRemark
-from training.eud_header import eud_header
-from training.helpers import log_admin_action
-from training.permissions import mentor_required
-
 from .forms import AddUserForm
 from .helpers import (
     get_course_completion,
@@ -38,7 +38,7 @@ def get_solos():
                 "user_cid": 1601613,
                 "instructor_cid": 1439797,
                 "position": "EDDL_APP",
-                "expiry": "2025-05-01T00:00:00.000000Z",
+                "expiry": "2025-05-13T00:00:00.000000Z",
                 "max_days": 74,
                 "facility": 9,
                 "created_at": "2025-03-05T02:10:40.000000Z",
@@ -300,6 +300,7 @@ def overview(request):
                 for solo in solos
                 if solo["position"] == course.solo_station
                 and solo["user_cid"] == int(trainee.username)
+                and solo["remaining_days"] >= 0
             ]
             solo_info = (
                 f"{solo[0]['remaining_days']}/{solo[0]['delta']}"
@@ -308,6 +309,7 @@ def overview(request):
             )
             if solo:
                 solo[0]["solo_info"] = solo_info if solo else "Add Solo"
+                solo[0]["max_days"] = solo[0].get("max_days", 0)
 
             # Get the mentor who claimed this trainee
             if claim.exists():
