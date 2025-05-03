@@ -63,6 +63,7 @@ def get_solos():
                 "expiry": expiry_date,
                 "remaining_days": remaining_days,
                 "delta": delta,
+                "position_days": solo["position_days"],
             }
         )
     return res
@@ -310,6 +311,7 @@ def overview(request):
             if solo:
                 solo[0]["solo_info"] = solo_info if solo else "Add Solo"
                 solo[0]["max_days"] = solo[0].get("max_days", 0)
+                solo[0]["position_days"] = solo[0].get("position_days", 0)
 
             # Get the mentor who claimed this trainee
             if claim.exists():

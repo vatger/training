@@ -437,6 +437,7 @@
         remainingDays: {{ data.solo.remaining_days }},
         deltaDay: {{ data.solo.delta }},
         maxDays: {{ data.solo.max_days }},
+        positionDays: {{ data.solo.position_days }},
         traineeName: '{{ trainee.first_name }} {{ trainee.last_name }}',
         traineeId: {{ trainee.username }},
         courseId: {{ course.id }}
@@ -666,6 +667,7 @@
             soloId: null,
             positionName: '',
             remainingDays: 0,
+            positionDays: 0,
             deltaDay: 0,
             maxDays: 74,  // Default value, will be overridden
             traineeName: '',
@@ -679,7 +681,8 @@
                 positionName = $event.detail.positionName;
                 remainingDays = $event.detail.remainingDays;
                 deltaDay = $event.detail.deltaDay;
-                maxDays = $event.detail.maxDays || 74;  // Use provided value or default to 74
+                maxDays = $event.detail.maxDays;
+                positionDays = $event.detail.positionDays;
                 traineeName = $event.detail.traineeName;
                 traineeId = $event.detail.traineeId;
                 courseId = $event.detail.courseId;
@@ -755,8 +758,7 @@
                                         <dd class="text-sm font-semibold text-gray-900" x-text="remainingDays"></dd>
 
                                         <dt class="text-sm font-medium text-gray-500">Used Solo Days:</dt>
-                                        <dd class="text-sm font-semibold text-gray-900"
-                                            x-text="maxDays - deltaDay"></dd>
+                                        <dd class="text-sm font-semibold text-gray-900" x-text="positionDays"></dd>
 
                                         <dt class="text-sm font-medium text-gray-500">Extension Days Left:</dt>
                                         <dd class="text-sm font-semibold text-gray-900" x-text="deltaDay"></dd>
