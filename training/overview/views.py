@@ -1,23 +1,23 @@
 from datetime import datetime, timezone
 
 import requests
-from django.contrib.admin.models import CHANGE
-from training.permissions import mentor_required
-from django.contrib.auth.models import User
 from django.conf import settings
+from django.contrib.admin.models import CHANGE
+from django.contrib.auth.models import User
 from django.core.exceptions import MultipleObjectsReturned
 from django.shortcuts import redirect, get_object_or_404
 from django.shortcuts import render
 from dotenv import load_dotenv
-from familiarisations.models import Familiarisation, FamiliarisationSector, FIR
+from training.eud_header import eud_header
+from training.helpers import log_admin_action
+from training.permissions import mentor_required
+
+from familiarisations.models import Familiarisation, FamiliarisationSector
 from lists.models import Course, WaitingListEntry
 from lists.views import enrol_into_required_moodles
 from logs.models import Log
 from overview.models import TraineeClaim, TraineeRemark
-from training.eud_header import eud_header
-from training.helpers import log_admin_action
-
-from .forms import AddUserForm, SoloForm
+from .forms import AddUserForm
 from .helpers import (
     get_course_completion,
     get_core_theory_passed,
@@ -38,7 +38,7 @@ def get_solos():
                 "user_cid": 1601613,
                 "instructor_cid": 1439797,
                 "position": "EDDL_APP",
-                "expiry": "2025-05-01T00:00:00.000000Z",
+                "expiry": "2025-05-13T00:00:00.000000Z",
                 "max_days": 74,
                 "facility": 9,
                 "created_at": "2025-03-05T02:10:40.000000Z",
@@ -57,11 +57,13 @@ def get_solos():
         delta = solo["max_days"] - (expiry_date - created_date).days
         res.append(
             {
+                "id": solo["id"],
                 "user_cid": solo["user_cid"],
                 "position": solo["position"],
                 "expiry": expiry_date,
                 "remaining_days": remaining_days,
                 "delta": delta,
+                "position_days": solo["position_days"],
             }
         )
     return res
@@ -111,71 +113,6 @@ def remove_trainee(request, trainee_id, course_id):
 
 
 @mentor_required
-def add_solo(request, vatsim_id, course_id):
-    course = get_object_or_404(Course, id=course_id)
-    if course.type != "RTG":
-        return redirect("overview:overview")
-
-    core_passed = get_core_theory_passed(int(vatsim_id), course.position)
-    moodle_completed = True
-    for course_id in course.moodle_course_ids:
-        moodle_completed = moodle_completed and get_course_completion(
-            int(vatsim_id), course_id
-        )
-
-    if request.method == "POST":
-        form = SoloForm(request.POST)
-        if not core_passed or not moodle_completed:
-            form.add_error(None, "User has not completed all requirements.")
-
-            return render(
-                request,
-                "overview/solo.html",
-                {
-                    "form": form,
-                    "course": course,
-                    "vatsim_id": vatsim_id,
-                    "moodle": moodle_completed,
-                    "core": core_passed,
-                },
-            )
-
-        if form.is_valid():
-            dt = form.cleaned_data["expiry"]
-            dt_with_time = datetime(dt.year, dt.month, dt.day, 23, 59, 00)
-            formatted_str = dt_with_time.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
-            data = {
-                "user_cid": vatsim_id,
-                "position": course.solo_station,
-                "expire_at": formatted_str,
-                "instructor_cid": request.user.username,
-            }
-            res = requests.post(
-                "https://core.vateud.net/api/facility/endorsements/solo",
-                headers=eud_header,
-                json=data,
-            )
-            if res.status_code == 200:
-                return redirect("overview:overview")
-            else:
-                form.add_error(None, res.json()["message"])
-    else:
-        form = SoloForm()
-
-    return render(
-        request,
-        "overview/solo.html",
-        {
-            "form": form,
-            "course": course,
-            "vatsim_id": vatsim_id,
-            "moodle": moodle_completed,
-            "core": core_passed,
-        },
-    )
-
-
-@mentor_required
 def finish_course(request, trainee_id, course_id):
     course = get_object_or_404(Course, id=course_id)
     trainee = get_object_or_404(User, id=trainee_id)
@@ -199,7 +136,7 @@ def finish_course(request, trainee_id, course_id):
             endorsement
             for endorsement in endorsements
             if endorsement["user_cid"] == int(trainee.username)
-               and endorsement["position"] == endorsement_group.name
+            and endorsement["position"] == endorsement_group.name
         ]:
             continue
 
@@ -363,13 +300,18 @@ def overview(request):
                 solo
                 for solo in solos
                 if solo["position"] == course.solo_station
-                   and solo["user_cid"] == int(trainee.username)
+                and solo["user_cid"] == int(trainee.username)
+                and solo["remaining_days"] >= 0
             ]
             solo_info = (
                 f"{solo[0]['remaining_days']}/{solo[0]['delta']}"
-                if solo and solo[0]['remaining_days'] >= 0
+                if solo and solo[0]["remaining_days"] >= 0
                 else "Add Solo"
             )
+            if solo:
+                solo[0]["solo_info"] = solo_info if solo else "Add Solo"
+                solo[0]["max_days"] = solo[0].get("max_days", 0)
+                solo[0]["position_days"] = solo[0].get("position_days", 0)
 
             # Get the mentor who claimed this trainee
             if claim.exists():
@@ -405,13 +347,15 @@ def overview(request):
                 "logs": logs,
                 "claimed": claim.exists(),
                 "claimed_by": (
-                    claimer.first_name + " " + claimer.last_name if claim.exists() else None
+                    claimer.first_name + " " + claimer.last_name
+                    if claim.exists()
+                    else None
                 ),
-                "solo": solo_info,
+                "solo": solo[0] if solo else "Add Solo",
                 "moodle": moodle_completed,
                 "remark": remark_text,
                 "remark_updated": remark_updated,
-                "remark_updated_by": remark_updated_by
+                "remark_updated_by": remark_updated_by,
             }
 
             # Get the next step and last training date
@@ -434,7 +378,9 @@ def overview(request):
                 course=course, activity__gte=10
             ).count()
         else:
-            waiting_trainees_count += WaitingListEntry.objects.filter(course=course).count()
+            waiting_trainees_count += WaitingListEntry.objects.filter(
+                course=course
+            ).count()
 
     return render(
         request,
@@ -446,8 +392,9 @@ def overview(request):
             "active_trainees_count": active_trainees_count,
             "claimed_trainees_count": claimed_trainees_count,
             "waiting_trainees_count": waiting_trainees_count,
-        }
+        },
     )
+
 
 @mentor_required
 def update_remark(request, trainee_id, course_id):
@@ -484,7 +431,7 @@ def update_remark(request, trainee_id, course_id):
                     trainee=trainee,
                     course=course,
                     remark=remark_text,
-                    last_updated_by=request.user
+                    last_updated_by=request.user,
                 )
 
         # Log the action
@@ -493,7 +440,7 @@ def update_remark(request, trainee_id, course_id):
             request.user,
             course,
             CHANGE,
-            f"{action_type} remark for trainee {trainee} ({trainee.username}) in course {course}"
+            f"{action_type} remark for trainee {trainee} ({trainee.username}) in course {course}",
         )
 
     # Redirect back to the overview page
