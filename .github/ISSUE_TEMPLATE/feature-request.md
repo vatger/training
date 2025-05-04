@@ -28,14 +28,14 @@ assignees: ''
 
 ## Feature Area
 <!-- Which area of the application would this feature affect? -->
+- [ ] User Dashboard
+- [ ] Mentor Overview
+- [ ] Course Waiting Lists
 - [ ] Training Logs
 - [ ] Endorsements Management
-- [ ] Course Waiting Lists
 - [ ] Moodle Integration
-- [ ] User Dashboard
-- [ ] Solo Endorsements
-- [ ] Center Familiarizations
-- [ ] Authentication/Authorization
+- [ ] Solo Management
+- [ ] Center Familiarisations
 - [ ] Other (please specify)
 
 ## Screenshots or Mockups
