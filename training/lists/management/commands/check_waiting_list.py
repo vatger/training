@@ -24,7 +24,7 @@ def get_hours(id: int, airport: str, position: str, fir: str):
     except:
         return -1
     match position:
-        case "TWR":
+        case "GND" | "TWR":
             url = f"https://raw.githubusercontent.com/VATGER-Nav/datahub/refs/heads/production/api/{fir.lower()}/twr.json"
             hub = requests.get(url).json()
             # Get S1 Tower Stations
