@@ -9,6 +9,7 @@
         <div class="mb-8">
             <h1 class="text-3xl font-bold text-gray-800">Available Courses</h1>
             <p class="text-gray-600 mt-2">View and join waiting lists for available training courses.</p>
+            <p class="text-red-700">⚠️Waiting List signup is currently disabled.</p>
         </div>
 
         {% if messages %}
@@ -294,14 +295,14 @@
 
                     {% if res.entered or not res.hours_reached and course.type == "RTG" %}
                         <div class="px-5 py-3 bg-gray-50 border-t border-gray-200">
-                            {% if res.entered %}
-                                <div class="flex items-center text-sm text-green-700">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500 mr-1.5"
+                            {% if course.type == "RTG" and res.activity < min_activity and res.entered %}
+                                <div class="flex items-center text-sm text-yellow-700">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-500 mr-1.5"
                                          fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                              d="M5 13l4 4L19 7"/>
+                                              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                     </svg>
-                                    <span>You are on the waiting list</span>
+                                    <span>Need more activity: {{ res.activity|default:0 }}/{{ min_activity }} hours in 2 months (No. {{ res.list_spot }} on list)</span>
                                 </div>
                             {% elif not res.hours_reached and course.type == "RTG" %}
                                 <div class="flex items-center text-sm text-yellow-700">
@@ -310,7 +311,16 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                               d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                     </svg>
-                                    <span>Need more activity: {{ res.current_hours|default:0 }}/{{ min_hours }} hours</span>
+                                    <span>Need more hours: {{ res.current_hours|default:0 }}/{{ min_hours }} hours</span>
+                                </div>
+                            {% elif res.entered %}
+                                <div class="flex items-center text-sm text-green-700">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500 mr-1.5"
+                                         fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                              d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                    <span>You are No. {{ res.list_spot }} on the waiting list</span>
                                 </div>
                             {% endif %}
                         </div>
