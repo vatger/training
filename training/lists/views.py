@@ -168,12 +168,22 @@ def view_lists(request):
                 res["hours_reached"] = True
 
         try:
-            WaitingListEntry.objects.get(user=request.user, course=course)
+            entry = WaitingListEntry.objects.get(user=request.user, course=course)
+            list_spot = (
+                WaitingListEntry.objects.filter(
+                    course=course, date_added__lt=entry.date_added
+                ).count()
+                + 1
+            )
             res["entered"] = True
+            res["list_spot"] = list_spot
+            res["activity"] = entry.activity
             if course.type == "RTG":
                 n_rtg += 1
         except WaitingListEntry.DoesNotExist:
             res["entered"] = False
+            res["list_spot"] = 0
+            res["activity"] = 0
 
         courses_dict[course] = res
 
@@ -185,6 +195,7 @@ def view_lists(request):
             "error": error,
             "rating_reached": n_rtg >= 1,
             "min_hours": MIN_HOURS,
+            "min_activity": ACTIVITY_MIN,
         },
     )
 
