@@ -6,6 +6,7 @@ from datetime import datetime
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
+from lists.models import WaitingListEntry
 from roster.models import RosterEntry
 from endorsements.helpers import remove_roster_and_endorsements
 from training.eud_header import eud_header
@@ -59,7 +60,7 @@ def inform_roster_removal(vatsim_id: int):
 
 
 class Command(BaseCommand):
-    help = "Command to create endorsement groups"
+    help = "Command to check roster"
 
     def handle(self, *args, **options):
         roster = requests.get(
@@ -89,6 +90,11 @@ class Command(BaseCommand):
                 if entry.removal_date < timezone.now():
                     entry.delete()
                     remove_roster_and_endorsements(entry.user_id)
+                    # Remove all waiting list entries for the given user
+                    waiting_list_entries = WaitingListEntry.objects.filter(
+                        user__username=entry.user_id
+                    )
+                    waiting_list_entries.delete()
                     continue
                 else:
                     continue
