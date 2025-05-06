@@ -1,10 +1,10 @@
+import requests
+from cachetools import cached, TTLCache
 from django.core.management.base import BaseCommand
-from familiarisation.models import Familiarisation
+from familiarisations.models import Familiarisation
 from lists.models import WaitingListEntry
 from lists.views import get_user_endorsements
 from training.eud_header import eud_header
-from cachetools import cached, TTLCache
-import requests
 
 
 @cached(cache=TTLCache(maxsize=100, ttl=60))
