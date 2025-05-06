@@ -22,10 +22,10 @@ def course_valid_for_user(course, user):
     :param user:
     :return:
     """
-    if not (course.min_rating <= user.userdetail.rating <= course.max_rating):
-        print(
-            f"User rating: {user.userdetail.rating}, Course rating: {course.min_rating}-{course.max_rating}"
-        )
+    if (
+        not (course.min_rating <= user.userdetail.rating <= course.max_rating)
+        and course.type != "GST"
+    ):  # check disabled if guest as rating might change outside VATGER
         print("User rating does not match course rating")
         return False
 
@@ -61,6 +61,7 @@ def course_valid_for_user(course, user):
         return False
 
     if int(user.username) not in get_roster() and user.userdetail.subdivision == "GER":
+        # Only check for GER users as guests might not be on roster yet
         print("User not on roster")
         return False
     return True
