@@ -26,7 +26,7 @@ def course_valid_for_user(course, user):
         print("User rating does not match course rating")
         return False
 
-    if user.active_courses.all().filter(type="RTG").exists():
+    if user.active_courses.all().filter(type="RTG").exists() and course.type == "RTG":
         print("User has active RTG course")
         return False
 
