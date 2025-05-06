@@ -23,6 +23,9 @@ def course_valid_for_user(course, user):
     :return:
     """
     if not (course.min_rating <= user.userdetail.rating <= course.max_rating):
+        print(
+            f"User rating: {user.userdetail.rating}, Course rating: {course.min_rating}-{course.max_rating}"
+        )
         print("User rating does not match course rating")
         return False
 
@@ -57,7 +60,7 @@ def course_valid_for_user(course, user):
         print("Endorsements exist")
         return False
 
-    if int(user.username) not in get_roster():
+    if int(user.username) not in get_roster() and user.userdetail.subdivision == "GER":
         print("User not on roster")
         return False
     return True
