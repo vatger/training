@@ -320,7 +320,9 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                               d="M5 13l4 4L19 7"/>
                                     </svg>
-                                    <span>You are No. {{ res.list_spot }} on the waiting list</span>
+                                    <span>You are No. {{ res.list_spot }} on the waiting list
+                                    {% if course.type == "RTG" %} ({{ res.activity|default:0 }}/{{ min_activity }} hours in 2 months) {% endif %}
+                                    </span>
                                 </div>
                             {% endif %}
                         </div>

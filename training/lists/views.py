@@ -177,7 +177,7 @@ def view_lists(request):
             )
             res["entered"] = True
             res["list_spot"] = list_spot
-            res["activity"] = entry.activity
+            res["activity"] = round(entry.activity, 1)
             if course.type == "RTG":
                 n_rtg += 1
         except WaitingListEntry.DoesNotExist:
