@@ -60,7 +60,7 @@ def inform_roster_removal(vatsim_id: int):
 
 
 class Command(BaseCommand):
-    help = "Command to create endorsement groups"
+    help = "Command to check roster"
 
     def handle(self, *args, **options):
         roster = requests.get(
