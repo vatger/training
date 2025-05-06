@@ -335,7 +335,7 @@ def mentor_view(request):
 @mentor_required
 def start_training(request, waitlist_entry_id):
     entry = get_object_or_404(WaitingListEntry, pk=waitlist_entry_id)
-    if request.user not in entry.course.mentors.all():
+    if request.user not in entry.course.mentors.all() and not request.user.is_superuser:
         return HttpResponseRedirect(reverse("lists:mentor_view"))
 
     if entry.activity < DISPLAY_ACTIVITY and entry.course.type == "RTG":
