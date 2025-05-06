@@ -22,7 +22,7 @@ def course_valid_for_user(course, user):
     :param user:
     :return:
     """
-    if not (course.min_rating <= user.rating <= course.max_rating):
+    if not (course.min_rating <= user.userdetail.rating <= course.max_rating):
         print("User rating does not match course rating")
         return False
 
