@@ -5,6 +5,12 @@ from familiarisations.models import Familiarisation
 from lists.models import WaitingListEntry
 from lists.views import get_user_endorsements
 from training.eud_header import eud_header
+from training.helpers import log_admin_action
+from django.contrib.auth.models import User
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 
 @cached(cache=TTLCache(maxsize=100, ttl=60))
@@ -77,3 +83,9 @@ class Command(BaseCommand):
             if not course_valid_for_user(entry.course, entry.user):
                 print(f"Deleting {entry} as it is invalid")
                 # entry.delete()
+                log_admin_action(
+                    User.objects.get(username=os.getenv("ATD_LEAD_CID")),
+                    entry,
+                    2,
+                    f"Removed {entry}, date: {entry.date_added}.",
+                )
