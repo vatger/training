@@ -9,6 +9,7 @@ from training.helpers import log_admin_action
 from django.contrib.auth.models import User
 from dotenv import load_dotenv
 import os
+from django.contrib.admin.models import DELETION
 
 load_dotenv()
 
@@ -82,10 +83,10 @@ class Command(BaseCommand):
         for entry in entries:
             if not course_valid_for_user(entry.course, entry.user):
                 print(f"Deleting {entry} as it is invalid")
-                # entry.delete()
+                entry.delete()
                 log_admin_action(
                     User.objects.get(username=os.getenv("ATD_LEAD_CID")),
                     entry,
-                    2,
-                    f"Removed {entry}, date: {entry.date_added}.",
+                    DELETION,
+                    f"Removed {entry}, date added: {entry.date_added}.",
                 )
