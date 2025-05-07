@@ -66,10 +66,22 @@ def course_valid_for_user(course, user):
         print("Endorsements exist")
         return False, "You already have the required endorsements for this course."
 
-    if int(user.username) not in get_roster() and user.userdetail.subdivision == "GER":
+    if (
+        int(user.username) not in get_roster()
+        and user.userdetail.subdivision == "GER"
+        and course.type != "RST"
+    ):
         # Only check for GER users as guests might not be on roster yet
         print("User not on roster")
         return False, "You are not on the roster."
+
+    if int(user.username) in get_roster() and course.type == "RST":
+        print("User on roster in RST course")
+        return (
+            False,
+            "You are already on the roster.",
+        )
+
     return True, ""
 
 
