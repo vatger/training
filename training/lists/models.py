@@ -65,7 +65,7 @@ class Course(models.Model):
 class WaitingListEntry(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    date_added = models.DateTimeField(auto_now_add=True)
+    date_added = models.DateTimeField(default=datetime.now)
     activity = models.FloatField(default=0)
     hours_updated = models.DateTimeField(default=datetime(2000, 1, 1, 0, 0, 0))
 
