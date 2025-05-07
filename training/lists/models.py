@@ -32,6 +32,7 @@ class CourseType(models.TextChoices):
     RTG = "RTG", "Rating"
     GST = "GST", "Visitor"
     FAM = "FAM", "Familiarisation"
+    RST = "RST", "Roster Reentry"
 
 
 class Course(models.Model):

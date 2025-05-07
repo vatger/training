@@ -15,6 +15,7 @@ from django.shortcuts import (
 )
 from django.utils.safestring import mark_safe
 from dotenv import load_dotenv
+from lists.helpers import get_roster
 from training.helpers import log_admin_action
 from training.permissions import mentor_required
 
@@ -104,6 +105,12 @@ def view_lists(request):
         min_rating__lte=request.user.userdetail.rating,
         max_rating__gte=request.user.userdetail.rating,
     ).exclude(active_trainees=request.user)
+
+    if (
+        request.user.userdetail.subdivision == "GER"
+        and int(request.user.username) not in get_roster()
+    ):
+        courses = courses.filter(type="RST")
 
     # Check whether user is already in a RTG course
     if request.user.active_courses.all().filter(type="RTG").exists():
