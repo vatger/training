@@ -111,6 +111,8 @@ def view_lists(request):
         and int(request.user.username) not in get_roster()
     ):
         courses = courses.filter(type="RST")
+    else:
+        courses = courses.exclude(type="RST")
 
     # Check whether user is already in a RTG course
     if request.user.active_courses.all().filter(type="RTG").exists():
