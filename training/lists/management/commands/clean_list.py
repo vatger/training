@@ -1,24 +1,17 @@
+import os
+
 import requests
-from cachetools import cached, TTLCache
+from django.contrib.admin.models import DELETION
+from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
+from dotenv import load_dotenv
 from familiarisations.models import Familiarisation
+from lists.helpers import get_roster
 from lists.models import WaitingListEntry
 from lists.views import get_user_endorsements
-from training.eud_header import eud_header
 from training.helpers import log_admin_action
-from django.contrib.auth.models import User
-from dotenv import load_dotenv
-import os
-from django.contrib.admin.models import DELETION
 
 load_dotenv()
-
-
-@cached(cache=TTLCache(maxsize=100, ttl=60))
-def get_roster():
-    return requests.get(
-        "https://core.vateud.net/api/facility/roster", headers=eud_header
-    ).json()["data"]["controllers"]
 
 
 def course_valid_for_user(course, user):
