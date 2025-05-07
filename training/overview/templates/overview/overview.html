@@ -182,6 +182,14 @@
                                 class="py-4 px-1 border-b-2 text-sm transition-colors whitespace-nowrap duration-200 ease-in-out focus:outline-none">
                             Visitor (<span x-text="getTypeCount('GST')"></span>)
                         </button>
+
+                        <button
+                                x-show="getTypeCount('RST') > 0"
+                                @click="activeCategory = 'RST'"
+                                :class="{'border-blue-500 text-blue-600 font-medium': activeCategory === 'RST', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeCategory !== 'RST'}"
+                                class="py-4 px-1 border-b-2 text-sm transition-colors whitespace-nowrap duration-200 ease-in-out focus:outline-none">
+                            Roster (<span x-text="getTypeCount('RST')"></span>)
+                        </button>
                     </nav>
                 </div>
 
@@ -216,6 +224,19 @@
                     <div x-show="activeCategory === 'GST'" class="flex flex-wrap gap-2 py-1">
                         <template
                                 x-for="course in getCoursesByType('GST').sort((a, b) => a.position.localeCompare(b.position))"
+                                :key="course.id">
+                            <button
+                                    @click="selectCourse(course)"
+                                    :class="{'bg-blue-50 border-blue-500 text-blue-700': selectedCourseId === course.id, 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50': selectedCourseId !== course.id}"
+                                    class="course-pill inline-flex items-center px-3 py-1.5 border rounded-full text-sm font-medium transition-colors duration-200 ease-in-out">
+                                <span x-text="course.name"></span>
+                            </button>
+                        </template>
+                    </div>
+
+                    <div x-show="activeCategory === 'RST'" class="flex flex-wrap gap-2 py-1">
+                        <template
+                                x-for="course in getCoursesByType('RST').sort((a, b) => a.position.localeCompare(b.position))"
                                 :key="course.id">
                             <button
                                     @click="selectCourse(course)"

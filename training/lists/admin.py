@@ -12,6 +12,7 @@ class CourseAdmin(admin.ModelAdmin):
 class WaitingListEntryAdmin(admin.ModelAdmin):
     list_display = ("user_username", "course", "date_added", "activity")
     autocomplete_fields = ["user", "course"]
+    readonly_fields = ()
 
     def user_username(self, obj):
         return obj.user.username
