@@ -7,6 +7,7 @@ class CourseAdmin(admin.ModelAdmin):
         "name",
         "airport_name",
     ]  # or whatever field you want to search by
+    filter_horizontal = ("mentors",)
 
 
 class WaitingListEntryAdmin(admin.ModelAdmin):
