@@ -265,8 +265,6 @@ def overview(request):
 
     # Get all courses mentored by current user
     courses = request.user.mentored_courses.all()
-    if request.user.is_superuser:
-        courses = Course.objects.all()
     courses = sorted(courses, key=lambda course: str(course))
 
     solos = get_solos()
