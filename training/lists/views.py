@@ -2,7 +2,7 @@ import json
 import os
 
 import requests
-from cachetools import TTLCache, cached
+from cachetools import TTLCache
 from django.contrib.admin.models import CHANGE
 from django.contrib.auth.decorators import login_required
 from django.core.checks import messages
@@ -15,13 +15,12 @@ from django.shortcuts import (
 )
 from django.utils.safestring import mark_safe
 from dotenv import load_dotenv
-from lists.helpers import get_roster
+from familiarisations.models import Familiarisation
+from lists.helpers import course_valid_for_user, get_user_endorsements, get_roster
+from overview.helpers import inform_user_course_start
 from training.helpers import log_admin_action
 from training.permissions import mentor_required
 
-from endorsements.helpers import get_tier1_endorsements
-from familiarisations.models import Familiarisation
-from overview.helpers import inform_user_course_start
 from .models import Course, WaitingListEntry
 
 load_dotenv()
@@ -39,17 +38,6 @@ def enrol_into_required_moodles(user_id, course_ids: list):
             f"http://vatsim-germany.org/api/moodle/course/{course_id}/user/{user_id}/enrol",
             headers=header,
         )
-
-
-@cached(cache=TTLCache(maxsize=1024, ttl=60 * 60))
-def get_user_endorsements(user_id: int) -> set:
-    return set(
-        [
-            end["position"]
-            for end in get_tier1_endorsements()
-            if end["user_cid"] == user_id
-        ]
-    )
 
 
 connections_cache = TTLCache(maxsize=float("inf"), ttl=10 * 60 * 60)
@@ -211,14 +199,16 @@ def view_lists(request):
 
 @login_required
 def join_leave_list(request, course_id):
-    # Temporary diabling of course joining
-    return redirect("lists:view_lists")
-
     course = get_object_or_404(Course, pk=course_id)
     try:
         entry = WaitingListEntry.objects.get(user=request.user, course=course)
         entry.delete()
     except WaitingListEntry.DoesNotExist:
+        valid, reason = course_valid_for_user(course, request.user)
+        if not valid:
+            messages.error(request, reason)
+            return HttpResponseRedirect(reverse("lists:view_lists"))
+
         # Check if user is already in another RTG course waiting list
         if (
             course.type == "RTG"
