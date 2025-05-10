@@ -199,14 +199,16 @@ def view_lists(request):
 
 @login_required
 def join_leave_list(request, course_id):
-    # Temporary diabling of course joining
-    return redirect("lists:view_lists")
-
     course = get_object_or_404(Course, pk=course_id)
     try:
         entry = WaitingListEntry.objects.get(user=request.user, course=course)
         entry.delete()
     except WaitingListEntry.DoesNotExist:
+        valid, reason = course_valid_for_user(course, request.user)
+        if not valid:
+            messages.error(request, reason)
+            return HttpResponseRedirect(reverse("lists:view_lists"))
+
         # Check if user is already in another RTG course waiting list
         if (
             course.type == "RTG"
