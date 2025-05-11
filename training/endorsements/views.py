@@ -171,6 +171,7 @@ def trainee_view(request):
         entry["activity"] = round(activity.activity / 60, 1)
         entry["position"] = endorsement["position"]
         entry["removal_date"] = activity.removal_date
+        entry["updated"] = activity.updated.strftime("%d.%m.%Y")
 
         if activity_hours >= min_hours_required:
             entry["bar_width"] = 100
