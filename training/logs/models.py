@@ -1,5 +1,5 @@
-from django.db import models
 from django.contrib.auth.models import User
+from django.db import models
 
 from lists.models import Course
 
@@ -79,7 +79,7 @@ class Log(models.Model):
     final_comment = models.TextField(blank=True, null=True)
     result = models.BooleanField()
 
-    next_step = models.TextField(blank=True, null=True, max_length=35)
+    next_step = models.TextField(blank=True, null=True, max_length=50)
 
     def __str__(self):
         return f"Training Log - {self.session_date.strftime('%Y-%m-%d')} - {self.trainee.username} ({self.position})"
