@@ -2,6 +2,7 @@ from datetime import datetime
 
 from django.contrib.auth.models import User, Group
 from django.db import models
+
 from endorsements.models import EndorsementGroup
 from familiarisations.models import FamiliarisationSector
 
@@ -69,6 +70,10 @@ class WaitingListEntry(models.Model):
     date_added = models.DateTimeField(default=datetime.now)
     activity = models.FloatField(default=0)
     hours_updated = models.DateTimeField(default=datetime(2000, 1, 1, 0, 0, 0))
+    remarks = models.TextField(
+        blank=True,
+        null=True,
+    )
 
     def __str__(self):
         return f"{self.user.first_name} {self.user.last_name} - {self.course.name}"
