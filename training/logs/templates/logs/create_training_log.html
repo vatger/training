@@ -387,268 +387,374 @@
     <script>
         document.addEventListener("alpine:init", () => {
             Alpine.data("logCreationApp", () => ({
-                formData: {
-                    session_date: {% if form.session_date.value %}'{{ form.session_date.value|date:"Y-m-d" }}'
-                        {% else %}new Date().toISOString().split("T")[0]{% endif %},
-                    position: '{{ form.position.value|default:"" }}',
-                    type: '{{ form.type.value|default:"O" }}',
+                formData: {% if edit_mode %}{{ safe_form_data|default:'{}' }}{% else %}
+            {
+                session_date: {% if form.session_date.value %}'{{ form.session_date.value|date:"Y-m-d" }}'
+                    {% else %}new Date().toISOString().split("T")[0]{% endif %},
+                position
+            :
+                '{{ form.position.value|default:"" }}',
+                    type
+            :
+                '{{ form.type.value|default:"O" }}',
+                    theory
+            :
+                '{{ form.theory.value|default:"0" }}',
+                    phraseology
+            :
+                '{{ form.phraseology.value|default:"0" }}',
+                    coordination
+            :
+                '{{ form.coordination.value|default:"0" }}',
+                    tag_management
+            :
+                '{{ form.tag_management.value|default:"0" }}',
+                    situational_awareness
+            :
+                '{{ form.situational_awareness.value|default:"0" }}',
+                    problem_recognition
+            :
+                '{{ form.problem_recognition.value|default:"0" }}',
+                    traffic_planning
+            :
+                '{{ form.traffic_planning.value|default:"0" }}',
+                    reaction
+            :
+                '{{ form.reaction.value|default:"0" }}',
+                    separation
+            :
+                '{{ form.separation.value|default:"0" }}',
+                    efficiency
+            :
+                '{{ form.efficiency.value|default:"0" }}',
+                    ability_to_work_under_pressure
+            :
+                '{{ form.ability_to_work_under_pressure.value|default:"0" }}',
+                    motivation
+            :
+                '{{ form.motivation.value|default:"0" }}',
+                    next_step
+            :
+                '{{ form.next_step.value|default:"" }}',
+                    result
+            :
+                {% if form.instance.result == True %}'true'
+                    {% elif form.instance.result == False %}'false'{% else %}''{% endif %},
+                internal_remarks
+            :
+                '{{ form.internal_remarks.value|default:"" }}',
+                    final_comment
+            :
+                '{{ form.final_comment.value|default:"" }}'
+            }
+            {% endif %},
+            easyMDEInstances: {
+            }
+        ,
+            initialFormState: "",
+                hasChanges
+        :
+            false,
+                autosaveStatus
+        :
+            {
+                message: "Ready",
+                    color
+            :
+                "text-gray-500",
+            }
+        ,
+            autosaveTimer: null,
+                showUnsavedChangesModal
+        :
+            false,
+                showSavedDraftModal
+        :
+            false,
+                navigateTo
+        :
+            null,
+                draftKey
+        :
+            "",
+                isEditMode
+        :
+            {% if edit_mode %}true{% else %}false{% endif %},
 
-                    theory: '{{ form.theory.value|default:"0" }}',
-                    phraseology: '{{ form.phraseology.value|default:"0" }}',
-                    coordination: '{{ form.coordination.value|default:"0" }}',
-                    tag_management: '{{ form.tag_management.value|default:"0" }}',
-                    situational_awareness: '{{ form.situational_awareness.value|default:"0" }}',
-                    problem_recognition: '{{ form.problem_recognition.value|default:"0" }}',
-                    traffic_planning: '{{ form.traffic_planning.value|default:"0" }}',
-                    reaction: '{{ form.reaction.value|default:"0" }}',
-                    separation: '{{ form.separation.value|default:"0" }}',
-                    efficiency: '{{ form.efficiency.value|default:"0" }}',
-                    ability_to_work_under_pressure: '{{ form.ability_to_work_under_pressure.value|default:"0" }}',
-                    motivation: '{{ form.motivation.value|default:"0" }}',
+                init()
+            {
+                if (!this.formData) {
+                    console.error("Form data was not properly initialized");
+                    this.formData = {
+                        session_date: new Date().toISOString().split("T")[0],
+                        position: '',
+                        type: 'O',
+                        theory: '0',
+                        phraseology: '0',
+                        coordination: '0',
+                        tag_management: '0',
+                        situational_awareness: '0',
+                        problem_recognition: '0',
+                        traffic_planning: '0',
+                        reaction: '0',
+                        separation: '0',
+                        efficiency: '0',
+                        ability_to_work_under_pressure: '0',
+                        motivation: '0',
+                        next_step: '',
+                        result: '',
+                        internal_remarks: '',
+                        final_comment: ''
+                    };
+                }
 
-                    next_step: '{{ form.next_step.value|default:"" }}',
-                    result: {% if form.instance.result == True %}'true'
-                        {% elif form.instance.result == False %}'false'{% else %}''{% endif %},
-                    internal_remarks: '{{ form.internal_remarks.value|default:"" }}',
-                    final_comment: '{{ form.final_comment.value|default:"" }}',
-                },
-                easyMDEInstances: {},
-                initialFormState: "",
-                hasChanges: false,
-                autosaveStatus: {
-                    message: "Ready",
-                    color: "text-gray-500",
-                },
-                autosaveTimer: null,
-                showUnsavedChangesModal: false,
-                showSavedDraftModal: false,
-                navigateTo: null,
-                draftKey: "",
-                isEditMode: {% if edit_mode %}true{% else %}false{% endif %},
+                const formElement = document.getElementById('log-form');
+                this.draftKey = formElement.dataset.draftKey;
 
-                init() {
-                    const formElement = document.getElementById('log-form');
-                    this.draftKey = formElement.dataset.draftKey;
+                const continueDraftStr = formElement.dataset.continueDraft;
+                const shouldClearDraftStr = formElement.dataset.shouldClearDraft;
 
-                    const continueDraftStr = formElement.dataset.continueDraft;
-                    const shouldClearDraftStr = formElement.dataset.shouldClearDraft;
+                console.log('Init with params:', {
+                    draftKey: this.draftKey,
+                    continueDraft: continueDraftStr,
+                    shouldClearDraft: shouldClearDraftStr,
+                    isEditMode: this.isEditMode
+                });
 
-                    console.log('Init with params:', {
-                        draftKey: this.draftKey,
-                        continueDraft: continueDraftStr,
-                        shouldClearDraft: shouldClearDraftStr,
-                        isEditMode: this.isEditMode
-                    });
+                if (this.isEditMode) {
+                    console.log('Edit mode - skipping draft handling');
+                } else {
+                    const continueDraft = continueDraftStr === 'true';
+                    const shouldClearDraft = shouldClearDraftStr === 'true';
 
-                    if (this.isEditMode) {
-                        console.log('Edit mode - skipping draft handling');
-                    } else {
-                        const continueDraft = continueDraftStr === 'true';
-                        const shouldClearDraft = shouldClearDraftStr === 'true';
+                    if (continueDraft) {
+                        console.log('Loading draft...');
+                    } else if (shouldClearDraft) {
+                        console.log('Clearing draft...');
+                        this.clearDraft();
+                    }
 
+                    this.$nextTick(() => {
                         if (continueDraft) {
-                            console.log('Loading draft...');
-                        } else if (shouldClearDraft) {
-                            console.log('Clearing draft...');
-                            this.clearDraft();
-                        }
-
-                        this.$nextTick(() => {
-                            if (continueDraft) {
-                                this.loadDraft();
-                            }
-                        });
-                    }
-
-                    setTimeout(() => {
-                        this.setInitialFormState();
-                    }, 300);
-                },
-
-                clearDraft() {
-                    Object.keys(localStorage).forEach(key => {
-                        if (key.startsWith(this.draftKey)) {
-                            localStorage.removeItem(key);
-                        }
-
-                        if (key.startsWith('smde_' + this.draftKey)) {
-                            localStorage.removeItem(key);
+                            this.loadDraft();
                         }
                     });
+                }
 
-                    this.updateSaveStatus("Draft cleared", "info");
-                },
+                setTimeout(() => {
+                    this.setInitialFormState();
+                }, 300);
+            }
+        ,
 
-                setupEasyMDE(element, fieldName) {
-                    if (!element) return;
-
-                    const formElement = document.getElementById('log-form');
-                    const isEditMode = this.isEditMode;
-
-                    const instance = new EasyMDE({
-                        element: element,
-                        status: false,
-                        spellChecker: false,
-                        autoDownloadFontAwesome: true,
-                        placeholder: `Write your ${fieldName.includes('positives') ? 'strengths' : fieldName.includes('negatives') ? 'improvement areas' : 'content'} here...`,
-                        autosave: {
-                            enabled: !isEditMode && (formElement.dataset.continueDraft === 'true'),
-                            uniqueId: `${this.draftKey}_${fieldName}`,
-                            delay: 1000,
-                        },
-                        toolbar: [
-                            "bold", "italic", "heading", "|",
-                            "unordered-list", "ordered-list", "|",
-                            "link", "image", "|",
-                            "preview"
-                        ],
-                        minHeight: "100px",
-                        hideIcons: ["side-by-side", "fullscreen"],
-                        previewImagesInEditor: true,
-                        lineWrapping: true,
-                    });
-
-                    this.easyMDEInstances[fieldName] = instance;
-
-                    if (isEditMode) {
-                        const initialField = document.getElementById(`initial_${fieldName}`);
-                        if (initialField) {
-                            instance.value(initialField.value);
-                        }
-                    } else if (formElement.dataset.continueDraft === 'true') {
-                        const storageKey = `${this.draftKey}_${fieldName}_content`;
-                        const savedContent = localStorage.getItem(storageKey);
-                        if (savedContent) {
-                            instance.value(savedContent);
-                        }
+            clearDraft()
+            {
+                Object.keys(localStorage).forEach(key => {
+                    if (key.startsWith(this.draftKey)) {
+                        localStorage.removeItem(key);
                     }
 
-                    instance.codemirror.on("change", () => {
-                        if (!isEditMode) {
-                            localStorage.setItem(`${this.draftKey}_${fieldName}_content`, instance.value());
-                        }
-                        this.saveFormState();
-                    });
-
-                    return instance;
-                },
-
-                setupBeforeUnload() {
-                    window.addEventListener("beforeunload", (e) => {
-                        if (this.hasChanges) {
-                            e.preventDefault();
-                            e.returnValue = "You have unsaved changes. Are you sure you want to leave?";
-                            return e.returnValue;
-                        }
-                    });
-                },
-
-                setInitialFormState() {
-                    this.initialFormState = JSON.stringify(this.formData);
-                    this.hasChanges = false;
-                },
-
-                updateSaveStatus(message, type = "info") {
-                    const colors = {
-                        info: "text-blue-500",
-                        success: "text-green-500",
-                        error: "text-red-500",
-                        default: "text-gray-500",
-                    };
-
-                    this.autosaveStatus = {
-                        message: message,
-                        color: colors[type] || colors["default"],
-                    };
-
-                    if (type === "success") {
-                        setTimeout(() => {
-                            this.autosaveStatus = {
-                                message: "",
-                                color: "",
-                            };
-                        }, 3000);
+                    if (key.startsWith('smde_' + this.draftKey)) {
+                        localStorage.removeItem(key);
                     }
-                },
+                });
 
-                saveFormState() {
-                    if (this.isEditMode) return;
+                this.updateSaveStatus("Draft cleared", "info");
+            }
+        ,
 
-                    clearTimeout(this.autosaveTimer);
-                    this.updateSaveStatus("Saving...", "info");
-                    this.hasChanges = true;
+            setupEasyMDE(element, fieldName)
+            {
+                if (!element) return;
 
-                    try {
-                        localStorage.setItem(
-                            `${this.draftKey}_formData`,
-                            JSON.stringify(this.formData)
-                        );
-                        this.updateSaveStatus("Draft saved", "success");
-                    } catch (e) {
-                        console.error("Error saving form state:", e);
-                        this.updateSaveStatus("Error saving draft", "error");
+                const formElement = document.getElementById('log-form');
+                const isEditMode = this.isEditMode;
+
+                const instance = new EasyMDE({
+                    element: element,
+                    status: false,
+                    spellChecker: false,
+                    autoDownloadFontAwesome: true,
+                    placeholder: `Write your ${fieldName.includes('positives') ? 'strengths' : fieldName.includes('negatives') ? 'improvement areas' : 'content'} here...`,
+                    autosave: {
+                        enabled: !isEditMode && (formElement.dataset.continueDraft === 'true'),
+                        uniqueId: `${this.draftKey}_${fieldName}`,
+                        delay: 1000,
+                    },
+                    toolbar: [
+                        "bold", "italic", "heading", "|",
+                        "unordered-list", "ordered-list", "|",
+                        "link", "image", "|",
+                        "preview"
+                    ],
+                    minHeight: "100px",
+                    hideIcons: ["side-by-side", "fullscreen"],
+                    previewImagesInEditor: true,
+                    lineWrapping: true,
+                });
+
+                this.easyMDEInstances[fieldName] = instance;
+
+                if (isEditMode) {
+                    const initialField = document.getElementById(`initial_${fieldName}`);
+                    if (initialField) {
+                        instance.value(initialField.value);
                     }
-                },
-
-                loadDraft() {
-                    try {
-                        const savedFormData = localStorage.getItem(`${this.draftKey}_formData`);
-                        if (savedFormData) {
-                            const parsedData = JSON.parse(savedFormData);
-                            this.formData = {...this.formData, ...parsedData};
-                        }
-
-                        this.updateSaveStatus("Draft loaded", "success");
-                    } catch (e) {
-                        console.error("Error loading draft:", e);
-                        this.updateSaveStatus("Error loading draft", "error");
+                } else if (formElement.dataset.continueDraft === 'true') {
+                    const storageKey = `${this.draftKey}_${fieldName}_content`;
+                    const savedContent = localStorage.getItem(storageKey);
+                    if (savedContent) {
+                        instance.value(savedContent);
                     }
-                },
+                }
 
-                saveDraft() {
+                instance.codemirror.on("change", () => {
+                    if (!isEditMode) {
+                        localStorage.setItem(`${this.draftKey}_${fieldName}_content`, instance.value());
+                    }
                     this.saveFormState();
-                    this.$dispatch('open-saved-draft');
-                },
+                });
 
-                submitForm(e) {
-                    Object.keys(this.easyMDEInstances).forEach(fieldName => {
-                        const instance = this.easyMDEInstances[fieldName];
-                        const input = document.getElementById(`id_${fieldName}`);
-                        if (instance && input) {
-                            input.value = instance.value();
-                        }
-                    });
+                return instance;
+            }
+        ,
 
-                    if (!this.isEditMode) {
-                        this.clearAllDrafts();
-                    }
-
-                    return true;
-                },
-
-                clearAllDrafts() {
-                    setTimeout(() => {
-                        Object.keys(localStorage).forEach(key => {
-                            if (key.startsWith(this.draftKey) || key.startsWith('smde_' + this.draftKey)) {
-                                localStorage.removeItem(key);
-                            }
-                        });
-                    }, 1000);
-                },
-
-                handleNavigation(e) {
+            setupBeforeUnload()
+            {
+                window.addEventListener("beforeunload", (e) => {
                     if (this.hasChanges) {
                         e.preventDefault();
-                        this.navigateTo = e.target.href;
+                        e.returnValue = "You have unsaved changes. Are you sure you want to leave?";
+                        return e.returnValue;
                     }
-                },
+                });
+            }
+        ,
 
-                proceedWithNavigation() {
-                    window.removeEventListener("beforeunload", () => {
-                    });
-                    window.location.href = this.navigateTo;
+            setInitialFormState()
+            {
+                this.initialFormState = JSON.stringify(this.formData);
+                this.hasChanges = false;
+            }
+        ,
+
+            updateSaveStatus(message, type = "info")
+            {
+                const colors = {
+                    info: "text-blue-500",
+                    success: "text-green-500",
+                    error: "text-red-500",
+                    default: "text-gray-500",
+                };
+
+                this.autosaveStatus = {
+                    message: message,
+                    color: colors[type] || colors["default"],
+                };
+
+                if (type === "success") {
+                    setTimeout(() => {
+                        this.autosaveStatus = {
+                            message: "",
+                            color: "",
+                        };
+                    }, 3000);
                 }
-            }));
+            }
+        ,
+
+            saveFormState()
+            {
+                if (this.isEditMode) return;
+
+                clearTimeout(this.autosaveTimer);
+                this.updateSaveStatus("Saving...", "info");
+                this.hasChanges = true;
+
+                try {
+                    localStorage.setItem(
+                        `${this.draftKey}_formData`,
+                        JSON.stringify(this.formData)
+                    );
+                    this.updateSaveStatus("Draft saved", "success");
+                } catch (e) {
+                    console.error("Error saving form state:", e);
+                    this.updateSaveStatus("Error saving draft", "error");
+                }
+            }
+        ,
+
+            loadDraft()
+            {
+                try {
+                    const savedFormData = localStorage.getItem(`${this.draftKey}_formData`);
+                    if (savedFormData) {
+                        const parsedData = JSON.parse(savedFormData);
+                        this.formData = {...this.formData, ...parsedData};
+                    }
+
+                    this.updateSaveStatus("Draft loaded", "success");
+                } catch (e) {
+                    console.error("Error loading draft:", e);
+                    this.updateSaveStatus("Error loading draft", "error");
+                }
+            }
+        ,
+
+            saveDraft()
+            {
+                this.saveFormState();
+                this.$dispatch('open-saved-draft');
+            }
+        ,
+
+            submitForm(e)
+            {
+                Object.keys(this.easyMDEInstances).forEach(fieldName => {
+                    const instance = this.easyMDEInstances[fieldName];
+                    const input = document.getElementById(`id_${fieldName}`);
+                    if (instance && input) {
+                        input.value = instance.value();
+                    }
+                });
+
+                if (!this.isEditMode) {
+                    this.clearAllDrafts();
+                }
+
+                return true;
+            }
+        ,
+
+            clearAllDrafts()
+            {
+                setTimeout(() => {
+                    Object.keys(localStorage).forEach(key => {
+                        if (key.startsWith(this.draftKey) || key.startsWith('smde_' + this.draftKey)) {
+                            localStorage.removeItem(key);
+                        }
+                    });
+                }, 1000);
+            }
+        ,
+
+            handleNavigation(e)
+            {
+                if (this.hasChanges) {
+                    e.preventDefault();
+                    this.navigateTo = e.target.href;
+                }
+            }
+        ,
+
+            proceedWithNavigation()
+            {
+                window.removeEventListener("beforeunload", () => {
+                });
+                window.location.href = this.navigateTo;
+            }
+        }))
+            ;
         });
     </script>
 

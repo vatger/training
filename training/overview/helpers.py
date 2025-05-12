@@ -26,7 +26,7 @@ core_theory_ids = {
 
 @cached(cache=TTLCache(maxsize=1024, ttl=60 * 10))
 def get_course_completion(user_id: int, course_id: int) -> bool:
-    header = {"Authorization": f"Token {os.getenv("VATGER_API_KEY")}"}
+    header = {"Authorization": f"Token {os.getenv('VATGER_API_KEY')}"}
     link = f"http://vatsim-germany.org/api/moodle/course/{course_id}/user/{user_id}/completion"
     r = requests.get(link, headers=header)
     if r.status_code == 200:
@@ -93,7 +93,7 @@ def inform_user_course_start(vatsim_id: int, course_name: str):
         "link_text": "Training Centre",
         "link_url": "https://training.vatsim-germany.org/",
     }
-    header = {"Authorization": f"Token {os.getenv("VATGER_API_KEY")}"}
+    header = {"Authorization": f"Token {os.getenv('VATGER_API_KEY')}"}
     r = requests.post(
         f"http://vatsim-germany.org/api/user/{vatsim_id}/send_notification",
         data=data,

@@ -40,6 +40,7 @@ def get_solos():
                 "position": "EDDL_APP",
                 "expiry": "2025-05-13T00:00:00.000000Z",
                 "max_days": 74,
+                "position_days": 0,
                 "facility": 9,
                 "created_at": "2025-03-05T02:10:40.000000Z",
                 "updated_at": "2025-04-07T19:47:47.000000Z",
