@@ -77,117 +77,117 @@
 
         <div class="mb-6"
              x-data="{
-    activeCategory: null,
-    selectedCourseId: null,
-    selectedCourse: null,
+                     activeCategory: null,
+                     selectedCourseId: null,
+                     selectedCourse: null,
 
-    // Course data
-    courses: [
-       {% for course in courses %}
-       {
-           id: '{{ course.id }}',
-           name: '{{ course.name|escapejs }}',
-           position: '{{ course.get_position_display|escapejs }}',
-           type: '{{ course.type }}',
-           typeName: '{{ course.get_type_display|escapejs }}'
-       }{% if not forloop.last %},{% endif %}
-       {% endfor %}
-    ],
+                     // Course data
+                     courses: [
+                     {% for course in courses %}
+                         {
+                         id: '{{ course.id }}',
+                         name: '{{ course.name|escapejs }}',
+                         position: '{{ course.get_position_display|escapejs }}',
+                         type: '{{ course.type }}',
+                         typeName: '{{ course.get_type_display|escapejs }}'
+                         }{% if not forloop.last %},{% endif %}
+                     {% endfor %}
+                     ],
 
-    // Initialize component
-    init() {
-        // Count courses by type first
-        const rtgCourses = this.courses.filter(c => c.type === 'RTG');
-        const edmtCourses = this.courses.filter(c => c.type === 'EDMT');
-        const famCourses = this.courses.filter(c => c.type === 'FAM');
+                     // Initialize component
+                     init() {
+                     // Count courses by type first
+                     const rtgCourses = this.courses.filter(c => c.type === 'RTG');
+                     const edmtCourses = this.courses.filter(c => c.type === 'EDMT');
+                     const famCourses = this.courses.filter(c => c.type === 'FAM');
 
-        // Determine initial active category
-        if (rtgCourses.length > 0) {
-            this.activeCategory = 'RTG';
-        } else if (edmtCourses.length > 0 || famCourses.length > 0) {
-            this.activeCategory = 'EDMT_FAM';
-        }
+                     // Determine initial active category
+                     if (rtgCourses.length > 0) {
+                     this.activeCategory = 'RTG';
+                     } else if (edmtCourses.length > 0 || famCourses.length > 0) {
+                     this.activeCategory = 'EDMT_FAM';
+                     }
 
-        // Try to restore saved course from localStorage
-        const savedCourseId = localStorage.getItem('lastSelectedCourseId');
-        if (savedCourseId) {
-            const savedCourse = this.courses.find(c => c.id === savedCourseId);
-            if (savedCourse) {
-                this.selectedCourseId = savedCourseId;
-                this.selectedCourse = savedCourse;
+                     // Try to restore saved course from localStorage
+                     const savedCourseId = localStorage.getItem('lastSelectedCourseId');
+                     if (savedCourseId) {
+                     const savedCourse = this.courses.find(c => c.id === savedCourseId);
+                     if (savedCourse) {
+                     this.selectedCourseId = savedCourseId;
+                     this.selectedCourse = savedCourse;
 
-                // Set the active category based on the course type
-                if (savedCourse.type === 'EDMT' || savedCourse.type === 'FAM') {
-                    this.activeCategory = 'EDMT_FAM';
-                } else {
-                    this.activeCategory = savedCourse.type;
-                }
-            }
-        } else if (this.getCoursesByType(this.activeCategory).length > 0) {
-            // Select first course in active category if none is already selected
-            const firstCourse = this.getCoursesByType(this.activeCategory)[0];
-            this.selectedCourseId = firstCourse.id;
-            this.selectedCourse = firstCourse;
-        }
-    },
+                     // Set the active category based on the course type
+                     if (savedCourse.type === 'EDMT' || savedCourse.type === 'FAM') {
+                     this.activeCategory = 'EDMT_FAM';
+                     } else {
+                     this.activeCategory = savedCourse.type;
+                     }
+                     }
+                     } else if (this.getCoursesByType(this.activeCategory).length > 0) {
+                     // Select first course in active category if none is already selected
+                     const firstCourse = this.getCoursesByType(this.activeCategory)[0];
+                     this.selectedCourseId = firstCourse.id;
+                     this.selectedCourse = firstCourse;
+                     }
+                     },
 
-    // Get courses filtered by type
-    getCoursesByType(type) {
-        if (type === 'EDMT_FAM') {
-            return this.courses.filter(course => course.type === 'EDMT' || course.type === 'FAM');
-        }
-        return this.courses.filter(course => course.type === type);
-    },
+                     // Get courses filtered by type
+                     getCoursesByType(type) {
+                     if (type === 'EDMT_FAM') {
+                     return this.courses.filter(course => course.type === 'EDMT' || course.type === 'FAM');
+                     }
+                     return this.courses.filter(course => course.type === type);
+                     },
 
-    // Count courses by type
-    getTypeCount(type) {
-        if (type === 'EDMT_FAM') {
-            return this.courses.filter(course => course.type === 'EDMT' || course.type === 'FAM').length;
-        }
-        return this.getCoursesByType(type).length;
-    },
+                     // Count courses by type
+                     getTypeCount(type) {
+                     if (type === 'EDMT_FAM') {
+                     return this.courses.filter(course => course.type === 'EDMT' || course.type === 'FAM').length;
+                     }
+                     return this.getCoursesByType(type).length;
+                     },
 
-    // Select a course
-    selectCourse(course) {
-        this.selectedCourseId = course.id;
-        this.selectedCourse = course;
-        localStorage.setItem('lastSelectedCourseId', course.id);
-    }
-}">
+                     // Select a course
+                     selectCourse(course) {
+                     this.selectedCourseId = course.id;
+                     this.selectedCourse = course;
+                     localStorage.setItem('lastSelectedCourseId', course.id);
+                     }
+                     }">
             <div class="bg-white rounded-xl shadow-md border border-gray-200">
                 <!-- Course Type Tabs -->
                 <div class="border-b border-gray-200">
                     <nav class="flex -mb-px space-x-8 px-4 overflow-x-auto">
                         <button
-                                x-show="getTypeCount('RTG') > 0"
-                                @click="activeCategory = 'RTG'"
-                                :class="{'border-blue-500 text-blue-600 font-medium': activeCategory === 'RTG', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeCategory !== 'RTG'}"
-                                class="py-4 px-1 border-b-2 text-sm transition-colors whitespace-nowrap duration-200 ease-in-out focus:outline-none">
+                            x-show="getTypeCount('RTG') > 0"
+                            @click="activeCategory = 'RTG'"
+                            :class="{'border-blue-500 text-blue-600 font-medium': activeCategory === 'RTG', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeCategory !== 'RTG'}"
+                            class="py-4 px-1 border-b-2 text-sm transition-colors whitespace-nowrap duration-200 ease-in-out focus:outline-none">
                             Ratings (<span x-text="getTypeCount('RTG')"></span>)
                         </button>
 
                         <button
-                                x-show="getTypeCount('EDMT') > 0 || getTypeCount('FAM') > 0"
-                                @click="activeCategory = 'EDMT_FAM'"
-                                :class="{'border-blue-500 text-blue-600 font-medium': activeCategory === 'EDMT_FAM', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeCategory !== 'EDMT_FAM'}"
-                                class="py-4 px-1 border-b-2 text-sm transition-colors whitespace-nowrap duration-200 ease-in-out focus:outline-none">
+                            x-show="getTypeCount('EDMT') > 0 || getTypeCount('FAM') > 0"
+                            @click="activeCategory = 'EDMT_FAM'"
+                            :class="{'border-blue-500 text-blue-600 font-medium': activeCategory === 'EDMT_FAM', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeCategory !== 'EDMT_FAM'}"
+                            class="py-4 px-1 border-b-2 text-sm transition-colors whitespace-nowrap duration-200 ease-in-out focus:outline-none">
                             Endorsements & Familiarisation (<span
                                 x-text="getTypeCount('EDMT') + getTypeCount('FAM')"></span>)
                         </button>
 
                         <button
-                                x-show="getTypeCount('GST') > 0"
-                                @click="activeCategory = 'GST'"
-                                :class="{'border-blue-500 text-blue-600 font-medium': activeCategory === 'GST', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeCategory !== 'GST'}"
-                                class="py-4 px-1 border-b-2 text-sm transition-colors whitespace-nowrap duration-200 ease-in-out focus:outline-none">
+                            x-show="getTypeCount('GST') > 0"
+                            @click="activeCategory = 'GST'"
+                            :class="{'border-blue-500 text-blue-600 font-medium': activeCategory === 'GST', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeCategory !== 'GST'}"
+                            class="py-4 px-1 border-b-2 text-sm transition-colors whitespace-nowrap duration-200 ease-in-out focus:outline-none">
                             Visitor (<span x-text="getTypeCount('GST')"></span>)
                         </button>
 
                         <button
-                                x-show="getTypeCount('RST') > 0"
-                                @click="activeCategory = 'RST'"
-                                :class="{'border-blue-500 text-blue-600 font-medium': activeCategory === 'RST', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeCategory !== 'RST'}"
-                                class="py-4 px-1 border-b-2 text-sm transition-colors whitespace-nowrap duration-200 ease-in-out focus:outline-none">
+                            x-show="getTypeCount('RST') > 0"
+                            @click="activeCategory = 'RST'"
+                            :class="{'border-blue-500 text-blue-600 font-medium': activeCategory === 'RST', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeCategory !== 'RST'}"
+                            class="py-4 px-1 border-b-2 text-sm transition-colors whitespace-nowrap duration-200 ease-in-out focus:outline-none">
                             Roster (<span x-text="getTypeCount('RST')"></span>)
                         </button>
                     </nav>
@@ -197,12 +197,12 @@
                 <div class="px-4 py-3 overflow-x-auto">
                     <div x-show="activeCategory === 'RTG'" class="flex flex-wrap gap-2 py-1">
                         <template
-                                x-for="course in getCoursesByType('RTG').sort((a, b) => a.position.localeCompare(b.position))"
-                                :key="course.id">
+                            x-for="course in getCoursesByType('RTG').sort((a, b) => a.position.localeCompare(b.position))"
+                            :key="course.id">
                             <button
-                                    @click="selectCourse(course)"
-                                    :class="{'bg-blue-50 border-blue-500 text-blue-700': selectedCourseId === course.id, 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50': selectedCourseId !== course.id}"
-                                    class="course-pill inline-flex items-center px-3 py-1.5 border rounded-full text-sm font-medium transition-colors duration-200 ease-in-out">
+                                @click="selectCourse(course)"
+                                :class="{'bg-blue-50 border-blue-500 text-blue-700': selectedCourseId === course.id, 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50': selectedCourseId !== course.id}"
+                                class="course-pill inline-flex items-center px-3 py-1.5 border rounded-full text-sm font-medium transition-colors duration-200 ease-in-out">
                                 <span x-text="course.name"></span>
                             </button>
                         </template>
@@ -210,12 +210,12 @@
 
                     <div x-show="activeCategory === 'EDMT_FAM'" class="flex flex-wrap gap-2 py-1">
                         <template
-                                x-for="course in [...getCoursesByType('EDMT'), ...getCoursesByType('FAM')].sort((a, b) => a.position.localeCompare(b.position))"
-                                :key="course.id">
+                            x-for="course in [...getCoursesByType('EDMT'), ...getCoursesByType('FAM')].sort((a, b) => a.position.localeCompare(b.position))"
+                            :key="course.id">
                             <button
-                                    @click="selectCourse(course)"
-                                    :class="{'bg-blue-50 border-blue-500 text-blue-700': selectedCourseId === course.id, 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50': selectedCourseId !== course.id}"
-                                    class="course-pill inline-flex items-center px-3 py-1.5 border rounded-full text-sm font-medium transition-colors duration-200 ease-in-out">
+                                @click="selectCourse(course)"
+                                :class="{'bg-blue-50 border-blue-500 text-blue-700': selectedCourseId === course.id, 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50': selectedCourseId !== course.id}"
+                                class="course-pill inline-flex items-center px-3 py-1.5 border rounded-full text-sm font-medium transition-colors duration-200 ease-in-out">
                                 <span x-text="course.name"></span>
                             </button>
                         </template>
@@ -223,12 +223,12 @@
 
                     <div x-show="activeCategory === 'GST'" class="flex flex-wrap gap-2 py-1">
                         <template
-                                x-for="course in getCoursesByType('GST').sort((a, b) => a.position.localeCompare(b.position))"
-                                :key="course.id">
+                            x-for="course in getCoursesByType('GST').sort((a, b) => a.position.localeCompare(b.position))"
+                            :key="course.id">
                             <button
-                                    @click="selectCourse(course)"
-                                    :class="{'bg-blue-50 border-blue-500 text-blue-700': selectedCourseId === course.id, 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50': selectedCourseId !== course.id}"
-                                    class="course-pill inline-flex items-center px-3 py-1.5 border rounded-full text-sm font-medium transition-colors duration-200 ease-in-out">
+                                @click="selectCourse(course)"
+                                :class="{'bg-blue-50 border-blue-500 text-blue-700': selectedCourseId === course.id, 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50': selectedCourseId !== course.id}"
+                                class="course-pill inline-flex items-center px-3 py-1.5 border rounded-full text-sm font-medium transition-colors duration-200 ease-in-out">
                                 <span x-text="course.name"></span>
                             </button>
                         </template>
@@ -236,12 +236,12 @@
 
                     <div x-show="activeCategory === 'RST'" class="flex flex-wrap gap-2 py-1">
                         <template
-                                x-for="course in getCoursesByType('RST').sort((a, b) => a.position.localeCompare(b.position))"
-                                :key="course.id">
+                            x-for="course in getCoursesByType('RST').sort((a, b) => a.position.localeCompare(b.position))"
+                            :key="course.id">
                             <button
-                                    @click="selectCourse(course)"
-                                    :class="{'bg-blue-50 border-blue-500 text-blue-700': selectedCourseId === course.id, 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50': selectedCourseId !== course.id}"
-                                    class="course-pill inline-flex items-center px-3 py-1.5 border rounded-full text-sm font-medium transition-colors duration-200 ease-in-out">
+                                @click="selectCourse(course)"
+                                :class="{'bg-blue-50 border-blue-500 text-blue-700': selectedCourseId === course.id, 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50': selectedCourseId !== course.id}"
+                                class="course-pill inline-flex items-center px-3 py-1.5 border rounded-full text-sm font-medium transition-colors duration-200 ease-in-out">
                                 <span x-text="course.name"></span>
                             </button>
                         </template>
@@ -252,11 +252,11 @@
             <!-- Course Content Panels -->
             {% for course in courses %}
                 <div
-                        x-show="selectedCourseId === '{{ course.id }}'"
-                        x-transition:enter="transition ease-out duration-200"
-                        x-transition:enter-start="opacity-0"
-                        x-transition:enter-end="opacity-100"
-                        class="bg-white rounded-xl shadow-md border border-gray-200 mt-4">
+                    x-show="selectedCourseId === '{{ course.id }}'"
+                    x-transition:enter="transition ease-out duration-200"
+                    x-transition:enter-start="opacity-0"
+                    x-transition:enter-end="opacity-100"
+                    class="bg-white rounded-xl shadow-md border border-gray-200 mt-4">
 
                     <div class="p-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
                         <div>
@@ -283,144 +283,239 @@
                                 <div class="overflow-x-auto">
                                     <table class="min-w-full divide-y divide-gray-200">
                                         <thead class="bg-gray-50">
-                                        <tr>
-                                            <th scope="col"
-                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Trainee
-                                            </th>
-                                            <th scope="col"
-                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Progress
-                                            </th>
-                                            <th scope="col"
-                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                {% if course.type == "RTG" %}Solo{% else %}Moodle{% endif %}
-                                            </th>
-                                            <th scope="col"
-                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Next Step
-                                            </th>
-                                            <th scope="col"
-                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Remark
-                                            </th>
-                                            <th scope="col"
-                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Status
-                                            </th>
-                                            <th scope="col"
-                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Actions
-                                            </th>
-                                        </tr>
+                                            <tr>
+                                                <th scope="col"
+                                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Trainee
+                                                </th>
+                                                <th scope="col"
+                                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Progress
+                                                </th>
+                                                <th scope="col"
+                                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    {% if course.type == "RTG" %}Solo{% else %}Moodle{% endif %}
+                                                </th>
+                                                <th scope="col"
+                                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Next Step
+                                                </th>
+                                                <th scope="col"
+                                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Remark
+                                                </th>
+                                                <th scope="col"
+                                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Status
+                                                </th>
+                                                <th scope="col"
+                                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Actions
+                                                </th>
+                                            </tr>
                                         </thead>
                                         <tbody class="bg-white divide-y divide-gray-200"
                                                x-data="{ openModal: null, modalAction: '', modalMessage: '', modalHref: '' }">
-                                        {% for trainee, data in course_trainees.items %}
-                                            <tr>
-                                                <td class="px-6 py-4 whitespace-nowrap">
-                                                    <div class="flex items-center">
-                                                        <div class="flex-shrink-0 h-10 w-10">
-                                                            <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-medium">
-                                                                {{ trainee.first_name|slice:":1" }}{{ trainee.last_name|slice:":1" }}
-                                                            </div>
-                                                        </div>
-                                                        <div class="ml-4">
-                                                            <div class="text-sm font-medium text-gray-900">
-                                                                <a href="{% url 'trainee:mentor_view' trainee.username %}"
-                                                                   class="hover:text-blue-600">
-                                                                    {{ trainee.first_name }} {{ trainee.last_name }}
-                                                                </a>
-                                                            </div>
-                                                            <div class="text-sm text-gray-500">
-                                                                <a href="https://stats.vatsim.net/stats/{{ trainee.username }}"
-                                                                   target="_blank" class="hover:text-blue-600">
-                                                                    {{ trainee.username }}
-                                                                </a>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap">
-                                                    <div class="space-y-1">
+                                            {% for trainee, data in course_trainees.items %}
+                                                <tr>
+                                                    <td class="px-6 py-4 whitespace-nowrap">
                                                         <div class="flex items-center">
-                                                            <div class="mr-1">
-                                                                {% if data.logs|length > 0 %}
-                                                                    <div class="flex space-x-1 items-center">
-                                                                        {% with reversed_logs=data.logs|dictsortreversed:"session_date"|slice:":5"|dictsort:"session_date" %}
-                                                                            {% for log in reversed_logs %}
-                                                                                <span class="inline-flex h-2.5 w-2.5 rounded-full {% if log.result %}bg-green-500{% else %}bg-red-500{% endif %}"
-                                                                                      title="{{ log.session_date|date:'d M Y' }} - {{ log.get_type_display }} - {{ log.result|yesno:'Passed,Failed' }}"></span>
-                                                                            {% endfor %}
-                                                                        {% endwith %}
-                                                                        {% if data.logs|length > 5 %}
-                                                                            <button @click="$dispatch('open-progress', {traineeId: '{{ trainee.id }}'})"
-                                                                                    class="text-xs text-blue-600 hover:text-blue-800 font-medium">
-                                                                                +{{ data.logs|length|add:"-5" }}
-                                                                            </button>
-                                                                        {% endif %}
-                                                                    </div>
-                                                                {% else %}
-                                                                    <a href="{% url 'logs:new_log' trainee.id course.id %}"
-                                                                       class="text-xs text-blue-600 hover:text-blue-800 flex items-center">
-                                                                        <svg xmlns="http://www.w3.org/2000/svg"
-                                                                             class="h-3 w-3 mr-0.5" fill="none"
-                                                                             viewBox="0 0 24 24" stroke="currentColor">
-                                                                            <path stroke-linecap="round"
-                                                                                  stroke-linejoin="round"
-                                                                                  stroke-width="2" d="M12 4v16m8-8H4"/>
-                                                                        </svg>
-                                                                        Create first session
+                                                            <div class="flex-shrink-0 h-10 w-10">
+                                                                <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-medium">
+                                                                    {{ trainee.first_name|slice:":1" }}{{ trainee.last_name|slice:":1" }}
+                                                                </div>
+                                                            </div>
+                                                            <div class="ml-4">
+                                                                <div class="text-sm font-medium text-gray-900">
+                                                                    <a href="{% url 'trainee:mentor_view' trainee.username %}"
+                                                                       class="hover:text-blue-600">
+                                                                        {{ trainee.first_name }} {{ trainee.last_name }}
                                                                     </a>
+                                                                </div>
+                                                                <div class="text-sm text-gray-500">
+                                                                    <a href="https://stats.vatsim.net/stats/{{ trainee.username }}"
+                                                                       target="_blank" class="hover:text-blue-600">
+                                                                        {{ trainee.username }}
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td class="px-6 py-4 whitespace-nowrap">
+                                                        <div class="space-y-1">
+                                                            <div class="flex items-center">
+                                                                <div class="mr-1">
+                                                                    {% if data.logs|length > 0 %}
+                                                                        <div class="flex space-x-1 items-center">
+                                                                            {% with reversed_logs=data.logs|dictsortreversed:"session_date"|slice:":5"|dictsort:"session_date" %}
+                                                                                {% for log in reversed_logs %}
+                                                                                    <span class="inline-flex h-2.5 w-2.5 rounded-full {% if log.result %}bg-green-500{% else %}bg-red-500{% endif %}"
+                                                                                          title="{{ log.session_date|date:'d M Y' }} - {{ log.get_type_display }} - {{ log.result|yesno:'Passed,Failed' }}"></span>
+                                                                                {% endfor %}
+                                                                            {% endwith %}
+                                                                            {% if data.logs|length > 5 %}
+                                                                                <button @click="$dispatch('open-progress', {traineeId: '{{ trainee.id }}'})"
+                                                                                        class="text-xs text-blue-600 hover:text-blue-800 font-medium">
+                                                                                    +{{ data.logs|length|add:"-5" }}
+                                                                                </button>
+                                                                            {% endif %}
+                                                                        </div>
+                                                                    {% else %}
+                                                                        <button @click="
+                                                                                        const draftKey = 'log_draft_{{ trainee.id }}_{{ course.id }}';
+                                                                                        const hasDraft = localStorage.getItem(`${draftKey}_formData`) !== null;
+                                                                                        if (hasDraft) {
+                                                                                        $dispatch('open-log-options', {
+                                                                                        traineeId: '{{ trainee.id }}',
+                                                                                        traineeName: '{{ trainee.get_full_name }}',
+                                                                                        courseId: '{{ course.id }}',
+                                                                                        courseName: '{{ course.name }}'
+                                                                                        });
+                                                                                        } else {
+                                                                                        window.location.href = '{% url 'logs:new_log' trainee.id course.id %}';
+                                                                                        }
+                                                                                       "
+                                                                                class="btn btn-sm btn-ghost gap-x-0.5 underline-none text-blue-600 hover:text-blue-800 px-2">
+                                                                            <svg xmlns="http://www.w3.org/2000/svg"
+                                                                                 class="h-3 w-3 mr-0.5" fill="none"
+                                                                                 viewBox="0 0 24 24" stroke="currentColor">
+                                                                                <path stroke-linecap="round"
+                                                                                      stroke-linejoin="round"
+                                                                                      stroke-width="2" d="M12 4v16m8-8H4"/>
+                                                                            </svg>
+                                                                            Create first session
+                                                                        </button>
+                                                                    {% endif %}
+                                                                </div>
+
+                                                                {% if data.logs|length > 0 %}
+                                                                    <div class="flex space-x-2 items-center">
+                                                                        <button @click="$dispatch('open-progress', {
+                                                                                        traineeId: '{{ trainee.id }}',
+                                                                                        traineeName: '{{ trainee.get_full_name }}',
+                                                                                        courseId: '{{ course.id }}',
+                                                                                        courseName: '{{ course.name }}'
+                                                                                        })"
+                                                                                class="btn btn-info p-1 m-0 w-fit h-fit btn-sm gap-x-0.5">
+                                                                            <svg xmlns="http://www.w3.org/2000/svg"
+                                                                                 class="h-3.5 w-3.5 mr-0.5" fill="none"
+                                                                                 viewBox="0 0 24 24" stroke="currentColor">
+                                                                                <path stroke-linecap="round"
+                                                                                      stroke-linejoin="round"
+                                                                                      stroke-width="2"
+                                                                                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                                                <path stroke-linecap="round"
+                                                                                      stroke-linejoin="round"
+                                                                                      stroke-width="2"
+                                                                                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                                                            </svg>
+                                                                            Details
+                                                                        </button>
+
+                                                                    <!-- New Quick Add Log button -->
+                                                                        <button @click="
+                                                                                        const draftKey = 'log_draft_{{ trainee.id }}_{{ course.id }}';
+                                                                                        const hasDraft = localStorage.getItem(`${draftKey}_formData`) !== null;
+                                                                                        if (hasDraft) {
+                                                                                        $dispatch('open-log-options', {
+                                                                                        traineeId: '{{ trainee.id }}',
+                                                                                        traineeName: '{{ trainee.get_full_name }}',
+                                                                                        courseId: '{{ course.id }}',
+                                                                                        courseName: '{{ course.name }}'
+                                                                                        });
+                                                                                        } else {
+                                                                                        window.location.href = '{% url 'logs:new_log' trainee.id course.id %}';
+                                                                                        }
+                                                                                       "
+                                                                                class="btn btn-success p-1 m-0 w-fit h-fit btn-sm gap-x-0.5 text-center ml-1">
+                                                                            <svg xmlns="http://www.w3.org/2000/svg"
+                                                                                 class="h-4 w-4" fill="none"
+                                                                                 viewBox="0 0 24 24" stroke="currentColor">
+                                                                                <path stroke-linecap="round"
+                                                                                      stroke-linejoin="round"
+                                                                                      stroke-width="2" d="M12 4v16m8-8H4"/>
+                                                                            </svg>
+                                                                        </button>
+                                                                    </div>
                                                                 {% endif %}
                                                             </div>
 
-                                                            {% if data.logs|length > 0 %}
-                                                                <div class="flex space-x-2 items-center">
-                                                                    <button @click="$dispatch('open-progress', {
-                                                                            traineeId: '{{ trainee.id }}',
-                                                                            traineeName: '{{ trainee.get_full_name }}',
-                                                                            courseId: '{{ course.id }}',
-                                                                            courseName: '{{ course.name }}'
-                                                                        })"
-                                                                            class="btn btn-info p-1 m-0 w-fit h-fit btn-sm gap-x-0.5">
+                                                            {% if data.date_last %}
+                                                                <div class="text-xs text-gray-500">
+                                                                    Last: {{ data.date_last|date:"d M Y" }}
+                                                                </div>
+                                                            {% endif %}
+                                                        </div>
+                                                    </td>
+                                                    <td class="px-6 py-4 whitespace-nowrap">
+                                                        {% if course.type == "RTG" %}
+                                                            <div class="flex items-center">
+                                                                {% if data.solo == "Add Solo" %}
+                                                                    <a href="{% url 'overview:add_solo' trainee.username course.id %}"
+                                                                       class="btn btn-sm btn-ghost gap-x-0.5 text-orange-500 hover:text-orange-600 px-2">
                                                                         <svg xmlns="http://www.w3.org/2000/svg"
-                                                                             class="h-3.5 w-3.5 mr-0.5" fill="none"
+                                                                             class="h-4 w-4 mr-1" fill="none"
                                                                              viewBox="0 0 24 24" stroke="currentColor">
                                                                             <path stroke-linecap="round"
-                                                                                  stroke-linejoin="round"
-                                                                                  stroke-width="2"
-                                                                                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                                                            <path stroke-linecap="round"
-                                                                                  stroke-linejoin="round"
-                                                                                  stroke-width="2"
-                                                                                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                                                                  stroke-linejoin="round" stroke-width="2"
+                                                                                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                                                                         </svg>
-                                                                        Details
-                                                                    </button>
+                                                                        Add Solo
+                                                                    </a>
+                                                                {% else %}
+                                                                    {% with remaining=data.solo.solo_info|split_solo_data:"remaining" %}
+                                                                        <button
+                                                                            @click="$dispatch('open-solo-modal', {
+                                                                                    soloId: {{ data.solo.id }},
+                                                                                    positionName: '{{ data.solo.position }}',
+                                                                                    remainingDays: {{ data.solo.remaining_days }},
+                                                                                    deltaDay: {{ data.solo.delta }},
+                                                                                    maxDays: {{ data.solo.max_days }},
+                                                                                    positionDays: {{ data.solo.position_days }},
+                                                                                    traineeName: '{{ trainee.first_name }} {{ trainee.last_name }}',
+                                                                                    traineeId: {{ trainee.username }},
+                                                                                    courseId: {{ course.id }}
+                                                                                    })"
+                                                                            class="px-2 py-1 h-6 text-xs rounded-full font-medium cursor-pointer
+                                                                                   {% if data.solo.remaining_days < 10 %}bg-red-100 text-red-700
+                                                                                   {% elif data.solo.remaining_days < 20 %}bg-amber-100 text-amber-700
+                                                                                   {% else %}bg-green-100 text-green-700{% endif %}">
+                                                                            {{ data.solo.remaining_days }} days remaining
+                                                                        </button>
+                                                                    {% endwith %}
+                                                                {% endif %}
+                                                            </div>
+                                                        {% else %}
+                                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if data.moodle %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                                                                {{ data.moodle|yesno:"Completed,Incomplete" }}
+                                                            </span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td class="px-6 py-4 whitespace-nowrap">
+                                                        <span class="text-sm text-gray-600">{{ data.next_step|default_if_none:"-" }}</span>
+                                                    </td>
+                                                    <td class="px-6 py-4 min-w-24">
+                                                        <div
+                                                            x-data="{
+                                                                    isEditing: false,
+                                                                    remarkText: '{{ data.remark|default:""|escapejs }}'
+                                                                    }"
+                                                            class="min-w-24"
+                                                        >
+                                                            <div x-show="!isEditing" class="group relative">
+                                                                <div class="max-w-xs text-sm text-gray-600 overflow-hidden line-clamp-2"
+                                                                     @click="isEditing = true">
+                                                                    <span x-text="remarkText || '-'"></span>
+                                                                </div>
 
-                                                                    <!-- New Quick Add Log button -->
-                                                                    <button @click="
-                                const draftKey = 'log_draft_{{ trainee.id }}_{{ course.id }}';
-                                const hasDraft = localStorage.getItem(`${draftKey}_formData`) !== null;
-                                if (hasDraft) {
-                                  $dispatch('open-log-options', {
-                                    traineeId: '{{ trainee.id }}',
-                                    traineeName: '{{ trainee.get_full_name }}',
-                                    courseId: '{{ course.id }}',
-                                    courseName: '{{ course.name }}'
-                                  });
-                                } else {
-                                  window.location.href = '{% url 'logs:new_log' trainee.id course.id %}';
-                                }
-                              "
-                                                                            class="btn btn-success p-1 m-0 w-fit h-fit btn-sm gap-x-0.5 text-center ml-1">
+                                                                {% if data.remark_updated and data.remark %}
+                                                                    <div class="text-xs text-gray-400 mt-1 flex items-center">
                                                                         <svg xmlns="http://www.w3.org/2000/svg"
-                                                                             class="h-4 w-4" fill="none"
+                                                                             class="h-3 w-3 mr-1" fill="none"
                                                                              viewBox="0 0 24 24" stroke="currentColor">
                                                                             <path stroke-linecap="round"
-                                                                                  stroke-linejoin="round"
-                                                                                  stroke-width="2" d="M12 4v16m8-8H4"/>
+                                                                                  stroke-linejoin="round" stroke-width="2"
+                                                                                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                                                         </svg>
                                                                     </button>
                                                                 </div>
@@ -496,140 +591,126 @@
                                                                 <span x-text="remarkText || '-'"></span>
                                                             </div>
 
-                                                            {% if data.remark_updated and data.remark %}
-                                                                <div class="text-xs text-gray-400 mt-1 flex items-center">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg"
-                                                                         class="h-3 w-3 mr-1" fill="none"
-                                                                         viewBox="0 0 24 24" stroke="currentColor">
-                                                                        <path stroke-linecap="round"
-                                                                              stroke-linejoin="round" stroke-width="2"
-                                                                              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                                                    </svg>
-                                                                    {{ data.remark_updated|date:"d M Y" }}
-                                                                </div>
-                                                            {% endif %}
-                                                        </div>
-
                                                         <!-- Edit form -->
-                                                        <div x-show="isEditing" class="space-y-2">
-                                                            <form
+                                                            <div x-show="isEditing" class="space-y-2">
+                                                                <form
                                                                     action="{% url 'overview:update_remark' trainee.id course.id %}"
                                                                     method="POST"
                                                                     @submit="remarkText = document.getElementById('remark_{{ trainee.id }}_{{ course.id }}').value"
-                                                            >
-                                                                {% csrf_token %}
-                                                                <textarea
+                                                                >
+                                                                    {% csrf_token %}
+                                                                    <textarea
                                                                         id="remark_{{ trainee.id }}_{{ course.id }}"
                                                                         name="remark"
                                                                         rows="3"
                                                                         class="textarea textarea-bordered w-full text-sm"
                                                                         placeholder="Add a remark about this trainee...">{{ data.remark|default:"" }}</textarea>
 
-                                                                <div class="flex justify-end space-x-2 mt-2">
-                                                                    <button
+                                                                    <div class="flex justify-end space-x-2 mt-2">
+                                                                        <button
                                                                             type="button"
                                                                             @click="isEditing = false"
                                                                             class="btn btn-ghost btn-xs"
-                                                                    >
-                                                                        Cancel
-                                                                    </button>
-                                                                    <button type="submit"
-                                                                            class="btn btn-primary btn-xs">
-                                                                        Save
-                                                                    </button>
-                                                                </div>
-                                                            </form>
+                                                                        >
+                                                                            Cancel
+                                                                        </button>
+                                                                        <button type="submit"
+                                                                                class="btn btn-primary btn-xs">
+                                                                            Save
+                                                                        </button>
+                                                                    </div>
+                                                                </form>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap">
-                                                    <div class="flex items-center">
-                                                        {% if data.claimed %}
-                                                            {% if data.claimed_by == user.first_name|add:" "|add:user.last_name %}
+                                                    </td>
+                                                    <td class="px-6 py-4 whitespace-nowrap">
+                                                        <div class="flex items-center">
+                                                            {% if data.claimed %}
+                                                                {% if data.claimed_by == user.first_name|add:" "|add:user.last_name %}
                                                                 <!-- User has claimed this trainee -->
+                                                                    <a href="{% url 'overview:claim' trainee.id course.id %}"
+                                                                       class="inline-flex items-center h-6 px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 hover:bg-blue-200 transition-colors">
+                                                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                                                             class="h-3 w-3 mr-1" fill="none"
+                                                                             viewBox="0 0 24 24" stroke="currentColor">
+                                                                            <path stroke-linecap="round"
+                                                                                  stroke-linejoin="round" stroke-width="2"
+                                                                                  d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                                                                        </svg>
+                                                                        <span class="mr-1">Claimed by you</span>
+                                                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                                                             class="h-3 w-3" fill="none" viewBox="0 0 24 24"
+                                                                             stroke="currentColor">
+                                                                            <path stroke-linecap="round"
+                                                                                  stroke-linejoin="round" stroke-width="2"
+                                                                                  d="M6 18L18 6M6 6l12 12"/>
+                                                                        </svg>
+                                                                    </a>
+                                                                {% else %}
+                                                                <!-- Another mentor has claimed this trainee -->
+                                                                    <span class="inline-flex items-center h-6 px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none"
+                                                                             viewBox="0 0 24 24" stroke="currentColor">
+                                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                                                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                                                        </svg>
+                                                                        Claimed by {{ data.claimed_by }}
+                                                                    </span>
+                                                                {% endif %}
+                                                            {% else %}
                                                                 <a href="{% url 'overview:claim' trainee.id course.id %}"
-                                                                   class="inline-flex items-center h-6 px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 hover:bg-blue-200 transition-colors">
+                                                                   class="inline-flex items-center h-6 px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
                                                                     <svg xmlns="http://www.w3.org/2000/svg"
                                                                          class="h-3 w-3 mr-1" fill="none"
                                                                          viewBox="0 0 24 24" stroke="currentColor">
-                                                                        <path stroke-linecap="round"
-                                                                              stroke-linejoin="round" stroke-width="2"
-                                                                              d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                                              stroke-width="2"
+                                                                              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                                              stroke-width="2"
+                                                                              d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                                                                     </svg>
-                                                                    <span class="mr-1">Claimed by you</span>
-                                                                    <svg xmlns="http://www.w3.org/2000/svg"
-                                                                         class="h-3 w-3" fill="none" viewBox="0 0 24 24"
-                                                                         stroke="currentColor">
-                                                                        <path stroke-linecap="round"
-                                                                              stroke-linejoin="round" stroke-width="2"
-                                                                              d="M6 18L18 6M6 6l12 12"/>
-                                                                    </svg>
+                                                                    Claim
                                                                 </a>
-                                                            {% else %}
-                                                                <!-- Another mentor has claimed this trainee -->
-                                                                <span class="inline-flex items-center h-6 px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
-                                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none"
-                                       viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                          d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                                  </svg>
-                                  Claimed by {{ data.claimed_by }}
-                                </span>
                                                             {% endif %}
-                                                        {% else %}
-                                                            <a href="{% url 'overview:claim' trainee.id course.id %}"
-                                                               class="inline-flex items-center h-6 px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
-                                                                <svg xmlns="http://www.w3.org/2000/svg"
-                                                                     class="h-3 w-3 mr-1" fill="none"
-                                                                     viewBox="0 0 24 24" stroke="currentColor">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                                          stroke-width="2"
-                                                                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                                          stroke-width="2"
-                                                                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                                                                </svg>
-                                                                Claim
-                                                            </a>
-                                                        {% endif %}
-                                                    </div>
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                    <div class="flex items-center space-x-2">
-                                                        <button
+                                                        </div>
+                                                    </td>
+                                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                        <div class="flex items-center space-x-2">
+                                                            <button
                                                                 @click="$dispatch('open-confirm', {
-                              action: 'finish', 
-                              message: 'Are you sure you want to give {{ trainee.first_name }} {{ trainee.last_name }} the endorsements for {{ course.name }}?', 
-                              href: '{% url 'overview:finish' trainee.id course.id %}'
-                            })"
+                                                                        action: 'finish',
+                                                                        message: 'Are you sure you want to give {{ trainee.first_name }} {{ trainee.last_name }} the endorsements for {{ course.name }}?',
+                                                                        href: '{% url 'overview:finish' trainee.id course.id %}'
+                                                                        })"
                                                                 class="btn btn-success py-0 h-8">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1"
-                                                                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                                      stroke-width="2" d="M5 13l4 4L19 7"/>
-                                                            </svg>
-                                                            Finish
-                                                        </button>
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1"
+                                                                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                                          stroke-width="2" d="M5 13l4 4L19 7"/>
+                                                                </svg>
+                                                                Finish
+                                                            </button>
 
-                                                        <button
+                                                            <button
                                                                 @click="$dispatch('open-confirm', {
-                              action: 'remove', 
-                              message: 'Are you sure you want to remove {{ trainee.first_name }} {{ trainee.last_name }} from {{ course.name }}?', 
-                              href: '{% url 'overview:remove' trainee.id course.id %}'
-                            })"
+                                                                        action: 'remove',
+                                                                        message: 'Are you sure you want to remove {{ trainee.first_name }} {{ trainee.last_name }} from {{ course.name }}?',
+                                                                        href: '{% url 'overview:remove' trainee.id course.id %}'
+                                                                        })"
                                                                 class="btn btn-error p-0 h-8 w-8">
-                                                            <svg class="w-4 h-4" aria-hidden="true"
-                                                                 xmlns="http://www.w3.org/2000/svg" width="24"
-                                                                 height="24" fill="none" viewBox="0 0 24 24">
-                                                                <path stroke="currentColor" stroke-linecap="round"
-                                                                      stroke-linejoin="round" stroke-width="2"
-                                                                      d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z"/>
-                                                            </svg>
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        {% endfor %}
+                                                                <svg class="w-4 h-4" aria-hidden="true"
+                                                                     xmlns="http://www.w3.org/2000/svg" width="24"
+                                                                     height="24" fill="none" viewBox="0 0 24 24">
+                                                                    <path stroke="currentColor" stroke-linecap="round"
+                                                                          stroke-linejoin="round" stroke-width="2"
+                                                                          d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z"/>
+                                                                </svg>
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
                                         </tbody>
                                     </table>
                                 </div>
@@ -685,63 +766,63 @@
 
         <!-- Solo Modal -->
         <div x-data="{
-            showModal: false,
-            soloId: null,
-            positionName: '',
-            remainingDays: 0,
-            positionDays: 0,
-            deltaDay: 0,
-            maxDays: 74,  // Default value, will be overridden
-            traineeName: '',
-            traineeId: null,
-            courseId: null,
-            extendDate: null
-        }"
+                     showModal: false,
+                     soloId: null,
+                     positionName: '',
+                     remainingDays: 0,
+                     positionDays: 0,
+                     deltaDay: 0,
+                     maxDays: 74,  // Default value, will be overridden
+                     traineeName: '',
+                     traineeId: null,
+                     courseId: null,
+                     extendDate: null
+                     }"
              @open-solo-modal.window="
-                showModal = true;
-                soloId = $event.detail.soloId;
-                positionName = $event.detail.positionName;
-                remainingDays = $event.detail.remainingDays;
-                deltaDay = $event.detail.deltaDay;
-                maxDays = $event.detail.maxDays;
-                positionDays = $event.detail.positionDays;
-                traineeName = $event.detail.traineeName;
-                traineeId = $event.detail.traineeId;
-                courseId = $event.detail.courseId;
+                                      showModal = true;
+                                      soloId = $event.detail.soloId;
+                                      positionName = $event.detail.positionName;
+                                      remainingDays = $event.detail.remainingDays;
+                                      deltaDay = $event.detail.deltaDay;
+                                      maxDays = $event.detail.maxDays;
+                                      positionDays = $event.detail.positionDays;
+                                      traineeName = $event.detail.traineeName;
+                                      traineeId = $event.detail.traineeId;
+                                      courseId = $event.detail.courseId;
 
-                // Set default extend date to 30 days from now
-                const today = new Date();
-                today.setDate(today.getDate() + 30);
-                extendDate = today.toISOString().split('T')[0];
-            "
+                                      // Set default extend date to 30 days from now
+                                      const today = new Date();
+                                      today.setDate(today.getDate() + 30);
+                                      extendDate = today.toISOString().split('T')[0];
+                                     "
              x-show="showModal"
              x-cloak
              class="fixed inset-0 z-50 overflow-y-auto">
 
             <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
                 <div
-                        x-show="showModal"
-                        @click="showModal = false"
-                        x-transition:enter="ease-out duration-300"
-                        x-transition:enter-start="opacity-0"
-                        x-transition:enter-end="opacity-100"
-                        x-transition:leave="ease-in duration-200"
-                        x-transition:leave-start="opacity-100"
-                        x-transition:leave-end="opacity-0"
-                        style="background-color: rgba(0, 0, 0, 0.4);"
-                        class="fixed inset-0 transition-opacity z-10">
+                    x-show="showModal"
+                    @click="showModal = false"
+                    x-transition:enter="ease-out duration-300"
+                    x-transition:enter-start="opacity-0"
+                    x-transition:enter-end="opacity-100"
+                    x-transition:leave="ease-in duration-200"
+                    x-transition:leave-start="opacity-100"
+                    x-transition:leave-end="opacity-0"
+                    style="background-color: rgba(0, 0, 0, 0.4);"
+                    class="fixed inset-0 transition-opacity z-10">
                 </div>
 
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
                 <div
-                        x-show="showModal"
-                        x-transition:enter="ease-out duration-300"
-                        x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                        x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
-                        x-transition:leave="ease-in duration-200"
-                        x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
-                        x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                        class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full z-20 relative">
+                    x-show="showModal"
+                    x-transition:enter="ease-out duration-300"
+                    x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                    x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                    x-transition:leave="ease-in duration-200"
+                    x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                    x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                    class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full z-20 relative">
 
                     <div class="bg-gradient-to-r from-blue-50 to-white px-4 py-3 border-b border-gray-200 sm:px-6">
                         <div class="flex items-center justify-between">
@@ -771,7 +852,7 @@
                                 <h3 class="text-lg leading-6 font-medium text-gray-900">
                                     <span x-text="traineeName"></span>
                                     <span class="text-sm font-normal text-gray-500">- Solo for <span
-                                            x-text="positionName"></span></span>
+                                        x-text="positionName"></span></span>
                                 </h3>
 
                                 <div class="mt-4 bg-gray-50 p-4 rounded-lg">
@@ -791,15 +872,15 @@
                                     <div x-data="{ action: 'none' }">
                                         <div class="flex space-x-4 mb-3">
                                             <button
-                                                    @click="action = 'remove'"
-                                                    :class="{'btn btn-error': action === 'remove', 'btn': action !== 'remove'}"
-                                                    class="flex-1">
+                                                @click="action = 'remove'"
+                                                :class="{'btn btn-error': action === 'remove', 'btn': action !== 'remove'}"
+                                                class="flex-1">
                                                 Remove Solo
                                             </button>
                                             <button
-                                                    @click="action = 'extend'"
-                                                    :class="{'btn btn-info': action === 'extend', 'btn': action !== 'extend'}"
-                                                    class="flex-1">
+                                                @click="action = 'extend'"
+                                                :class="{'btn btn-info': action === 'extend', 'btn': action !== 'extend'}"
+                                                class="flex-1">
                                                 Extend Solo
                                             </button>
                                         </div>
@@ -829,10 +910,10 @@
                                                        class="block text-sm font-medium text-blue-700">New Expiry
                                                     Date</label>
                                                 <input
-                                                        type="date"
-                                                        id="extend-date"
-                                                        x-model="extendDate"
-                                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                                    type="date"
+                                                    id="extend-date"
+                                                    x-model="extendDate"
+                                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                                                 >
                                             </div>
                                             <div class="mt-4 flex justify-end space-x-3">
@@ -864,44 +945,44 @@
 
         <!-- Progress Modal -->
         <div
-                x-data="progressModal"
-                @open-progress.window="
-                    showProgressModal = true;
-                    traineeId = $event.detail.traineeId;
-                    traineeName = $event.detail.traineeName || '';
-                    courseId = $event.detail.courseId || null;
-                    courseName = $event.detail.courseName || '';
-                    checkForDraft();
-                "
-                x-show="showProgressModal"
-                x-cloak
-                class="fixed inset-0 z-50 overflow-y-auto">
+            x-data="progressModal"
+            @open-progress.window="
+                                   showProgressModal = true;
+                                   traineeId = $event.detail.traineeId;
+                                   traineeName = $event.detail.traineeName || '';
+                                   courseId = $event.detail.courseId || null;
+                                   courseName = $event.detail.courseName || '';
+                                   checkForDraft();
+                                  "
+            x-show="showProgressModal"
+            x-cloak
+            class="fixed inset-0 z-50 overflow-y-auto">
 
             <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
                 <!-- Background overlay -->
                 <div
-                        x-show="showProgressModal"
-                        @click="showProgressModal = false"
-                        x-transition:enter="ease-out duration-300"
-                        x-transition:enter-start="opacity-0"
-                        x-transition:enter-end="opacity-100"
-                        x-transition:leave="ease-in duration-200"
-                        x-transition:leave-start="opacity-100"
-                        x-transition:leave-end="opacity-0"
-                        style="background-color: rgba(0, 0, 0, 0.4);"
-                        class="fixed inset-0 transition-opacity z-10">
+                    x-show="showProgressModal"
+                    @click="showProgressModal = false"
+                    x-transition:enter="ease-out duration-300"
+                    x-transition:enter-start="opacity-0"
+                    x-transition:enter-end="opacity-100"
+                    x-transition:leave="ease-in duration-200"
+                    x-transition:leave-start="opacity-100"
+                    x-transition:leave-end="opacity-0"
+                    style="background-color: rgba(0, 0, 0, 0.4);"
+                    class="fixed inset-0 transition-opacity z-10">
                 </div>
 
                 <!-- Modal panel -->
                 <div
-                        x-show="showProgressModal"
-                        x-transition:enter="ease-out duration-300"
-                        x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                        x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
-                        x-transition:leave="ease-in duration-200"
-                        x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
-                        x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                        class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl sm:w-full z-20 relative">
+                    x-show="showProgressModal"
+                    x-transition:enter="ease-out duration-300"
+                    x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                    x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                    x-transition:leave="ease-in duration-200"
+                    x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                    x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                    class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl sm:w-full z-20 relative">
 
                     <!-- Modal header -->
                     <div class="bg-gradient-to-r from-blue-50 to-white px-4 py-3 border-b border-gray-200 sm:px-6">
@@ -983,7 +1064,7 @@
                                                         <div class="relative">
                                                             <!-- Timeline dot marker -->
                                                             <div class="absolute -left-6 mt-1.5 h-4 w-4 rounded-full border-2 border-white flex items-center justify-center
-                                {% if log.result %}bg-green-500{% else %}bg-red-500{% endif %}">
+                                                                        {% if log.result %}bg-green-500{% else %}bg-red-500{% endif %}">
                                                             </div>
 
                                                             <div class="bg-white rounded-lg border {% if log.result %}border-green-200{% else %}border-red-200{% endif %} shadow-sm p-4 mb-2 transition-shadow">
@@ -991,14 +1072,14 @@
                                                                     <div>
                                                                         <h4 class="font-semibold text-gray-900">{{ log.position }}</h4>
                                                                         <div class="flex space-x-2 mt-1">
-                                    <span class="px-2 py-0.5 rounded-full text-xs font-medium 
-                                        {% if log.type == 'O' %}bg-blue-100 text-blue-800{% else %}bg-green-100 text-green-800{% endif %}">
-                                      {{ log.get_type_display }}
-                                    </span>
                                                                             <span class="px-2 py-0.5 rounded-full text-xs font-medium
-                                        {% if log.result %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
-                                      {{ log.result|yesno:"Passed,Not Passed" }}
-                                    </span>
+                                                                                         {% if log.type == 'O' %}bg-blue-100 text-blue-800{% else %}bg-green-100 text-green-800{% endif %}">
+                                                                                {{ log.get_type_display }}
+                                                                            </span>
+                                                                            <span class="px-2 py-0.5 rounded-full text-xs font-medium
+                                                                                         {% if log.result %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                                                                                {{ log.result|yesno:"Passed,Not Passed" }}
+                                                                            </span>
                                                                         </div>
                                                                         <p class="text-xs text-gray-500 mt-1">{{ log.session_date|date:"d M Y" }}</p>
                                                                         <p class="text-xs text-gray-500 mt-1">{{ log.mentor }}</p>
@@ -1069,43 +1150,43 @@
         </div>
 
         <div
-                x-data="logOptionsModal"
-                @open-log-options.window="
-    showModal = true; 
-    traineeId = $event.detail.traineeId;
-    traineeName = $event.detail.traineeName || '';
-    courseId = $event.detail.courseId || null;
-    courseName = $event.detail.courseName || '';
-  "
-                x-show="showModal"
-                x-cloak
-                class="fixed inset-0 z-50 overflow-y-auto">
+            x-data="logOptionsModal"
+            @open-log-options.window="
+              showModal = true;
+              traineeId = $event.detail.traineeId;
+              traineeName = $event.detail.traineeName || '';
+              courseId = $event.detail.courseId || null;
+              courseName = $event.detail.courseName || '';
+             "
+            x-show="showModal"
+            x-cloak
+            class="fixed inset-0 z-50 overflow-y-auto">
 
             <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
                 <!-- Background overlay -->
                 <div
-                        x-show="showModal"
-                        @click="showModal = false"
-                        x-transition:enter="ease-out duration-300"
-                        x-transition:enter-start="opacity-0"
-                        x-transition:enter-end="opacity-100"
-                        x-transition:leave="ease-in duration-200"
-                        x-transition:leave-start="opacity-100"
-                        x-transition:leave-end="opacity-0"
-                        style="background-color: rgba(0, 0, 0, 0.4);"
-                        class="fixed inset-0 transition-opacity z-10">
+                    x-show="showModal"
+                    @click="showModal = false"
+                    x-transition:enter="ease-out duration-300"
+                    x-transition:enter-start="opacity-0"
+                    x-transition:enter-end="opacity-100"
+                    x-transition:leave="ease-in duration-200"
+                    x-transition:leave-start="opacity-100"
+                    x-transition:leave-end="opacity-0"
+                    style="background-color: rgba(0, 0, 0, 0.4);"
+                    class="fixed inset-0 transition-opacity z-10">
                 </div>
 
                 <!-- Modal panel -->
                 <div
-                        x-show="showModal"
-                        x-transition:enter="ease-out duration-300"
-                        x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                        x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
-                        x-transition:leave="ease-in duration-200"
-                        x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
-                        x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                        class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full z-20 relative">
+                    x-show="showModal"
+                    x-transition:enter="ease-out duration-300"
+                    x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                    x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                    x-transition:leave="ease-in duration-200"
+                    x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                    x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                    class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full z-20 relative">
 
                     <!-- Modal header -->
                     <div class="bg-gradient-to-r from-blue-50 to-white px-4 py-4 border-b border-gray-200 sm:px-6">
@@ -1175,38 +1256,38 @@
 
         <!-- Confirmation Modal -->
         <div
-                x-data="{ open: false, action: '', message: '', href: '' }"
-                @open-confirm.window="open = true; action = $event.detail.action; message = $event.detail.message; href = $event.detail.href"
-                x-show="open"
-                x-cloak
-                class="fixed z-10 inset-0 overflow-y-auto"
-                aria-labelledby="modal-title"
-                role="dialog"
-                aria-modal="true">
+            x-data="{ open: false, action: '', message: '', href: '' }"
+            @open-confirm.window="open = true; action = $event.detail.action; message = $event.detail.message; href = $event.detail.href"
+            x-show="open"
+            x-cloak
+            class="fixed z-10 inset-0 overflow-y-auto"
+            aria-labelledby="modal-title"
+            role="dialog"
+            aria-modal="true">
             <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
                 <div
-                        x-show="open"
-                        x-transition:enter="ease-out duration-300"
-                        x-transition:enter-start="opacity-0"
-                        x-transition:enter-end="opacity-100"
-                        x-transition:leave="ease-in duration-200"
-                        x-transition:leave-start="opacity-100"
-                        x-transition:leave-end="opacity-0"
-                        class="fixed inset-0 transition-opacity z-10"
-                        @click="open = false"
-                        style="background-color: rgba(0, 0, 0, 0.4);"
-                        aria-hidden="true"></div>
+                    x-show="open"
+                    x-transition:enter="ease-out duration-300"
+                    x-transition:enter-start="opacity-0"
+                    x-transition:enter-end="opacity-100"
+                    x-transition:leave="ease-in duration-200"
+                    x-transition:leave-start="opacity-100"
+                    x-transition:leave-end="opacity-0"
+                    class="fixed inset-0 transition-opacity z-10"
+                    @click="open = false"
+                    style="background-color: rgba(0, 0, 0, 0.4);"
+                    aria-hidden="true"></div>
 
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
                 <div
-                        x-show="open"
-                        x-transition:enter="ease-out duration-300"
-                        x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                        x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
-                        x-transition:leave="ease-in duration-200"
-                        x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
-                        x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                        class="inline-block align-middle bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-lg sm:w-full z-20 relative">
+                    x-show="open"
+                    x-transition:enter="ease-out duration-300"
+                    x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                    x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                    x-transition:leave="ease-in duration-200"
+                    x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                    x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                    class="inline-block align-middle bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-lg sm:w-full z-20 relative">
                     <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                         <div class="sm:flex sm:items-start">
                             <div x-show="action === 'finish'"
