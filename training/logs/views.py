@@ -1,7 +1,10 @@
+import json
+
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.http import HttpResponseForbidden
 from django.shortcuts import render, redirect, get_object_or_404
+from django.utils.safestring import mark_safe
 from training.permissions import mentor_required
 
 from lists.models import Course
@@ -186,6 +189,13 @@ def edit_training_log(request, log_id):
     else:
         form = TrainingLogForm(instance=log)
 
+    form_errors = {}
+    if form.errors:
+        for field_name, error_list in form.errors.items():
+            form_errors[field_name] = error_list[0]  # Just take the first error
+
+    safe_form_errors = mark_safe(json.dumps(form_errors))
+
     category_list = [
         {
             "name": "theory",
@@ -262,6 +272,44 @@ def edit_training_log(request, log_id):
             else:
                 initial_values[field_name] = ""
 
+    form_data = {
+        "session_date": (
+            log.session_date.strftime("%Y-%m-%d") if log.session_date else ""
+        ),
+        "position": str(log.position) if log.position else "",
+        "type": str(log.type) if log.type else "O",
+        "theory": str(log.theory) if log.theory is not None else "0",
+        "phraseology": str(log.phraseology) if log.phraseology is not None else "0",
+        "coordination": str(log.coordination) if log.coordination is not None else "0",
+        "tag_management": (
+            str(log.tag_management) if log.tag_management is not None else "0"
+        ),
+        "situational_awareness": (
+            str(log.situational_awareness)
+            if log.situational_awareness is not None
+            else "0"
+        ),
+        "problem_recognition": (
+            str(log.problem_recognition) if log.problem_recognition is not None else "0"
+        ),
+        "traffic_planning": (
+            str(log.traffic_planning) if log.traffic_planning is not None else "0"
+        ),
+        "reaction": str(log.reaction) if log.reaction is not None else "0",
+        "separation": str(log.separation) if log.separation is not None else "0",
+        "efficiency": str(log.efficiency) if log.efficiency is not None else "0",
+        "ability_to_work_under_pressure": (
+            str(log.ability_to_work_under_pressure)
+            if log.ability_to_work_under_pressure is not None
+            else "0"
+        ),
+        "motivation": str(log.motivation) if log.motivation is not None else "0",
+        "next_step": str(log.next_step) if log.next_step else "",
+        "result": "true" if log.result else "false" if log.result is not None else "",
+    }
+
+    safe_form_data = mark_safe(json.dumps(form_data))
+
     draft_context = {
         "draft_key": f"log_edit_{log_id}",
         "continue_draft": "false",
@@ -279,6 +327,8 @@ def edit_training_log(request, log_id):
             "edit_mode": True,
             "log_id": log_id,
             "initial_values": initial_values,
+            "safe_form_data": safe_form_data,
+            "safe_form_errors": safe_form_errors,
             **draft_context,
         },
     )
