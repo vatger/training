@@ -491,7 +491,7 @@
                                                             </span>
                                                         {% endif %}
                                                     </td>
-                                                    <td class="px-6 py-4 whitespace-nowrap">
+                                                    <td class="px-6 py-4 whitespace-nowrap max-w-72 truncate">
                                                         <span class="text-sm text-gray-600">{{ data.next_step|default_if_none:"-" }}</span>
                                                     </td>
                                                     <td class="px-6 py-4 min-w-24">
@@ -517,78 +517,9 @@
                                                                                   stroke-linejoin="round" stroke-width="2"
                                                                                   d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                                                         </svg>
-                                                                    </button>
-                                                                </div>
-                                                            {% endif %}
-                                                        </div>
-
-                                                        {% if data.date_last %}
-                                                            <div class="text-xs text-gray-500">
-                                                                Last: {{ data.date_last|date:"d M Y" }}
-                                                            </div>
-                                                        {% endif %}
-                                                    </div>
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap">
-                                                    {% if course.type == "RTG" %}
-                                                        <div class="flex items-center">
-                                                            {% if data.solo == "Add Solo" %}
-                                                                <a href="{% url 'overview:add_solo' trainee.username course.id %}"
-                                                                   class="inline-flex items-center text-amber-600 hover:text-amber-800">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg"
-                                                                         class="h-4 w-4 mr-1" fill="none"
-                                                                         viewBox="0 0 24 24" stroke="currentColor">
-                                                                        <path stroke-linecap="round"
-                                                                              stroke-linejoin="round" stroke-width="2"
-                                                                              d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                                                                    </svg>
-                                                                    Add Solo
-                                                                </a>
-                                                            {% else %}
-                                                                {% with remaining=data.solo.solo_info|split_solo_data:"remaining" %}
-                                                                    <button
-                                                                            @click="$dispatch('open-solo-modal', {
-        soloId: {{ data.solo.id }},
-        positionName: '{{ data.solo.position }}',
-        remainingDays: {{ data.solo.remaining_days }},
-        deltaDay: {{ data.solo.delta }},
-        maxDays: {{ data.solo.max_days }},
-        positionDays: {{ data.solo.position_days }},
-        traineeName: '{{ trainee.first_name }} {{ trainee.last_name }}',
-        traineeId: {{ trainee.username }},
-        courseId: {{ course.id }}
-    })"
-                                                                            class="px-2 py-1 h-6 text-xs rounded-full font-medium cursor-pointer
-    {% if data.solo.remaining_days < 10 %}bg-red-100 text-red-700
-    {% elif data.solo.remaining_days < 20 %}bg-amber-100 text-amber-700
-    {% else %}bg-green-100 text-green-700{% endif %}">
-                                                                        {{ data.solo.remaining_days }} days remaining
-                                                                    </button>
-                                                                {% endwith %}
-                                                            {% endif %}
-                                                        </div>
-                                                    {% else %}
-                                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if data.moodle %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
-            {{ data.moodle|yesno:"Completed,Incomplete" }}
-        </span>
-                                                    {% endif %}
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap max-w-72 truncate"
-                                                    title="{{ data.next_step|default_if_none:"-" }}">
-                                                    <span class="text-sm text-gray-600">{{ data.next_step|default_if_none:"-" }}</span>
-                                                </td>
-                                                <td class="px-6 py-4 min-w-24">
-                                                    <div
-                                                            x-data="{
-                              isEditing: false,
-                              remarkText: '{{ data.remark|default:""|escapejs }}'
-                            }"
-                                                            class="min-w-24"
-                                                    >
-                                                        <div x-show="!isEditing" class="group relative">
-                                                            <div class="max-w-xs text-sm text-gray-600 overflow-hidden line-clamp-2"
-                                                                 @click="isEditing = true">
-                                                                <span x-text="remarkText || '-'"></span>
+                                                                        {{ data.remark_updated|date:"d M Y" }}
+                                                                    </div>
+                                                                {% endif %}
                                                             </div>
 
                                                         <!-- Edit form -->
@@ -1152,12 +1083,12 @@
         <div
             x-data="logOptionsModal"
             @open-log-options.window="
-              showModal = true;
-              traineeId = $event.detail.traineeId;
-              traineeName = $event.detail.traineeName || '';
-              courseId = $event.detail.courseId || null;
-              courseName = $event.detail.courseName || '';
-             "
+                                      showModal = true;
+                                      traineeId = $event.detail.traineeId;
+                                      traineeName = $event.detail.traineeName || '';
+                                      courseId = $event.detail.courseId || null;
+                                      courseName = $event.detail.courseName || '';
+                                     "
             x-show="showModal"
             x-cloak
             class="fixed inset-0 z-50 overflow-y-auto">
