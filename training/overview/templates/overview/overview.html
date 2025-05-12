@@ -478,7 +478,8 @@
         </span>
                                                     {% endif %}
                                                 </td>
-                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                <td class="px-6 py-4 whitespace-nowrap max-w-72 truncate"
+                                                    title="{{ data.next_step|default_if_none:"-" }}">
                                                     <span class="text-sm text-gray-600">{{ data.next_step|default_if_none:"-" }}</span>
                                                 </td>
                                                 <td class="px-6 py-4 min-w-24">
