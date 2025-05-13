@@ -1,32 +1,23 @@
 import os
-import requests
 from datetime import datetime, timedelta
 
+import requests
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 from dotenv import load_dotenv
-
-from training.helpers import log_admin_action
 from training.eud_header import eud_header
-from overview.helpers import get_course_completion
-
-from .helpers import get_tier1_endorsements, get_tier2_endorsements
-from .models import EndorsementGroup, EndorsementActivity, Tier2Endorsement
-
+from training.helpers import log_admin_action
 from training.permissions import mentor_required
+
+from overview.helpers import get_course_completion
+from .helpers import get_tier1_endorsements, get_tier2_endorsements, valid_removal
+from .models import EndorsementGroup, EndorsementActivity, Tier2Endorsement
 
 load_dotenv()
 
-min_hours_required = float(os.getenv("T1_MIN_MINUTES")) / 60
-
-
-def valid_removal(endorsement: EndorsementActivity) -> bool:
-    no_min_hours = endorsement.activity < float(os.getenv("T1_MIN_MINUTES"))
-    six_months_ago = timezone.now() - timedelta(days=180)
-    not_recent = endorsement.created < six_months_ago
-    return no_min_hours and not_recent
+MIN_HOURS_REQUIRED = float(os.getenv("T1_MIN_MINUTES")) / 60
 
 
 @mentor_required
@@ -74,13 +65,13 @@ def overview(request):
                 if removal_days > 0:
                     removal_count += 1
 
-            if activity_hours < min_hours_required:
+            if activity_hours < MIN_HOURS_REQUIRED:
                 inactive_count += 1
 
             bar_width = (
                 100
-                if activity_hours >= min_hours_required
-                else min(100, (activity_hours / min_hours_required) * 100)
+                if activity_hours >= MIN_HOURS_REQUIRED
+                else min(100, (activity_hours / MIN_HOURS_REQUIRED) * 100)
             )
 
             group_endorsements.append(
@@ -100,16 +91,16 @@ def overview(request):
 
     return render(
         request,
-        "endorsements/endorsements.html",
+        "endorsements/mentor.html",
         {
             "endorsement_groups": groups,
             "endorsements": endorsements_by_group,
-            "min_hours_required": min_hours_required,
+            "min_hours_required": MIN_HOURS_REQUIRED,
             "total_endorsements": total_endorsements,
             "inactive_count": inactive_count,
             "removal_count": removal_count,
-            "min_hours": min_hours_required,
-            "half_min_hours": min_hours_required / 2,
+            "min_hours": MIN_HOURS_REQUIRED,
+            "half_min_hours": MIN_HOURS_REQUIRED / 2,
         },
     )
 
@@ -168,15 +159,15 @@ def trainee_view(request):
             continue
 
         activity_hours = round(activity.activity / 60, 1)
-        entry["activity"] = round(activity.activity / 60, 1)
+        entry["activity"] = activity_hours
         entry["position"] = endorsement["position"]
         entry["removal_date"] = activity.removal_date
         entry["updated"] = activity.updated.strftime("%d.%m.%Y")
 
-        if activity_hours >= min_hours_required:
+        if activity_hours >= MIN_HOURS_REQUIRED:
             entry["bar_width"] = 100
         else:
-            entry["bar_width"] = int((activity_hours / min_hours_required) * 100)
+            entry["bar_width"] = int((activity_hours / MIN_HOURS_REQUIRED) * 100)
 
         res_t1.append(entry)
 
@@ -190,18 +181,22 @@ def trainee_view(request):
     res_t2 = []
 
     for endorsement in available_t2:
+        has_endorsement = endorsement.position in tier_2
+
+        moodle_completed = (
+            True
+            if has_endorsement
+            else get_course_completion(
+                int(request.user.username), endorsement.moodle_course_id
+            )
+        )
+
         entry = {
             "position": endorsement.position,
             "name": endorsement.name,
             "moodle_id": endorsement.moodle_course_id,
-            "has_endorsement": endorsement.position in tier_2,
-            "moodle_completed": (
-                True
-                if endorsement.position in tier_2
-                else get_course_completion(
-                    int(request.user.username), endorsement.moodle_course_id
-                )
-            ),
+            "has_endorsement": has_endorsement,
+            "moodle_completed": moodle_completed,
             "id": endorsement.id,
         }
         res_t2.append(entry)
@@ -212,8 +207,8 @@ def trainee_view(request):
         {
             "tier_1": res_t1,
             "tier_2": res_t2,
-            "min_hours": min_hours_required,
-            "half_min_hours": min_hours_required / 2,
+            "min_hours": MIN_HOURS_REQUIRED,
+            "half_min_hours": MIN_HOURS_REQUIRED / 2,
         },
     )
 

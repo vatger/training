@@ -1,0 +1,29 @@
+{% load endorsement_tags %}
+
+<div class="flex items-center">
+  <div class="mr-2">
+    <div class="relative h-2 w-24 bg-gray-200 rounded-full overflow-hidden">
+      <div class="absolute top-0 left-0 h-full rounded-full
+        {% if activity >= min_hours %}
+          bg-green-500
+        {% elif activity >= half_min_hours %}
+          bg-yellow-500
+        {% else %}
+          bg-red-500
+        {% endif %}"
+        style="width: {{ bar_width }}%">
+      </div>
+    </div>
+  </div>
+
+  <span class="text-sm font-medium
+    {% if activity >= min_hours %}
+      text-green-700
+    {% elif activity >= half_min_hours %}
+      text-yellow-700
+    {% else %}
+      text-red-700
+    {% endif %}">
+    {{ activity }} hours
+  </span>
+</div>
