@@ -35,13 +35,13 @@ def get_solos():
         solos = [
             {
                 "id": 1,
-                "user_cid": 1601613,
+                "user_cid": 1000000,
                 "instructor_cid": 1439797,
                 "position": "EDDL_APP",
-                "expiry": "2025-05-13T00:00:00.000000Z",
+                "expiry": "2025-05-16T00:00:00.000000Z",
                 "max_days": 74,
-                "position_days": 0,
-                "facility": 9,
+                "position_days": 10,
+                "facility": 10,
                 "created_at": "2025-03-05T02:10:40.000000Z",
                 "updated_at": "2025-04-07T19:47:47.000000Z",
             },
