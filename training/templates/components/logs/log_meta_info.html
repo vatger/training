@@ -1,0 +1,56 @@
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+  <!-- Session Date -->
+  <div>
+    <label for="id_session_date" class="block text-sm font-medium text-gray-700 mb-1">
+      Session Date<span class="text-red-500">*</span>
+    </label>
+    <input
+      type="date"
+      name="session_date"
+      id="id_session_date"
+      class="input input-bordered w-full"
+      :class="{'border-red-500': formErrors.session_date}"
+      x-model="formData.session_date"
+      @change="saveFormState">
+    <div x-show="formErrors.session_date" class="text-red-500 text-sm mt-1 error-message">
+      <span x-text="formErrors.session_date"></span>
+    </div>
+  </div>
+
+  <!-- Position -->
+  <div>
+    <label for="id_position" class="block text-sm font-medium text-gray-700 mb-1">
+      Position<span class="text-red-500">*</span>
+    </label>
+    <input
+      type="text"
+      name="position"
+      id="id_position"
+      class="input input-bordered w-full"
+      :class="{'border-red-500': formErrors.position}"
+      placeholder="e.g. EDDF_APP"
+      x-model="formData.position"
+      @input="saveFormState"
+    />
+    <div x-show="formErrors.position" class="text-red-500 text-sm mt-1 error-message">
+      <span x-text="formErrors.position"></span>
+    </div>
+  </div>
+
+  <!-- Session Type -->
+  <div>
+    <label
+      for="id_type"
+      class="block text-sm font-medium text-gray-700 mb-1"
+    >Session Type</label>
+    <select
+      name="type"
+      id="id_type"
+      class="select select-bordered w-full"
+      x-model="formData.type"
+      @change="saveFormState">
+      <option value="S">Sim</option>
+      <option value="O">Online</option>
+    </select>
+  </div>
+</div>

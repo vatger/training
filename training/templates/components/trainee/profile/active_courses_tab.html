@@ -26,49 +26,9 @@
               <!-- Training Logs -->
         <div class="p-4">
           {% if logs %}
-            <div class="relative pl-8 space-y-5 before:absolute before:top-0 before:bottom-0 before:left-4 before:w-0.5 before:bg-gray-200">
-              {% for log in logs %}
-                <div class="relative">
-                        <!-- Timeline dot marker -->
-                  <div class="absolute -left-6 mt-1.5 h-4 w-4 rounded-full border-2 border-white flex items-center justify-center
-                              {% if log.result %}bg-green-500{% else %}bg-red-500{% endif %}">
-                  </div>
-
-                  <div class="bg-white rounded-lg border {% if log.result %}border-green-200{% else %}border-red-200{% endif %} shadow-sm p-4 mb-2 transition-shadow">
-                    <div class="flex justify-between items-start mb-2">
-                      <div>
-                        <h4 class="font-semibold text-gray-900">{{ log.position }}</h4>
-                        <div class="flex space-x-2 mt-1">
-                          <span class="px-2 py-0.5 rounded-full text-xs font-medium
-                                       {% if log.type == 'O' %}bg-blue-100 text-blue-800{% else %}bg-green-100 text-green-800{% endif %}">
-                            {{ log.get_type_display }}
-                          </span>
-                          <span class="px-2 py-0.5 rounded-full text-xs font-medium
-                                       {% if log.result %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
-                            {{ log.result|yesno:"Passed,Not Passed" }}
-                          </span>
-                        </div>
-                        <p class="text-xs text-gray-500 mt-1">{{ log.session_date|date:"d M Y" }}</p>
-                      </div>
-                      <div class="flex space-x-2">
-                        <a href="{% url 'logs:log_detail' log.id %}" class="btn btn-xs btn-outline">
-                          View Details
-                        </a>
-                      </div>
-                    </div>
-
-                    {% if log.next_step %}
-                      <div class="mt-2 p-2 bg-blue-50 rounded-md">
-                        <p class="text-sm">
-                          <span class="font-semibold">Next step:</span>
-                          <span>{{ log.next_step }}</span>
-                        </p>
-                      </div>
-                    {% endif %}
-                  </div>
-                </div>
-              {% endfor %}
-            </div>
+            {% for log in logs %}
+              {% include "components/logs/training_log_preview.html" %}
+            {% endfor %}
           {% else %}
             <div class="py-10 text-center">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">

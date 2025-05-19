@@ -1,0 +1,46 @@
+<div id="imageModal" class="fixed inset-0 z-50 hidden flex items-center justify-center"
+     x-data="{ open: false, src: '' }">
+
+    <div class="max-w-4xl max-h-full p-4 relative z-10">
+        <img id="modalImage" class="max-w-full max-h-[90vh] object-contain" src="" alt="Enlarged image">
+    </div>
+    <div onclick="closeImageModal()" class="absolute inset-0 bg-black opacity-85"></div>
+</div>
+<script>
+    function openImageModal(src) {
+        const modal = document.getElementById('imageModal');
+        const modalImage = document.getElementById('modalImage');
+        modalImage.src = src;
+        modal.classList.remove('hidden');
+
+        // Close modal when clicking outside the image
+        modal.addEventListener('click', function (e) {
+            if (e.target === modal) {
+                closeImageModal();
+            }
+        });
+
+        // Add ESC key to close modal
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                closeImageModal();
+            }
+        });
+    }
+
+    function closeImageModal() {
+        const modal = document.getElementById('imageModal');
+        modal.classList.add('hidden');
+    }
+
+    // Initialize image modal on page load
+    document.addEventListener('DOMContentLoaded', function () {
+        // Make all images in markdown content clickable to open in modal
+        const markdownImages = document.querySelectorAll('.markdown-content img');
+        markdownImages.forEach(img => {
+            img.addEventListener('click', function () {
+                openImageModal(this.src);
+            });
+        });
+    });
+</script>

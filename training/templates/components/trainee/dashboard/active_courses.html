@@ -70,9 +70,7 @@
               {% if logs|length > 0 %}
                 <div class="mt-3 space-y-4">
                   {% for form in logs %}
-                    <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-4 mb-2 transition-shadow">
-                      {% include "components/trainee/training_log_preview.html" with log=form %}
-                    </div>
+                    {% include "components/logs/training_log_preview.html" with log=form %}
                   {% endfor %}
                 </div>
               {% else %}

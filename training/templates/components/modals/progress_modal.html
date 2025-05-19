@@ -117,13 +117,13 @@
                                                 <!-- Timeline container -->
                                         <div class="relative pl-8 space-y-5 before:absolute before:top-0 before:bottom-0 before:left-4 before:w-0.5 before:bg-gray-200">
                                             {% for log in data.logs reversed %}
-                                                <div class="absolute -left-6 mt-1.5 h-4 w-4 rounded-full border-2 border-white flex items-center justify-center
-                                                            {% if log.result %}bg-green-500{% else %}bg-red-500{% endif %}">
-                                                    <div class="bg-white rounded-lg border {% if log.result %}border-green-200{% else %}border-red-200{% endif %} shadow-sm p-4 mb-2 transition-shadow">
-                                                        {% include "components/trainee/training_log_preview.html" %}
+                                                <div class="relative">
+                        <!-- Timeline dot marker -->
+                                                    <div class="absolute -left-6 mt-1.5 h-4 w-4 rounded-full border-2 border-white flex items-center justify-center
+                                                                {% if log.result %}bg-green-500{% else %}bg-red-500{% endif %}">
                                                     </div>
+                                                    {% include "components/logs/training_log_preview.html" %}
                                                 </div>
-
                                             {% endfor %}
                                         </div>
                                     {% endif %}

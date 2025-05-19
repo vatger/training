@@ -1,0 +1,40 @@
+{% load markdown_extras %}
+
+<div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden mb-4">
+  <div class="p-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
+    <h3 class="font-medium text-gray-800">{{ category_label }}</h3>
+    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                 {% if rating == 4 %}bg-green-100 text-green-800
+                 {% elif rating == 3 %}bg-blue-100 text-blue-800
+                 {% elif rating == 2 %}bg-yellow-100 text-yellow-800
+                 {% elif rating == 1 %}bg-red-100 text-red-800
+                 {% else %}bg-gray-100 text-gray-800{% endif %}">
+      {{ rating_display }}
+    </span>
+  </div>
+  <div class="p-5">
+    {% if positives or negatives %}
+      <div class="grid grid-cols-1 gap-4">
+        {% if positives %}
+          <div>
+            <h4 class="font-medium text-green-600 mb-2">Strengths</h4>
+            <div class="prose prose-sm max-w-none markdown-content">
+              {{ positives|markdownify|safe }}
+            </div>
+          </div>
+        {% endif %}
+
+        {% if negatives %}
+          <div>
+            <h4 class="font-medium text-red-600 mb-2">Areas for Improvement</h4>
+            <div class="prose prose-sm max-w-none markdown-content">
+              {{ negatives|markdownify|safe }}
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    {% else %}
+      <p class="text-gray-500 italic">No feedback provided.</p>
+    {% endif %}
+  </div>
+</div>
