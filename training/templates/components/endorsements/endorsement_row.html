@@ -18,24 +18,24 @@
       <div class="mr-2">
         <div class="relative h-2 w-24 bg-gray-200 rounded-full overflow-hidden">
           <div class="absolute top-0 left-0 h-full rounded-full
-            {% if entry.activity >= min_hours_required %}
-              bg-green-500
-            {% elif entry.activity >= min_hours_required|divide:2 %}
-              bg-yellow-500
-            {% else %}
-              bg-red-500
-            {% endif %}"
-            style="width: {{ entry.bar_width }}%;"></div>
+                      {% if entry.activity >= min_hours_required %}
+                        bg-green-500
+                      {% elif entry.activity >= min_hours_required|divide:2 %}
+                        bg-yellow-500
+                      {% else %}
+                        bg-red-500
+                      {% endif %}"
+               style="width: {{ entry.bar_width }}%;"></div>
         </div>
       </div>
       <span class="text-sm font-medium
-        {% if entry.activity >= min_hours_required %}
-          text-green-700
-        {% elif entry.activity >= min_hours_required|divide:2 %}
-          text-yellow-700
-        {% else %}
-          text-red-700
-        {% endif %}">
+                   {% if entry.activity >= min_hours_required %}
+                     text-green-700
+                   {% elif entry.activity >= min_hours_required|divide:2 %}
+                     text-yellow-700
+                   {% else %}
+                     text-red-700
+                   {% endif %}">
         {{ entry.activity }} hours
       </span>
     </div>
@@ -60,10 +60,10 @@
       <a href="{% url 'endorsements:remove' entry.endorsement_id %}"
          class="btn btn-sm btn-error"
          @click.prevent="$dispatch('open-confirm', {
-          action: 'remove',
-          message: 'Are you sure you want to start the removal process for {{ entry.name }} ({{ entry.id }})? This will notify the controller and remove the endorsement after 31 days if activity requirements are not met.',
-          href: '{% url 'endorsements:remove' entry.endorsement_id %}'
-        })">
+                         action: 'remove',
+                         message: 'Are you sure you want to start the removal process for {{ entry.name }} ({{ entry.id }})? This will notify the controller and remove the endorsement after 31 days if activity requirements are not met.',
+                         href: '{% url 'endorsements:remove' entry.endorsement_id %}'
+                         })">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
         </svg>

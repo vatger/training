@@ -95,6 +95,7 @@ def overview(request):
         {
             "endorsement_groups": groups,
             "endorsements": endorsements_by_group,
+            "low_activity_description": f"Below {MIN_HOURS_REQUIRED} hours of activity.",
             "min_hours_required": MIN_HOURS_REQUIRED,
             "total_endorsements": total_endorsements,
             "inactive_count": inactive_count,

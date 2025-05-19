@@ -67,35 +67,35 @@
                     <h3 class="text-md font-semibold text-gray-700 mb-2">Filter by Type</h3>
                     <div class="flex flex-wrap gap-2">
                         <button
-                                data-filter-button
-                                data-filter="all"
-                                @click="setFilter('all')"
-                                :class="{'bg-blue-100 text-blue-800 border-blue-300': activeFilter === 'all', 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200': activeFilter !== 'all'}"
-                                class="px-4 py-2 rounded-lg text-sm font-medium border">
+                            data-filter-button
+                            data-filter="all"
+                            @click="setFilter('all')"
+                            :class="{'bg-blue-100 text-blue-800 border-blue-300': activeFilter === 'all', 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200': activeFilter !== 'all'}"
+                            class="px-4 py-2 rounded-lg text-sm font-medium border">
                             All Courses
                         </button>
                         <button
-                                data-filter-button
-                                data-filter="RTG"
-                                @click="setFilter('RTG')"
-                                :class="{'bg-blue-100 text-blue-800 border-blue-300': activeFilter === 'RTG', 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200': activeFilter !== 'RTG'}"
-                                class="px-4 py-2 rounded-lg text-sm font-medium border">
+                            data-filter-button
+                            data-filter="RTG"
+                            @click="setFilter('RTG')"
+                            :class="{'bg-blue-100 text-blue-800 border-blue-300': activeFilter === 'RTG', 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200': activeFilter !== 'RTG'}"
+                            class="px-4 py-2 rounded-lg text-sm font-medium border">
                             Rating Courses
                         </button>
                         <button
-                                data-filter-button
-                                data-filter="EDMT_FAM"
-                                @click="setFilter('EDMT_FAM')"
-                                :class="{'bg-blue-100 text-blue-800 border-blue-300': activeFilter === 'EDMT_FAM', 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200': activeFilter !== 'EDMT_FAM'}"
-                                class="px-4 py-2 rounded-lg text-sm font-medium border">
+                            data-filter-button
+                            data-filter="EDMT_FAM"
+                            @click="setFilter('EDMT_FAM')"
+                            :class="{'bg-blue-100 text-blue-800 border-blue-300': activeFilter === 'EDMT_FAM', 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200': activeFilter !== 'EDMT_FAM'}"
+                            class="px-4 py-2 rounded-lg text-sm font-medium border">
                             Endorsements & Familiarisation
                         </button>
                         <button
-                                data-filter-button
-                                data-filter="GST"
-                                @click="setFilter('GST')"
-                                :class="{'bg-blue-100 text-blue-800 border-blue-300': activeFilter === 'GST', 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200': activeFilter !== 'GST'}"
-                                class="px-4 py-2 rounded-lg text-sm font-medium border">
+                            data-filter-button
+                            data-filter="GST"
+                            @click="setFilter('GST')"
+                            :class="{'bg-blue-100 text-blue-800 border-blue-300': activeFilter === 'GST', 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200': activeFilter !== 'GST'}"
+                            class="px-4 py-2 rounded-lg text-sm font-medium border">
                             Visitor Courses
                         </button>
                     </div>
@@ -105,10 +105,10 @@
                     <div>
                         <h3 class="text-md font-semibold text-gray-700 mb-2">Sort by</h3>
                         <select
-                                id="sort-selector"
-                                x-model="sortOption"
-                                @change="setSort($event.target.value)"
-                                class="select select-bordered w-full">
+                            id="sort-selector"
+                            x-model="sortOption"
+                            @change="setSort($event.target.value)"
+                            class="select select-bordered w-full">
                             <option value="position">Position Type (GND, TWR, APP, CTR)</option>
                             <option value="name">Course Name (A-Z)</option>
                             <option value="type">Course Type</option>
@@ -118,10 +118,10 @@
                     <div>
                         <h3 class="text-md font-semibold text-gray-700 mb-2">FIR</h3>
                         <select
-                                id="fir-selector"
-                                x-model="firFilter"
-                                @change="setFir($event.target.value)"
-                                class="select select-bordered w-full">
+                            id="fir-selector"
+                            x-model="firFilter"
+                            @change="setFir($event.target.value)"
+                            class="select select-bordered w-full">
                             <option value="all">All FIRs</option>
                             <option value="EDGG">EDGG (Langen)</option>
                             <option value="EDWW">EDWW (Bremen)</option>
@@ -132,10 +132,10 @@
 
                 <div class="relative">
                     <input
-                            type="text"
-                            placeholder="Search courses..."
-                            class="input input-bordered w-full"
-                            @input="setSearch($event.target.value)">
+                        type="text"
+                        placeholder="Search courses..."
+                        class="input input-bordered w-full"
+                        @input="setSearch($event.target.value)">
                     <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none"
                              viewBox="0 0 24 24" stroke="currentColor">
@@ -149,18 +149,18 @@
 
         <!-- Course Cards -->
         <div
-                x-data="courseContainer"
-                class="grid max-xl:grid-cols-1 max-[1800px]:grid-cols-2 min-[1800px]:grid-cols-3 gap-6"
-                data-course-container>
+            x-data="courseContainer"
+            class="grid max-xl:grid-cols-1 max-[1800px]:grid-cols-2 min-[1800px]:grid-cols-3 gap-6"
+            data-course-container>
 
             {% for course, res in courses.items %}
                 <div
-                        data-course
-                        data-type="{{ course.type }}"
-                        data-position="{{ course.position }}"
-                        data-name="{{ course.name }}"
-                        data-mentor-group="{{ course.mentor_group }}"
-                        class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden transform transition-all duration-300 ease-in-out opacity-100 scale-100">
+                    data-course
+                    data-type="{{ course.type }}"
+                    data-position="{{ course.position }}"
+                    data-name="{{ course.name }}"
+                    data-mentor-group="{{ course.mentor_group }}"
+                    class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden transform transition-all duration-300 ease-in-out opacity-100 scale-100">
 
                     <div class="p-5 min-w-md">
                         <div class="flex items-center mb-3">
@@ -226,9 +226,9 @@
                                                   d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                         </svg>
                                         <span class="text-gray-600">
-                    Minimum activity:
-                    <span class="font-medium">{{ min_hours }} hours</span>
-                  </span>
+                                            Minimum activity:
+                                            <span class="font-medium">{{ min_hours }} hours</span>
+                                        </span>
                                     </div>
                                 {% endif %}
                             </div>
@@ -237,9 +237,9 @@
                                 {% if res.entered %}
                                     <button class="btn btn-sm btn-error"
                                             @click="$dispatch('open-confirm', {
-                    message: 'Are you sure you want to leave the waiting list for {{ course.name }}? Your position in the queue will be lost and you will need to join again if you change your mind.',
-                    href: '{% url 'lists:join_leave_list' course.id %}'
-                  })">
+                                                    message: 'Are you sure you want to leave the waiting list for {{ course.name }}? Your position in the queue will be lost and you will need to join again if you change your mind.',
+                                                    href: '{% url 'lists:join_leave_list' course.id %}'
+                                                    })">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none"
                                              viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -320,7 +320,7 @@
                                               d="M5 13l4 4L19 7"/>
                                     </svg>
                                     <span>You are No. {{ res.list_spot }} on the waiting list
-                                    {% if course.type == "RTG" %} ({{ res.activity|default:0 }}/{{ min_activity }} hours in 2 months) {% endif %}
+                                        {% if course.type == "RTG" %} ({{ res.activity|default:0 }}/{{ min_activity }} hours in 2 months) {% endif %}
                                     </span>
                                 </div>
                             {% endif %}
@@ -343,38 +343,38 @@
 
         <!-- Confirmation Modal -->
         <div
-                x-data="{ open: false, message: '', href: '' }"
-                @open-confirm.window="open = true; message = $event.detail.message; href = $event.detail.href"
-                x-show="open"
-                x-cloak
-                class="fixed inset-0 z-50 overflow-y-auto"
-                aria-labelledby="modal-title"
-                role="dialog"
-                aria-modal="true">
+            x-data="{ open: false, message: '', href: '' }"
+            @open-confirm.window="open = true; message = $event.detail.message; href = $event.detail.href"
+            x-show="open"
+            x-cloak
+            class="fixed inset-0 z-50 overflow-y-auto"
+            aria-labelledby="modal-title"
+            role="dialog"
+            aria-modal="true">
             <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
                 <div
-                        x-show="open"
-                        x-transition:enter="ease-out duration-300"
-                        x-transition:enter-start="opacity-0"
-                        x-transition:enter-end="opacity-100"
-                        x-transition:leave="ease-in duration-200"
-                        x-transition:leave-start="opacity-100"
-                        x-transition:leave-end="opacity-0"
-                        class="fixed inset-0 transition-opacity z-10"
-                        @click="open = false"
-                        style="background-color: rgba(0, 0, 0, 0.4);"
-                        aria-hidden="true"></div>
+                    x-show="open"
+                    x-transition:enter="ease-out duration-300"
+                    x-transition:enter-start="opacity-0"
+                    x-transition:enter-end="opacity-100"
+                    x-transition:leave="ease-in duration-200"
+                    x-transition:leave-start="opacity-100"
+                    x-transition:leave-end="opacity-0"
+                    class="fixed inset-0 transition-opacity z-10"
+                    @click="open = false"
+                    style="background-color: rgba(0, 0, 0, 0.4);"
+                    aria-hidden="true"></div>
 
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
                 <div
-                        x-show="open"
-                        x-transition:enter="ease-out duration-300"
-                        x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                        x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
-                        x-transition:leave="ease-in duration-200"
-                        x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
-                        x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                        class="inline-block align-middle bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-lg sm:w-full z-20 relative">
+                    x-show="open"
+                    x-transition:enter="ease-out duration-300"
+                    x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                    x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                    x-transition:leave="ease-in duration-200"
+                    x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                    x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                    class="inline-block align-middle bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-lg sm:w-full z-20 relative">
                     <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                         <div class="sm:flex sm:items-start">
                             <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
@@ -467,8 +467,8 @@
 
                 shouldShowCourse(course) {
                     const typeMatch = this.activeFilter === 'all' ||
-                        (this.activeFilter === 'EDMT_FAM' && (course.dataset.type === 'EDMT' || course.dataset.type === 'FAM')) ||
-                        course.dataset.type === this.activeFilter;
+                    (this.activeFilter === 'EDMT_FAM' && (course.dataset.type === 'EDMT' || course.dataset.type === 'FAM')) ||
+                    course.dataset.type === this.activeFilter;
 
                     const searchMatch = !this.searchTerm || course.textContent.toLowerCase().includes(this.searchTerm);
 

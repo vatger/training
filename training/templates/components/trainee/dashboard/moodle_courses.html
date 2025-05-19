@@ -1,0 +1,45 @@
+<div class="mb-10">
+  <div class="flex justify-between items-center mb-4">
+    <h2 class="text-xl font-bold text-gray-800">Moodle Courses</h2>
+  </div>
+
+  {% if moodles %}
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 2xl:grid-cols-3" style="align-items: start;">
+      {% for moodle in moodles %}
+        <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden min-w-[20rem]">
+          <div class="p-5">
+            <div class="flex justify-between">
+              <h3 class="text-lg font-medium text-gray-900 truncate" title="{{ moodle.course }}">{{ moodle.course }}</h3>
+              <span class="inline-flex text-nowrap items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if moodle.passed %}bg-green-100 text-green-800{% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                {{ moodle.passed|yesno:"Passed,In Progress" }}
+              </span>
+            </div>
+
+            <div class="mt-4 flex justify-between items-center">
+              <a href="{{ moodle.link }}" target="_blank" class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                Open Course
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+              </a>
+            </div>
+          </div>
+
+          <div class="bg-gray-50 px-5 py-3">
+            <div class="w-full bg-gray-200 rounded-full h-2.5">
+              <div class="bg-blue-600 h-2.5 rounded-full {% if moodle.passed %}w-full{% endif %} {% if not moodle.passed %}w-1/2{% endif %}"></div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200 text-center">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+      </svg>
+      <h3 class="text-lg font-medium text-gray-900">No Moodle courses</h3>
+      <p class="mt-2 text-sm text-gray-500">You don't have any assigned Moodle courses yet.</p>
+    </div>
+  {% endif %}
+</div>
