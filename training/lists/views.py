@@ -95,8 +95,8 @@ def view_lists(request):
     ).exclude(active_trainees=request.user)
 
     if (
-            request.user.userdetail.subdivision == "GER"
-            and int(request.user.username) not in get_roster()
+        request.user.userdetail.subdivision == "GER"
+        and int(request.user.username) not in get_roster()
     ):
         courses = courses.filter(type="RST")
     else:
@@ -144,8 +144,8 @@ def view_lists(request):
             course.endorsement_groups.all().values_list("name", flat=True)
         )
         if (
-                len(endorsement_groups & user_endorsements) == len(endorsement_groups)
-                and len(endorsement_groups) > 0
+            len(endorsement_groups & user_endorsements) == len(endorsement_groups)
+            and len(endorsement_groups) > 0
         ):
             continue
 
@@ -167,10 +167,10 @@ def view_lists(request):
         try:
             entry = WaitingListEntry.objects.get(user=request.user, course=course)
             list_spot = (
-                    WaitingListEntry.objects.filter(
-                        course=course, date_added__lt=entry.date_added
-                    ).count()
-                    + 1
+                WaitingListEntry.objects.filter(
+                    course=course, date_added__lt=entry.date_added
+                ).count()
+                + 1
             )
             res["entered"] = True
             res["list_spot"] = list_spot
@@ -186,7 +186,7 @@ def view_lists(request):
 
     return render(
         request,
-        "lists/overview.html",
+        "lists/trainee.html",
         {
             "courses": courses_dict,
             "error": error,
@@ -211,10 +211,10 @@ def join_leave_list(request, course_id):
 
         # Check if user is already in another RTG course waiting list
         if (
-                course.type == "RTG"
-                and WaitingListEntry.objects.filter(
-            user=request.user, course__type="RTG"
-        ).exists()
+            course.type == "RTG"
+            and WaitingListEntry.objects.filter(
+                user=request.user, course__type="RTG"
+            ).exists()
         ):
             # User is already in a rating course waiting list, redirect with error message
             messages.error(
@@ -253,19 +253,32 @@ def join_leave_list(request, course_id):
 @mentor_required
 def update_remarks(request):
     if request.method != "POST":
-        return JsonResponse({"success": False, "error": "Invalid request method"}, status=405)
+        return JsonResponse(
+            {"success": False, "error": "Invalid request method"}, status=405
+        )
 
     trainee_id = request.POST.get("trainee_id")
     remarks = request.POST.get("remarks", "")
 
     if not trainee_id:
-        return JsonResponse({"success": False, "error": "Trainee ID is required"}, status=400)
+        return JsonResponse(
+            {"success": False, "error": "Trainee ID is required"}, status=400
+        )
 
     try:
         entry = get_object_or_404(WaitingListEntry, pk=trainee_id)
 
-        if not request.user.is_superuser and entry.course not in request.user.mentored_courses.all():
-            return JsonResponse({"success": False, "error": "You don't have permission to modify this entry"}, status=403)
+        if (
+            not request.user.is_superuser
+            and entry.course not in request.user.mentored_courses.all()
+        ):
+            return JsonResponse(
+                {
+                    "success": False,
+                    "error": "You don't have permission to modify this entry",
+                },
+                status=403,
+            )
 
         entry.remarks = remarks
         entry.save()
@@ -274,13 +287,14 @@ def update_remarks(request):
             request.user,
             entry,
             CHANGE,
-            f"Updated remarks for {entry.user} ({entry.user.username}) in course {entry.course}"
+            f"Updated remarks for {entry.user} ({entry.user.username}) in course {entry.course}",
         )
 
         return JsonResponse({"success": True})
 
     except Exception as e:
         return JsonResponse({"success": False, "error": str(e)}, status=500)
+
 
 @mentor_required
 def mentor_view(request):

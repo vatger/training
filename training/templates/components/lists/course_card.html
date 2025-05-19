@@ -1,0 +1,172 @@
+{% load tags %}
+<div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow"
+     data-course
+     data-type="{{ course.type }}"
+     data-position="{{ course.position }}"
+     data-name="{{ course.name }}"
+     data-mentor-group="{{ course.mentor_group }}">
+    <div class="p-5 min-w-md">
+        <div class="flex items-center mb-3">
+            {% if course.position == 'GND' %}
+                <div class="bg-gray-100 p-2 rounded-lg mr-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600"
+                         fill="none"
+                         viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/>
+                    </svg>
+                </div>
+            {% elif course.position == 'TWR' %}
+                <div class="bg-blue-100 p-2 rounded-lg mr-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600"
+                         fill="none"
+                         viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                    </svg>
+                </div>
+            {% elif course.position == 'APP' %}
+                <div class="bg-green-100 p-2 rounded-lg mr-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600"
+                         fill="none"
+                         viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+                    </svg>
+                </div>
+            {% elif course.position == 'CTR' %}
+                <div class="bg-purple-100 p-2 rounded-lg mr-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-600"
+                         fill="none"
+                         viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+            {% endif %}
+
+            <div>
+                <h3 class="text-lg font-semibold text-gray-800">{{ course.name }}</h3>
+                <div class="flex flex-wrap items-center gap-2 mt-1">
+                    <span class="text-sm text-gray-500">{{ course.get_position_display }}</span>
+                    <span class="text-gray-400">•</span>
+                    <span class="text-sm text-gray-500">{{ course.get_type_display }}</span>
+                    {% if course.fir %}
+                        <span class="text-gray-400">•</span>
+                        <span class="text-sm text-gray-500">{{ course.fir.name }}</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="flex justify-between items-center">
+            <div class="text-sm">
+                {% if course.type == "RTG" %}
+                    <div class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500 mr-1"
+                             fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <span class="text-gray-600">
+                            Minimum activity:
+                            <span class="font-medium">{{ min_hours }} hours</span>
+                        </span>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div>
+                {% if result.entered %}
+                    <button class="btn btn-sm btn-error"
+                            @click="$dispatch('open-confirm', {
+                                    message: 'Are you sure you want to leave the waiting list for {{ course.name }}? Your position in the queue will be lost and you will need to join again if you change your mind.',
+                                    href: '{% url 'lists:join_leave_list' course.id %}'
+                                    })">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none"
+                             viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                        Leave Waitlist
+                    </button>
+                {% else %}
+                    {% if not result.hours_reached and course.type == "RTG" %}
+                        <div class="">
+                            <button class="btn btn-sm btn-disabled">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1"
+                                     fill="none"
+                                     viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                          stroke-width="2"
+                                          d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                </svg>
+                                Insufficient Hours
+                            </button>
+                        </div>
+                    {% elif rating_reached and course.type == "RTG" %}
+                        <div class="tooltip"
+                             data-tip="You can only join one rating course at a time">
+                            <button class="btn btn-sm btn-disabled">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1"
+                                     fill="none"
+                                     viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                          stroke-width="2"
+                                          d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                </svg>
+                                Already in Queue
+                            </button>
+                        </div>
+                    {% else %}
+                        <a class="btn btn-sm btn-primary"
+                           href="{% url 'lists:join_leave_list' course.id %}">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none"
+                                 viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                      stroke-width="2"
+                                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                            </svg>
+                            Join Waitlist
+                        </a>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {% if result.entered or not result.hours_reached and course.type == "RTG" %}
+        <div class="px-5 py-3 bg-gray-50 border-t border-gray-200">
+            {% if course.type == "RTG" and result.activity < min_activity and result.entered %}
+                <div class="flex items-center text-sm text-yellow-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-500 mr-1.5"
+                         fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span>Need more activity: {{ result.activity|default:0 }}/{{ min_activity }} hours in 2 months (No. {{ result.list_spot }} on list)</span>
+                </div>
+            {% elif not result.hours_reached and course.type == "RTG" %}
+                <div class="flex items-center text-sm text-yellow-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-500 mr-1.5"
+                         fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span>Need more hours: {{ result.current_hours|default:0 }}/{{ min_hours }} hours</span>
+                </div>
+            {% elif result.entered %}
+                <div class="flex items-center text-sm text-green-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500 mr-1.5"
+                         fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M5 13l4 4L19 7"/>
+                    </svg>
+                    <span>You are No. {{ result.list_spot }} on the waiting list
+                        {% if course.type == "RTG" %} ({{ result.activity|default:0 }}/{{ min_activity }} hours in 2 months) {% endif %}
+                    </span>
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
