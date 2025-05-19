@@ -225,7 +225,7 @@ def join_leave_list(request, course_id):
             return HttpResponseRedirect(reverse("lists:view_lists"))
 
         if course.min_rating <= request.user.userdetail.rating <= course.max_rating:
-            if course.type == "RTG" and course.position != "TWR":
+            if course.type == "RTG" and course.position not in ["GND", "TWR"]:
                 try:
                     twr_s1, twr_s2, app_s3 = get_connections(request.user)
                     match course.position:
