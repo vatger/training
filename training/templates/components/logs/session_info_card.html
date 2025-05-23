@@ -1,0 +1,36 @@
+<div class="lg:col-span-1">
+  <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
+    <h2 class="text-xl font-semibold mb-4 text-gray-800">Session Information</h2>
+    <div class="space-y-4">
+      <div>
+        <p class="text-sm font-medium text-gray-500">Trainee</p>
+        <p class="mt-1 font-medium">{{ log.trainee.get_full_name }}</p>
+      </div>
+
+      <div>
+        <p class="text-sm font-medium text-gray-500">Mentor</p>
+        <p class="mt-1 font-medium">{{ log.mentor.get_full_name }}</p>
+      </div>
+
+      <div>
+        <p class="text-sm font-medium text-gray-500">Position</p>
+        <p class="mt-1 font-medium">{{ log.position }}</p>
+      </div>
+
+      <div>
+        <p class="text-sm font-medium text-gray-500">Session Type</p>
+        <p class="mt-1 font-medium">{{ log.get_type_display }}</p>
+      </div>
+
+      <div>
+        <p class="text-sm font-medium text-gray-500">Date</p>
+        <p class="mt-1 font-medium">{{ log.session_date }}</p>
+      </div>
+
+      <div>
+        <p class="text-sm font-medium text-gray-500">Next Step</p>
+        <p class="mt-1 font-medium">{{ log.next_step|default:"Not specified" }}</p>
+      </div>
+    </div>
+  </div>
+</div>

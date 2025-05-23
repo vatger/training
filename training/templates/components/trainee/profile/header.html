@@ -1,0 +1,36 @@
+<div class="mb-8">
+  <div class="flex flex-wrap items-start justify-between gap-4">
+    <div class="flex items-center">
+      <div class="avatar avatar-placeholder mr-4">
+        <div class="bg-blue-100 text-blue-700 rounded-full w-16 h-16 flex items-center justify-center text-xl font-medium">
+          {{ trainee.first_name|slice:":1" }}{{ trainee.last_name|slice:":1" }}
+        </div>
+      </div>
+      <div>
+        <h1 class="text-3xl font-bold text-gray-800">{{ trainee.first_name }} {{ trainee.last_name }}</h1>
+        <div class="flex items-center mt-1 space-x-3">
+          <span class="text-gray-600">VATSIM ID: {{ trainee.username }}</span>
+          <a href="https://stats.vatsim.net/stats/{{ trainee.username }}" target="_blank" class="text-blue-600 hover:text-blue-800 flex items-center">
+            <span class="text-sm">View Stats</span>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+          </a>
+          {% if show_core_link %}
+            <a href="https://core.vateud.net/manage/controller/{{ trainee.username }}/view" target="_blank" class="text-blue-600 hover:text-blue-800 flex items-center">
+              <span class="text-sm">View Core</span>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      {% if action_buttons %}
+        {{ action_buttons }}
+      {% endif %}
+    </div>
+  </div>
+</div>

@@ -1,5 +1,6 @@
 import os
 
+import requests
 from authlib.integrations.django_client import OAuth
 from cachetools import cached, TTLCache
 from django.conf import settings
@@ -9,10 +10,9 @@ from django.contrib.auth.models import User, Group
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect
 from dotenv import load_dotenv
-import requests
+from training.eud_header import eud_header
 
 from .models import UserDetail
-from training.eud_header import eud_header
 
 load_dotenv()
 
@@ -113,7 +113,7 @@ def callback_view(request):
                         if settings.USE_CORE_MOCK:
                             continue
                         requests.post(
-                            f"https://core.vateud.net/api/facility/training/assign/{int(profile["id"])}/mentor",
+                            f"https://core.vateud.net/api/facility/training/assign/{int(profile['id'])}/mentor",
                             headers=eud_header,
                             data={"user_cid": profile["id"]},
                         )

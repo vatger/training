@@ -187,7 +187,7 @@ def view_lists(request):
 
     return render(
         request,
-        "lists/overview.html",
+        "lists/trainee.html",
         {
             "courses": courses_dict,
             "error": error,

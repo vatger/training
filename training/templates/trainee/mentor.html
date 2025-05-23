@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% load tags %}
+
+{% block content %}
+  <div class="container px-4 py-5">
+    {% include "components/breadcrumbs.html" with auto=True current_title=trainee.get_full_name %}
+
+    {% include "components/trainee/profile/header.html" with trainee=trainee show_core_link=True action_buttons=''%}
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      {% include "components/stats/summary_card.html" with title="Active Courses" description="Currently enrolled Courses" icon_class="book" value=active|length bg_color="blue" %}
+      {% include "components/stats/summary_card.html" with title="Training Sessions" description="Total completed training logs" icon_class="document" value=active|log_count:inactive bg_color="green" %}
+      {% include "components/stats/summary_card.html" with title="Completed Courses" description="Finished courses & endorsements" icon_class="check" value=inactive|length bg_color="purple" %}
+
+    </div>
+
+  <!-- Main Content Tabs -->
+    <div x-data="{ activeTab: 'active-courses' }">
+    <!-- Tab Navigation -->
+      <div class="border-b border-gray-200 mb-6">
+        <nav class="flex -mb-px space-x-8 overflow-x-auto">
+          <button @click="activeTab = 'active-courses'" :class="{'border-blue-500 text-blue-600': activeTab === 'active-courses', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'active-courses'}" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap">
+            Active Courses
+          </button>
+          <button @click="activeTab = 'completed-courses'" :class="{'border-blue-500 text-blue-600': activeTab === 'completed-courses', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'completed-courses'}" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap">
+            Completed Courses
+          </button>
+          <button @click="activeTab = 'moodle-courses'" :class="{'border-blue-500 text-blue-600': activeTab === 'moodle-courses', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'moodle-courses'}" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap">
+            Moodle Courses
+          </button>
+          <button @click="activeTab = 'familiarisations'" :class="{'border-blue-500 text-blue-600': activeTab === 'familiarisations', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'familiarisations'}" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap">
+            Centre Familiarisations
+          </button>
+          <button @click="activeTab = 'comments'" :class="{'border-blue-500 text-blue-600': activeTab === 'comments', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'comments'}" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap">
+            Mentor Comments
+          </button>
+        </nav>
+      </div>
+
+      <div x-show="activeTab === 'active-courses'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
+        {% include "components/trainee/profile/active_courses_tab.html" %}
+      </div>
+
+      <div x-show="activeTab === 'completed-courses'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="overflow-hidden">
+        {% include "components/trainee/profile/completed_courses_tab.html" %}
+      </div>
+
+      <div x-show="activeTab === 'moodle-courses'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
+        {% include "components/trainee/profile/moodle_courses_tab.html" %}
+      </div>
+
+      <div x-show="activeTab === 'familiarisations'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
+        {% include "components/trainee/dashboard/familiarisations.html" with fams=fams %}
+      </div>
+
+      <div id="comments-section" x-show="activeTab === 'comments'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
+        {% include "components/trainee/profile/comments_tab.html" %}
+      </div>
+    </div>
+  </div>
+{% endblock %}

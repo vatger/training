@@ -1,0 +1,46 @@
+{% load endorsement_tags %}
+
+<div x-show="activeTab === '{{ group.name }}'"
+     x-transition:enter="transition ease-out duration-200"
+     x-transition:enter-start="opacity-0"
+     x-transition:enter-end="opacity-100"
+     class="mt-4">
+
+  <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+    <div class="p-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
+      <div>
+        <h3 class="font-medium text-lg text-gray-800">{{ group.name }} Endorsements</h3>
+      </div>
+      <div class="flex gap-2">
+        {% include "components/endorsements/endorsement_filters.html" %}
+      </div>
+    </div>
+
+    <!-- Endorsement List -->
+    <div x-data="{ filter: 'all' }" @filter-set.window="filter = $event.detail.filter" class="p-4">
+      {% with group_endorsements=endorsements|get_item:group.name %}
+        {% if group_endorsements %}
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Controller</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Activity</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                {% for entry in group_endorsements %}
+                  {% include "components/endorsements/endorsement_row.html" %}
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          {% include "components/endorsements/empty_endorsements.html" with group_name=group.name %}
+        {% endif %}
+      {% endwith %}
+    </div>
+  </div>
+</div>

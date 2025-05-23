@@ -1,0 +1,585 @@
+{% extends "base.html" %}
+{% load tags %}
+{% block content %}
+    <div class="container px-4 py-5" x-data="logCreationApp">
+<!-- Breadcrumbs -->
+        {% include "components/breadcrumbs.html" with auto=True current_title="Create Training Log" %}
+    <!-- Header Section -->
+        <div class="mb-8">
+            <div class="flex flex-wrap justify-between items-start gap-4">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800">{% if edit_mode %}Edit{% else %}Create{% endif %} Training Log</h1>
+                    <p class="text-gray-600 mt-1">
+                        For {{ trainee.first_name }} {{ trainee.last_name }} - {{ course.name }}
+                    </p>
+                </div>
+                {% if not edit_mode %}
+                    <div class="flex flex-col items-end">
+                        <div class="flex space-x-2">
+                            <div
+                                id="autosave-status"
+                                class="text-sm"
+                                :class="autosaveStatus.color">
+                                <span x-text="autosaveStatus.message"></span>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <form
+            method="post"
+            action="{% if edit_mode %}{% url 'logs:edit_log' log_id %}{% endif %}"
+            id="log-form"
+            @submit="submitForm"
+            data-draft-key="{{ draft_key }}"
+            data-should-clear-draft="{{ should_clear_draft }}"
+            data-continue-draft="{{ continue_draft }}"
+            data-edit-mode="{% if edit_mode %}true{% else %}false{% endif %}">
+            {% csrf_token %}
+            <div class="space-y-8">
+            <!-- Session Details -->
+                <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
+                    <h2 class="text-xl font-semibold mb-6 text-gray-800">
+                        Session Details
+                    </h2>
+
+                    {% include "components/logs/log_meta_info.html" %}
+                </div>
+
+            <!-- Evaluation Categories -->
+                <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
+                    <h2 class="text-xl font-semibold mb-6 text-gray-800">
+                        Evaluation Categories
+                    </h2>
+
+                    <div class="space-y-8">
+                        {% for category in categories %}
+                            {% include "components/logs/evaluation_category.html" with category=category %}
+                        {% endfor %}
+                    </div>
+                </div>
+
+            <!-- Final Assessment -->
+                <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
+                    <h2 class="text-xl font-semibold mb-6 text-gray-800">
+                        Final Assessment
+                    </h2>
+
+                    {% include "components/logs/final_assessment.html" %}
+                </div>
+
+                {% if edit_mode %}
+                    <div id="initial-values" style="display:none;">
+                        {% for field_name, value in initial_values.items %}
+                            <textarea id="initial_{{ field_name }}">{{ value }}</textarea>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <div class="flex justify-between">
+                    <a
+                        href="{% if edit_mode %}{% url 'logs:log_detail' log_id %}{% else %}
+                                  {% url 'overview:overview' %}{% endif %}"
+                        class="btn"
+                        @click="handleNavigation"
+                    >Cancel</a>
+                    <div class="space-x-2">
+                        {% if not edit_mode %}
+                            <button
+                                id="save-draft-btn"
+                                type="button"
+                                @click="saveDraft"
+                                class="btn btn-outline">
+                                Save Draft
+                            </button>
+                        {% endif %}
+                        <button type="submit" class="btn btn-primary">{% if edit_mode %}Update{% else %}
+                            Submit{% endif %} Log
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+    <!-- Saved Draft Modal -->
+        {% include "components/modals/saved_draft_modal.html" %}
+    </div>
+
+<!-- Add Font Awesome for the icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<!-- Add EasyMDE CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
+<!-- Add EasyMDE JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
+
+    <script>
+        document.addEventListener("alpine:init", () => {
+            Alpine.data("logCreationApp", () => ({
+                formData: {% if edit_mode %}{{ safe_form_data|default:'{}' }}{% else %}
+                    {
+                        session_date: {% if form.session_date.value %}'{{ form.session_date.value|date:"Y-m-d" }}'
+                        {% else %}new Date().toISOString().split("T")[0]{% endif %},
+                        position: '{{ form.position.value|default:"" }}',
+                        type: '{{ form.type.value|default:"O" }}',
+                        theory: '{{ form.theory.value|default:"0" }}',
+                        phraseology: '{{ form.phraseology.value|default:"0" }}',
+                        coordination: '{{ form.coordination.value|default:"0" }}',
+                        tag_management: '{{ form.tag_management.value|default:"0" }}',
+                        situational_awareness: '{{ form.situational_awareness.value|default:"0" }}',
+                        problem_recognition: '{{ form.problem_recognition.value|default:"0" }}',
+                        traffic_planning: '{{ form.traffic_planning.value|default:"0" }}',
+                        reaction: '{{ form.reaction.value|default:"0" }}',
+                        separation: '{{ form.separation.value|default:"0" }}',
+                        efficiency: '{{ form.efficiency.value|default:"0" }}',
+                        ability_to_work_under_pressure: '{{ form.ability_to_work_under_pressure.value|default:"0" }}',
+                        motivation: '{{ form.motivation.value|default:"0" }}',
+                        next_step: '{{ form.next_step.value|default:"" }}',
+                        result:
+                            {% if form.instance.result == True %}'true'
+                            {% elif form.instance.result == False %}'false'{% else %}''{% endif %},
+                        internal_remarks: '{{ form.internal_remarks.value|default:"" }}',
+                        final_comment: '{{ form.final_comment.value|default:"" }}'
+                    }
+                {% endif %},
+                easyMDEInstances: {},
+                initialFormState: "",
+                hasChanges: false,
+                autosaveStatus: {
+                    message: "Ready",
+                    color: "text-gray-500",
+                },
+                autosaveTimer: null,
+                showUnsavedChangesModal: false,
+                showSavedDraftModal: false,
+                navigateTo: null,
+                draftKey: "",
+                isEditMode: {% if edit_mode %}true{% else %}false{% endif %},
+                formErrors: {},
+                formSubmitted: false,
+
+                init() {
+                    if (!this.formData) {
+                        console.error("Form data was not properly initialized");
+                        this.formData = {
+                            session_date: new Date().toISOString().split("T")[0],
+                            position: '',
+                            type: 'O',
+                            theory: '0',
+                            phraseology: '0',
+                            coordination: '0',
+                            tag_management: '0',
+                            situational_awareness: '0',
+                            problem_recognition: '0',
+                            traffic_planning: '0',
+                            reaction: '0',
+                            separation: '0',
+                            efficiency: '0',
+                            ability_to_work_under_pressure: '0',
+                            motivation: '0',
+                            next_step: '',
+                            result: '',
+                            internal_remarks: '',
+                            final_comment: ''
+                        };
+                    }
+
+                    const formElement = document.getElementById('log-form');
+                    this.draftKey = formElement.dataset.draftKey;
+
+                    const continueDraftStr = formElement.dataset.continueDraft;
+                    const shouldClearDraftStr = formElement.dataset.shouldClearDraft;
+
+                    console.log('Init with params:', {
+                        draftKey: this.draftKey,
+                        continueDraft: continueDraftStr,
+                        shouldClearDraft: shouldClearDraftStr,
+                        isEditMode: this.isEditMode
+                    });
+
+                    if (this.isEditMode) {
+                        console.log('Edit mode - skipping draft handling');
+                    } else {
+                        const continueDraft = continueDraftStr === 'true';
+                        const shouldClearDraft = shouldClearDraftStr === 'true';
+
+                        if (continueDraft) {
+                            console.log('Loading draft...');
+                        } else if (shouldClearDraft) {
+                            console.log('Clearing draft...');
+                            this.clearDraft();
+                        }
+
+                        this.$nextTick(() => {
+                            if (continueDraft) {
+                                this.loadDraft();
+                            }
+                        });
+                    }
+
+                    setTimeout(() => {
+                        this.setInitialFormState();
+                    }, 300);
+                },
+
+                validateForm() {
+                    this.formErrors = {};
+                    this.formSubmitted = true;
+                    let isValid = true;
+
+                // Check required fields
+                    if (!this.formData.position || this.formData.position.trim() === '') {
+                        this.formErrors.position = "Position is required";
+                        isValid = false;
+                    }
+
+                    if (!this.formData.session_date) {
+                        this.formErrors.session_date = "Session date is required";
+                        isValid = false;
+                    }
+
+                    if (!this.formData.result || this.formData.result === '') {
+                        this.formErrors.result = "Please select a training result";
+                        isValid = false;
+                    }
+
+                    return isValid;
+                },
+
+                clearDraft() {
+                    Object.keys(localStorage).forEach(key => {
+                        if (key.startsWith(this.draftKey)) {
+                            localStorage.removeItem(key);
+                        }
+
+                        if (key.startsWith('smde_' + this.draftKey)) {
+                            localStorage.removeItem(key);
+                        }
+                    });
+
+                    this.updateSaveStatus("Draft cleared", "info");
+                },
+
+                setupEasyMDE(element, fieldName) {
+                    if (!element) return;
+
+                    const formElement = document.getElementById('log-form');
+                    const isEditMode = this.isEditMode;
+
+                    const instance = new EasyMDE({
+                        element: element,
+                        status: false,
+                        spellChecker: false,
+                        autoDownloadFontAwesome: true,
+                        placeholder: `Write your ${fieldName.includes('positives') ? 'strengths' : fieldName.includes('negatives') ? 'improvement areas' : 'content'} here...`,
+                        autosave: {
+                            enabled: !isEditMode && (formElement.dataset.continueDraft === 'true'),
+                            uniqueId: `${this.draftKey}_${fieldName}`,
+                            delay: 1000,
+                        },
+                        toolbar: [
+                            "bold", "italic", "heading", "|",
+                            "unordered-list", "ordered-list", "|",
+                            "link", "image", "|",
+                            "preview"
+                        ],
+                        minHeight: "100px",
+                        hideIcons: ["side-by-side", "fullscreen"],
+                        previewImagesInEditor: true,
+                        lineWrapping: true,
+                    });
+
+                    this.easyMDEInstances[fieldName] = instance;
+
+                    if (isEditMode) {
+                        const initialField = document.getElementById(`initial_${fieldName}`);
+                        if (initialField) {
+                            instance.value(initialField.value);
+                        }
+                    } else if (formElement.dataset.continueDraft === 'true') {
+                        const storageKey = `${this.draftKey}_${fieldName}_content`;
+                        const savedContent = localStorage.getItem(storageKey);
+                        if (savedContent) {
+                            instance.value(savedContent);
+                        }
+                    }
+
+                    instance.codemirror.on("change", () => {
+                        if (!isEditMode) {
+                            localStorage.setItem(`${this.draftKey}_${fieldName}_content`, instance.value());
+                        }
+                        this.saveFormState();
+                    });
+
+                    return instance;
+                },
+
+                setupBeforeUnload() {
+                    window.addEventListener("beforeunload", (e) => {
+                        if (this.hasChanges) {
+                            e.preventDefault();
+                            e.returnValue = "You have unsaved changes. Are you sure you want to leave?";
+                            return e.returnValue;
+                        }
+                    });
+                },
+
+                setInitialFormState() {
+                    this.initialFormState = JSON.stringify(this.formData);
+                    this.hasChanges = false;
+                },
+
+                updateSaveStatus(message, type = "info") {
+                    const colors = {
+                        info: "text-blue-500",
+                        success: "text-green-500",
+                        error: "text-red-500",
+                        default: "text-gray-500",
+                    };
+
+                    this.autosaveStatus = {
+                        message: message,
+                        color: colors[type] || colors["default"],
+                    };
+
+                    if (type === "success") {
+                        setTimeout(() => {
+                            this.autosaveStatus = {
+                                message: "",
+                                color: "",
+                            };
+                        }, 3000);
+                    }
+                },
+
+                saveFormState() {
+                    if (this.isEditMode) return;
+
+                    clearTimeout(this.autosaveTimer);
+                    this.updateSaveStatus("Saving...", "info");
+                    this.hasChanges = true;
+
+                    try {
+                        localStorage.setItem(
+                            `${this.draftKey}_formData`,
+                            JSON.stringify(this.formData)
+                        );
+                        this.updateSaveStatus("Draft saved", "success");
+                    } catch (e) {
+                        console.error("Error saving form state:", e);
+                        this.updateSaveStatus("Error saving draft", "error");
+                    }
+                },
+
+                loadDraft() {
+                    try {
+                        const savedFormData = localStorage.getItem(`${this.draftKey}_formData`);
+                        if (savedFormData) {
+                            const parsedData = JSON.parse(savedFormData);
+                            this.formData = {...this.formData, ...parsedData};
+                        }
+
+                        this.updateSaveStatus("Draft loaded", "success");
+                    } catch (e) {
+                        console.error("Error loading draft:", e);
+                        this.updateSaveStatus("Error loading draft", "error");
+                    }
+                },
+
+                saveDraft() {
+                    this.saveFormState();
+                    this.$dispatch('open-saved-draft');
+                },
+
+                submitForm(e) {
+                    if (!this.validateForm()) {
+                        e.preventDefault();
+                        return false;
+                    }
+
+                    Object.keys(this.easyMDEInstances).forEach(fieldName => {
+                        const instance = this.easyMDEInstances[fieldName];
+                        const input = document.getElementById(`id_${fieldName}`);
+                        if (instance && input) {
+                            input.value = instance.value();
+                        }
+                    });
+
+                    if (!this.isEditMode) {
+                        this.clearAllDrafts();
+                    }
+
+                    return true;
+                },
+
+                clearAllDrafts() {
+                    setTimeout(() => {
+                        Object.keys(localStorage).forEach(key => {
+                            if (key.startsWith(this.draftKey) || key.startsWith('smde_' + this.draftKey)) {
+                                localStorage.removeItem(key);
+                            }
+                        });
+                    }, 1000);
+                },
+
+                handleNavigation(e) {
+                    if (this.hasChanges) {
+                        e.preventDefault();
+                        this.navigateTo = e.target.href;
+                    }
+                },
+
+                proceedWithNavigation() {
+                    window.removeEventListener("beforeunload", () => {});
+                    window.location.href = this.navigateTo;
+                }
+            }))
+        });
+    </script>
+
+    <style>
+    /* Custom styles for EasyMDE */
+        .EasyMDEContainer {
+            box-shadow: none !important;
+        }
+
+        .EasyMDEContainer .CodeMirror {
+            border: 1px solid #e2e8f0 !important;
+            border-bottom-left-radius: 0.5rem !important;
+            border-bottom-right-radius: 0.5rem !important;
+        }
+
+        .editor-toolbar {
+            border: 1px solid #e2e8f0 !important;
+            background-color: #f8fafc !important;
+            border-top-left-radius: 0.5rem !important;
+            border-top-right-radius: 0.5rem !important;
+            padding: 6px !important;
+        }
+
+        .editor-toolbar button {
+            color: #4b5563 !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            width: 30px !important;
+            height: 30px !important;
+        }
+
+        .editor-toolbar button i.fa {
+            font-size: 16px !important;
+            display: inline-block !important;
+            color: #4b5563 !important;
+        }
+
+        .editor-toolbar button:hover,
+        .editor-toolbar button.active {
+            background-color: #e2e8f0 !important;
+            border-color: #cbd5e1 !important;
+        }
+
+    /* Fix separator visibility */
+        .editor-toolbar i.separator {
+            border-left: 1px solid #cbd5e1 !important;
+            border-right: 1px solid #fff !important;
+            margin: 0 4px !important;
+        }
+
+    /* Make sure proper spacing and alignment for buttons with text */
+        .editor-toolbar button.heading-1:after,
+        .editor-toolbar button.heading-2:after,
+        .editor-toolbar button.heading-3:after {
+            position: relative !important;
+            top: 1px !important;
+        }
+
+    /* Style the preview pane to match our design */
+        .editor-preview {
+            background-color: #f9fafb !important;
+            border: 1px solid #e2e8f0 !important;
+            border-bottom-left-radius: 0.5rem !important;
+            border-bottom-right-radius: 0.5rem !important;
+            padding: 1rem !important;
+        }
+
+        .editor-preview h1,
+        .editor-preview h2,
+        .editor-preview h3,
+        .editor-preview h4,
+        .editor-preview h5,
+        .editor-preview h6 {
+            font-weight: 600 !important;
+            margin-top: 1rem !important;
+            margin-bottom: 0.5rem !important;
+        }
+
+        .editor-preview h1 {
+            font-size: 1.2rem !important;
+        }
+
+        .editor-preview h2 {
+            font-size: 1.1rem !important;
+        }
+
+        .editor-preview h3 {
+            font-size: 1rem !important;
+        }
+
+        .editor-preview ul,
+        .editor-preview ol {
+            padding-left: 1.5rem !important;
+            margin-bottom: 1rem !important;
+        }
+
+        .editor-preview ul {
+            list-style-type: disc !important;
+        }
+
+        .editor-preview ol {
+            list-style-type: decimal !important;
+        }
+
+        .editor-preview p {
+            margin-bottom: 1rem !important;
+        }
+
+        .editor-preview a {
+            color: #3b82f6 !important;
+            text-decoration: underline !important;
+        }
+
+        .editor-preview img {
+            max-width: 100% !important;
+            border-radius: 0.375rem !important;
+            margin: 1rem 0 !important;
+        }
+
+        .editor-preview blockquote {
+            border-left: 4px solid #e5e7eb !important;
+            padding-left: 1rem !important;
+            margin-left: 0 !important;
+            color: #6b7280 !important;
+        }
+
+        .editor-preview code {
+            background-color: #f3f4f6 !important;
+            padding: 0.125rem 0.25rem !important;
+            border-radius: 0.25rem !important;
+            font-family: monospace !important;
+        }
+
+        .editor-preview pre {
+            background-color: #f3f4f6 !important;
+            padding: 1rem !important;
+            border-radius: 0.375rem !important;
+            overflow-x: auto !important;
+            margin-bottom: 1rem !important;
+        }
+
+        .editor-preview pre code {
+            background-color: transparent !important;
+            padding: 0 !important;
+        }
+    </style>
+{% endblock %}

@@ -1,19 +1,18 @@
 from cachetools import cached, TTLCache
-
-from connect.views import mentor_groups
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404, HttpResponseRedirect, reverse, redirect
 from django.shortcuts import render
+from training.permissions import mentor_required
+
+from connect.views import mentor_groups
 from familiarisations.helpers import get_familiarisations
 from lists.models import Course
 from logs.models import Log
-from trainee.forms import UserDetailForm
-
-from .forms import CommentForm
 from overview.helpers import get_course_completion
+from trainee.forms import UserDetailForm
+from .forms import CommentForm
 
-from training.permissions import mentor_required
 
 def split_active_inactive(logs, courses, trainee):
     active = {}
@@ -55,17 +54,11 @@ def home(request):
     # Get required Moodle courses
     moodles = get_moodles(request.user)
     fams = get_familiarisations(request.user.username)
-    
+
     return render(
         request,
-        "trainee/home.html",
-        {
-            "active": active, 
-            "inactive": inactive, 
-            "moodles": moodles,
-            "fams": fams
-        },
-
+        "trainee/dashboard.html",
+        {"active": active, "inactive": inactive, "moodles": moodles, "fams": fams},
     )
 
 
@@ -104,7 +97,7 @@ def mentor_view(request, vatsim_id: int):
 
     moodles = get_moodles(trainee)
     fams = get_familiarisations(trainee.username)
-    
+
     # Get all courses the mentor can assign
     available_courses = Course.objects.filter(mentors=request.user)
     if request.user.is_superuser:
@@ -114,7 +107,7 @@ def mentor_view(request, vatsim_id: int):
 
     return render(
         request,
-        "trainee/mentor_view.html",
+        "trainee/mentor.html",
         {
             "trainee": trainee,
             "active": active,
@@ -123,9 +116,10 @@ def mentor_view(request, vatsim_id: int):
             "form": form,
             "moodles": moodles,
             "fams": fams,
-            "available_courses": available_courses
+            "available_courses": available_courses,
         },
     )
+
 
 @mentor_required
 def find_user(request):
@@ -145,4 +139,3 @@ def find_user(request):
         user_form = UserDetailForm()
 
     return render(request, "trainee/find_user.html", {"user_form": user_form})
-

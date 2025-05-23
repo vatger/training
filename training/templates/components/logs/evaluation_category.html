@@ -1,0 +1,18 @@
+<div class="mb-6">
+  <div class="flex justify-between items-center mb-4">
+    <h3 class="text-lg font-medium text-gray-800">{{ category.label }}</h3>
+    {% include "components/logs/rating_selector.html" with category=category %}
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div>
+      <label for="{{ category.name }}_positives" class="block text-sm font-medium text-green-600 mb-1">Strengths</label>
+      {% include "components/logs/markdown_editor.html" with field_name=category.name|add:"_positives" %}
+    </div>
+
+    <div>
+      <label for="{{ category.name }}_negatives" class="block text-sm font-medium text-red-600 mb-1">Areas for Improvement</label>
+      {% include "components/logs/markdown_editor.html" with field_name=category.name|add:"_negatives" %}
+    </div>
+  </div>
+</div>

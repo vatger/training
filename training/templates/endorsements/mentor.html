@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% load endorsement_tags %}
+
+{% block content %}
+  <div class="container px-4 py-5">
+    {% include "components/breadcrumbs.html" with auto=True current_title="Endorsement Manager" %}
+
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-gray-800">Endorsement Manager</h1>
+      <p class="text-gray-600 mt-2">Manage active endorsements and monitor controller activity levels.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+      {% include "components/stats/summary_card.html" with title="Low Activity" description=low_activity_description icon_class="clock" value=inactive_count bg_color="yellow" %}
+
+      {% include "components/stats/summary_card.html" with title="Pending Removal" description="Marked for automatic removal" icon_class="document" value=removal_count bg_color="red" %}
+    </div>
+
+    {% include "components/endorsements/endorsement_group_nav.html" %}
+
+    {% for group in endorsement_groups %}
+      {% include "components/endorsements/endorsement_list.html" %}
+    {% endfor %}
+
+    {% include "components/modals/confirmation_modal.html" %}
+  </div>
+
+  <script>
+    document.addEventListener('alpine:init', () => {
+      Alpine.data('filterData', () => ({
+        currentFilter: 'all',
+        setFilter(filter) {
+          this.currentFilter = filter;
+        }
+      }));
+    });
+  </script>
+
+  <style>
+    [x-cloak] { display: none !important; }
+  </style>
+{% endblock %}
