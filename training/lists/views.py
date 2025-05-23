@@ -120,8 +120,9 @@ def view_lists(request):
         error = True
 
     hours_dict = {
-        "GND": twr_s1,
-        "TWR": twr_s1,
+        # temporary change to disable check for GND/TWR check
+        "GND": MIN_HOURS + 1,  # twr_s1,
+        "TWR": MIN_HOURS * 1,  # twr_s1,
         "APP": twr_s2,
         "CTR": app_s3,
     }
@@ -224,7 +225,7 @@ def join_leave_list(request, course_id):
             return HttpResponseRedirect(reverse("lists:view_lists"))
 
         if course.min_rating <= request.user.userdetail.rating <= course.max_rating:
-            if course.type == "RTG":
+            if course.type == "RTG" and course.position not in ["GND", "TWR"]:
                 try:
                     twr_s1, twr_s2, app_s3 = get_connections(request.user)
                     match course.position:

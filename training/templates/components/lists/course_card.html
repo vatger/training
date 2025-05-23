@@ -61,7 +61,7 @@
 
         <div class="flex justify-between items-center">
             <div class="text-sm">
-                {% if course.type == "RTG" %}
+                {% if course.type == "RTG" and course.position != "TWR" or course.type == "RTG" and course.position != "GND" %}
                     <div class="flex items-center">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500 mr-1"
                              fill="none" viewBox="0 0 24 24" stroke="currentColor">
