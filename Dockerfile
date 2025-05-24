@@ -22,5 +22,4 @@ RUN chmod +x ./init.sh
 
 COPY config/default.conf /etc/nginx/http.d/default.conf
 
-CMD ["/bin/sh", "-c", "source ./init.sh && cd training && python manage.py collectstatic --noinput"]
-
+CMD ["/bin/sh", "-c", "source ./init.sh"]

@@ -1,3 +1,5 @@
+#!/bin/sh
+sleep 1
 nginx -g "daemon on;"
 
 crontab cron_schedule && crond
