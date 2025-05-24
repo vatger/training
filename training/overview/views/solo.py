@@ -3,7 +3,12 @@ from datetime import datetime
 import requests
 from django.shortcuts import render, redirect, get_object_or_404
 from overview.helpers.course import get_solos
-from overview.helpers.trainee import get_core_theory_passed, assign_core_test, CoreState
+from overview.helpers.trainee import (
+    get_core_theory_passed,
+    assign_core_test,
+    CoreState,
+    get_course_completion,
+)
 from training.eud_header import eud_header
 from training.permissions import mentor_required
 
