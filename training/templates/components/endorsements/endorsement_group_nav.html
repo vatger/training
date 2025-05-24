@@ -15,4 +15,8 @@
       {% endfor %}
     </nav>
   </div>
+
+  {% for group in endorsement_groups %}
+    {% include "components/endorsements/endorsement_list.html" %}
+  {% endfor %}
 </div>
