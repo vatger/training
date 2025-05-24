@@ -1,4 +1,16 @@
+#!/bin/sh
+set -e
+
+# Collect static files
+cd /opt/training
+python manage.py collectstatic --noinput
+
+# Start nginx
 nginx -g "daemon on;"
 
-crontab cron_schedule && crond
-cd training && gunicorn training.wsgi --bind 127.0.0.1:8017
+# Start cron
+crontab /opt/training/cron_schedule && crond
+
+# Run Gunicorn
+cd /opt/training/training
+gunicorn training.wsgi:application --bind 127.0.0.1:8017
