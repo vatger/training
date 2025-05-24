@@ -15,9 +15,10 @@ WORKDIR /opt/training/training/frontend
 RUN npm ci
 RUN npm run build
 
-WORKDIR /opt/training
+WORKDIR /opt/training/training
 RUN python manage.py collectstatic --noinput
 
+WORKDIR /opt/training
 EXPOSE 80
 
 RUN chmod +x ./init.sh
