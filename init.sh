@@ -2,7 +2,7 @@
 set -e
 
 # Collect static files
-cd /opt/training
+cd /opt/training/training
 python manage.py collectstatic --noinput
 
 # Start nginx
