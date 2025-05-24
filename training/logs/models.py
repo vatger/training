@@ -23,7 +23,7 @@ class Log(models.Model):
     )
     session_date = models.DateField()
     course = models.ForeignKey(Course, on_delete=models.SET_NULL, null=True)
-    position = models.CharField(max_length=15)
+    position = models.CharField(max_length=25)
     type = models.TextField(max_length=1, choices=Type.choices)
 
     # Rating categories with positives and negatives
