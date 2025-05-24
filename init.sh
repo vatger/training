@@ -1,6 +1,6 @@
 #!/bin/sh
 sleep 1
-cd /opt/training/training && python manage.py collectstatic --noinput
+# cd /opt/training/training && python manage.py collectstatic --noinput
 
 nginx -g "daemon on;"
 crontab /opt/training/cron_schedule && crond
