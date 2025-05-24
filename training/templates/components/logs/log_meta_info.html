@@ -30,6 +30,7 @@
       :class="{'border-red-500': formErrors.position}"
       placeholder="e.g. EDDF_APP"
       x-model="formData.position"
+      maxlength="25"
       @input="saveFormState"
     />
     <div x-show="formErrors.position" class="text-red-500 text-sm mt-1 error-message">
