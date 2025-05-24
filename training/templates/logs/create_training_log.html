@@ -281,7 +281,37 @@
                         toolbar: [
                             "bold", "italic", "heading", "|",
                             "unordered-list", "ordered-list", "|",
-                            "link", "image", "|",
+                            {
+                                name: "link",
+                                action: function customLink(editor) {
+                                    const url = prompt("Enter the URL:");
+                                    const text = prompt("Enter the link text (optional):");
+                                    if (url) {
+                                        const linkText = text || url;
+                                        const cm = editor.codemirror;
+                                        const selectedText = cm.getSelection();
+                                        const linkMarkdown = selectedText ? `[${selectedText}](${url})` : `[${linkText}](${url})`;
+                                        cm.replaceSelection(linkMarkdown);
+                                    }
+                                },
+                                className: "fa fa-link",
+                                title: "Create Link"
+                            },
+                            {
+                                name: "image",
+                                action: function customImage(editor) {
+                                    const url = prompt("Enter the image URL:");
+                                    if (url) {
+                                        const altText = "";
+                                        const cm = editor.codemirror;
+                                        const imageMarkdown = `![${altText}](${url})`;
+                                        cm.replaceSelection(imageMarkdown);
+                                    }
+                                },
+                                className: "fa fa-picture-o",
+                                title: "Insert Image"
+                            },
+                            "|",
                             "preview"
                         ],
                         minHeight: "100px",
