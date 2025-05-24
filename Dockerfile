@@ -15,9 +15,6 @@ WORKDIR /opt/training/training/frontend
 RUN npm ci
 RUN npm run build
 
-WORKDIR /opt/training/training
-RUN python manage.py collectstatic --noinput
-
 WORKDIR /opt/training
 EXPOSE 80
 
@@ -25,4 +22,5 @@ RUN chmod +x ./init.sh
 
 COPY config/default.conf /etc/nginx/http.d/default.conf
 
-CMD ["/bin/sh", "-c", "./init.sh", "&&", "python", "manage.py", "collectstatic", "--noinput"]
+CMD ["/bin/sh", "-c", "./init.sh && cd training && python manage.py collectstatic --noinput"]
+
