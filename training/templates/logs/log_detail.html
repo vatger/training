@@ -21,29 +21,29 @@
             <h2 class="text-xl font-semibold mb-4 text-gray-800">Evaluation Categories</h2>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {% include "components/logs/log_detail_card.html" with category_label="Theory" rating=form.theory rating_display=form.get_theory_display positives=form.theory_positives negatives=form.theory_negatives %}
+                {% include "components/logs/log_detail_card.html" with category_label="Theory" category_description="Applies required knowledge including airspace structure, SOPs, LoAs." rating=form.theory rating_display=form.get_theory_display positives=form.theory_positives negatives=form.theory_negatives %}
 
-                {% include "components/logs/log_detail_card.html" with category_label="Phraseology / Radiotelephony" rating=form.phraseology rating_display=form.get_phraseology_display positives=form.phraseology_positives negatives=form.phraseology_negatives %}
+                {% include "components/logs/log_detail_card.html" with category_label="Phraseology / Radiotelephony" category_description="Applies correct phraseology in English and German." rating=form.phraseology rating_display=form.get_phraseology_display positives=form.phraseology_positives negatives=form.phraseology_negatives %}
 
-                {% include "components/logs/log_detail_card.html" with category_label="Coordination" rating=form.coordination rating_display=form.get_coordination_display positives=form.coordination_positives negatives=form.coordination_negatives %}
+                {% include "components/logs/log_detail_card.html" with category_label="Coordination" category_description="Performs the required coordination with neighboring stations clearly and effectively. Hands/takes over station correctly. Uses correct vocabulary (e.g. approval request)." rating=form.coordination rating_display=form.get_coordination_display positives=form.coordination_positives negatives=form.coordination_negatives %}
 
-                {% include "components/logs/log_detail_card.html" with category_label="Tag Management / FPL Handling" rating=form.tag_management rating_display=form.get_tag_management_display positives=form.tag_management_positives negatives=form.tag_management_negatives %}
+                {% include "components/logs/log_detail_card.html" with category_label="Tag Management / FPL Handling" category_description="Keeps flight plan and tag up to date at all times." rating=form.tag_management rating_display=form.get_tag_management_display positives=form.tag_management_positives negatives=form.tag_management_negatives %}
 
-                {% include "components/logs/log_detail_card.html" with category_label="Situational Awareness" rating=form.situational_awareness rating_display=form.get_situational_awareness_display positives=form.situational_awareness_positives negatives=form.situational_awareness_negatives %}
+                {% include "components/logs/log_detail_card.html" with category_label="Situational Awareness" category_description="Aware of the current and future traffic situation. Takes new information into account. Knows his own limits and limits of the airspace/airport, asks for relief when appropriate." rating=form.situational_awareness rating_display=form.get_situational_awareness_display positives=form.situational_awareness_positives negatives=form.situational_awareness_negatives %}
 
-                {% include "components/logs/log_detail_card.html" with category_label="Problem Recognition" rating=form.problem_recognition rating_display=form.get_problem_recognition_display positives=form.problem_recognition_positives negatives=form.problem_recognition_negatives %}
+                {% include "components/logs/log_detail_card.html" with category_label="Problem Recognition" category_description="Recognizes problems early and reacts accordingly." rating=form.problem_recognition rating_display=form.get_problem_recognition_display positives=form.problem_recognition_positives negatives=form.problem_recognition_negatives %}
 
-                {% include "components/logs/log_detail_card.html" with category_label="Traffic Planning" rating=form.traffic_planning rating_display=form.get_traffic_planning_display positives=form.traffic_planning_positives negatives=form.traffic_planning_negatives %}
+                {% include "components/logs/log_detail_card.html" with category_label="Traffic Planning" category_description="Looks ahead and plans a secure and efficient traffic flow." rating=form.traffic_planning rating_display=form.get_traffic_planning_display positives=form.traffic_planning_positives negatives=form.traffic_planning_negatives %}
 
-                {% include "components/logs/log_detail_card.html" with category_label="Reaction" rating=form.reaction rating_display=form.get_reaction_display positives=form.reaction_positives negatives=form.reaction_negatives %}
+                {% include "components/logs/log_detail_card.html" with category_label="Reaction" category_description="Reacts in a timely manner, flexible and appropriate to changes in the current traffic situation." rating=form.reaction rating_display=form.get_reaction_display positives=form.reaction_positives negatives=form.reaction_negatives %}
 
-                {% include "components/logs/log_detail_card.html" with category_label="Separation" rating=form.separation rating_display=form.get_separation_display positives=form.separation_positives negatives=form.separation_negatives %}
+                {% include "components/logs/log_detail_card.html" with category_label="Separation" category_description="Applies prescribed separation minima at all times (i.e. runway, radar, wake turbulence, separation etc.)." rating=form.separation rating_display=form.get_separation_display positives=form.separation_positives negatives=form.separation_negatives %}
 
-                {% include "components/logs/log_detail_card.html" with category_label="Efficiency" rating=form.efficiency rating_display=form.get_efficiency_display positives=form.efficiency_positives negatives=form.efficiency_negatives %}
+                {% include "components/logs/log_detail_card.html" with category_label="Efficiency" category_description="Takes pilot's requests into account, handles traffic in an efficient way for himself, the downstream sector and the pilot." rating=form.efficiency rating_display=form.get_efficiency_display positives=form.efficiency_positives negatives=form.efficiency_negatives %}
 
-                {% include "components/logs/log_detail_card.html" with category_label="Ability to Work Under Pressure" rating=form.ability_to_work_under_pressure rating_display=form.get_ability_to_work_under_pressure_display positives=form.ability_to_work_under_pressure_positives negatives=form.ability_to_work_under_pressure_negatives %}
+                {% include "components/logs/log_detail_card.html" with category_label="Ability to Work Under Pressure" category_description="Shows consistent performance regardless of traffic volume. Recovery from mistakes." rating=form.ability_to_work_under_pressure rating_display=form.get_ability_to_work_under_pressure_display positives=form.ability_to_work_under_pressure_positives negatives=form.ability_to_work_under_pressure_negatives %}
 
-                {% include "components/logs/log_detail_card.html" with category_label="Motivation" rating=form.motivation rating_display=form.get_motivation_display positives=form.motivation_positives negatives=form.motivation_negatives %}
+                {% include "components/logs/log_detail_card.html" with category_label="Motivation" category_description="Is open to feedback and makes a realistic assessment of own performance. Deals respectfully with others and is well prepared for the session." rating=form.motivation rating_display=form.get_motivation_display positives=form.motivation_positives negatives=form.motivation_negatives %}
             </div>
         </div>
 
