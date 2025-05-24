@@ -16,6 +16,7 @@ RUN npm ci
 RUN npm run build
 
 WORKDIR /opt/training
+RUN python manage.py collectstatic --noinput
 
 EXPOSE 80
 
