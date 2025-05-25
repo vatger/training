@@ -15,6 +15,9 @@ from django.shortcuts import (
 )
 from django.utils.safestring import mark_safe
 from dotenv import load_dotenv
+from training.helpers import log_admin_action
+from training.permissions import mentor_required
+
 from familiarisations.models import Familiarisation
 from lists.helpers import (
     course_valid_for_user,
@@ -23,9 +26,6 @@ from lists.helpers import (
     send_moodle_find_user,
 )
 from overview.helpers import inform_user_course_start
-from training.helpers import log_admin_action
-from training.permissions import mentor_required
-
 from .models import Course, WaitingListEntry
 
 load_dotenv()
@@ -196,6 +196,7 @@ def view_lists(request):
         request,
         "lists/trainee.html",
         {
+            "moodle_signed_up": moodle_signed_up,
             "courses": courses_dict,
             "error": error,
             "rating_reached": n_rtg >= 1,
