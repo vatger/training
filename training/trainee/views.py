@@ -1,9 +1,13 @@
+import os
+
+import requests
 from cachetools import cached, TTLCache
 from connect.views import mentor_groups
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404, HttpResponseRedirect, reverse, redirect
 from django.shortcuts import render
+from dotenv import load_dotenv
 from endorsements.helpers import get_tier1_endorsements, get_tier2_endorsements
 from endorsements.models import EndorsementActivity
 from endorsements.views import min_hours_required
@@ -15,6 +19,20 @@ from trainee.forms import UserDetailForm
 from training.permissions import mentor_required
 
 from .forms import CommentForm
+
+load_dotenv()
+
+
+@cached(cache=TTLCache(maxsize=1024, ttl=60 * 60 * 24))
+def get_course_name(course_id: int) -> str:
+    header = {"Authorization": f"Token {os.getenv('VATGER_API_KEY')}"}
+    link = f"http://vatsim-germany.org/api/moodle/course/{course_id}"
+    r = requests.get(link, headers=header)
+    if r.status_code == 200:
+        r = r.json()
+        return r["displayname"]
+    else:
+        return ""
 
 
 def split_active_inactive(logs, courses, trainee):
@@ -32,7 +50,6 @@ def split_active_inactive(logs, courses, trainee):
     return active, inactive
 
 
-@cached(cache=TTLCache(maxsize=1024, ttl=60 * 60))
 def get_moodles(user) -> list:
     active_courses = user.active_courses.all()
     moodles = []
@@ -41,7 +58,13 @@ def get_moodles(user) -> list:
             link = f"https://moodle.vatsim-germany.org/course/view.php?id={moodle_id}"
             passed = get_course_completion(user.username, moodle_id)
             moodles.append(
-                {"course": course.name, "passed": passed, "id": moodle_id, "link": link}
+                {
+                    "course": course.name,
+                    "passed": passed,
+                    "id": moodle_id,
+                    "link": link,
+                    "name": get_course_name(moodle_id),
+                }
             )
     return moodles
 
