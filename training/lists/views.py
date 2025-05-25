@@ -15,12 +15,17 @@ from django.shortcuts import (
 )
 from django.utils.safestring import mark_safe
 from dotenv import load_dotenv
+from familiarisations.models import Familiarisation
+from lists.helpers import (
+    course_valid_for_user,
+    get_user_endorsements,
+    get_roster,
+    send_moodle_find_user,
+)
+from overview.helpers import inform_user_course_start
 from training.helpers import log_admin_action
 from training.permissions import mentor_required
 
-from familiarisations.models import Familiarisation
-from lists.helpers import course_valid_for_user, get_user_endorsements, get_roster
-from overview.helpers import inform_user_course_start
 from .models import Course, WaitingListEntry
 
 load_dotenv()
@@ -88,6 +93,8 @@ def get_cached_connections(user):
 
 @login_required
 def view_lists(request):
+    moodle_signed_up = send_moodle_find_user(int(request.user.username))
+
     # make sure user is not currently active_trainee
     courses = Course.objects.filter(
         min_rating__lte=request.user.userdetail.rating,
