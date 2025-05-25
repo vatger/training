@@ -1,14 +1,14 @@
 <div
     x-data="{
-        open: false,
-        closeModal() {
+            open: false,
+            closeModal() {
             this.open = false;
             // Redirect to home page after modal closes
             setTimeout(() => {
-                window.location.href = '{% url "trainee:home" %}';
+            window.location.href = '{% url "trainee:home" %}';
             }, 300); // Wait for close animation
-        }
-    }"
+            }
+            }"
     x-init="{% if not moodle_signed_up %}open = true{% endif %}"
     x-show="open"
     x-cloak
