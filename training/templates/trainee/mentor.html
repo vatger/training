@@ -54,7 +54,27 @@
       <div x-show="activeTab === 'endorsements'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
         {% include "components/endorsements/tier1_section.html" with tier_1=tier_1 min_hours=min_hours half_min_hours=half_min_hours %}
 
-        {% include "components/endorsements/tier2_section.html" with tier_2=tier_2 %}
+        {% if tier_2 %}
+          <div class="mb-10">
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="text-xl font-bold text-gray-800">Tier 2 Endorsements</h2>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+              <div class="p-4">
+                <div class="grid grid-cols-1 gap-4">
+                  <div class="flex flex-wrap gap-2">
+                    {% for endorsement in tier_2 %}
+                      <span class="px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-sm font-medium">
+                        {{ endorsement.position }}
+                      </span>
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endif %}
       </div>
 
       <div x-show="activeTab === 'familiarisations'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
