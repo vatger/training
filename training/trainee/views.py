@@ -6,6 +6,8 @@ from django.shortcuts import render
 from training.permissions import mentor_required
 
 from connect.views import mentor_groups
+from endorsements.helpers import get_tier1_endorsements, get_tier2_endorsements
+from endorsements.views import min_hours_required
 from familiarisations.helpers import get_familiarisations
 from lists.models import Course
 from logs.models import Log
@@ -105,6 +107,60 @@ def mentor_view(request, vatsim_id: int):
     # Exclude courses the trainee is already in
     available_courses = available_courses.exclude(active_trainees=trainee)
 
+    tier1_endorsements = get_tier1_endorsements()
+    trainee_tier1 = [
+        end for end in tier1_endorsements if end["user_cid"] == int(trainee.username)
+    ]
+
+    tier_1_processed = []
+    for endorsement in trainee_tier1:
+        activity = endorsement.get("activity", 0)
+        removal_date = endorsement.get("removal_date")
+
+        bar_width = (
+            min(100, (activity / min_hours_required) * 100)
+            if min_hours_required > 0
+            else 0
+        )
+
+        tier_1_processed.append(
+            {
+                "position": endorsement["position"],
+                "activity": activity,
+                "removal_date": removal_date,
+                "updated": endorsement.get("updated"),
+                "bar_width": bar_width,
+            }
+        )
+
+    tier2_endorsements = get_tier2_endorsements()
+    trainee_tier2 = []
+
+    for endorsement in tier2_endorsements:
+        if endorsement["user_cid"] == int(trainee.username):
+            has_endorsement = any(
+                t1["position"] == endorsement["position"]
+                and t1["user_cid"] == int(trainee.username)
+                for t1 in tier1_endorsements
+            )
+
+            moodle_completed = False
+            if endorsement.get("moodle_id"):
+                moodle_completed = get_course_completion(
+                    trainee.username, endorsement["moodle_id"]
+                )
+
+            trainee_tier2.append(
+                {
+                    "id": endorsement["id"],
+                    "name": endorsement["name"],
+                    "position": endorsement["position"],
+                    "moodle_id": endorsement.get("moodle_id"),
+                    "moodle_completed": moodle_completed,
+                    "has_endorsement": has_endorsement,
+                }
+            )
+
     return render(
         request,
         "trainee/mentor.html",
@@ -117,6 +173,10 @@ def mentor_view(request, vatsim_id: int):
             "moodles": moodles,
             "fams": fams,
             "available_courses": available_courses,
+            "tier_1": tier_1_processed,
+            "tier_2": trainee_tier2,
+            "min_hours": min_hours_required,
+            "half_min_hours": min_hours_required // 2,
         },
     )
 
