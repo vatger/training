@@ -133,7 +133,7 @@ def mentor_view(request, vatsim_id: int):
         res_t1.append(entry)
 
     tier_2 = get_tier2_endorsements()
-    tier_2 = [t2["position"] for t2 in tier_2 if t2["user_cid"] == vatsim_id]
+    tier_2 = [t2 for t2 in tier_2 if t2["user_cid"] == vatsim_id]
 
     return render(
         request,
