@@ -109,7 +109,7 @@ def mentor_view(request, vatsim_id: int):
     available_courses = available_courses.exclude(active_trainees=trainee)
 
     tier_1 = get_tier1_endorsements()
-    tier_1 = [t1 for t1 in tier_1 if t1["user_cid"] == int(request.user.username)]
+    tier_1 = [t1 for t1 in tier_1 if t1["user_cid"] == vatsim_id]
     res_t1 = []
 
     for endorsement in tier_1:
@@ -133,9 +133,7 @@ def mentor_view(request, vatsim_id: int):
         res_t1.append(entry)
 
     tier_2 = get_tier2_endorsements()
-    tier_2 = [
-        t2["position"] for t2 in tier_2 if t2["user_cid"] == int(request.user.username)
-    ]
+    tier_2 = [t2["position"] for t2 in tier_2 if t2["user_cid"] == vatsim_id]
 
     return render(
         request,
