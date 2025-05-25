@@ -1,21 +1,19 @@
 import os
-import requests
 from datetime import datetime, timedelta
 
+import requests
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 from dotenv import load_dotenv
-
-from training.helpers import log_admin_action
+from overview.helpers.trainee import get_course_completion
 from training.eud_header import eud_header
-from overview.helpers import get_course_completion
+from training.helpers import log_admin_action
+from training.permissions import mentor_required
 
 from .helpers import get_tier1_endorsements, get_tier2_endorsements
 from .models import EndorsementGroup, EndorsementActivity, Tier2Endorsement
-
-from training.permissions import mentor_required
 
 load_dotenv()
 

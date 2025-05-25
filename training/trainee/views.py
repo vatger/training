@@ -10,7 +10,7 @@ from endorsements.views import min_hours_required
 from familiarisations.helpers import get_familiarisations
 from lists.models import Course
 from logs.models import Log
-from overview.helpers import get_course_completion
+from overview.helpers.trainee import get_course_completion
 from trainee.forms import UserDetailForm
 from training.permissions import mentor_required
 

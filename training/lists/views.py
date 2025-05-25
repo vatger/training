@@ -15,9 +15,6 @@ from django.shortcuts import (
 )
 from django.utils.safestring import mark_safe
 from dotenv import load_dotenv
-from training.helpers import log_admin_action
-from training.permissions import mentor_required
-
 from familiarisations.models import Familiarisation
 from lists.helpers import (
     course_valid_for_user,
@@ -25,7 +22,10 @@ from lists.helpers import (
     get_roster,
     send_moodle_find_user,
 )
-from overview.helpers import inform_user_course_start
+from overview.helpers.trainee import inform_user_course_start
+from training.helpers import log_admin_action
+from training.permissions import mentor_required
+
 from .models import Course, WaitingListEntry
 
 load_dotenv()
