@@ -147,7 +147,7 @@ def mentor_view(request, vatsim_id: int):
             "moodles": moodles,
             "fams": fams,
             "available_courses": available_courses,
-            "tier_1": tier_1,
+            "tier_1": res_t1,
             "tier_2": tier_2,
             "min_hours": min_hours_required,
             "half_min_hours": min_hours_required // 2,
