@@ -1,11 +1,11 @@
 {% load tags %}
-<div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow"
+<div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-visible hover:shadow-lg transition-shadow"
      data-course
      data-type="{{ course.type }}"
      data-position="{{ course.position }}"
      data-name="{{ course.name }}"
      data-mentor-group="{{ course.mentor_group }}">
-    <div class="p-5 min-w-md">
+    <div class="p-5">
         <div class="flex items-center mb-3">
             {% if course.position == 'GND' %}
                 <div class="bg-gray-100 p-2 rounded-lg mr-3">
@@ -76,7 +76,7 @@
                 {% endif %}
             </div>
 
-            <div class="order-1 sm:order-2 w-full sm:w-auto">
+            <div class="order-1 sm:order-2 w-full sm:w-auto overflow-visible">
                 {% if result.entered %}
                     <button class="btn btn-sm btn-error w-full sm:w-auto"
                             @click="$dispatch('open-confirm', {
@@ -105,7 +105,7 @@
                             </button>
                         </div>
                     {% elif rating_reached and course.type == "RTG" %}
-                        <div class="tooltip w-full sm:w-auto"
+                        <div class="tooltip w-full sm:w-auto z-30 overflow-visible"
                              data-tip="You can only join one rating course at a time">
                             <button class="btn btn-sm btn-disabled w-full sm:w-auto">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1"
