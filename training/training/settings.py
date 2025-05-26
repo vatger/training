@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     "familiarisations.apps.FamiliarisationsConfig",
     "api.apps.ApiConfig",
     "roster.apps.RosterConfig",
+    "cpt.apps.CptConfig",
     "django_vite",
 ]
 

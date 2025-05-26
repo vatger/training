@@ -1,14 +1,13 @@
 from django.contrib import admin
 from django.urls import path, include
-from django.views.generic.base import RedirectView
 
 from .views import group_based_redirect
-
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", include("api.urls")),
     path("connect/", include("connect.urls")),
+    # path("cpt/", include("cpt.urls")),
     path("logs/", include("logs.urls")),
     path("overview/", include("overview.urls")),
     path("lists/", include("lists.urls")),
