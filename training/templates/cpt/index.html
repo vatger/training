@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+    {% for cpt in cpts %}
+
+    {{ cpt.course.name }}
+        {% if cpt.examiner %}
+            <a href="{% url 'cpt:leave_examiner' cpt.id %}"> {{ cpt.examiner.username }}</a>
+        {% else %}
+            <a href="{% url 'cpt:join_examiner' cpt.id %}"> Join </a>
+        {% endif %}
+
+        {% if cpt.local %}
+        <a href="{% url 'cpt:leave_local' cpt.id %}"> {{ cpt.local.username }}</a>
+        {% else %}
+        <a href="{% url 'cpt:join_local' cpt.id %}"> Join </a>
+        {% endif %}
+
+        {% if cpt.status == 'PENDING' %}
+        {% endif %}
+
+        - {{ cpt.date }}
+<br>
+        {% endfor %}
+
+{% endblock %}

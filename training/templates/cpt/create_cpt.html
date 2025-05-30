@@ -1,0 +1,44 @@
+<!-- templates/cpts/cpt_create.html -->
+{% extends 'base.html' %}
+
+{% block title %}Create CPT{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Create New CPT</h2>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Create CPT</button>
+        <a href="" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+
+<script>
+// Dynamic form updates based on course selection
+document.getElementById('id_course').addEventListener('change', function() {
+    const courseId = this.value;
+    if (courseId) {
+        const url = "{% url 'cpt:get_course_data' %}";
+        fetch(`${url}?course_id=${courseId}`)
+            .then(response => response.json())
+            .then(data => {
+                // Update examiner select
+                const examinerSelect = document.getElementById('id_examiner');
+                examinerSelect.innerHTML = '<option value="">-- Select Examiner (Optional) --</option>';
+                data.examiners.forEach(examiner => {
+                    examinerSelect.innerHTML += `<option value="${examiner.id}">${examiner.name}</option>`;
+                });
+
+                // Update local select
+                const localSelect = document.getElementById('id_local');
+                localSelect.innerHTML = '<option value="">-- Select Local Contact (Optional) --</option>';
+                data.mentors.forEach(mentor => {
+                    localSelect.innerHTML += `<option value="${mentor.id}">${mentor.name}</option>`;
+                });
+            });
+    }
+});
+</script>
+{% endblock %}
