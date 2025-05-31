@@ -5,140 +5,140 @@
 {% block title %}Create CPT{% endblock %}
 
 {% block content %}
-<div class="container px-4 py-5">
+  <div class="container px-4 py-5">
     {% include "components/breadcrumbs.html" with auto=True current_title="Create CPT" %}
     <div class="mb-8">
       <h1 class="text-3xl font-bold text-gray-800">New CPT</h1>
     </div>
 
     <form method="post" class="max-w-2xl mx-auto p-6 bg-white shadow-xl rounded-lg space-y-6">
-  {% csrf_token %}
-   {% if form.non_field_errors %}
-    <div class="alert alert-error">
-      <p>{{ form.non_field_errors }}</p>
-    </div>
-    {% endif %}
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+        <div class="alert alert-error">
+          <p>{{ form.non_field_errors }}</p>
+        </div>
+      {% endif %}
 
   <!-- Course -->
-  <div>
-    <label for="{{ form.course.id_for_label }}" class="label">
-      <span class="label-text">{{ form.course.label }}</span>
-    </label>
-    {{ form.course|add_class:"select select-bordered w-full" }}
-    {% if form.course.help_text %}
-      <p class="text-sm text-gray-500">{{ form.course.help_text }}</p>
-    {% endif %}
-    {% if form.course.errors %}
-      <p class="text-red-500 text-sm">{{ form.course.errors }}</p>
-    {% endif %}
-  </div>
+      <div>
+        <label for="{{ form.course.id_for_label }}" class="label">
+          <span class="label-text">{{ form.course.label }}</span>
+        </label>
+        {{ form.course|add_class:"select select-bordered w-full" }}
+        {% if form.course.help_text %}
+          <p class="text-sm text-gray-500">{{ form.course.help_text }}</p>
+        {% endif %}
+        {% if form.course.errors %}
+          <p class="text-red-500 text-sm">{{ form.course.errors }}</p>
+        {% endif %}
+      </div>
 
      <!-- Date -->
-  <div>
-    <label for="{{ form.date.id_for_label }}" class="label">
-      <span class="label-text">{{ form.date.label }}</span>
-    </label>
-    {{ form.date|add_class:"input input-bordered w-full" }}
-    {% if form.date.help_text %}
-      <p class="text-sm text-gray-500">{{ form.date.help_text }}</p>
-    {% endif %}
-    {% if form.date.errors %}
-      <p class="text-red-500 text-sm">{{ form.date.errors }}</p>
-    {% endif %}
-  </div>
+      <div>
+        <label for="{{ form.date.id_for_label }}" class="label">
+          <span class="label-text">{{ form.date.label }}</span>
+        </label>
+        {{ form.date|add_class:"input input-bordered w-full" }}
+        {% if form.date.help_text %}
+          <p class="text-sm text-gray-500">{{ form.date.help_text }}</p>
+        {% endif %}
+        {% if form.date.errors %}
+          <p class="text-red-500 text-sm">{{ form.date.errors }}</p>
+        {% endif %}
+      </div>
 
   <!-- Trainee -->
-  <div>
-    <label for="{{ form.trainee.id_for_label }}" class="label">
-      <span class="label-text">{{ form.trainee.label }}</span>
-    </label>
-    {{ form.trainee|add_class:"select select-bordered w-full" }}
-    {% if form.trainee.help_text %}
-      <p class="text-sm text-gray-500">{{ form.trainee.help_text }}</p>
-    {% endif %}
-    {% if form.trainee.errors %}
-      <p class="text-red-500 text-sm">{{ form.trainee.errors }}</p>
-    {% endif %}
-  </div>
+      <div>
+        <label for="{{ form.trainee.id_for_label }}" class="label">
+          <span class="label-text">{{ form.trainee.label }}</span>
+        </label>
+        {{ form.trainee|add_class:"select select-bordered w-full" }}
+        {% if form.trainee.help_text %}
+          <p class="text-sm text-gray-500">{{ form.trainee.help_text }}</p>
+        {% endif %}
+        {% if form.trainee.errors %}
+          <p class="text-red-500 text-sm">{{ form.trainee.errors }}</p>
+        {% endif %}
+      </div>
 
 
 
   <!-- Examiner -->
-  <div>
-    <label for="{{ form.examiner.id_for_label }}" class="label">
-      <span class="label-text">{{ form.examiner.label }}</span>
-    </label>
-    {{ form.examiner|add_class:"select select-bordered w-full" }}
-    {% if form.examiner.help_text %}
-      <p class="text-sm text-gray-500">{{ form.examiner.help_text }}</p>
-    {% endif %}
-    {% if form.examiner.errors %}
-      <p class="text-red-500 text-sm">{{ form.examiner.errors }}</p>
-    {% endif %}
-  </div>
+      <div>
+        <label for="{{ form.examiner.id_for_label }}" class="label">
+          <span class="label-text">{{ form.examiner.label }}</span>
+        </label>
+        {{ form.examiner|add_class:"select select-bordered w-full" }}
+        {% if form.examiner.help_text %}
+          <p class="text-sm text-gray-500">{{ form.examiner.help_text }}</p>
+        {% endif %}
+        {% if form.examiner.errors %}
+          <p class="text-red-500 text-sm">{{ form.examiner.errors }}</p>
+        {% endif %}
+      </div>
 
   <!-- Local -->
-  <div>
-    <label for="{{ form.local.id_for_label }}" class="label">
-      <span class="label-text">{{ form.local.label }}</span>
-    </label>
-    {{ form.local|add_class:"select select-bordered w-full" }}
-    {% if form.local.help_text %}
-      <p class="text-sm text-gray-500">{{ form.local.help_text }}</p>
-    {% endif %}
-    {% if form.local.errors %}
-      <p class="text-red-500 text-sm">{{ form.local.errors }}</p>
-    {% endif %}
-  </div>
+      <div>
+        <label for="{{ form.local.id_for_label }}" class="label">
+          <span class="label-text">{{ form.local.label }}</span>
+        </label>
+        {{ form.local|add_class:"select select-bordered w-full" }}
+        {% if form.local.help_text %}
+          <p class="text-sm text-gray-500">{{ form.local.help_text }}</p>
+        {% endif %}
+        {% if form.local.errors %}
+          <p class="text-red-500 text-sm">{{ form.local.errors }}</p>
+        {% endif %}
+      </div>
 
   <!-- Submit button -->
-  <div class="flex justify-end">
-    <button type="submit" class="btn btn-primary">Create CPT</button>
+      <div class="flex justify-end">
+        <button type="submit" class="btn btn-primary">Create CPT</button>
+      </div>
+    </form>
+
   </div>
-</form>
 
-</div>
+  <script>
+    function updateCourseData() {
+      const courseId = document.getElementById('id_course').value;
+      const dateInput = document.getElementById('id_date').value;
 
-<script>
-function updateCourseData() {
-    const courseId = document.getElementById('id_course').value;
-    const dateInput = document.getElementById('id_date').value;
-
-    if (courseId) {
+      if (courseId) {
         const url = "{% url 'cpt:get_course_data' %}";
         const queryParams = new URLSearchParams({
-            course_id: courseId,
-            date: dateInput
+          course_id: courseId,
+          date: dateInput
         });
 
         fetch(`${url}?${queryParams.toString()}`)
-            .then(response => response.json())
-            .then(data => {
+          .then(response => response.json())
+          .then(data => {
                 // Update examiner select
-                const examinerSelect = document.getElementById('id_examiner');
-                examinerSelect.innerHTML = '<option value="">-- Select Examiner (Optional) --</option>';
-                data.examiners.forEach(examiner => {
-                    examinerSelect.innerHTML += `<option value="${examiner.id}">${examiner.name}</option>`;
-                });
+            const examinerSelect = document.getElementById('id_examiner');
+            examinerSelect.innerHTML = '<option value="">-- Select Examiner (Optional) --</option>';
+            data.examiners.forEach(examiner => {
+              examinerSelect.innerHTML += `<option value="${examiner.id}">${examiner.name}</option>`;
+            });
 
                 // Update local select
-                const localSelect = document.getElementById('id_local');
-                localSelect.innerHTML = '<option value="">-- Select Local Contact (Optional) --</option>';
-                data.mentors.forEach(mentor => {
-                    localSelect.innerHTML += `<option value="${mentor.id}">${mentor.name}</option>`;
-                });
+            const localSelect = document.getElementById('id_local');
+            localSelect.innerHTML = '<option value="">-- Select Local Contact (Optional) --</option>';
+            data.mentors.forEach(mentor => {
+              localSelect.innerHTML += `<option value="${mentor.id}">${mentor.name}</option>`;
+            });
 
                 // Update trainee select
-                const traineeSelect = document.getElementById('id_trainee');
-                traineeSelect.innerHTML = '<option value="">-- Select Trainee --</option>';
-                data.trainees.forEach(trainee => {
-                    traineeSelect.innerHTML += `<option value="${trainee.id}">${trainee.name} - ${trainee.username}</option>`;
-                });
+            const traineeSelect = document.getElementById('id_trainee');
+            traineeSelect.innerHTML = '<option value="">-- Select Trainee --</option>';
+            data.trainees.forEach(trainee => {
+              traineeSelect.innerHTML += `<option value="${trainee.id}">${trainee.name} - ${trainee.username}</option>`;
             });
+          });
+      }
     }
-}
 
-document.getElementById('id_course').addEventListener('change', updateCourseData);
-document.getElementById('id_date').addEventListener('change', updateCourseData);
-</script>
+    document.getElementById('id_course').addEventListener('change', updateCourseData);
+    document.getElementById('id_date').addEventListener('change', updateCourseData);
+  </script>
 {% endblock %}
