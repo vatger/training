@@ -20,6 +20,17 @@ class ExaminerAdmin(admin.ModelAdmin):
     user_username.short_description = "Username"
 
 
+class CPTAdmin(admin.ModelAdmin):
+    list_display = ("course", "trainee", "date", "examiner", "local")
+    search_fields = ("course__name", "trainee__user__username")
+    list_filter = ("course", "date", "examiner", "local")
+    autocomplete_fields = ["course", "trainee", "examiner", "local"]
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.select_related("course", "trainee", "examiner", "local")
+
+
 admin.site.register(Examiner, ExaminerAdmin)
 admin.site.register(ExaminerPosition)
-admin.site.register(CPT)
+admin.site.register(CPT, CPTAdmin)
