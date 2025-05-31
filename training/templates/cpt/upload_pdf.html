@@ -16,9 +16,9 @@
       </div>
     {% endif %}
 
-    {% if request.user.is_superuser %}
-      <div align="center">
-        <div class="text-sm font-medium text-gray-900">
+      {% if request.user.is_superuser and documents %}
+          <div align="center">
+          <div class="text-sm font-medium text-gray-900">
           <a href="{% url 'cpt:grade_cpt' cpt.id 1 %}" class="btn btn-sm bg-green-500">
             <svg xmlns="http://www.w3.org/2000/svg"
                  fill="none"
