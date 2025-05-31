@@ -4,10 +4,15 @@ from .models import Examiner, ExaminerPosition, CPT
 
 
 class ExaminerAdmin(admin.ModelAdmin):
-    list_display = ("user_username",)
+    list_display = ("user_username", "full_name", "callsign")
     search_fields = ("user__username", "callsign")
     filter_horizontal = ("positions",)
     autocomplete_fields = ["user"]
+
+    def full_name(self, obj):
+        return f"{obj.user.first_name} {obj.user.last_name}".strip()
+
+    full_name.short_description = "Full Name"
 
     def user_username(self, obj):
         return obj.user.username
