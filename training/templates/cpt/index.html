@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <style>
+            .messages .success {
+            color: green;
+        }
+        .messages .error {
+            color: red;
+        }
+        .messages .warning {
+            color: orange;
+        }
+        .messages .info {
+            color: blue;
+        }
+    </style>
+
+    <div class="container px-4 py-5">
+    {% include "components/breadcrumbs.html" with auto=True current_title="CPT Planning" %}
+
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-gray-800">CPT Management</h1>
+      <p class="text-gray-600 mt-2">Plan CPTs and sign up as examiner.</p>
+    </div>
+
+    {% if messages %}
+        <div class="mb-8">
+    <ul class="messages">
+    {% for message in messages %}
+    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        </div>
+    {% endfor %}
+</ul>
+{% endif %}
+
+    <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Station</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trainee</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Examiner</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Local</th>
+                    {% if request.user.is_superuser %}
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    {% endif %}
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                {% for cpt in cpts %}
+                  {% include "components/cpt/index_row.html" %}
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+    <div class="container">
+    <div class="flex space-x-2">
+            <a href="{% url 'cpt:create_cpt' %}" class="btn btn-sm btn-primary">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+              New CPT
+            </a>
+    </div>
+    </div>
+    </div>
+
+    {% include "components/modals/confirmation_modal.html" %}
+{% endblock %}
