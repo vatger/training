@@ -62,10 +62,9 @@ class CPTForm(forms.ModelForm):
             type="RTG"
         ).order_by("name")
 
-        if request.GET:
-            self.fields["trainee"].queryset = User.objects.none()
-            self.fields["examiner"].queryset = User.objects.none()
-            self.fields["local"].queryset = User.objects.none()
+        self.fields["trainee"].queryset = User.objects.none()
+        self.fields["examiner"].queryset = User.objects.none()
+        self.fields["local"].queryset = User.objects.none()
 
         # Set empty labels for optional fields
         self.fields["examiner"].empty_label = "-- Select Examiner (Optional) --"
