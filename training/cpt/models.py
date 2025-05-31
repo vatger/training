@@ -51,3 +51,13 @@ class CPT(models.Model):
         Course, on_delete=models.SET_NULL, related_name="cpts", null=True, blank=True
     )
     confirmed = models.BooleanField(default=False)
+    log_uploaded = models.BooleanField(default=False)
+
+
+class CPTLog(models.Model):
+    cpt = models.ForeignKey(CPT, on_delete=models.CASCADE, related_name="log")
+    log_file = models.FileField(upload_to="cpt_logs/")
+    uploaded_by = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="cpt_logs_uploaded"
+    )
+    uploaded_at = models.DateTimeField(auto_now_add=True)

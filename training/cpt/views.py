@@ -8,12 +8,44 @@ from django.utils import timezone
 from dotenv import load_dotenv
 from lists.models import Course
 from overview.helpers.trainee import get_core_theory_passed, CoreState
+from training.eud_header import eud_header
 from training.permissions import mentor_required
 
-from .forms import CPTCreateForm
-from .models import CPT, Examiner
+from .forms import CPTCreateForm, DocumentForm
+from .models import CPT, Examiner, CPTLog
 
 load_dotenv()
+
+
+def upload_log(request, cpt: CPT):
+    link = f"https://core.vateud.net/api/facility/user/{int(cpt.trainee.username)}/notes/cpt"
+    # Add file to multipart form data
+
+    data = {
+        "examiner_cid": int(cpt.examiner.username),
+        "position": cpt.course.solo_station,
+        "note": "See log",
+        "cpt_pass": int(cpt.passed),
+        "file": cpt.log.order_by("-uploaded_at")[0].log_file.name,
+    }
+    files = {
+        "file": (
+            cpt.log.order_by("-uploaded_at")[0].log_file.name,
+            open(cpt.log.order_by("-uploaded_at")[0].log_file.path, "rb"),
+        )
+    }
+    return requests.post(link, data=data, headers=eud_header, files=files).json()
+
+
+def request_upgrade(request, cpt):
+    link = (
+        f"https://core.vateud.net/api/facility/user/{int(cpt.trainee.username)}/upgrade"
+    )
+    data = {
+        "instructor_cid": int(request.user.username),
+        "new_rating": cpt.trainee.userdetail.rating + 1,
+    }
+    return requests.post(link, data=data, headers=eud_header).json()
 
 
 def inform_mentor(vatsim_id: int):
@@ -255,6 +287,45 @@ def grade_cpt(request, cpt_id: int, pass_fail: int):
             messages.success(request, "CPT graded as failed.")
         else:
             messages.error(request, "Invalid grading option.")
+            return redirect("cpt:index")
+        if cpt.log_uploaded:
+            upload_log(request, cpt)
+            if cpt.passed:
+                request_upgrade(request, cpt)
     except CPT.DoesNotExist:
         messages.error(request, "CPT not found.")
     return redirect("cpt:index")
+
+
+@mentor_required
+def upload_pdf(request, cpt_id: int):
+    try:
+        cpt = CPT.objects.get(id=cpt_id)
+    except CPT.DoesNotExist:
+        messages.error(request, "CPT not found.")
+        return redirect("cpt:index")
+    if request.method == "POST":
+        form = DocumentForm(request.POST, request.FILES)
+        if form.is_valid():
+            log = form.save(commit=False)
+            log.cpt = cpt
+            log.uploaded_by = request.user
+            log.save()
+            cpt.log_uploaded = True
+            cpt.save()
+            return redirect("cpt:upload_pdf", cpt_id=cpt.id)
+    else:
+        form = DocumentForm()
+    if (
+        not request.user.is_superuser
+        and request.user != cpt.local
+        and request.user != cpt.examiner
+    ):
+        messages.error(request, "You do not have permission to upload documents.")
+        return redirect("cpt:index")
+    documents = CPTLog.objects.all().order_by("-uploaded_at").filter(cpt__id=cpt_id)
+    return render(
+        request,
+        "cpt/upload_pdf.html",
+        {"form": form, "documents": documents, "cpt": cpt},
+    )
