@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
+from lists.models import Course
 
 from .models import CPT
 
@@ -61,6 +62,10 @@ class CPTForm(forms.ModelForm):
         self.fields["course"].queryset = request.user.mentored_courses.filter(
             type="RTG"
         ).order_by("name")
+        if request.user.is_superuser:
+            self.fields["course"].queryset = Course.objects.filter(type="RTG").order_by(
+                "name"
+            )
 
         self.fields["trainee"].queryset = User.objects.none()
         self.fields["examiner"].queryset = User.objects.none()
