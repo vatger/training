@@ -13,5 +13,6 @@ urlpatterns = [
     path("examiner/leave/<int:cpt_id>/", views.leave_examiner, name="leave_examiner"),
     path("delete/<int:cpt_id>/", views.delete_cpt, name="delete_cpt"),
     path("grade/<int:cpt_id>/<int:pass_fail>/", views.grade_cpt, name="grade_cpt"),
+    path("upload/<int:cpt_id>/", views.upload_pdf, name="upload_pdf"),
     path("api/course-data/", views.get_course_data, name="get_course_data"),
 ]

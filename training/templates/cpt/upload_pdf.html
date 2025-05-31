@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+
+{% block content %}
+  <div class="container px-4 py-5">
+
+    {% include "components/breadcrumbs.html" with auto=True current_title="Upload Log" %}
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-gray-800">Upload Log</h1>
+    </div>
+
+    {% if documents %}
+      <div align="center">
+        <iframe src="{{ documents.0.log_file.url }}" width="1000" height="800"></iframe>
+      </div>
+    {% endif %}
+
+    {% if request.user.is_superuser %}
+      <div align="center">
+        <div class="text-sm font-medium text-gray-900">
+          <a href="{% url 'cpt:grade_cpt' cpt.id 1 %}" class="btn btn-sm bg-green-500">
+            <svg xmlns="http://www.w3.org/2000/svg"
+                 fill="none"
+                 viewBox="0 0 24 24"
+                 stroke-width="1.5"
+                 stroke="currentColor"
+                 class="w-6 h-6 text-white">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M4.5 12.75l6 6 9-13.5" />
+            </svg>
+          </a>
+
+          <a href="{% url 'cpt:grade_cpt' cpt.id 0 %}" class="btn btn-sm bg-red-500">
+            <svg xmlns="http://www.w3.org/2000/svg"
+                 fill="none"
+                 viewBox="0 0 24 24"
+                 stroke-width="1.5"
+                 stroke="currentColor"
+                 class="w-6 h-6 text-white">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+            </svg>
+
+          </a>
+        </div>
+      </div>
+    {% endif %}
+
+    <br>
+    <form method="post" enctype="multipart/form-data" class="max-w-2xl mx-auto mt-10" id="upload-form">
+      {% csrf_token %}
+
+  <!-- Dropzone -->
+      <div id="dropzone" class="flex flex-col items-center justify-center p-10 border-2 border-dashed border-blue-400 rounded-lg bg-base-200 hover:bg-base-300 transition-colors duration-200 cursor-pointer">
+        <svg class="w-12 h-12 text-blue-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4M17 8h4m-2-2v12m-2-2l4 4m0-4l-4 4" />
+        </svg>
+        <p class="text-sm text-blue-600">Drag and drop a PDF here, or click to select</p>
+
+        <input type="file" name="log_file" id="file-input" class="hidden" accept="application/pdf" required>
+        <p id="file-name" class="mt-2 text-sm text-gray-600"></p>
+      </div>
+
+      <button type="submit" class="btn btn-primary mt-6 w-full">Upload</button>
+    </form>
+
+    <div>
+      {{ documents|length }} documents uploaded.
+      {% for document in documents %}
+        <div class="mt-4 p-4 bg-white rounded-lg shadow">
+          <h3 class="text-lg font-semibold">{{ document.name }}</h3>
+          <p class="text-sm text-gray-600">File {{ forloop.counter }}, uploaded on: {{ document.uploaded_at|date:"Y-m-d H:i" }}</p>
+          <a href="{{ document.log_file.url }}" class="text-blue-500 hover:underline mt-2 inline-block" target="_blank">Download</a>
+        </div>
+      {% endfor %}
+    </div>
+
+  </div>
+
+  <script>
+    const dropzone = document.getElementById('dropzone');
+    const fileInput = document.getElementById('file-input');
+    const fileNameDisplay = document.getElementById('file-name');
+
+  // Open file picker on click
+    dropzone.addEventListener('click', () => fileInput.click());
+
+  // Show file name on change
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files.length > 0) {
+        fileNameDisplay.textContent = fileInput.files[0].name;
+      }
+    });
+
+  // Handle drag events
+    dropzone.addEventListener('dragover', e => {
+      e.preventDefault();
+      dropzone.classList.add('bg-base-300');
+    });
+
+    dropzone.addEventListener('dragleave', () => {
+      dropzone.classList.remove('bg-base-300');
+    });
+
+    dropzone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropzone.classList.remove('bg-base-300');
+
+      const files = e.dataTransfer.files;
+      if (files.length > 0 && files[0].type === "application/pdf") {
+        fileInput.files = files;
+        fileNameDisplay.textContent = files[0].name;
+      } else {
+        alert("Only PDF files are allowed.");
+      }
+    });
+  </script>
+
+{% endblock %}

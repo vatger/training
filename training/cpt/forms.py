@@ -2,7 +2,13 @@ from django import forms
 from django.contrib.auth.models import User
 from lists.models import Course
 
-from .models import CPT
+from .models import CPT, CPTLog
+
+
+class DocumentForm(forms.ModelForm):
+    class Meta:
+        model = CPTLog
+        fields = ("log_file",)
 
 
 class CPTForm(forms.ModelForm):
