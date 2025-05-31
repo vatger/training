@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     "roster.apps.RosterConfig",
     "cpt.apps.CptConfig",
     "django_vite",
+    "widget_tweaks",
 ]
 
 MIDDLEWARE = [
@@ -159,3 +160,5 @@ STATICFILES_DIRS = [
 
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"

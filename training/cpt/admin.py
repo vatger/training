@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Examiner, ExaminerPosition, CPT
+from .models import Examiner, ExaminerPosition, CPT, CPTLog
 
 
 class ExaminerAdmin(admin.ModelAdmin):
@@ -34,3 +34,4 @@ class CPTAdmin(admin.ModelAdmin):
 admin.site.register(Examiner, ExaminerAdmin)
 admin.site.register(ExaminerPosition)
 admin.site.register(CPT, CPTAdmin)
+admin.site.register(CPTLog)
