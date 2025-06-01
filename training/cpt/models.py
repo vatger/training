@@ -1,7 +1,38 @@
+import os
+
+import requests
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
+from dotenv import load_dotenv
 from lists.models import Position, Course
+
+load_dotenv()
+
+
+def send_confirmed():
+    header = {
+        "Authorization": f"Token {os.getenv("VATGER_API_KEY")}",
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+    }
+    cpts = CPT.objects.filter(confirmed=True, passed__isnull=True).order_by("date")
+    res = []
+    for cpt in cpts:
+        res.append(
+            {
+                "trainee": cpt.trainee.get_full_name(),
+                "date": f"{cpt.date.strftime('%d.%m.%y %H:%M')}lcl",
+                "position": cpt.course.solo_station,
+            }
+        )
+    data = {
+        "text_data": " ",
+        "table_data": res,
+    }
+    r = requests.post(
+        "http://vatsim-germany.org/api/board/post/cpt", json=data, headers=header
+    ).json()
 
 
 def default_8pm_today():
@@ -52,6 +83,23 @@ class CPT(models.Model):
     )
     confirmed = models.BooleanField(default=False)
     log_uploaded = models.BooleanField(default=False)
+
+    def save(self, *args, **kwargs):
+        send = False
+        is_create = self.pk is None
+
+        if is_create:
+            if self.confirmed:
+                send = True
+
+        else:
+            old = CPT.objects.get(pk=self.pk)
+            if old.confirmed != self.confirmed:
+                send = True
+
+        super().save(*args, **kwargs)
+        if send:
+            send_confirmed()
 
 
 class CPTLog(models.Model):
