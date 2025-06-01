@@ -27,7 +27,7 @@ def send_confirmed():
             }
         )
     data = {
-        "text_data": " ",
+        "text_data": "The above CPTs have been confirmed.",
         "table_data": res,
     }
     r = requests.post(
