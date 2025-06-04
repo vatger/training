@@ -66,10 +66,10 @@ def overview(request):
 
             activity_hours = round(activity.activity / 60, 2)
 
-            removal_days = 0
+            removal_days = -1
             if activity.removal_date:
                 removal_days = (activity.removal_date - timezone.now().date()).days
-                if removal_days > 0:
+                if removal_days >= 0:
                     removal_count += 1
 
             if activity_hours < min_hours_required:
