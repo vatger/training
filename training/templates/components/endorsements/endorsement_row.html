@@ -1,6 +1,6 @@
 {% load endorsement_tags %}
 
-<tr x-show="filter === 'all' || (filter === 'low' && {{ entry.activity }} < {{ min_hours_required }}) || (filter === 'removal' && {{ entry.removal }} > 0)">
+<tr x-show="filter === 'all' || (filter === 'low' && {{ entry.activity }} < {{ min_hours_required }}) || (filter === 'removal' && {{ entry.removal }} >= 0)">
   <td class="px-6 py-4 whitespace-nowrap">
     <div class="flex items-center">
       <div>
@@ -41,7 +41,7 @@
     </div>
   </td>
   <td class="px-6 py-4 whitespace-nowrap">
-    {% if entry.removal > 0 %}
+    {% if entry.removal >= 0 %}
       <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
         Removal in {{ entry.removal }} days
       </span>
@@ -56,7 +56,7 @@
     {% endif %}
   </td>
   <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-    {% if entry.removal == 0 %}
+    {% if entry.removal == -1 %}
       <a href="{% url 'endorsements:remove' entry.endorsement_id %}"
          class="btn btn-sm btn-error"
          @click.prevent="$dispatch('open-confirm', {

@@ -1,0 +1,120 @@
+{% load tags %}
+
+<tr>
+
+
+
+  <td class="px-6 py-4 whitespace-nowrap">
+    <div class="flex items-center">
+      <div>
+        {% if cpt.confirmed %}
+          <div class="text-sm font-medium text-green-600">
+        {% else %}
+          <div class="text-sm font-medium text-gray-900">
+        {% endif %}
+        {{ cpt.course.solo_station }}
+      </div>
+      <div class="text-sm text-red-500">
+        <button @click="$dispatch('open-confirm', {
+                        action: 'remove',
+                        message: 'Are you sure you want to delete {{ cpt.trainee.get_full_name }}\'s CPT?',
+                        href: '{% url 'cpt:delete_cpt' cpt.id %}'
+                        })"><a>Cancel CPT</a>
+        </button>
+      </div>
+    </div>
+  </div>
+</td>
+
+<td class="px-6 py-4 whitespace-nowrap">
+  <div class="flex items-center">
+    <div>
+      <div class="text-sm font-medium text-gray-900">
+        <a href="https://stats.vatsim.net/stats/{{ entry.id }}?range=6months" target="_blank" class="hover:text-blue-600">
+          {{ cpt.trainee.get_full_name }}
+        </a>
+      </div>
+      <div class="text-sm text-gray-500">{{ cpt.trainee.username }}</div>
+    </div>
+  </div>
+</td>
+
+<td class="px-6 py-4 whitespace-nowrap">
+  <div class="flex items-center">
+    <div>
+      <div class="text-sm font-medium text-gray-900">
+        {{ cpt.date|date:"d.m.Y H:i" }}lcl
+      </div>
+    </div>
+  </div>
+</td>
+
+
+<td class="px-6 py-4 whitespace-nowrap">
+  <div class="flex items-center">
+    <div>
+      <div class="text-sm font-medium text-gray-900">
+        {% if cpt.examiner %}
+          {{ cpt.examiner.get_full_name }}
+          {% if request.user == cpt.examiner %}
+            <div class="text-sm text-red-500"><button @click="$dispatch('open-confirm', {
+                        action: 'remove',
+                        message: 'Are you sure you want to cancel as examiner?',
+                        href: '{% url 'cpt:leave_examiner' cpt.id %}'
+                        })">
+                Cancel</button></div>
+          {% endif %}
+        {% else %}
+          <div class="text-sm text-blue-500"><a href="{% url 'cpt:join_examiner' cpt.id %}"> Sign up </a></div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</td>
+
+<td class="px-6 py-4 whitespace-nowrap">
+  <div class="flex items-center">
+    <div>
+      <div class="text-sm font-medium text-gray-900">
+        {% if cpt.local %}
+          {{ cpt.local.get_full_name }}
+          {% if request.user == cpt.local %}
+            <div class="text-sm text-red-500">
+                <button @click="$dispatch('open-confirm', {
+                        action: 'remove',
+                        message: 'Are you sure you want to cancel as local?',
+                        href: '{% url 'cpt:leave_local' cpt.id %}'
+                        })">
+                Cancel</button></div>
+          {% endif %}
+        {% else %}
+          <div class="text-sm text-blue-500"><a href="{% url 'cpt:join_local' cpt.id %}"> Sign up </a></div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</td>
+
+<td class="px-6 py-4 whitespace-nowrap">
+  <div class="flex items-center">
+    <div>
+      {% if request.user.is_superuser and cpt.log_uploaded %}
+        <a href="{% url 'cpt:upload_pdf' cpt.id %}" class="btn btn-sm bg-yellow-500">Check upload</a>
+      {% elif request.user == cpt.examiner or request.user == cpt.local or request.user.is_superuser and not cpt.log_uploaded %}
+        <a href="{% url 'cpt:upload_pdf' cpt.id %}" class="btn btn-sm bg-yellow-500">
+          <svg xmlns="http://www.w3.org/2000/svg"
+               fill="none"
+               viewBox="0 0 24 24"
+               stroke-width="1.5"
+               stroke="currentColor"
+               class="w-6 h-6 text-white">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
+          </svg>
+        </a>
+      {% else %}
+        <div class="text-sm font-medium text-gray-900">
+          ---- </div>
+      {% endif %}
+
+    </div>
+  </tr>
