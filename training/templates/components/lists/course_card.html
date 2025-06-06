@@ -144,7 +144,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
-                    <span>Need more activity: {{ result.activity|default:0 }}/{{ min_activity }} hours in 2 months (No. {{ result.list_spot }} on list)</span>
+                    <span>Need more activity: {{ result.activity|default:0|floatformat:"-1" }}/{{ min_activity }} hours in 2 months (No. {{ result.list_spot }} on list)</span>
                 </div>
             {% elif not result.hours_reached and course.type == "RTG" %}
                 <div class="flex items-center text-sm semantic-yellow-text">
@@ -153,7 +153,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
-                    <span>Need more hours: {{ result.current_hours|default:0 }}/{{ min_hours }} hours</span>
+                    <span>Need more hours: {{ result.current_hours|default:0|floatformat:"-1" }}/{{ min_hours }} hours</span>
                 </div>
             {% elif result.entered %}
                 <div class="flex items-center text-sm semantic-green-text">
@@ -163,7 +163,7 @@
                               d="M5 13l4 4L19 7"/>
                     </svg>
                     <span>You are No. {{ result.list_spot }} on the waiting list
-                        {% if course.type == "RTG" %} ({{ result.activity|default:0 }}/{{ min_activity }} hours in 2 months) {% endif %}
+                        {% if course.type == "RTG" %} ({{ result.activity|default:0|floatformat:"-1" }}/{{ min_activity }} hours in 2 months) {% endif %}
                     </span>
                 </div>
             {% endif %}
