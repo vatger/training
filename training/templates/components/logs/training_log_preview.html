@@ -21,6 +21,7 @@
         </span>
       </div>
       <p class="text-xs text-base-content/60 mt-1">{{ log.session_date|date:"d M Y" }}</p>
+      <p class="text-xs text-base-content/60 mt-1">{{ log.mentor }}</p>
     </div>
     <div class="flex space-x-2">
       <a href="{% url 'logs:log_detail' log.id %}" class="inline-flex items-center text-sm semantic-blue-text hover:opacity-80 transition-colors">
