@@ -38,24 +38,24 @@
             x-transition:leave="ease-in duration-200"
             x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
             x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-            class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl sm:w-full z-20 relative">
+            class="inline-block align-bottom bg-base-100 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl sm:w-full z-20 relative">
 
                     <!-- Modal header -->
-            <div class="bg-gradient-to-r from-blue-50 to-white px-4 py-3 border-b border-gray-200 sm:px-6">
+            <div class="bg-base-200 px-4 py-3 border-b border-base-content/20 sm:px-6">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center">
                         <div class="avatar avatar-placeholder mr-3">
-                            <div class="bg-blue-100 text-blue-700 w-10 rounded-full">
+                            <div class="semantic-blue-bg semantic-blue-text w-10 rounded-full">
                                 <span x-text="traineeName ? traineeName.split(' ').map(n => n[0]).join('') : ''"></span>
                             </div>
                         </div>
-                        <h3 class="text-lg leading-6 font-medium text-gray-900 truncate max-w-[300px]">
+                        <h3 class="text-lg leading-6 font-medium text-base-content truncate max-w-[300px]">
                             <span x-text="traineeName"></span>
-                            <span class="text-sm font-normal text-gray-500 ml-1">Training Progress</span>
+                            <span class="text-sm font-normal text-base-content/60 ml-1">Training Progress</span>
                         </h3>
                     </div>
                     <button @click="showProgressModal = false"
-                            class="text-gray-400 hover:text-gray-500 transition-colors">
+                            class="text-base-content/60 hover:text-base-content transition-colors">
                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                   d="M6 18L18 6M6 6l12 12"></path>
@@ -65,7 +65,7 @@
             </div>
 
                     <!-- Action buttons -->
-            <div class="bg-gray-50 px-4 pt-3 sm:px-6 border-b border-gray-200">
+            <div class="bg-base-200 px-4 pt-3 sm:px-6 border-b border-base-content/20">
                 <div class="flex flex-wrap gap-2 mb-3">
                     <a :href="'/logs/new/' + traineeId + '/' + courseId + '/'"
                        class="btn btn-sm btn-primary"
@@ -93,34 +93,34 @@
             </div>
 
                     <!-- Timeline content -->
-            <div class="bg-white px-4 pt-4 pb-5 sm:p-6 sm:pb-4 max-h-[60vh] overflow-y-auto overflow-x-hidden">
+            <div class="bg-base-100 px-4 pt-4 pb-5 sm:p-6 sm:pb-4 max-h-[60vh] overflow-y-auto overflow-x-hidden">
                 <div class="mt-1 space-y-4">
                     {% for course in courses %}
                         {% with course_trainees=coursedict|get_item:course %}
                             {% for trainee, data in course_trainees.items %}
                                 <div x-show="traineeId == '{{ trainee.id }}'">
                                     {% if data.logs.length == 0 %}
-                                        <div class="py-8 text-center bg-gray-50 rounded-lg">
+                                        <div class="py-8 text-center bg-base-200 rounded-lg">
                                             <svg xmlns="http://www.w3.org/2000/svg"
-                                                 class="mx-auto h-12 w-12 text-gray-400" fill="none"
+                                                 class="mx-auto h-12 w-12 semantic-gray-text" fill="none"
                                                  viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round"
                                                       stroke-width="2"
                                                       d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                                             </svg>
-                                            <h3 class="mt-2 text-sm font-medium text-gray-900">No training logs
+                                            <h3 class="mt-2 text-sm font-medium text-base-content">No training logs
                                                 yet</h3>
-                                            <p class="mt-1 text-sm text-gray-500">Get started by creating a new
+                                            <p class="mt-1 text-sm text-base-content/60">Get started by creating a new
                                                 training log.</p>
                                         </div>
                                     {% else %}
                                                 <!-- Timeline container -->
-                                        <div class="relative pl-8 space-y-5 before:absolute before:top-0 before:bottom-0 before:left-4 before:w-0.5 before:bg-gray-200">
+                                        <div class="relative pl-8 space-y-5 before:absolute before:top-0 before:bottom-0 before:left-4 before:w-0.5 before:bg-base-content/20">
                                             {% for log in data.logs reversed %}
                                                 <div class="relative">
                         <!-- Timeline dot marker -->
                                                     <div class="absolute -left-6 mt-1.5 h-4 w-4 rounded-full border-2 border-white flex items-center justify-center
-                                                                {% if log.result %}bg-green-500{% else %}bg-red-500{% endif %}">
+                                                                {% if log.result %}semantic-green-bg{% else %}semantic-red-bg{% endif %}">
                                                     </div>
                                                     {% include "components/logs/training_log_preview.html" %}
                                                 </div>
@@ -135,7 +135,7 @@
             </div>
 
                     <!-- Modal footer -->
-            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t border-gray-200">
+            <div class="bg-base-200 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t border-base-content/20">
                 <button type="button" @click="showProgressModal = false"
                         class="btn btn-sm sm:btn-md btn-primary">
                     Close
