@@ -158,7 +158,7 @@
                         </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <a x-show="!(course.type === 'RTG'"
+                        <a x-show="!(course.type === 'RTG' && trainee.activity < {{ activity_display }})"
                            :href="'/lists/start/' + trainee.id + '/'"
                            class="btn btn-primary btn-sm">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none"
