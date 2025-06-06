@@ -32,8 +32,8 @@
                         <div class="flex space-x-1 items-center">
                             {% with reversed_logs=data.logs|dictsortreversed:"session_date"|slice:":5"|dictsort:"session_date" %}
                                 {% for log in reversed_logs %}
-                                    <span class="inline-flex h-2.5 w-2.5 rounded-full {% if log.result %}semantic-green-bg{% else %}semantic-red-bg{% endif %}"
-                                          style="{% if log.result %}background-color: var(--green-text){% else %}background-color: var(--green-text){% endif %}"
+                                    <span class="inline-flex h-2.5 w-2.5 rounded-full"
+                                          style="{% if log.result %}background-color: var(--green-text){% else %}background-color: var(--red-text){% endif %}"
                                           title="{{ log.session_date|date:'d M Y' }} - {{ log.get_type_display }} - {{ log.result|yesno:'Passed,Failed' }}"></span>
                                 {% endfor %}
                             {% endwith %}
