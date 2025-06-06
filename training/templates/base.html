@@ -179,7 +179,7 @@
                 </svg>
                 <span>Endorsement Manager</span>
               </a>
-              <a href="{% url 'cpt:index' %}" class="btn btn-ghost w-full justify-start text-gray-600 hover:text-base-content pl-2 h-[36px]">
+              <a href="{% url 'cpt:index' %}" class="btn btn-ghost w-full justify-start text-base-content/70 hover:text-base-content pl-2 h-[36px]">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   class="h-5 w-5"
@@ -355,104 +355,154 @@
           </div>
         {% endif %}
     <script>
-      document.addEventListener('alpine:init', () => {
-        // Global theme manager
-        Alpine.data('themeManager', () => ({
-          currentTheme: 'vatger-light',
-          themePreference: 'vatger-light', // What user actually selected
+  document.addEventListener('alpine:init', () => {
+    Alpine.data('themeManager', () => ({
+      currentTheme: 'vatger-light',
 
-          init() {
-            // Check for saved theme preference or default to light
-            const savedTheme = localStorage.getItem('theme');
-            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      init() {
+        const savedTheme = localStorage.getItem('theme');
+        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-            if (savedTheme) {
-              this.themePreference = savedTheme;
-              if (savedTheme === 'system') {
-                this.currentTheme = systemPrefersDark ? 'vatger-dark' : 'vatger-light';
-              } else {
-                this.currentTheme = savedTheme;
-              }
-            } else if (systemPrefersDark) {
-              this.currentTheme = 'vatger-dark';
-              this.themePreference = 'system';
-            }
-
-            this.applyTheme();
-
-            // Listen for system theme changes
-            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-              if (this.themePreference === 'system') {
-                this.currentTheme = e.matches ? 'vatger-dark' : 'vatger-light';
-                this.applyTheme();
-              }
-            });
-          },
-
-          setTheme(theme) {
-            this.themePreference = theme;
-            if (theme === 'system') {
-              const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-              this.currentTheme = systemPrefersDark ? 'vatger-dark' : 'vatger-light';
-            } else {
-              this.currentTheme = theme;
-            }
-            localStorage.setItem('theme', theme);
-            this.applyTheme();
-          },
-
-          applyTheme() {
-            document.documentElement.setAttribute('data-theme', this.currentTheme);
-          }
-        }));
-
-        // Theme toggle component
-        Alpine.data('themeToggle', () => ({
-          currentTheme: 'vatger-light',
-          themePreference: 'vatger-light',
-
-          init() {
-            // Sync with global theme state
-            this.syncWithGlobalTheme();
-
-            // Watch for theme changes
-            this.$watch('$store.theme', () => {
-              this.syncWithGlobalTheme();
-            });
-          },
-
-          syncWithGlobalTheme() {
-            const savedTheme = localStorage.getItem('theme');
-            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-            this.themePreference = savedTheme || 'vatger-light';
-
-            if (savedTheme === 'system') {
-              this.currentTheme = systemPrefersDark ? 'vatger-dark' : 'vatger-light';
-            } else {
-              this.currentTheme = savedTheme || 'vatger-light';
-            }
-          },
-
-          setTheme(theme) {
-            this.themePreference = theme;
-            if (theme === 'system') {
-              const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-              this.currentTheme = systemPrefersDark ? 'vatger-dark' : 'vatger-light';
-            } else {
-              this.currentTheme = theme;
-            }
-            localStorage.setItem('theme', theme);
-            document.documentElement.setAttribute('data-theme', this.currentTheme);
-          }
-        }));
-      });
-    </script>
-      </body>
-      <style>
-        /* Hide Alpine.js elements until Alpine is loaded */
-        [x-cloak] {
-          display: none !important;
+        if (savedTheme) {
+          this.currentTheme = savedTheme;
+        } else {
+          this.currentTheme = systemPrefersDark ? 'vatger-dark' : 'vatger-light';
         }
-      </style>
+
+        this.applyTheme();
+
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+          if (!localStorage.getItem('theme')) {
+            this.currentTheme = e.matches ? 'vatger-dark' : 'vatger-light';
+            this.applyTheme();
+          }
+        });
+      },
+
+      toggleTheme() {
+        this.currentTheme = this.currentTheme === 'vatger-light' ? 'vatger-dark' : 'vatger-light';
+        this.saveAndApplyTheme();
+      },
+
+      setTheme(theme) {
+        this.currentTheme = theme;
+        this.saveAndApplyTheme();
+      },
+
+      saveAndApplyTheme() {
+        localStorage.setItem('theme', this.currentTheme);
+        this.applyTheme();
+      },
+
+      applyTheme() {
+        document.documentElement.setAttribute('data-theme', this.currentTheme);
+        document.body.setAttribute('data-theme', this.currentTheme);
+
+        document.documentElement.className = this.currentTheme;
+
+        console.log('Theme applied:', this.currentTheme);
+      }
+    }));
+
+    Alpine.store('colors', {
+      // Get semantic color classes for any color
+      getClasses(color, types = ['bg', 'text', 'border']) {
+        const classes = types.map(type => `semantic-${color}-${type}`);
+        return classes.join(' ');
+      },
+
+      // Get position-specific classes
+      getPositionClasses(position) {
+        const positionMap = {
+          'GND': 'gray',
+          'TWR': 'blue',
+          'APP': 'green',
+          'CTR': 'purple'
+        };
+        const color = positionMap[position] || 'gray';
+        return this.getClasses(color, ['bg', 'text']);
+      },
+
+      // Get badge classes based on type and value
+      getBadgeClasses(type, value) {
+        const badgeMap = {
+          session: {
+            'O': 'blue',      // Online
+            'S': 'green'      // Sim
+          },
+          result: {
+            true: 'green',    // Passed
+            false: 'red'      // Failed
+          },
+          status: {
+            'success': 'green',
+            'warning': 'yellow',
+            'error': 'red',
+            'info': 'blue'
+          }
+        };
+
+        const color = badgeMap[type]?.[value] || 'gray';
+        return this.getClasses(color, ['bg', 'text']);
+      }
+    });
+
+    // Enhanced theme manager with color utilities
+    Alpine.data('themeManager', () => ({
+      currentTheme: 'vatger-light',
+
+      init() {
+        const savedTheme = localStorage.getItem('theme');
+        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+        if (savedTheme) {
+          this.currentTheme = savedTheme;
+        } else {
+          this.currentTheme = systemPrefersDark ? 'vatger-dark' : 'vatger-light';
+        }
+
+        this.applyTheme();
+
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+          if (!localStorage.getItem('theme')) {
+            this.currentTheme = e.matches ? 'vatger-dark' : 'vatger-light';
+            this.applyTheme();
+          }
+        });
+      },
+
+      toggleTheme() {
+        this.currentTheme = this.currentTheme === 'vatger-light' ? 'vatger-dark' : 'vatger-light';
+        this.saveAndApplyTheme();
+      },
+
+      setTheme(theme) {
+        this.currentTheme = theme;
+        this.saveAndApplyTheme();
+      },
+
+      saveAndApplyTheme() {
+        localStorage.setItem('theme', this.currentTheme);
+        this.applyTheme();
+      },
+
+      applyTheme() {
+        document.documentElement.setAttribute('data-theme', this.currentTheme);
+        document.body.setAttribute('data-theme', this.currentTheme);
+        document.documentElement.className = this.currentTheme;
+      },
+
+      // Color helper methods that can be used in templates
+      getSemanticClasses(color, types = 'bg text') {
+        return types.split(' ').map(type => `semantic-${color}-${type}`).join(' ');
+      },
+
+      getPositionColor(position) {
+        const map = { 'GND': 'gray', 'TWR': 'blue', 'APP': 'green', 'CTR': 'purple' };
+        return map[position] || 'gray';
+      }
+    }));
+  });
+</script>
+      </body>
     </html>

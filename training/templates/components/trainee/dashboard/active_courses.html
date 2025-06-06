@@ -1,20 +1,20 @@
 <div class="mb-10">
   <div class="flex justify-between items-center mb-4">
-    <h2 class="text-xl font-bold text-text-primary">Active Courses</h2>
+    <h2 class="text-xl font-bold text-base-content">Active Courses</h2>
   </div>
 
   {% if active %}
-    <div class="bg-card-bg rounded-xl shadow-md border border-base-300 overflow-hidden">
-      <div class="divide-y divide-border">
+    <div class="bg-base-100 rounded-xl shadow-md border semantic-neutral-border overflow-hidden">
+      <div class="divide-y semantic-neutral-border">
         {% for course, logs in active.items %}
-          <div x-data="{ open: false }" class="bg-card-bg">
-            <div @click="open = !open" class="p-5 flex justify-between items-center cursor-pointer hover:bg-base-200">
+          <div x-data="{ open: false }" class="bg-base-100">
+            <div @click="open = !open" class="p-5 flex justify-between items-center cursor-pointer hover:bg-base-200 transition-colors duration-200">
               <div class="flex items-center">
                 <div class="flex-shrink-0 mr-4">
                   {% if course.position == 'GND' %}
-                    <div class="bg-gray-200 dark:bg-gray-700 p-2 rounded-lg">
+                    <div class="semantic-gray-bg p-2 rounded-lg">
                       <!-- Ground icon -->
-                      <svg class="h-6 w-6 text-gray-600 dark:text-gray-300" version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" xml:space="preserve">
+                      <svg class="h-6 w-6 semantic-gray-text" version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" xml:space="preserve">
                         <path d="M405.5,42.72c-1.935-2.417-4.865-3.825-7.961-3.825H296.52l-2.213-29.46C293.908,4.113,289.473,0,284.137,0h-56.273
                                  c-5.336,0-9.771,4.113-10.171,9.435l-2.213,29.46H114.462c-3.096,0-6.026,1.406-7.961,3.825c-1.936,2.417-2.668,5.583-1.992,8.605
                                  l13.315,59.425l23.966,106.964l14.04,62.665c1.043,4.658,5.179,7.969,9.952,7.969h41.122v213.453
@@ -23,9 +23,9 @@
                       </svg>
                     </div>
                   {% elif course.position == 'TWR' %}
-                    <div class="bg-blue-100 dark:bg-blue-900/20 p-2 rounded-lg">
+                    <div class="semantic-blue-bg p-2 rounded-lg">
                       <!-- Tower icon -->
-                      <svg class="h-6 w-6 text-blue-600 dark:text-blue-400" version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" xml:space="preserve">
+                      <svg class="h-6 w-6 semantic-blue-text" version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" xml:space="preserve">
                         <path d="M405.5,42.72c-1.935-2.417-4.865-3.825-7.961-3.825H296.52l-2.213-29.46C293.908,4.113,289.473,0,284.137,0h-56.273
                                  c-5.336,0-9.771,4.113-10.171,9.435l-2.213,29.46H114.462c-3.096,0-6.026,1.406-7.961,3.825c-1.936,2.417-2.668,5.583-1.992,8.605
                                  l13.315,59.425l23.966,106.964l14.04,62.665c1.043,4.658,5.179,7.969,9.952,7.969h41.122v213.453
@@ -34,33 +34,33 @@
                       </svg>
                     </div>
                   {% elif course.position == 'APP' %}
-                    <div class="bg-green-100 dark:bg-green-900/20 p-2 rounded-lg">
+                    <div class="semantic-green-bg p-2 rounded-lg">
                       <!-- Approach radar icon -->
-                      <svg class="w-6 h-6 text-green-600 dark:text-green-400" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <svg class="w-6 h-6 semantic-green-text" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M9.41185 21.6588C9.94114 21.8006 10.4719 21.8972 11 21.9509C15.7947 22.4387 20.3717 19.3931 21.6593 14.5877C23.0887 9.25308 19.9229 3.76971 14.5882 2.34029C11.9556 1.63489 9.28684 2.04857 7.0869 3.28972M12 11.9996L5.00197 6.33546C4.57285 5.98813 3.93869 6.05182 3.63599 6.5135C3.06678 7.38163 2.62413 8.35389 2.34078 9.41136C1.37322 13.0224 2.51113 16.7015 5.00197 19.1453M7.36918 8.18416C6.51383 9.22115 6.00004 10.5503 6.00004 11.9996C6.00004 15.3133 8.68633 17.9996 12 17.9996C15.3137 17.9996 18 15.3133 18 11.9996C18 11.4818 17.9345 10.9793 17.8111 10.5M10.1029 6.30568C10.6991 6.10709 11.337 5.99955 12 5.99955C13.0929 5.99955 14.1175 6.29173 15 6.80222" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
                       </svg>
                     </div>
                   {% elif course.position == 'CTR' %}
-                    <div class="bg-purple-100 dark:bg-purple-900/20 p-2 rounded-lg">
+                    <div class="semantic-purple-bg p-2 rounded-lg">
                       <!-- Center radar icon -->
-                      <svg class="w-6 h-6 text-purple-600 dark:text-purple-400" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <svg class="w-6 h-6 semantic-purple-text" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M9.41185 21.6588C9.94114 21.8006 10.4719 21.8972 11 21.9509C15.7947 22.4387 20.3717 19.3931 21.6593 14.5877C23.0887 9.25308 19.9229 3.76971 14.5882 2.34029C11.9556 1.63489 9.28684 2.04857 7.0869 3.28972M12 11.9996L5.00197 6.33546C4.57285 5.98813 3.93869 6.05182 3.63599 6.5135C3.06678 7.38163 2.62413 8.35389 2.34078 9.41136C1.37322 13.0224 2.51113 16.7015 5.00197 19.1453M7.36918 8.18416C6.51383 9.22115 6.00004 10.5503 6.00004 11.9996C6.00004 15.3133 8.68633 17.9996 12 17.9996C15.3137 17.9996 18 15.3133 18 11.9996C18 11.4818 17.9345 10.9793 17.8111 10.5M10.1029 6.30568C10.6991 6.10709 11.337 5.99955 12 5.99955C13.0929 5.99955 14.1175 6.29173 15 6.80222" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
                       </svg>
                     </div>
                   {% endif %}
                 </div>
                 <div>
-                  <h3 class="font-medium text-text-primary">{{ course.name }}</h3>
-                  <p class="text-sm text-text-muted">{{ course.get_position_display }} {{ course.get_type_display }}</p>
+                  <h3 class="font-medium text-base-content">{{ course.name }}</h3>
+                  <p class="text-sm text-base-content/60">{{ course.get_position_display }} {{ course.get_type_display }}</p>
                 </div>
               </div>
               <div class="flex items-center">
                 <div class="mr-4">
-                  <span class="text-sm font-medium {% if logs|length > 0 %}text-green-500 dark:text-green-400{% else %}text-text-muted{% endif %}">
+                  <span class="text-sm font-medium {% if logs|length > 0 %}semantic-green-text{% else %}text-base-content/60{% endif %}">
                     {{ logs|length }} Training Session{% if logs|length != 1 %}s{% endif %}
                   </span>
                 </div>
-                <svg class="h-5 w-5 text-text-muted transform transition-transform duration-200" :class="{'rotate-180': open}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <svg class="h-5 w-5 text-base-content/60 transform transition-transform duration-200" :class="{'rotate-180': open}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                   <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
                 </svg>
               </div>
@@ -74,7 +74,7 @@
                   {% endfor %}
                 </div>
               {% else %}
-                <div class="py-4 text-center text-text-muted">
+                <div class="py-4 text-center text-base-content/60">
                   <p>No training sessions recorded yet.</p>
                 </div>
               {% endif %}
@@ -84,12 +84,12 @@
       </div>
     </div>
   {% else %}
-    <div class="bg-card-bg rounded-xl shadow-md p-6 border border-base-300 text-center">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-text-muted mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <div class="bg-base-100 rounded-xl shadow-md p-6 border semantic-neutral-border text-center">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-base-content/60 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
       </svg>
-      <h3 class="text-lg font-medium text-text-primary">No active courses</h3>
-      <p class="mt-2 text-sm text-text-muted">You are not currently enrolled in any active courses.</p>
+      <h3 class="text-lg font-medium text-base-content">No active courses</h3>
+      <p class="mt-2 text-sm text-base-content/60">You are not currently enrolled in any active courses.</p>
     </div>
   {% endif %}
 </div>

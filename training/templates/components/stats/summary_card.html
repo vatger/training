@@ -1,23 +1,11 @@
-<div class="bg-card-bg rounded-xl shadow-md p-6 border border-base-300">
+<div class="bg-base-100 rounded-xl shadow-md p-6 semantic-neutral-border border">
     <div class="flex items-center justify-between">
         <div>
-            <h3 class="text-lg font-semibold text-text-primary">{{ title }}</h3>
-            <p class="text-text-muted text-sm mt-1">{{ description }}</p>
+            <h3 class="text-lg font-semibold text-base-content">{{ title }}</h3>
+            <p class="text-base-content/60 text-sm mt-1">{{ description }}</p>
         </div>
-        <div class="p-3 rounded-full
-                    {% if bg_color == 'blue' %}bg-blue-100 dark:bg-blue-900/30
-                    {% elif bg_color == 'green' %}bg-green-100 dark:bg-green-900/30
-                    {% elif bg_color == 'purple' %}bg-purple-100 dark:bg-purple-900/30
-                    {% elif bg_color == 'yellow' %}bg-yellow-100 dark:bg-yellow-900/30
-                    {% elif bg_color == 'red' %}bg-red-100 dark:bg-red-900/30
-                    {% else %}bg-gray-100 dark:bg-gray-700{% endif %}">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6
-                        {% if bg_color == 'blue' %}text-blue-600 dark:text-blue-400
-                        {% elif bg_color == 'green' %}text-green-600 dark:text-green-400
-                        {% elif bg_color == 'purple' %}text-purple-600 dark:text-purple-400
-                        {% elif bg_color == 'yellow' %}text-yellow-600 dark:text-yellow-400
-                        {% elif bg_color == 'red' %}text-red-600 dark:text-red-400
-                        {% else %}text-gray-600 dark:text-gray-400{% endif %}"
+        <div class="p-3 rounded-full semantic-{{ bg_color }}-bg">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 semantic-{{ bg_color }}-text"
                         fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 {% if icon_class == "user-group" %}
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
@@ -36,9 +24,9 @@
         </div>
     </div>
     <div class="mt-4">
-        <span class="text-3xl font-bold text-text-primary">{{ value }}</span>
+        <span class="text-3xl font-bold text-base-content">{{ value }}</span>
         {% if link_url %}
-            <a href="{% url link_url %}" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 ml-2 transition-colors">{{ link_text }}</a>
+            <a href="{% url link_url %}" class="text-sm text-primary hover:text-primary/80 ml-2 transition-colors">{{ link_text }}</a>
         {% endif %}
     </div>
 </div>
