@@ -6,7 +6,7 @@
                 x-show="getTypeCount('RTG') > 0"
                 @click="activeCategory = 'RTG'"
                 :class="{'semantic-blue-border semantic-blue-text font-medium': activeCategory === 'RTG', 'border-transparent text-base-content/60 hover:text-base-content hover:border-base-content/30': activeCategory !== 'RTG'}"
-                class="py-4 px-1 border-b-2 text-sm transition-colors whitespace-nowrap duration-200 ease-in-out focus:outline-none" style="border-bottom-color: var(--blue-text)">
+                class="py-4 px-1 border-b-2 text-sm transition-colors whitespace-nowrap duration-200 ease-in-out focus:outline-none">
                 Ratings (<span x-text="getTypeCount('RTG')"></span>)
             </button>
 
