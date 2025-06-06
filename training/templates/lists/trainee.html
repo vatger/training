@@ -4,8 +4,8 @@
     <div class="container px-4 py-5">
         {% include "components/breadcrumbs.html" with auto=True current_title="Available Courses" %}
         <div class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-800">Available Courses</h1>
-            <p class="text-gray-600 mt-2">View and join waiting lists for available training courses.</p>
+            <h1 class="text-3xl font-bold text-base-content">Available Courses</h1>
+            <p class="text-base-content/60 mt-2">View and join waiting lists for available training courses.</p>
         </div>
 
         {% if messages %}
@@ -46,7 +46,7 @@
         {% endif %}
 
         {% if error %}
-            <div class="bg-red-100 border border-red-300 text-red-700 px-4 py-3 rounded mb-6" role="alert">
+            <div class="semantic-red-bg border semantic-red-border semantic-red-text px-4 py-3 rounded mb-6" role="alert">
                 <div class="flex items-center">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -77,8 +77,8 @@
                     this.$nextTick(() => {
                         document.querySelectorAll('[data-filter-button]').forEach(button => {
                             if (button.dataset.filter === this.activeFilter) {
-                                button.classList.add('bg-blue-100', 'text-blue-800', 'border-blue-300');
-                                button.classList.remove('bg-gray-100', 'text-gray-700', 'border-gray-200');
+                                button.classList.add('semantic-blue-bg', 'semantic-blue-text', 'semantic-blue-border');
+                                button.classList.remove('semantic-gray-bg', 'text-base-content', 'semantic-neutral-border');
                             }
                         });
 

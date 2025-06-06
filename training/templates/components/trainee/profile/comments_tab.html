@@ -2,28 +2,28 @@
 
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- Comments List -->
-  <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
-    <div class="p-4 bg-gray-50 border-b border-gray-200">
-      <h3 class="font-semibold text-lg text-gray-800">Mentor Comments</h3>
-      <p class="text-sm text-gray-500">Notes and observations about this trainee</p>
+  <div class="bg-base-100 rounded-xl shadow-md border semantic-neutral-border overflow-hidden">
+    <div class="p-4 bg-base-200 border-b border-base-content/20">
+      <h3 class="font-semibold text-lg text-base-content">Mentor Comments</h3>
+      <p class="text-sm text-base-content/60">Notes and observations about this trainee</p>
     </div>
 
-    <div class="p-4 divide-y divide-gray-100">
+    <div class="p-4 divide-y divide-base-content/20">
       {% if comments %}
         {% for comment in comments %}
           <div class="py-4 {% if not forloop.first %}pt-4{% endif %}">
             <div class="flex items-start space-x-3">
               <div class="avatar avatar-placeholder">
-                <div class="bg-blue-100 text-blue-700 w-8 h-8 rounded-full flex items-center justify-center text-xs">
+                <div class="semantic-blue-bg semantic-blue-text w-8 h-8 rounded-full flex items-center justify-center text-xs">
                   {{ comment.author.first_name|slice:":1" }}{{ comment.author.last_name|slice:":1" }}
                 </div>
               </div>
               <div class="flex-1">
                 <div class="flex items-center justify-between">
-                  <p class="text-sm font-medium text-gray-900">{{ comment.author.get_full_name }}</p>
-                  <p class="text-xs text-gray-500">{{ comment.date_added|format_date }}</p>
+                  <p class="text-sm font-medium text-base-content">{{ comment.author.get_full_name }}</p>
+                  <p class="text-xs text-base-content/60">{{ comment.date_added|format_date }}</p>
                 </div>
-                <div class="mt-1 text-sm text-gray-700">
+                <div class="mt-1 text-sm text-base-content">
                   <p>{{ comment.text }}</p>
                 </div>
               </div>
@@ -32,28 +32,28 @@
         {% endfor %}
       {% else %}
         <div class="py-8 text-center">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 semantic-gray-text mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
           </svg>
-          <h3 class="mt-2 text-sm font-medium text-gray-900">No comments yet</h3>
-          <p class="mt-1 text-sm text-gray-500">Be the first to add a comment about this trainee.</p>
+          <h3 class="mt-2 text-sm font-medium text-base-content">No comments yet</h3>
+          <p class="mt-1 text-sm text-base-content/60">Be the first to add a comment about this trainee.</p>
         </div>
       {% endif %}
     </div>
   </div>
 
         <!-- Add Comment Form -->
-  <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
-    <div class="p-4 bg-gray-50 border-b border-gray-200">
-      <h3 class="font-semibold text-lg text-gray-800">Add New Comment</h3>
-      <p class="text-sm text-gray-500">Share your observations or notes with other mentors</p>
+  <div class="bg-base-100 rounded-xl shadow-md border semantic-neutral-border overflow-hidden">
+    <div class="p-4 bg-base-200 border-b border-base-content/20">
+      <h3 class="font-semibold text-lg text-base-content">Add New Comment</h3>
+      <p class="text-sm text-base-content/60">Share your observations or notes with other mentors</p>
     </div>
 
     <div class="p-4">
       <form method="post" action="" class="space-y-4">
         {% csrf_token %}
         <div>
-          <label for="id_text" class="block text-sm font-medium text-gray-700 mb-1">Comment</label>
+          <label for="id_text" class="block text-sm font-medium text-base-content mb-1">Comment</label>
           <textarea
             id="id_text"
             name="text"
@@ -63,7 +63,7 @@
             required
           >{% if form.text.value %}{{ form.text.value }}{% endif %}</textarea>
           {% if form.text.errors %}
-            <p class="mt-2 text-sm text-red-600">{{ form.text.errors }}</p>
+            <p class="mt-2 text-sm semantic-red-text">{{ form.text.errors }}</p>
           {% endif %}
         </div>
 

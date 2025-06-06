@@ -8,8 +8,8 @@
         <div class="mb-8">
             <div class="flex flex-wrap justify-between items-start gap-4">
                 <div>
-                    <h1 class="text-3xl font-bold text-gray-800">{% if edit_mode %}Edit{% else %}Create{% endif %} Training Log</h1>
-                    <p class="text-gray-600 mt-1">
+                    <h1 class="text-3xl font-bold text-base-content">{% if edit_mode %}Edit{% else %}Create{% endif %} Training Log</h1>
+                    <p class="text-base-content/60 mt-1">
                         For {{ trainee.first_name }} {{ trainee.last_name }} - {{ course.name }}
                     </p>
                 </div>
@@ -40,8 +40,8 @@
             {% csrf_token %}
             <div class="space-y-8">
             <!-- Session Details -->
-                <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
-                    <h2 class="text-xl font-semibold mb-6 text-gray-800">
+                <div class="bg-base-100 rounded-xl shadow-md p-6 border semantic-neutral-border">
+                    <h2 class="text-xl font-semibold mb-6 text-base-content">
                         Session Details
                     </h2>
 
@@ -49,8 +49,8 @@
                 </div>
 
             <!-- Evaluation Categories -->
-                <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
-                    <h2 class="text-xl font-semibold mb-6 text-gray-800">
+                <div class="bg-base-100 rounded-xl shadow-md p-6 border semantic-neutral-border">
+                    <h2 class="text-xl font-semibold mb-6 text-base-content">
                         Evaluation Categories
                     </h2>
 
@@ -62,8 +62,8 @@
                 </div>
 
             <!-- Final Assessment -->
-                <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
-                    <h2 class="text-xl font-semibold mb-6 text-gray-800">
+                <div class="bg-base-100 rounded-xl shadow-md p-6 border semantic-neutral-border">
+                    <h2 class="text-xl font-semibold mb-6 text-base-content">
                         Final Assessment
                     </h2>
 
@@ -103,7 +103,7 @@
             </div>
         </form>
 
-    <!-- Saved Draft Modal -->
+        <!-- Saved Draft Modal -->
         {% include "components/modals/saved_draft_modal.html" %}
     </div>
 
@@ -362,10 +362,10 @@
 
                 updateSaveStatus(message, type = "info") {
                     const colors = {
-                        info: "text-blue-500",
-                        success: "text-green-500",
-                        error: "text-red-500",
-                        default: "text-gray-500",
+                        info: "semantic-blue-text",
+                        success: "semantic-green-text",
+                        error: "semantic-red-text",
+                        default: "text-base-content/60",
                     };
 
                     this.autosaveStatus = {
@@ -474,22 +474,26 @@
             box-shadow: none !important;
         }
 
+        /* Light theme styles (default) */
         .EasyMDEContainer .CodeMirror {
             border: 1px solid #e2e8f0 !important;
             border-bottom-left-radius: 0.5rem !important;
             border-bottom-right-radius: 0.5rem !important;
+            background-color: var(--color-base-100) !important;
+            color: var(--color-base-content) !important;
         }
 
         .editor-toolbar {
             border: 1px solid #e2e8f0 !important;
-            background-color: #f8fafc !important;
+            background-color: var(--color-base-200) !important;
             border-top-left-radius: 0.5rem !important;
             border-top-right-radius: 0.5rem !important;
             padding: 6px !important;
         }
 
         .editor-toolbar button {
-            color: #4b5563 !important;
+            color: var(--color-base-content) !important;
+            opacity: 0.7;
             display: inline-flex !important;
             align-items: center !important;
             justify-content: center !important;
@@ -500,37 +504,37 @@
         .editor-toolbar button i.fa {
             font-size: 16px !important;
             display: inline-block !important;
-            color: #4b5563 !important;
+            color: var(--color-base-content) !important;
+            opacity: 0.7;
         }
 
         .editor-toolbar button:hover,
         .editor-toolbar button.active {
-            background-color: #e2e8f0 !important;
-            border-color: #cbd5e1 !important;
+            background-color: var(--color-base-300) !important;
+            border-color: var(--neutral-border) !important;
+            opacity: 1;
         }
 
-    /* Fix separator visibility */
+        .editor-toolbar button:hover i.fa,
+        .editor-toolbar button.active i.fa {
+            opacity: 1;
+        }
+
+        /* Fix separator visibility */
         .editor-toolbar i.separator {
-            border-left: 1px solid #cbd5e1 !important;
-            border-right: 1px solid #fff !important;
+            border-left: 1px solid var(--neutral-border) !important;
+            border-right: 1px solid var(--color-base-200) !important;
             margin: 0 4px !important;
         }
 
-    /* Make sure proper spacing and alignment for buttons with text */
-        .editor-toolbar button.heading-1:after,
-        .editor-toolbar button.heading-2:after,
-        .editor-toolbar button.heading-3:after {
-            position: relative !important;
-            top: 1px !important;
-        }
-
-    /* Style the preview pane to match our design */
+        /* Style the preview pane */
         .editor-preview {
-            background-color: #f9fafb !important;
-            border: 1px solid #e2e8f0 !important;
+            background-color: var(--color-base-200) !important;
+            border: 1px solid var(--neutral-border) !important;
             border-bottom-left-radius: 0.5rem !important;
             border-bottom-right-radius: 0.5rem !important;
             padding: 1rem !important;
+            color: var(--color-base-content) !important;
         }
 
         .editor-preview h1,
@@ -542,19 +546,12 @@
             font-weight: 600 !important;
             margin-top: 1rem !important;
             margin-bottom: 0.5rem !important;
+            color: var(--color-base-content) !important;
         }
 
-        .editor-preview h1 {
-            font-size: 1.2rem !important;
-        }
-
-        .editor-preview h2 {
-            font-size: 1.1rem !important;
-        }
-
-        .editor-preview h3 {
-            font-size: 1rem !important;
-        }
+        .editor-preview h1 { font-size: 1.2rem !important; }
+        .editor-preview h2 { font-size: 1.1rem !important; }
+        .editor-preview h3 { font-size: 1rem !important; }
 
         .editor-preview ul,
         .editor-preview ol {
@@ -562,20 +559,16 @@
             margin-bottom: 1rem !important;
         }
 
-        .editor-preview ul {
-            list-style-type: disc !important;
-        }
-
-        .editor-preview ol {
-            list-style-type: decimal !important;
-        }
+        .editor-preview ul { list-style-type: disc !important; }
+        .editor-preview ol { list-style-type: decimal !important; }
 
         .editor-preview p {
             margin-bottom: 1rem !important;
+            color: var(--color-base-content) !important;
         }
 
         .editor-preview a {
-            color: #3b82f6 !important;
+            color: var(--color-primary) !important;
             text-decoration: underline !important;
         }
 
@@ -586,30 +579,73 @@
         }
 
         .editor-preview blockquote {
-            border-left: 4px solid #e5e7eb !important;
+            border-left: 4px solid var(--neutral-border) !important;
             padding-left: 1rem !important;
             margin-left: 0 !important;
-            color: #6b7280 !important;
+            color: var(--color-base-content) !important;
+            opacity: 0.7;
         }
 
         .editor-preview code {
-            background-color: #f3f4f6 !important;
+            background-color: var(--color-base-300) !important;
             padding: 0.125rem 0.25rem !important;
             border-radius: 0.25rem !important;
             font-family: monospace !important;
+            color: var(--color-base-content) !important;
         }
 
         .editor-preview pre {
-            background-color: #f3f4f6 !important;
+            background-color: var(--color-base-300) !important;
             padding: 1rem !important;
             border-radius: 0.375rem !important;
             overflow-x: auto !important;
             margin-bottom: 1rem !important;
+            border: 1px solid var(--neutral-border) !important;
         }
 
         .editor-preview pre code {
             background-color: transparent !important;
             padding: 0 !important;
+        }
+
+        /* CodeMirror cursor and selection */
+        .CodeMirror-cursor {
+            border-left: 1px solid var(--color-base-content) !important;
+        }
+
+        .CodeMirror-selected {
+            background-color: var(--blue-bg) !important;
+        }
+
+        .CodeMirror-placeholder {
+            color: var(--color-base-content) !important;
+            opacity: 0.4;
+        }
+
+        /* Dark theme overrides */
+        [data-theme="vatger-dark"] .EasyMDEContainer .CodeMirror {
+            border-color: var(--neutral-border) !important;
+        }
+
+        [data-theme="vatger-dark"] .editor-toolbar {
+            border-color: var(--neutral-border) !important;
+        }
+
+        [data-theme="vatger-dark"] .editor-toolbar i.separator {
+            border-left-color: var(--neutral-border) !important;
+            border-right-color: var(--color-base-200) !important;
+        }
+
+        [data-theme="vatger-dark"] .editor-preview {
+            border-color: var(--neutral-border) !important;
+        }
+
+        /* Make sure proper spacing and alignment for buttons with text */
+        .editor-toolbar button.heading-1:after,
+        .editor-toolbar button.heading-2:after,
+        .editor-toolbar button.heading-3:after {
+            position: relative !important;
+            top: 1px !important;
         }
     </style>
 {% endblock %}
