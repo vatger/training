@@ -4,20 +4,20 @@
     <td class="px-6 py-4 whitespace-nowrap">
         <div class="flex items-center">
             <div class="flex-shrink-0 h-10 w-10">
-                <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-medium">
+                <div class="h-10 w-10 rounded-full semantic-gray-bg flex items-center justify-center text-base-content font-medium">
                     {{ trainee.first_name|slice:":1" }}{{ trainee.last_name|slice:":1" }}
                 </div>
             </div>
             <div class="ml-4">
-                <div class="text-sm font-medium text-gray-900">
+                <div class="text-sm font-medium text-base-content">
                     <a href="{% url 'trainee:mentor_view' trainee.username %}"
-                       class="hover:text-blue-600">
+                       class="hover:semantic-blue-text">
                         {{ trainee.first_name }} {{ trainee.last_name }}
                     </a>
                 </div>
-                <div class="text-sm text-gray-500">
+                <div class="text-sm text-base-content/60">
                     <a href="https://stats.vatsim.net/stats/{{ trainee.username }}"
-                       target="_blank" class="hover:text-blue-600">
+                       target="_blank" class="hover:semantic-blue-text">
                         {{ trainee.username }}
                     </a>
                 </div>
@@ -32,13 +32,14 @@
                         <div class="flex space-x-1 items-center">
                             {% with reversed_logs=data.logs|dictsortreversed:"session_date"|slice:":5"|dictsort:"session_date" %}
                                 {% for log in reversed_logs %}
-                                    <span class="inline-flex h-2.5 w-2.5 rounded-full {% if log.result %}bg-green-500{% else %}bg-red-500{% endif %}"
+                                    <span class="inline-flex h-2.5 w-2.5 rounded-full {% if log.result %}semantic-green-bg{% else %}semantic-red-bg{% endif %}"
+                                          style="{% if log.result %}background-color: var(--green-text){% else %}background-color: var(--green-text){% endif %}"
                                           title="{{ log.session_date|date:'d M Y' }} - {{ log.get_type_display }} - {{ log.result|yesno:'Passed,Failed' }}"></span>
                                 {% endfor %}
                             {% endwith %}
                             {% if data.logs|length > 5 %}
                                 <button @click="$dispatch('open-progress', {traineeId: '{{ trainee.id }}'})"
-                                        class="text-xs text-blue-600 hover:text-blue-800 font-medium">
+                                        class="text-xs semantic-blue-text hover:opacity-80 font-medium">
                                     +{{ data.logs|length|add:"-5" }}
                                 </button>
                             {% endif %}
@@ -58,7 +59,7 @@
                                         window.location.href = '{% url 'logs:new_log' trainee.id course.id %}';
                                         }
                                        "
-                                class="btn btn-sm btn-ghost gap-x-0.5 underline-none text-blue-600 hover:text-blue-800 px-2">
+                                class="btn btn-sm btn-ghost gap-x-0.5 underline-none semantic-blue-text hover:opacity-80 px-2">
                             <svg xmlns="http://www.w3.org/2000/svg"
                                  class="h-3 w-3 mr-0.5" fill="none"
                                  viewBox="0 0 24 24" stroke="currentColor">
@@ -79,7 +80,7 @@
                                         courseId: '{{ course.id }}',
                                         courseName: '{{ course.name }}'
                                         })"
-                                class="btn btn-info p-1 m-0 w-fit h-fit btn-sm gap-x-0.5">
+                                class="btn p-1 m-0 w-fit h-fit btn-sm gap-x-0.5 semantic-blue-bg semantic-blue-border semantic-blue-text">
                             <svg xmlns="http://www.w3.org/2000/svg"
                                  class="h-3.5 w-3.5 mr-0.5" fill="none"
                                  viewBox="0 0 24 24" stroke="currentColor">
@@ -95,7 +96,7 @@
                             Details
                         </button>
 
-                                                                    <!-- New Quick Add Log button -->
+                        <!-- New Quick Add Log button -->
                         <button @click="
                                         const draftKey = 'log_draft_{{ trainee.id }}_{{ course.id }}';
                                         const hasDraft = localStorage.getItem(`${draftKey}_formData`) !== null;
@@ -110,7 +111,7 @@
                                         window.location.href = '{% url 'logs:new_log' trainee.id course.id %}';
                                         }
                                        "
-                                class="btn btn-success p-1 m-0 w-fit h-fit btn-sm gap-x-0.5 text-center ml-1">
+                                class="btn p-1 m-0 w-fit h-fit btn-sm gap-x-0.5 text-center ml-1 semantic-green-bg semantic-green-border semantic-green-text">
                             <svg xmlns="http://www.w3.org/2000/svg"
                                  class="h-4 w-4" fill="none"
                                  viewBox="0 0 24 24" stroke="currentColor">
@@ -124,7 +125,7 @@
             </div>
 
             {% if data.date_last %}
-                <div class="text-xs text-gray-500">
+                <div class="text-xs text-base-content/60">
                     Last: {{ data.date_last|date:"d M Y" }}
                 </div>
             {% endif %}
@@ -135,7 +136,7 @@
             <div class="flex items-center">
                 {% if data.solo == "Add Solo" %}
                     <a href="{% url 'overview:add_solo' trainee.username course.id %}"
-                       class="btn btn-sm btn-ghost gap-x-0.5 text-orange-500 hover:text-orange-600 px-2">
+                       class="btn btn-sm btn-ghost gap-x-0.5 semantic-yellow-text hover:opacity-80 px-2">
                         <svg xmlns="http://www.w3.org/2000/svg"
                              class="h-4 w-4 mr-1" fill="none"
                              viewBox="0 0 24 24" stroke="currentColor">
@@ -160,22 +161,22 @@
                                     courseId: {{ course.id }}
                                     })"
                             class="px-2 py-1 h-6 text-xs rounded-full font-medium cursor-pointer
-                                   {% if data.solo.remaining_days < 10 %}bg-red-100 text-red-700
-                                   {% elif data.solo.remaining_days < 20 %}bg-amber-100 text-amber-700
-                                   {% else %}bg-green-100 text-green-700{% endif %}">
+                                   {% if data.solo.remaining_days < 10 %}semantic-red-bg semantic-red-text
+                                   {% elif data.solo.remaining_days < 20 %}semantic-yellow-bg semantic-yellow-text
+                                   {% else %}semantic-green-bg semantic-green-text{% endif %}">
                             {{ data.solo.remaining_days }} days remaining
                         </button>
                     {% endwith %}
                 {% endif %}
             </div>
         {% else %}
-            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if data.moodle %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if data.moodle %}semantic-green-bg semantic-green-text{% else %}semantic-red-bg semantic-red-text{% endif %}">
                 {{ data.moodle|yesno:"Completed,Incomplete" }}
             </span>
         {% endif %}
     </td>
     <td class="px-6 py-4 whitespace-nowrap max-w-72 truncate">
-        <span class="text-sm text-gray-600">{{ data.next_step|default_if_none:"-" }}</span>
+        <span class="text-sm text-base-content/80">{{ data.next_step|default_if_none:"-" }}</span>
     </td>
     <td class="px-6 py-4 min-w-24">
         <div
@@ -186,13 +187,13 @@
             class="min-w-24"
         >
             <div x-show="!isEditing" class="group relative">
-                <div class="max-w-xs text-sm text-gray-600 overflow-hidden line-clamp-2"
+                <div class="max-w-xs text-sm text-base-content/80 overflow-hidden line-clamp-2"
                      @click="isEditing = true">
                     <span x-text="remarkText || '-'"></span>
                 </div>
 
                 {% if data.remark_updated and data.remark %}
-                    <div class="text-xs text-gray-400 mt-1 flex items-center">
+                    <div class="text-xs text-base-content/40 mt-1 flex items-center">
                         <svg xmlns="http://www.w3.org/2000/svg"
                              class="h-3 w-3 mr-1" fill="none"
                              viewBox="0 0 24 24" stroke="currentColor">
@@ -205,7 +206,7 @@
                 {% endif %}
             </div>
 
-                                                        <!-- Edit form -->
+            <!-- Edit form -->
             <div x-show="isEditing" class="space-y-2">
                 <form
                     action="{% url 'overview:update_remark' trainee.id course.id %}"
@@ -241,9 +242,9 @@
         <div class="flex items-center">
             {% if data.claimed %}
                 {% if data.claimed_by == user.first_name|add:" "|add:user.last_name %}
-                                                                <!-- User has claimed this trainee -->
+                    <!-- User has claimed this trainee -->
                     <a href="{% url 'overview:claim' trainee.id course.id %}"
-                       class="inline-flex items-center h-6 px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 hover:bg-blue-200 transition-colors">
+                       class="inline-flex items-center h-6 px-2.5 py-0.5 rounded-full text-xs font-medium semantic-blue-bg semantic-blue-text hover:bg-opacity-80 transition-colors">
                         <svg xmlns="http://www.w3.org/2000/svg"
                              class="h-3 w-3 mr-1" fill="none"
                              viewBox="0 0 24 24" stroke="currentColor">
@@ -261,8 +262,8 @@
                         </svg>
                     </a>
                 {% else %}
-                                                                <!-- Another mentor has claimed this trainee -->
-                    <span class="inline-flex items-center h-6 px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                    <!-- Another mentor has claimed this trainee -->
+                    <span class="inline-flex items-center h-6 px-2.5 py-0.5 rounded-full text-xs font-medium semantic-gray-bg semantic-gray-text">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none"
                              viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -273,7 +274,7 @@
                 {% endif %}
             {% else %}
                 <a href="{% url 'overview:claim' trainee.id course.id %}"
-                   class="inline-flex items-center h-6 px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                   class="inline-flex items-center h-6 px-2.5 py-0.5 rounded-full text-xs font-medium semantic-gray-bg text-base-content hover:bg-opacity-80 transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg"
                          class="h-3 w-3 mr-1" fill="none"
                          viewBox="0 0 24 24" stroke="currentColor">
@@ -297,7 +298,7 @@
                         message: 'Are you sure you want to give {{ trainee.first_name }} {{ trainee.last_name }} the endorsements for {{ course.name }}?',
                         href: '{% url 'overview:finish' trainee.id course.id %}'
                         })"
-                class="btn btn-success py-0 h-8">
+                class="btn py-0 h-8 semantic-green-border semantic-green-text semantic-green-bg">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1"
                      fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -312,7 +313,7 @@
                         message: 'Are you sure you want to remove {{ trainee.first_name }} {{ trainee.last_name }} from {{ course.name }}?',
                         href: '{% url 'overview:remove' trainee.id course.id %}'
                         })"
-                class="btn btn-error p-0 h-8 w-8">
+                class="btn p-0 h-8 w-8 semantic-red-bg semantic-red-border semantic-red-text">
                 <svg class="w-4 h-4" aria-hidden="true"
                      xmlns="http://www.w3.org/2000/svg" width="24"
                      height="24" fill="none" viewBox="0 0 24 24">

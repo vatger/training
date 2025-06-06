@@ -19,10 +19,14 @@
   --color-primary-content: hsl(0, 0%, 100%);
 
   /* Status colors */
-  --color-success: hsl(142, 70%, 45%);
-  --color-warning: hsl(45, 100%, 45%);
-  --color-error: hsl(0, 70%, 50%);
+  --color-success: hsl(142, 76%, 36%);
+  --color-success-content: hsl(0, 0%, 100%);
+  --color-warning: hsl(43, 96%, 56%);
+  --color-warning-content: hsl(0, 0%, 0%);
+  --color-error: hsl(0, 65%, 51%);
+  --color-error-content: hsl(0, 0%, 100%);
   --color-info: hsl(220, 100%, 54%);
+  --color-info-content: hsl(0, 0%, 100%);
 
   --radius-selector: 0.5rem;
   --radius-field: 0.5rem;
@@ -46,10 +50,14 @@
   --color-primary-content: hsl(215, 28%, 7%);
 
   /* Status colors */
-  --color-success: hsl(142, 70%, 65%);
-  --color-warning: hsl(45, 100%, 65%);
-  --color-error: hsl(0, 70%, 65%);
+  --color-success: hsl(142, 76%, 50%);
+  --color-success-content: hsl(215, 28%, 7%);
+  --color-warning: hsl(43, 96%, 65%);
+  --color-warning-content: hsl(215, 28%, 7%);
+  --color-error: hsl(0, 65%, 60%);
+  --color-error-content: hsl(215, 28%, 7%);
   --color-info: hsl(220, 100%, 65%);
+  --color-info-content: hsl(215, 28%, 7%);
 }
 
 /* Template source paths */
