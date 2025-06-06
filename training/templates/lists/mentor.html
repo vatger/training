@@ -5,8 +5,8 @@
         {% include "components/breadcrumbs.html" with auto=True current_title="Waiting Lists" %}
 
         <div class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-800">Waiting Lists</h1>
-            <p class="text-gray-600 mt-2">Manage students waiting to start training across your courses.</p>
+            <h1 class="text-3xl font-bold text-base-content">Waiting Lists</h1>
+            <p class="text-base-content/60 mt-2">Manage students waiting to start training across your courses.</p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -49,35 +49,35 @@
                 {{ course_list_json|safe }}
             </div>
 
-            <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200 mb-8">
+            <div class="bg-base-100 rounded-xl shadow-md p-6 border semantic-neutral-border mb-8">
                 <div class="flex flex-wrap gap-2 mb-4">
                     <button
                         @click="activeFilter = 'all'"
-                        :class="{'bg-blue-100 text-blue-800 border-blue-300': activeFilter === 'all', 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200': activeFilter !== 'all'}"
+                        :class="{'semantic-blue-bg semantic-blue-text semantic-blue-border': activeFilter === 'all', 'semantic-gray-bg text-base-content semantic-neutral-border hover:bg-opacity-80': activeFilter !== 'all'}"
                         class="px-4 py-2 rounded-lg text-sm font-medium border transition-colors">
                         All Courses
                     </button>
                     <button
                         @click="activeFilter = 'RTG'"
-                        :class="{'bg-blue-100 text-blue-800 border-blue-300': activeFilter === 'RTG', 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200': activeFilter !== 'RTG'}"
+                        :class="{'semantic-blue-bg semantic-blue-text semantic-blue-border': activeFilter === 'RTG', 'semantic-gray-bg text-base-content semantic-neutral-border hover:bg-opacity-80': activeFilter !== 'RTG'}"
                         class="px-4 py-2 rounded-lg text-sm font-medium border transition-colors">
                         Rating Courses
                     </button>
                     <button
                         @click="activeFilter = 'EDMT_FAM'"
-                        :class="{'bg-blue-100 text-blue-800 border-blue-300': activeFilter === 'EDMT_FAM', 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200': activeFilter !== 'EDMT_FAM'}"
+                        :class="{'semantic-blue-bg semantic-blue-text semantic-blue-border': activeFilter === 'EDMT_FAM', 'semantic-gray-bg text-base-content semantic-neutral-border hover:bg-opacity-80': activeFilter !== 'EDMT_FAM'}"
                         class="px-4 py-2 rounded-lg text-sm font-medium border transition-colors">
                         Endorsement & Familiarisation
                     </button>
                     <button
                         @click="activeFilter = 'GST'"
-                        :class="{'bg-blue-100 text-blue-800 border-blue-300': activeFilter === 'GST', 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200': activeFilter !== 'GST'}"
+                        :class="{'semantic-blue-bg semantic-blue-text semantic-blue-border': activeFilter === 'GST', 'semantic-gray-bg text-base-content semantic-neutral-border hover:bg-opacity-80': activeFilter !== 'GST'}"
                         class="px-4 py-2 rounded-lg text-sm font-medium border transition-colors">
                         Visitor Courses
                     </button>
                     <button
                         @click="activeFilter = 'RST'"
-                        :class="{'bg-blue-100 text-blue-800 border-blue-300': activeFilter === 'RST', 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200': activeFilter !== 'RST'}"
+                        :class="{'semantic-blue-bg semantic-blue-text semantic-blue-border': activeFilter === 'RST', 'semantic-gray-bg text-base-content semantic-neutral-border hover:bg-opacity-80': activeFilter !== 'RST'}"
                         class="px-4 py-2 rounded-lg text-sm font-medium border transition-colors">
                         Roster Courses
                     </button>
@@ -90,7 +90,7 @@
                         class="input input-bordered w-full"
                         x-model="searchTerm">
                     <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none"
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 semantic-gray-text" fill="none"
                              viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                   d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
@@ -106,16 +106,16 @@
                         x-transition:enter="transition ease-out duration-200"
                         x-transition:enter-start="opacity-0 transform scale-95"
                         x-transition:enter-end="opacity-100 transform scale-100"
-                        class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
+                        class="bg-base-100 rounded-xl shadow-md border semantic-neutral-border overflow-hidden hover:shadow-lg transition-shadow">
 
                         <div class="p-6">
                             <div class="flex items-center mb-4">
                                 <div
                                     :class="{
-                                            'bg-gray-100 text-gray-600': course.position === 'GND',
-                                            'bg-blue-100 text-blue-600': course.position === 'TWR',
-                                            'bg-green-100 text-green-600': course.position === 'APP',
-                                            'bg-purple-100 text-purple-600': course.position === 'CTR'
+                                            'semantic-gray-bg semantic-gray-text': course.position === 'GND',
+                                            'semantic-blue-bg semantic-blue-text': course.position === 'TWR',
+                                            'semantic-green-bg semantic-green-text': course.position === 'APP',
+                                            'semantic-purple-bg semantic-purple-text': course.position === 'CTR'
                                             }"
                                     class="p-3 rounded-lg mr-3">
                                     <svg x-show="course.position === 'GND'" xmlns="http://www.w3.org/2000/svg"
@@ -141,24 +141,24 @@
                                 </div>
 
                                 <div>
-                                    <h3 class="text-lg font-semibold text-gray-800" x-text="course.name"></h3>
+                                    <h3 class="text-lg font-semibold text-base-content" x-text="course.name"></h3>
                                     <div class="flex flex-wrap items-center gap-2 mt-1">
                                         <span
                                             :class="{
-                                                    'bg-gray-100 text-gray-700': course.position === 'GND',
-                                                    'bg-blue-100 text-blue-700': course.position === 'TWR',
-                                                    'bg-green-100 text-green-700': course.position === 'APP',
-                                                    'bg-purple-100 text-purple-700': course.position === 'CTR'
+                                                    'semantic-gray-bg semantic-gray-text': course.position === 'GND',
+                                                    'semantic-blue-bg semantic-blue-text': course.position === 'TWR',
+                                                    'semantic-green-bg semantic-green-text': course.position === 'APP',
+                                                    'semantic-purple-bg semantic-purple-text': course.position === 'CTR'
                                                     }"
                                             class="px-2 py-0.5 rounded-full text-xs font-medium"
                                             x-text="course.position_display">
                                         </span>
                                         <span
                                             :class="{
-                                                    'bg-blue-100 text-blue-700': course.type === 'RTG',
-                                                    'bg-purple-100 text-purple-700': course.type === 'EDMT',
-                                                    'bg-yellow-100 text-yellow-700': course.type === 'FAM',
-                                                    'bg-gray-100 text-gray-700': course.type === 'GST'
+                                                    'semantic-blue-bg semantic-blue-text': course.type === 'RTG',
+                                                    'semantic-purple-bg semantic-purple-text': course.type === 'EDMT',
+                                                    'semantic-yellow-bg semantic-yellow-text': course.type === 'FAM',
+                                                    'semantic-gray-bg semantic-gray-text': course.type === 'GST'
                                                     }"
                                             class="px-2 py-0.5 rounded-full text-xs font-medium"
                                             x-text="course.type_display">
@@ -169,23 +169,23 @@
 
                             <div class="mt-4 mb-6">
                                 <div class="flex items-center justify-between mb-2">
-                                    <span class="text-sm font-medium text-gray-700">Waiting trainees</span>
+                                    <span class="text-sm font-medium text-base-content">Waiting trainees</span>
                                     <span
                                         :class="{
-                                                'bg-red-100 text-red-700': course.waiting_count > 40,
-                                                'bg-yellow-100 text-yellow-700': course.waiting_count > 0 && course.waiting_count <= 40,
-                                                'bg-gray-100 text-gray-700': course.waiting_count === 0
+                                                'semantic-red-bg semantic-red-text': course.waiting_count > 40,
+                                                'semantic-yellow-bg semantic-yellow-text': course.waiting_count > 0 && course.waiting_count <= 40,
+                                                'semantic-gray-bg semantic-gray-text': course.waiting_count === 0
                                                 }"
                                         class="px-2 py-1 rounded-full text-xs font-medium">
                                         <span x-text="course.waiting_count"></span> trainees
                                     </span>
                                 </div>
-                                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                <div class="w-full semantic-gray-bg rounded-full h-2.5">
                                     <div
                                         :class="{
-                                                'bg-red-500': course.waiting_count > 40,
-                                                'bg-yellow-500': course.waiting_count > 0 && course.waiting_count <= 40,
-                                                'bg-gray-400': course.waiting_count === 0
+                                                'semantic-red-bg': course.waiting_count > 40,
+                                                'semantic-yellow-bg': course.waiting_count > 0 && course.waiting_count <= 40,
+                                                'semantic-gray-bg': course.waiting_count === 0
                                                 }"
                                         class="h-2.5 rounded-full"
                                         :style="'width: ' + Math.min(course.waiting_count * 2, 100) + '%'">
@@ -217,14 +217,14 @@
 
             <div
                 x-show="!courseList.some(course => filterCourses(course))"
-                class="bg-white rounded-xl shadow-md p-8 border border-gray-200 text-center mt-4">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400 mx-auto mb-4" fill="none"
+                class="bg-base-100 rounded-xl shadow-md p-8 border semantic-neutral-border text-center mt-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 semantic-gray-text mx-auto mb-4" fill="none"
                      viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                           d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                 </svg>
-                <h3 class="text-lg font-medium text-gray-900">No courses found</h3>
-                <p class="mt-2 text-sm text-gray-500">Try adjusting your search or filter criteria.</p>
+                <h3 class="text-lg font-medium text-base-content">No courses found</h3>
+                <p class="mt-2 text-sm text-base-content/60">Try adjusting your search or filter criteria.</p>
             </div>
         </div>
 

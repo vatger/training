@@ -1,12 +1,12 @@
 {% load endorsement_tags %}
 
 <div class="mb-6" x-data="{ activeTab: '{{ endorsement_groups.0.name|default:"" }}' }">
-  <div class="border-b border-gray-200">
+  <div class="border-b semantic-neutral-border">
     <nav class="flex -mb-px space-x-8 overflow-x-auto">
       {% for group in endorsement_groups %}
-        <button @click="activeTab = '{{ group.name }}'" :class="{'border-blue-500 text-blue-600': activeTab === '{{ group.name }}', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== '{{ group.name }}'}" class="py-4 px-1 border-b-2 font-medium text-sm focus:outline-none whitespace-nowrap">
+        <button @click="activeTab = '{{ group.name }}'" :class="{'semantic-blue-border semantic-blue-text': activeTab === '{{ group.name }}', 'border-transparent text-base-content/60 hover:text-base-content hover:border-base-content/30': activeTab !== '{{ group.name }}'}" class="py-4 px-1 border-b-2 font-medium text-sm focus:outline-none whitespace-nowrap">
           {{ group.name }}
-          <span class="bg-gray-100 text-gray-700 ml-2 py-1 px-2 rounded-full text-xs">
+          <span class="semantic-gray-bg semantic-gray-text ml-2 py-1 px-2 rounded-full text-xs">
             {% with group_count=endorsements|get_group_count:group.name %}
               {{ group_count }}
             {% endwith %}

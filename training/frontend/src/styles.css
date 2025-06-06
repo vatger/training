@@ -85,8 +85,8 @@
   --green-border: hsl(142, 70%, 85%);
 
   /* Purple semantic colors */
-  --purple-bg: hsl(270, 60%, 95%);
-  --purple-text: hsl(270, 60%, 25%);
+  --purple-bg: hsl(270, 60%, 90%);
+  --purple-text: hsl(270, 60%, 50%);
   --purple-border: hsl(270, 60%, 85%);
 
   /* Yellow semantic colors */
@@ -95,8 +95,8 @@
   --yellow-border: hsl(45, 100%, 85%);
 
   /* Red semantic colors */
-  --red-bg: hsl(0, 70%, 95%);
-  --red-text: hsl(0, 70%, 25%);
+  --red-bg: hsl(0, 70%, 90%);
+  --red-text: hsl(0, 70%, 45%);
   --red-border: hsl(0, 70%, 85%);
 
   /* Gray semantic colors */
@@ -170,6 +170,7 @@
 .semantic-gray-border { border-color: var(--gray-border); }
 
 .semantic-neutral-border { border-color: var(--neutral-border); }
+
 
 /* Global transitions */
 * {

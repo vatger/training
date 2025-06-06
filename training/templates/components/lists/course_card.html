@@ -1,5 +1,5 @@
 {% load tags %}
-<div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-visible hover:shadow-lg transition-shadow"
+<div class="bg-base-100 rounded-xl shadow-md border semantic-neutral-border overflow-visible hover:shadow-lg transition-shadow"
      data-course
      data-type="{{ course.type }}"
      data-position="{{ course.position }}"
@@ -8,8 +8,8 @@
     <div class="p-5">
         <div class="flex items-center mb-3">
             {% if course.position == 'GND' %}
-                <div class="bg-gray-100 p-2 rounded-lg mr-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600"
+                <div class="semantic-gray-bg p-2 rounded-lg mr-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 semantic-gray-text"
                          fill="none"
                          viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -17,8 +17,8 @@
                     </svg>
                 </div>
             {% elif course.position == 'TWR' %}
-                <div class="bg-blue-100 p-2 rounded-lg mr-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600"
+                <div class="semantic-blue-bg p-2 rounded-lg mr-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 semantic-blue-text"
                          fill="none"
                          viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -26,8 +26,8 @@
                     </svg>
                 </div>
             {% elif course.position == 'APP' %}
-                <div class="bg-green-100 p-2 rounded-lg mr-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600"
+                <div class="semantic-green-bg p-2 rounded-lg mr-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 semantic-green-text"
                          fill="none"
                          viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -35,8 +35,8 @@
                     </svg>
                 </div>
             {% elif course.position == 'CTR' %}
-                <div class="bg-purple-100 p-2 rounded-lg mr-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-600"
+                <div class="semantic-purple-bg p-2 rounded-lg mr-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 semantic-purple-text"
                          fill="none"
                          viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -46,14 +46,14 @@
             {% endif %}
 
             <div>
-                <h3 class="text-lg font-semibold text-gray-800">{{ course.name }}</h3>
+                <h3 class="text-lg font-semibold text-base-content">{{ course.name }}</h3>
                 <div class="flex flex-wrap items-center gap-2 mt-1">
-                    <span class="text-sm text-gray-500">{{ course.get_position_display }}</span>
-                    <span class="text-gray-400">•</span>
-                    <span class="text-sm text-gray-500">{{ course.get_type_display }}</span>
+                    <span class="text-sm text-base-content/60">{{ course.get_position_display }}</span>
+                    <span class="text-base-content/40">•</span>
+                    <span class="text-sm text-base-content/60">{{ course.get_type_display }}</span>
                     {% if course.fir %}
-                        <span class="text-gray-400">•</span>
-                        <span class="text-sm text-gray-500">{{ course.fir.name }}</span>
+                        <span class="text-base-content/40">•</span>
+                        <span class="text-sm text-base-content/60">{{ course.fir.name }}</span>
                     {% endif %}
                 </div>
             </div>
@@ -63,12 +63,12 @@
             <div class="text-sm order-2 sm:order-1">
                 {% if course.type == "RTG" and course.position != "TWR" or course.type == "RTG" and course.position != "GND" %}
                     <div class="flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500 mr-1"
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-base-content/60 mr-1"
                              fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                   d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>
-                        <span class="text-gray-600">
+                        <span class="text-base-content/60">
                             Minimum activity:
                             <span class="font-medium">{{ min_hours }} hours</span>
                         </span>
@@ -136,10 +136,10 @@
     </div>
 
     {% if result.entered or not result.hours_reached and course.type == "RTG" %}
-        <div class="px-5 py-3 bg-gray-50 border-t border-gray-200">
+        <div class="px-5 py-3 bg-base-200 border-t semantic-neutral-border">
             {% if course.type == "RTG" and result.activity < min_activity and result.entered %}
-                <div class="flex items-center text-sm text-yellow-700">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-500 mr-1.5"
+                <div class="flex items-center text-sm semantic-yellow-text">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 semantic-yellow-text mr-1.5"
                          fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -147,8 +147,8 @@
                     <span>Need more activity: {{ result.activity|default:0 }}/{{ min_activity }} hours in 2 months (No. {{ result.list_spot }} on list)</span>
                 </div>
             {% elif not result.hours_reached and course.type == "RTG" %}
-                <div class="flex items-center text-sm text-yellow-700">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-500 mr-1.5"
+                <div class="flex items-center text-sm semantic-yellow-text">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 semantic-yellow-text mr-1.5"
                          fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -156,8 +156,8 @@
                     <span>Need more hours: {{ result.current_hours|default:0 }}/{{ min_hours }} hours</span>
                 </div>
             {% elif result.entered %}
-                <div class="flex items-center text-sm text-green-700">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500 mr-1.5"
+                <div class="flex items-center text-sm semantic-green-text">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 semantic-green-text mr-1.5"
                          fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M5 13l4 4L19 7"/>
