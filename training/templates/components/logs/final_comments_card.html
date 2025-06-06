@@ -1,16 +1,16 @@
 {% load markdown_extras %}
 
 <div class="lg:col-span-2">
-  <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
-    <h2 class="text-xl font-semibold mb-4 text-gray-800">Final Comments</h2>
+  <div class="bg-base-100 rounded-xl shadow-md p-6 border semantic-neutral-border">
+    <h2 class="text-xl font-semibold mb-4 text-base-content">Final Comments</h2>
     <div class="prose max-w-none markdown-content">
-      {{ log.final_comment|markdownify|safe|default:"<p class='text-gray-500 italic'>No final comments provided.</p>" }}
+      {{ log.final_comment|markdownify|safe|default:"<p class='text-base-content/60 italic'>No final comments provided.</p>" }}
     </div>
 
     {% if render_internal %}
-      <div class="mt-6 pt-6 border-t border-gray-200">
-        <h3 class="text-lg font-semibold mb-2 text-gray-800">Internal Remarks</h3>
-        <div class="prose max-w-none bg-gray-50 p-4 rounded-lg markdown-content">
+      <div class="mt-6 pt-6 border-t border-base-content/20">
+        <h3 class="text-lg font-semibold mb-2 text-base-content">Internal Remarks</h3>
+        <div class="prose max-w-none bg-base-200 p-4 rounded-lg markdown-content">
           {{ log.internal_remarks|markdownify|safe }}
         </div>
       </div>

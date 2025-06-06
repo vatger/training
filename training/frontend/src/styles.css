@@ -1,72 +1,191 @@
 @import "tailwindcss";
 @plugin "daisyui";
-@plugin "daisyui/theme" {
-  name: "vatger";
-  default: true; /* set as default */
-  prefersdark: false; /* set as default dark mode (prefers-color-scheme:dark) */
-  color-scheme: light; /* color of browser-provided UI */
 
-  /* Keep original base colors */
+/* Light Theme (Default) */
+@plugin "daisyui/theme" {
+  name: "vatger-light";
+  default: true;
+  prefersdark: false;
+  color-scheme: light;
+
+  /* Base colors */
   --color-base-100: hsl(0, 0%, 100%);
   --color-base-200: hsl(0, 0%, 98%);
   --color-base-300: hsl(0, 0%, 95%);
-  --color-base-content: oklch(41.886% 0.053 255.824);
-  --color-primary: oklch(56.86% 0.255 257.57);
-  --color-primary-content: oklch(91.372% 0.051 257.57);
-  --color-secondary: oklch(42.551% 0.161 282.339);
-  --color-secondary-content: oklch(88.51% 0.032 282.339);
-  --color-accent: oklch(59.939% 0.191 335.171);
-  --color-accent-content: oklch(11.988% 0.038 335.171);
-  --color-neutral: oklch(19.616% 0.063 257.651);
-  --color-neutral-content: oklch(83.923% 0.012 257.651);
+  --color-base-content: hsl(210, 11%, 15%);
 
-  /* Updated colors to match the UI improvements */
-  --color-info: hsl(210, 90%, 90%); /* Lighter blue for backgrounds */
-  --color-info-content: hsl(210, 90%, 30%); /* Darker blue for text */
-  
-  --color-success: hsl(142, 76%, 90%); /* Lighter green for backgrounds */
-  --color-success-content: hsl(142, 76%, 35%); /* Darker green for text */
-  
-  --color-warning: hsl(45, 100%, 90%); /* Lighter amber for backgrounds */
-  --color-warning-content: hsl(45, 100%, 40%); /* Darker amber for text */
-  
-  --color-error: hsl(0, 100%, 90%); /* Lighter red for backgrounds */
-  --color-error-content: hsl(0, 100%, 40%); /* Darker red for text */
+  /* Primary colors */
+  --color-primary: hsl(220, 100%, 54%);
+  --color-primary-content: hsl(0, 0%, 100%);
 
-  /* border radius */
-  --radius-selector: 1rem;
+  /* Status colors */
+  --color-success: hsl(142, 76%, 36%);
+  --color-success-content: hsl(0, 0%, 100%);
+  --color-warning: hsl(43, 96%, 56%);
+  --color-warning-content: hsl(0, 0%, 0%);
+  --color-error: hsl(0, 65%, 51%);
+  --color-error-content: hsl(0, 0%, 100%);
+  --color-info: hsl(220, 100%, 54%);
+  --color-info-content: hsl(0, 0%, 100%);
+
+  --radius-selector: 0.5rem;
   --radius-field: 0.5rem;
-  --radius-box: 1rem;
-
-  /* base sizes */
-  --size-selector: 0.25rem;
-  --size-field: 0.25rem;
-
-  /* border size */
-  --border: 1px;
-
-  /* effects */
-  --depth: 1;
-  --noise: 0;
+  --radius-box: 0.5rem;
 }
 
-/* Main Django templates directory */
-@source "../../templates/**/*.html";
+/* Dark Theme */
+@plugin "daisyui/theme" {
+  name: "vatger-dark";
+  prefersdark: true;
+  color-scheme: dark;
 
-/* App-specific template directories */
+  /* Base colors */
+  --color-base-100: hsl(215, 28%, 7%);
+  --color-base-200: hsl(220, 13%, 13%);
+  --color-base-300: hsl(215, 20%, 17%);
+  --color-base-content: hsl(220, 13%, 91%);
+
+  /* Primary colors */
+  --color-primary: hsl(220, 100%, 65%);
+  --color-primary-content: hsl(215, 28%, 7%);
+
+  /* Status colors */
+  --color-success: hsl(142, 76%, 50%);
+  --color-success-content: hsl(215, 28%, 7%);
+  --color-warning: hsl(43, 96%, 65%);
+  --color-warning-content: hsl(215, 28%, 7%);
+  --color-error: hsl(0, 65%, 60%);
+  --color-error-content: hsl(215, 28%, 7%);
+  --color-info: hsl(220, 100%, 65%);
+  --color-info-content: hsl(215, 28%, 7%);
+}
+
+/* Template source paths */
+@source "../../templates/**/*.html";
 @source "../../connect/templates/**/*.html";
 @source "../../endorsements/templates/**/*.html";
 @source "../../lists/templates/**/*.html";
 @source "../../logs/templates/**/*.html";
 @source "../../overview/templates/**/*.html";
 @source "../../trainee/templates/**/*.html";
-
-/* Or more generally, catch all app template directories */
 @source "../../*/templates/**/*.html";
-
-/* Include frontend source files */
 @source "../**/*.{js,jsx}";
 
-@source inline("bg-blue-500 text-white p-4 rounded-lg");
-@source inline("container mx-auto");
-@source inline("grid grid-cols-1 md:grid-cols-2 gap-4");
+/* Custom brand training color that adapts to theme */
+.text-brand-training {
+  color: #2b3c91;
+}
+
+[data-theme="vatger-dark"] .text-brand-training {
+  color: #ffffff;
+}
+
+/* Semantic color system - Light theme (default) */
+:root {
+  /* Blue semantic colors */
+  --blue-bg: hsl(220, 100%, 90%);
+  --blue-text: hsl(220, 100%, 50%);
+  --blue-border: hsl(220, 100%, 85%);
+
+  /* Green semantic colors */
+  --green-bg: hsl(142, 70%, 90%);
+  --green-text: hsl(142, 70%, 30%);
+  --green-border: hsl(142, 70%, 85%);
+
+  /* Purple semantic colors */
+  --purple-bg: hsl(270, 60%, 90%);
+  --purple-text: hsl(270, 60%, 50%);
+  --purple-border: hsl(270, 60%, 85%);
+
+  /* Yellow semantic colors */
+  --yellow-bg: hsl(45, 100%, 90%);
+  --yellow-text: hsl(45, 100%, 30%);
+  --yellow-border: hsl(45, 100%, 85%);
+
+  /* Red semantic colors */
+  --red-bg: hsl(0, 70%, 90%);
+  --red-text: hsl(0, 70%, 45%);
+  --red-border: hsl(0, 70%, 85%);
+
+  /* Gray semantic colors */
+  --gray-bg: hsl(0, 0%, 95%);
+  --gray-text: hsl(0, 0%, 45%);
+  --gray-border: hsl(0, 0%, 85%);
+
+  /* Neutral border */
+  --neutral-border: hsl(0, 0%, 80%);
+}
+
+/* Dark theme overrides */
+[data-theme="vatger-dark"] {
+  /* Blue semantic colors */
+  --blue-bg: hsl(220, 100%, 20%);
+  --blue-text: hsl(220, 100%, 75%);
+  --blue-border: hsl(220, 100%, 25%);
+
+  /* Green semantic colors */
+  --green-bg: hsl(142, 70%, 15%);
+  --green-text: hsl(142, 70%, 75%);
+  --green-border: hsl(142, 70%, 25%);
+
+  /* Purple semantic colors */
+  --purple-bg: hsl(270, 60%, 15%);
+  --purple-text: hsl(270, 60%, 75%);
+  --purple-border: hsl(270, 60%, 25%);
+
+  /* Yellow semantic colors */
+  --yellow-bg: hsl(45, 100%, 15%);
+  --yellow-text: hsl(45, 100%, 75%);
+  --yellow-border: hsl(45, 100%, 25%);
+
+  /* Red semantic colors */
+  --red-bg: hsl(0, 70%, 15%);
+  --red-text: hsl(0, 70%, 75%);
+  --red-border: hsl(0, 70%, 25%);
+
+  /* Gray semantic colors */
+  --gray-bg: hsl(0, 0%, 20%);
+  --gray-text: hsl(0, 0%, 65%);
+  --gray-border: hsl(0, 0%, 25%);
+
+  /* Neutral border */
+  --neutral-border: hsl(0, 0%, 20%);
+}
+
+/* Utility classes for semantic colors */
+.semantic-blue-bg { background-color: var(--blue-bg); }
+.semantic-blue-text { color: var(--blue-text); }
+.semantic-blue-border { border-color: var(--blue-border); }
+
+.semantic-green-bg { background-color: var(--green-bg); }
+.semantic-green-text { color: var(--green-text); }
+.semantic-green-border { border-color: var(--green-border); }
+
+.semantic-purple-bg { background-color: var(--purple-bg); }
+.semantic-purple-text { color: var(--purple-text); }
+.semantic-purple-border { border-color: var(--purple-border); }
+
+.semantic-yellow-bg { background-color: var(--yellow-bg); }
+.semantic-yellow-text { color: var(--yellow-text); }
+.semantic-yellow-border { border-color: var(--yellow-border); }
+
+.semantic-red-bg { background-color: var(--red-bg); }
+.semantic-red-text { color: var(--red-text); }
+.semantic-red-border { border-color: var(--red-border); }
+
+.semantic-gray-bg { background-color: var(--gray-bg); }
+.semantic-gray-text { color: var(--gray-text); }
+.semantic-gray-border { border-color: var(--gray-border); }
+
+.semantic-neutral-border { border-color: var(--neutral-border); }
+
+
+/* Global transitions */
+* {
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+/* Hide Alpine.js elements until loaded */
+[x-cloak] {
+  display: none !important;
+}

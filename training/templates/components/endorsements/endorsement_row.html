@@ -4,37 +4,37 @@
   <td class="px-6 py-4 whitespace-nowrap">
     <div class="flex items-center">
       <div>
-        <div class="text-sm font-medium text-gray-900">
-          <a href="https://stats.vatsim.net/stats/{{ entry.id }}?range=6months" target="_blank" class="hover:text-blue-600">
+        <div class="text-sm font-medium text-base-content">
+          <a href="https://stats.vatsim.net/stats/{{ entry.id }}?range=6months" target="_blank" class="hover:semantic-blue-text">
             {{ entry.name }}
           </a>
         </div>
-        <div class="text-sm text-gray-500">{{ entry.id }}</div>
+        <div class="text-sm text-base-content/60">{{ entry.id }}</div>
       </div>
     </div>
   </td>
   <td class="px-6 py-4 whitespace-nowrap">
     <div class="flex items-center">
       <div class="mr-2">
-        <div class="relative h-2 w-24 bg-gray-200 rounded-full overflow-hidden">
+        <div class="relative h-2 w-24 semantic-gray-bg rounded-full overflow-hidden">
           <div class="absolute top-0 left-0 h-full rounded-full
                       {% if entry.activity >= min_hours_required %}
-                        bg-green-500
+                        semantic-green-bg
                       {% elif entry.activity >= min_hours_required|divide:2 %}
-                        bg-yellow-500
+                        semantic-yellow-bg
                       {% else %}
-                        bg-red-500
+                        semantic-red-bg
                       {% endif %}"
                style="width: {{ entry.bar_width }}%;"></div>
         </div>
       </div>
       <span class="text-sm font-medium
                    {% if entry.activity >= min_hours_required %}
-                     text-green-700
+                     semantic-green-text
                    {% elif entry.activity >= min_hours_required|divide:2 %}
-                     text-yellow-700
+                     semantic-yellow-text
                    {% else %}
-                     text-red-700
+                     semantic-red-text
                    {% endif %}">
         {{ entry.activity }} hours
       </span>
@@ -42,15 +42,15 @@
   </td>
   <td class="px-6 py-4 whitespace-nowrap">
     {% if entry.removal >= 0 %}
-      <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+      <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full semantic-red-bg semantic-red-text">
         Removal in {{ entry.removal }} days
       </span>
     {% elif entry.activity < min_hours_required %}
-      <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+      <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full semantic-yellow-bg semantic-yellow-text">
         Low Activity
       </span>
     {% else %}
-      <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+      <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full semantic-green-bg semantic-green-text">
         Active
       </span>
     {% endif %}
@@ -70,7 +70,7 @@
         Start Removal
       </a>
     {% else %}
-      <span class="text-sm text-gray-500 italic">Removal in progress</span>
+      <span class="text-sm text-base-content/60 italic">Removal in progress</span>
     {% endif %}
   </td>
 </tr>

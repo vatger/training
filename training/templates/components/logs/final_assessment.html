@@ -1,7 +1,7 @@
 <div class="space-y-6">
   <!-- Final Comment -->
   <div>
-    <label for="final_comment" class="block text-sm font-medium text-gray-700 mb-1">
+    <label for="final_comment" class="block text-sm font-medium text-base-content mb-1">
       Final Comment
     </label>
     {% include "components/logs/markdown_editor.html" with field_name="final_comment" %}
@@ -9,24 +9,24 @@
 
   <!-- Internal Remarks -->
   <div>
-    <label for="internal_remarks" class="block text-sm font-medium text-gray-700 mb-1">
+    <label for="internal_remarks" class="block text-sm font-medium text-base-content mb-1">
       Internal Remarks
-      <span class="text-xs text-gray-500">(only visible to trainers)</span>
+      <span class="text-xs text-base-content/60">(only visible to trainers)</span>
     </label>
     {% include "components/logs/markdown_editor.html" with field_name="internal_remarks" %}
   </div>
 
   <!-- Next Step -->
   <div>
-    <label for="next_step" class="block text-sm font-medium text-gray-700 mb-1">Next Step</label>
+    <label for="next_step" class="block text-sm font-medium text-base-content mb-1">Next Step</label>
     <input type="text" id="next_step" name="next_step" x-model="formData.next_step"
            class="input input-bordered w-full" placeholder="Enter the next step here..." @input="saveFormState"/>
   </div>
 
   <!-- Training Result -->
   <div>
-    <label for="id_result" class="block text-sm font-medium text-gray-700 mb-1">
-      Training Result<span class="text-red-500">*</span>
+    <label for="id_result" class="block text-sm font-medium text-base-content mb-1">
+      Training Result<span class="semantic-red-text">*</span>
     </label>
     <div class="flex items-center space-x-4 h-full pt-2" :class="{'border-red-500 rounded p-2': formErrors.result}">
       <label class="flex items-center cursor-pointer">
@@ -38,7 +38,7 @@
         <span class="ml-2">Not Passed</span>
       </label>
     </div>
-    <div x-show="formErrors.result" class="text-red-500 text-sm mt-1 error-message">
+    <div x-show="formErrors.result" class="semantic-red-text text-sm mt-1 error-message">
       <span x-text="formErrors.result"></span>
     </div>
   </div>

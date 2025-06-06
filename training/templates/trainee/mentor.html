@@ -16,24 +16,24 @@
   <!-- Main Content Tabs -->
     <div x-data="{ activeTab: 'active-courses' }">
     <!-- Tab Navigation -->
-      <div class="border-b border-gray-200 mb-6">
+      <div class=" mb-6">
         <nav class="flex -mb-px space-x-8 overflow-x-auto">
-          <button @click="activeTab = 'active-courses'" :class="{'border-blue-500 text-blue-600': activeTab === 'active-courses', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'active-courses'}" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap">
+          <button @click="activeTab = 'active-courses'" :class="{'border-blue-500 text-blue-600': activeTab === 'active-courses', 'border-transparent text-gray-500 hover:text-gray-700 ': activeTab !== 'active-courses'}" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap">
             Active Courses
           </button>
-          <button @click="activeTab = 'completed-courses'" :class="{'border-blue-500 text-blue-600': activeTab === 'completed-courses', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'completed-courses'}" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap">
+          <button @click="activeTab = 'completed-courses'" :class="{'border-blue-500 text-blue-600': activeTab === 'completed-courses', 'border-transparent text-gray-500 hover:text-gray-700 ': activeTab !== 'completed-courses'}" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap">
             Completed Courses
           </button>
-          <button @click="activeTab = 'moodle-courses'" :class="{'border-blue-500 text-blue-600': activeTab === 'moodle-courses', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'moodle-courses'}" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap">
+          <button @click="activeTab = 'moodle-courses'" :class="{'border-blue-500 text-blue-600': activeTab === 'moodle-courses', 'border-transparent text-gray-500 hover:text-gray-700 ': activeTab !== 'moodle-courses'}" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap">
             Moodle Courses
           </button>
-          <button @click="activeTab = 'endorsements'" :class="{'border-blue-500 text-blue-600': activeTab === 'endorsements', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'endorsements'}" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap">
+          <button @click="activeTab = 'endorsements'" :class="{'border-blue-500 text-blue-600': activeTab === 'endorsements', 'border-transparent text-gray-500 hover:text-gray-700 ': activeTab !== 'endorsements'}" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap">
             Endorsements
           </button>
-          <button @click="activeTab = 'familiarisations'" :class="{'border-blue-500 text-blue-600': activeTab === 'familiarisations', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'familiarisations'}" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap">
+          <button @click="activeTab = 'familiarisations'" :class="{'border-blue-500 text-blue-600': activeTab === 'familiarisations', 'border-transparent text-gray-500 hover:text-gray-700 ': activeTab !== 'familiarisations'}" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap">
             Centre Familiarisations
           </button>
-          <button @click="activeTab = 'comments'" :class="{'border-blue-500 text-blue-600': activeTab === 'comments', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'comments'}" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap">
+          <button @click="activeTab = 'comments'" :class="{'border-blue-500 text-blue-600': activeTab === 'comments', 'border-transparent text-gray-500 hover:text-gray-700 ': activeTab !== 'comments'}" class="py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap">
             Mentor Comments
           </button>
         </nav>
@@ -57,10 +57,10 @@
         {% if tier_2 %}
           <div class="mb-10">
             <div class="flex justify-between items-center mb-4">
-              <h2 class="text-xl font-bold text-gray-800">Tier 2 Endorsements</h2>
+              <h2 class="text-xl font-bold text-base-content">Tier 2 Endorsements</h2>
             </div>
 
-            <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+            <div class="bg-base-100 rounded-xl shadow-md border semantic-neutral-border overflow-hidden">
               <div class="p-4">
                 <div class="grid grid-cols-1 gap-4">
                   <div class="flex flex-wrap gap-2">

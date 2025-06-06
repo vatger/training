@@ -5,15 +5,15 @@
     x-transition:enter="transition ease-out duration-200"
     x-transition:enter-start="opacity-0"
     x-transition:enter-end="opacity-100"
-    class="bg-white rounded-xl shadow-md border border-gray-200 mt-4">
+    class="bg-base-100 rounded-xl shadow-md border semantic-neutral-border mt-4">
 
-    <div class="p-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
+    <div class="p-4 bg-base-200 border-b border-base-content/20 flex justify-between items-center rounded-t-xl">
         <div>
-            <h3 class="font-medium text-lg text-gray-800">{{ course.name }}</h3>
-            <p class="text-sm text-gray-500">{{ course.get_position_display }} {{ course.get_type_display }}</p>
+            <h3 class="font-medium text-lg text-base-content">{{ course.name }}</h3>
+            <p class="text-sm text-base-content/60">{{ course.get_position_display }} {{ course.get_type_display }}</p>
         </div>
         <a href="{% url 'overview:manage_mentors' course.id %}"
-           class="text-sm text-blue-600 hover:text-blue-500 flex items-center">
+           class="text-sm semantic-blue-text hover:opacity-80 flex items-center">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24"
                  stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

@@ -1,32 +1,32 @@
 <div class="mb-10">
   <div class="flex justify-between items-center mb-4">
-    <h2 class="text-xl font-bold text-gray-800">Solo Endorsements</h2>
+    <h2 class="text-xl font-bold text-base-content">Solo Endorsements</h2>
   </div>
 
   {% if solos %}
-    <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+    <div class="bg-base-100 rounded-xl shadow-md border semantic-neutral-border overflow-hidden">
       <div class="p-4">
         <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
+          <table class="min-w-full divide-y divide-base-content/20 semantic-neutral-border">
+            <thead class="bg-base-200">
               <tr>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Position</th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Expires</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-base-content/60 uppercase tracking-wider">Position</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-base-content/60 uppercase tracking-wider">Status</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-base-content/60 uppercase tracking-wider">Expires</th>
               </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
+            <tbody class="bg-base-100 divide-y semantic-neutral-border">
               {% for solo in solos %}
                 <tr>
                   <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm font-medium text-gray-900">{{ solo.position }}</div>
+                    <div class="text-sm font-medium text-base-content">{{ solo.position }}</div>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
-                    <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full {% if solo.remaining_days <= 7 %}bg-red-100 text-red-800{% elif solo.remaining_days <= 14 %}bg-yellow-100 text-yellow-800{% else %}bg-green-100 text-green-800{% endif %}">
+                    <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full {% if solo.remaining_days <= 7 %}semantic-red-bg semantic-red-text{% elif solo.remaining_days <= 14 %}semantic-yellow-bg semantic-yellow-text{% else %}semantic-green-bg semantic-green-text{% endif %}">
                       {{ solo.remaining_days }} days remaining
                     </span>
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-base-content/60">
                     {{ solo.expiry|date:"d M Y" }}
                   </td>
                 </tr>
@@ -37,12 +37,12 @@
       </div>
     </div>
   {% else %}
-    <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200 text-center">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <div class="bg-base-100 rounded-xl shadow-md p-6 border semantic-neutral-border text-center">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-base-content/60 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
-      <h3 class="text-lg font-medium text-gray-900">No solo endorsements</h3>
-      <p class="mt-2 text-sm text-gray-500">You don't have any active solo endorsements.</p>
+      <h3 class="text-lg font-medium text-base-content">No solo endorsements</h3>
+      <p class="mt-2 text-sm text-base-content/60">You don't have any active solo endorsements.</p>
     </div>
   {% endif %}
 </div>

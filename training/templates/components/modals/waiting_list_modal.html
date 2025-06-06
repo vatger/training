@@ -45,17 +45,17 @@
             x-transition:leave="ease-in duration-200"
             x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
             x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-            class="bg-white rounded-lg overflow-hidden shadow-xl transform transition-all sm:max-w-6xl w-full mx-4 z-20 relative">
+            class="bg-base-100 rounded-lg overflow-hidden shadow-xl transform transition-all sm:max-w-6xl w-full mx-4 z-20 relative">
 
-            <div class="px-6 py-4 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
+            <div class="px-6 py-4 bg-base-200 border-b border-base-content/20 flex items-center justify-between">
                 <div class="flex items-center">
                     <div
                         x-show="course"
                         :class="{
-                                'bg-gray-100 text-gray-600': course?.position === 'GND',
-                                'bg-blue-100 text-blue-600': course?.position === 'TWR',
-                                'bg-green-100 text-green-600': course?.position === 'APP',
-                                'bg-purple-100 text-purple-600': course?.position === 'CTR'
+                                'semantic-gray-bg semantic-gray-text': course?.position === 'GND',
+                                'semantic-blue-bg semantic-blue-text': course?.position === 'TWR',
+                                'semantic-green-bg semantic-green-text': course?.position === 'APP',
+                                'semantic-purple-bg semantic-purple-text': course?.position === 'CTR'
                                 }"
                         class="p-2 rounded-lg mr-3">
                         <svg x-show="course?.position === 'GND'" xmlns="http://www.w3.org/2000/svg"
@@ -80,15 +80,15 @@
                         </svg>
                     </div>
                     <div>
-                        <h3 class="text-xl font-semibold text-gray-800" x-text="course?.name"></h3>
+                        <h3 class="text-xl font-semibold text-base-content" x-text="course?.name"></h3>
                         <div class="flex items-center space-x-2 mt-1">
                             <span
                                 x-show="course"
                                 :class="{
-                                        'bg-blue-100 text-blue-700': course?.type === 'RTG',
-                                        'bg-purple-100 text-purple-700': course?.type === 'EDMT',
-                                        'bg-yellow-100 text-yellow-700': course?.type === 'FAM',
-                                        'bg-gray-100 text-gray-700': course?.type === 'GST'
+                                        'semantic-blue-bg semantic-blue-text': course?.type === 'RTG',
+                                        'semantic-purple-bg semantic-purple-text': course?.type === 'EDMT',
+                                        'semantic-yellow-bg semantic-yellow-text': course?.type === 'FAM',
+                                        'semantic-gray-bg semantic-gray-text': course?.type === 'GST'
                                         }"
                                 class="px-2 py-0.5 rounded-full text-xs font-medium"
                                 x-text="course?.type_display">
@@ -96,9 +96,9 @@
                             <span
                                 x-show="course"
                                 :class="{
-                                        'bg-red-100 text-red-700': course?.waiting_count > 40,
-                                        'bg-yellow-100 text-yellow-700': course?.waiting_count > 0 && course?.waiting_count <= 40,
-                                        'bg-gray-100 text-gray-700': course?.waiting_count === 0
+                                        'semantic-red-bg semantic-red-text': course?.waiting_count > 40,
+                                        'semantic-yellow-bg semantic-yellow-text': course?.waiting_count > 0 && course?.waiting_count <= 40,
+                                        'semantic-gray-bg semantic-gray-text': course?.waiting_count === 0
                                         }"
                                 class="px-2 py-0.5 rounded-full text-xs font-medium">
                                 <span x-text="course?.waiting_count"></span> waiting
@@ -108,7 +108,7 @@
                 </div>
                 <button
                     @click="open = false"
-                    class="text-gray-400 hover:text-gray-500 focus:outline-none">
+                    class="text-base-content/60 hover:text-base-content focus:outline-none">
                     <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M6 18L18 6M6 6l12 12"/>
@@ -120,7 +120,7 @@
                 {% include "components/lists/mentor/waiting_list_table.html" %}
             </div>
 
-            <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end">
+            <div class="px-6 py-4 bg-base-200 border-t border-base-content/20 flex justify-end">
                 <button @click="open = false" class="btn btn-ghost gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
                          stroke="currentColor">
