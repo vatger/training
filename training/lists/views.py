@@ -1,11 +1,12 @@
 import json
 import os
+from datetime import datetime, timezone
 
 import requests
 from cachetools import TTLCache
+from django.contrib import messages
 from django.contrib.admin.models import CHANGE
 from django.contrib.auth.decorators import login_required
-from django.core.checks import messages
 from django.http import JsonResponse
 from django.shortcuts import (
     render,
@@ -118,6 +119,22 @@ def view_lists(request):
         courses = courses.exclude(type="RTG")
     if request.user.userdetail.subdivision == "GER":
         courses = courses.exclude(type="GST")
+    # For S3 courses, check whether last rating upgrade is longer than 3 months ago
+    if request.user.userdetail.rating == 3:
+        if request.user.userdetail.last_rating_change is not None and (
+            datetime.now(timezone.utc) - request.user.userdetail.last_rating_change
+        ).days < int(os.getenv("S3_RATING_CHANGE_DAYS", 90)):
+            courses = courses.exclude(type="RTG")
+            messages.error(
+                request,
+                "Your last rating change was less than 3 months ago. You cannot join an S3 course yet.",
+            )
+        elif request.user.userdetail.last_rating_change is None:
+            courses = courses.exclude(type="RTG")
+            messages.error(
+                request,
+                "Your profile is missing some data. Please log out and log back in to update your profile.",
+            )
 
     try:
         twr_s1, twr_s2, app_s3 = get_cached_connections(request.user)
