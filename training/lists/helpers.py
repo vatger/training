@@ -1,6 +1,7 @@
 import os
 
 import requests
+from datetime import datetime, timezone
 from cachetools import TTLCache, cached
 from dotenv import load_dotenv
 from endorsements.helpers import get_tier1_endorsements
@@ -95,6 +96,20 @@ def course_valid_for_user(course, user) -> [bool, str]:
             False,
             "You are already on the roster.",
         )
+
+    if user.userdetail.rating == 3:
+        if user.userdetail.last_rating_change is not None and (
+            datetime.now(timezone.utc) - user.userdetail.last_rating_change
+        ).days < int(os.getenv("S3_RATING_CHANGE_DAYS", 90)):
+            return (
+                False,
+                "Your last rating change was less than 3 months ago. You cannot join an S3 course yet.",
+            )
+        elif user.userdetail.last_rating_change is None:
+            return (
+                False,
+                "Your profile is missing some data. Please log out and log back in to update your profile.",
+            )
 
     return True, ""
 
