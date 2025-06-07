@@ -1,6 +1,10 @@
 {% load endorsement_tags %}
 
-<tr x-show="filter === 'all' || (filter === 'low' && {{ entry.activity }} < {{ min_hours_required }}) || (filter === 'removal' && {{ entry.removal }} >= 0)">
+<!-- Make sure CSRF token is available in the parent template -->
+{% csrf_token %}
+
+<tr x-show="filter === 'all' || (filter === 'low' && {{ entry.activity }} < {{ min_hours_required }}) || (filter === 'removal' && {{ entry.removal }} >= 0)"
+    data-endorsement-row="{{ entry.endorsement_id }}">
   <td class="px-6 py-4 whitespace-nowrap">
     <div class="flex items-center">
       <div>
@@ -41,36 +45,154 @@
     </div>
   </td>
   <td class="px-6 py-4 whitespace-nowrap">
-    {% if entry.removal >= 0 %}
-      <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full semantic-red-bg semantic-red-text">
-        Removal in {{ entry.removal }} days
-      </span>
-    {% elif entry.activity < min_hours_required %}
-      <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full semantic-yellow-bg semantic-yellow-text">
-        Low Activity
-      </span>
-    {% else %}
-      <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full semantic-green-bg semantic-green-text">
-        Active
-      </span>
-    {% endif %}
+    <div class="status-cell">
+      {% if entry.removal >= 0 %}
+        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full semantic-red-bg semantic-red-text">
+          Removal in {{ entry.removal }} days
+        </span>
+      {% elif entry.activity < min_hours_required %}
+        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full semantic-yellow-bg semantic-yellow-text">
+          Low Activity
+        </span>
+      {% else %}
+        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full semantic-green-bg semantic-green-text">
+          Active
+        </span>
+      {% endif %}
+    </div>
   </td>
   <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
     {% if entry.removal == -1 %}
-      <a href="{% url 'endorsements:remove' entry.endorsement_id %}"
-         class="btn btn-sm btn-error"
-         @click.prevent="$dispatch('open-confirm', {
-                         action: 'remove',
-                         message: 'Are you sure you want to start the removal process for {{ entry.name }} ({{ entry.id }})? This will notify the controller and remove the endorsement after 31 days if activity requirements are not met.',
-                         href: '{% url 'endorsements:remove' entry.endorsement_id %}'
-                         })">
+      <button type="button"
+              class="btn btn-sm btn-error"
+              data-endorsement-id="{{ entry.endorsement_id }}"
+              @click.prevent="$dispatch('open-confirm', {
+                              action: 'remove',
+                              message: 'Are you sure you want to start the removal process for {{ entry.name }} ({{ entry.id }})? This will notify the controller and remove the endorsement after 31 days if activity requirements are not met.',
+                              callback: () => removeTier1({{ entry.endorsement_id }})
+                              })">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
         </svg>
-        Start Removal
-      </a>
+        <span class="button-text">Start Removal</span>
+      </button>
     {% else %}
       <span class="text-sm text-base-content/60 italic">Removal in progress</span>
     {% endif %}
   </td>
 </tr>
+
+<script>
+
+  function removeTier1(endorsementId) {
+    // Get CSRF token
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    // Find the button and update its state
+    const button = document.querySelector(`[data-endorsement-id="${endorsementId}"]`);
+    const buttonText = button.querySelector('.button-text');
+    const originalText = buttonText.textContent;
+
+    // Disable the button to prevent multiple clicks
+    button.disabled = true;
+    buttonText.textContent = 'Processing...';
+
+    fetch(`/endorsements/remove/${endorsementId}/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrfToken,
+        'X-Requested-With': 'XMLHttpRequest'  // This helps Django identify Ajax requests
+      },
+      credentials: 'same-origin'
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+            // Success - show success message
+          showMessage(data.message, 'success');
+
+            // Update the UI - you might want to hide the button or update the endorsement row
+          updateEndorsementRow(endorsementId, data);
+
+        } else {
+            // Error - show error message
+          showMessage(data.error, 'error');
+
+            // If redirect is needed, redirect
+          if (data.redirect) {
+            window.location.href = data.redirect_url;
+          }
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        showMessage('An error occurred while processing the request', 'error');
+      })
+      .finally(() => {
+        // Re-enable the button only if we're not updating the UI
+        if (!button.style.display === 'none') {
+          button.disabled = false;
+          buttonText.textContent = originalText;
+        }
+      });
+  }
+
+// Function to show messages to user
+  function showMessage(message, type) {
+    // Create or update a message div
+    let messageDiv = document.getElementById('ajax-messages');
+    if (!messageDiv) {
+      messageDiv = document.createElement('div');
+      messageDiv.id = 'ajax-messages';
+      messageDiv.style.position = 'fixed';
+      messageDiv.style.top = '20px';
+      messageDiv.style.right = '20px';
+      messageDiv.style.zIndex = '9999';
+      document.body.appendChild(messageDiv);
+    }
+
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+
+    messageDiv.appendChild(alertDiv);
+
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => {
+      alertDiv.remove();
+    }, 5000);
+  }
+
+// Function to update the endorsement row after successful removal
+  function updateEndorsementRow(endorsementId, data) {
+    // Find the endorsement row and update it
+    const row = document.querySelector(`[data-endorsement-row="${endorsementId}"]`);
+    if (row) {
+        // Update the status cell to show "Removal in progress"
+      const statusCell = row.querySelector('.status-cell');
+      if (statusCell) {
+        statusCell.innerHTML = `
+                <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full semantic-red-bg semantic-red-text">
+                    Removal in 31 days
+                </span>
+            `;
+      }
+
+        // Replace the remove button with "Removal in progress" text
+      const buttonCell = row.querySelector('td:last-child');
+      if (buttonCell) {
+        buttonCell.innerHTML = '<span class="text-sm text-base-content/60 italic">Removal in progress</span>';
+      }
+
+        // Update the Alpine.js filter data if needed
+        // This will make the row appear in the "removal" filter
+      row.setAttribute('x-show',
+        "filter === 'all' || (filter === 'low' && " + row.dataset.activity + " < " + row.dataset.minHours + ") || (filter === 'removal' && 31 >= 0)"
+      );
+    }
+  }
+</script>

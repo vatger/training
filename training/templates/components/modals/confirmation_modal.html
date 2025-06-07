@@ -1,6 +1,6 @@
 <div
-    x-data="{ open: false, action: '', message: '', href: '' }"
-    @open-confirm.window="open = true; action = $event.detail.action; message = $event.detail.message; href = $event.detail.href"
+    x-data="{ open: false, action: '', message: '', href: '', callback: null }"
+    @open-confirm.window="open = true; action = $event.detail.action; message = $event.detail.message; href = $event.detail.href || ''; callback = $event.detail.callback || null"
     x-show="open"
     x-cloak
     class="fixed z-10 inset-0 overflow-y-auto"
@@ -62,11 +62,12 @@
                 </div>
             </div>
             <div class="bg-base-200 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                <a :href="href"
-                   class="btn ml-2"
-                   :class="{'btn-success': action === 'finish', 'btn-error': action === 'remove' || action === 'unclaim'}">
+                <button type="button"
+                        @click="if (callback && typeof callback === 'function') { callback(); } else if (href) { window.location.href = href; } open = false;"
+                        class="btn ml-2"
+                        :class="{'btn-success': action === 'finish', 'btn-error': action === 'remove' || action === 'unclaim'}">
                     Confirm
-                </a>
+                </button>
                 <button type="button" @click="open = false"
                         class="mt-3 w-full inline-flex justify-center rounded-md border semantic-neutral-border shadow-sm px-4 py-2 bg-base-100 text-base font-medium text-base-content hover:bg-base-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
                     Cancel
