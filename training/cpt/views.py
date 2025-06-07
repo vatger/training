@@ -48,13 +48,14 @@ def request_upgrade(request, cpt):
     return requests.post(link, data=data, headers=eud_header).json()
 
 
-def inform_mentor(vatsim_id: int):
+def inform_mentor(vatsim_id: int, cpt: CPT):
     data = {
         "title": "Available CPT",
-        "message": "A new CPT is available for you.",
+        "message": f"A new CPT is available: {cpt.course.solo_station} on {cpt.date.strftime('%d.%m.%Y at %H:%M')}lcl.",
         "source_name": "VATGER ATD",
         "link_text": "Training Centre",
         "link_url": "https://training.vatsim-germany.org/cpt",
+        "via": "board.ping",
     }
     header = {"Authorization": f"Token {os.getenv('VATGER_API_KEY')}"}
     r = requests.post(
@@ -104,7 +105,7 @@ def create_cpt(request):
                     notify_set.add(mentor)
 
             for user in notify_set:
-                inform_mentor(int(user.username))
+                inform_mentor(int(user.username), cpt)
 
             return redirect("cpt:index")
     else:
