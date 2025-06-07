@@ -97,7 +97,11 @@ def course_valid_for_user(course, user) -> [bool, str]:
             "You are already on the roster.",
         )
 
-    if user.userdetail.rating == 3:
+    if (
+        user.userdetail.rating == 3
+        and course.type == "RTG"
+        and course.position == "APP"
+    ):
         if user.userdetail.last_rating_change is not None and (
             datetime.now(timezone.utc) - user.userdetail.last_rating_change
         ).days < int(os.getenv("S3_RATING_CHANGE_DAYS", 90)):
@@ -105,12 +109,6 @@ def course_valid_for_user(course, user) -> [bool, str]:
                 False,
                 "Your last rating change was less than 3 months ago. You cannot join an S3 course yet.",
             )
-        elif user.userdetail.last_rating_change is None:
-            return (
-                False,
-                "Your profile is missing some data. Please log out and log back in to update your profile.",
-            )
-
     return True, ""
 
 
