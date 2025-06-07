@@ -4,8 +4,11 @@ from datetime import datetime, timedelta
 import requests
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 from django.utils import timezone
+from django.views.decorators.http import require_http_methods
 from dotenv import load_dotenv
 from overview.helpers.trainee import get_course_completion
 from training.eud_header import eud_header
@@ -116,26 +119,59 @@ def overview(request):
 
 
 @mentor_required
+@require_http_methods(["POST"])
 def remove_tier1(request, endorsement_id: int):
     try:
         endorsement = EndorsementActivity.objects.get(id=endorsement_id)
     except EndorsementActivity.DoesNotExist:
-        return redirect("endorsements:overview")
+        return JsonResponse(
+            {
+                "success": False,
+                "error": "Endorsement not found",
+                "redirect": True,
+                "redirect_url": reverse("endorsements:overview"),
+            },
+            status=404,
+        )
 
     # Check whether user can mentor any of the linked courses
     courses = endorsement.group.courses.all()
     if not courses.filter(mentors=request.user).exists():
-        return redirect("endorsements:overview")
+        return JsonResponse(
+            {
+                "success": False,
+                "error": "Permission denied",
+                "redirect": True,
+                "redirect_url": reverse("endorsements:overview"),
+            },
+            status=403,
+        )
 
     # Check if removal date is already set
     if endorsement.removal_date:
-        return redirect("endorsements:overview")
+        return JsonResponse(
+            {
+                "success": False,
+                "error": "Removal date already set",
+                "redirect": True,
+                "redirect_url": reverse("endorsements:overview"),
+            },
+            status=400,
+        )
 
     # Check valid removal
     if not valid_removal(endorsement):
         endorsement.removal_date = None
         endorsement.save()
-        return redirect("endorsements:overview")
+        return JsonResponse(
+            {
+                "success": False,
+                "error": "Invalid removal",
+                "redirect": True,
+                "redirect_url": reverse("endorsements:overview"),
+            },
+            status=400,
+        )
 
     # Set removal date to 31 days from now
     endorsement.removal_date = datetime.now() + timedelta(days=31)
@@ -152,7 +188,13 @@ def remove_tier1(request, endorsement_id: int):
         f"Removal process for {endorsement.id} started by {request.user.username}.",
     )
 
-    return redirect("endorsements:overview")
+    return JsonResponse(
+        {
+            "success": True,
+            "message": f"Removal process started for {endorsement.id}, {endorsement.group.name}",
+            "removal_date": endorsement.removal_date.strftime("%Y-%m-%d %H:%M:%S"),
+        }
+    )
 
 
 @login_required
