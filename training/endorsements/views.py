@@ -20,9 +20,9 @@ load_dotenv()
 min_hours_required = float(os.getenv("T1_MIN_MINUTES")) / 60
 
 
-def valid_removal(endorsement: EndorsementActivity) -> bool:
+def valid_removal(endorsement: EndorsementActivity, day_delta: int = 180) -> bool:
     no_min_hours = endorsement.activity < float(os.getenv("T1_MIN_MINUTES"))
-    six_months_ago = timezone.now() - timedelta(days=180)
+    six_months_ago = timezone.now() - timedelta(days=day_delta)
     not_recent = endorsement.created < six_months_ago
     return no_min_hours and not_recent
 
@@ -55,7 +55,9 @@ def overview(request):
             except EndorsementActivity.DoesNotExist:
                 continue
 
-            if not valid_removal(activity):
+            if not valid_removal(
+                activity, day_delta=5 * 30 + 5
+            ):  # 5 days extra to prevent weird edge cases
                 continue
 
             try:
