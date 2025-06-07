@@ -84,7 +84,7 @@
 
 <script>
 
-function removeTier1(endorsementId) {
+  function removeTier1(endorsementId) {
     // Get CSRF token
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
@@ -98,58 +98,58 @@ function removeTier1(endorsementId) {
     buttonText.textContent = 'Processing...';
 
     fetch(`/endorsements/remove/${endorsementId}/`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': csrfToken,
-            'X-Requested-With': 'XMLHttpRequest'  // This helps Django identify Ajax requests
-        },
-        credentials: 'same-origin'
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrfToken,
+        'X-Requested-With': 'XMLHttpRequest'  // This helps Django identify Ajax requests
+      },
+      credentials: 'same-origin'
     })
-    .then(response => response.json())
-    .then(data => {
+      .then(response => response.json())
+      .then(data => {
         if (data.success) {
             // Success - show success message
-            showMessage(data.message, 'success');
+          showMessage(data.message, 'success');
 
             // Update the UI - you might want to hide the button or update the endorsement row
-            updateEndorsementRow(endorsementId, data);
+          updateEndorsementRow(endorsementId, data);
 
         } else {
             // Error - show error message
-            showMessage(data.error, 'error');
+          showMessage(data.error, 'error');
 
             // If redirect is needed, redirect
-            if (data.redirect) {
-                window.location.href = data.redirect_url;
-            }
+          if (data.redirect) {
+            window.location.href = data.redirect_url;
+          }
         }
-    })
-    .catch(error => {
+      })
+      .catch(error => {
         console.error('Error:', error);
         showMessage('An error occurred while processing the request', 'error');
-    })
-    .finally(() => {
+      })
+      .finally(() => {
         // Re-enable the button only if we're not updating the UI
         if (!button.style.display === 'none') {
-            button.disabled = false;
-            buttonText.textContent = originalText;
+          button.disabled = false;
+          buttonText.textContent = originalText;
         }
-    });
-}
+      });
+  }
 
 // Function to show messages to user
-function showMessage(message, type) {
+  function showMessage(message, type) {
     // Create or update a message div
     let messageDiv = document.getElementById('ajax-messages');
     if (!messageDiv) {
-        messageDiv = document.createElement('div');
-        messageDiv.id = 'ajax-messages';
-        messageDiv.style.position = 'fixed';
-        messageDiv.style.top = '20px';
-        messageDiv.style.right = '20px';
-        messageDiv.style.zIndex = '9999';
-        document.body.appendChild(messageDiv);
+      messageDiv = document.createElement('div');
+      messageDiv.id = 'ajax-messages';
+      messageDiv.style.position = 'fixed';
+      messageDiv.style.top = '20px';
+      messageDiv.style.right = '20px';
+      messageDiv.style.zIndex = '9999';
+      document.body.appendChild(messageDiv);
     }
 
     const alertDiv = document.createElement('div');
@@ -163,36 +163,36 @@ function showMessage(message, type) {
 
     // Auto-dismiss after 5 seconds
     setTimeout(() => {
-        alertDiv.remove();
+      alertDiv.remove();
     }, 5000);
-}
+  }
 
 // Function to update the endorsement row after successful removal
-function updateEndorsementRow(endorsementId, data) {
+  function updateEndorsementRow(endorsementId, data) {
     // Find the endorsement row and update it
     const row = document.querySelector(`[data-endorsement-row="${endorsementId}"]`);
     if (row) {
         // Update the status cell to show "Removal in progress"
-        const statusCell = row.querySelector('.status-cell');
-        if (statusCell) {
-            statusCell.innerHTML = `
+      const statusCell = row.querySelector('.status-cell');
+      if (statusCell) {
+        statusCell.innerHTML = `
                 <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full semantic-red-bg semantic-red-text">
                     Removal in 31 days
                 </span>
             `;
-        }
+      }
 
         // Replace the remove button with "Removal in progress" text
-        const buttonCell = row.querySelector('td:last-child');
-        if (buttonCell) {
-            buttonCell.innerHTML = '<span class="text-sm text-base-content/60 italic">Removal in progress</span>';
-        }
+      const buttonCell = row.querySelector('td:last-child');
+      if (buttonCell) {
+        buttonCell.innerHTML = '<span class="text-sm text-base-content/60 italic">Removal in progress</span>';
+      }
 
         // Update the Alpine.js filter data if needed
         // This will make the row appear in the "removal" filter
-        row.setAttribute('x-show',
-            "filter === 'all' || (filter === 'low' && " + row.dataset.activity + " < " + row.dataset.minHours + ") || (filter === 'removal' && 31 >= 0)"
-        );
+      row.setAttribute('x-show',
+        "filter === 'all' || (filter === 'low' && " + row.dataset.activity + " < " + row.dataset.minHours + ") || (filter === 'removal' && 31 >= 0)"
+      );
     }
-}
+  }
 </script>
