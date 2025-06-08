@@ -5,15 +5,17 @@
             <button
                 x-show="getTypeCount('RTG') > 0"
                 @click="activeCategory = 'RTG'"
-                :class="{'semantic-blue-border semantic-blue-text font-medium': activeCategory === 'RTG', 'border-transparent text-base-content/60 hover:text-base-content hover:border-base-content/30': activeCategory !== 'RTG'}"
+                :class="{'semantic-blue-text font-medium': activeCategory === 'RTG', 'border-transparent text-base-content/60 hover:text-base-content hover:border-base-content/30': activeCategory !== 'RTG'}"
+                :style="(getTypeCount('RTG') > 0 && activeCategory === 'RTG') ? 'border-bottom-color: var(--blue-text)' : ''"
                 class="py-4 px-1 border-b-2 text-sm transition-colors whitespace-nowrap duration-200 ease-in-out focus:outline-none">
                 Ratings (<span x-text="getTypeCount('RTG')"></span>)
             </button>
 
             <button
-                x-show="getTypeCount('EDMT') > 0 || getTypeCount('FAM') > 0"
+                x-show="(getTypeCount('EDMT') + getTypeCount('FAM')) > 0"
                 @click="activeCategory = 'EDMT_FAM'"
-                :class="{'semantic-blue-border semantic-blue-text font-medium': activeCategory === 'EDMT_FAM', 'border-transparent text-base-content/60 hover:text-base-content hover:border-base-content/30': activeCategory !== 'EDMT_FAM'}"
+                :class="{'semantic-blue-text font-medium': activeCategory === 'EDMT_FAM', 'border-transparent text-base-content/60 hover:text-base-content hover:border-base-content/30': activeCategory !== 'EDMT_FAM'}"
+                :style="((getTypeCount('EDMT') + getTypeCount('FAM')) > 0 && activeCategory === 'EDMT_FAM') ? 'border-bottom-color: var(--blue-text)' : ''"
                 class="py-4 px-1 border-b-2 text-sm transition-colors whitespace-nowrap duration-200 ease-in-out focus:outline-none">
                 Endorsements & Familiarisation (<span
                     x-text="getTypeCount('EDMT') + getTypeCount('FAM')"></span>)
@@ -22,7 +24,8 @@
             <button
                 x-show="getTypeCount('GST') > 0"
                 @click="activeCategory = 'GST'"
-                :class="{'semantic-blue-border semantic-blue-text font-medium': activeCategory === 'GST', 'border-transparent text-base-content/60 hover:text-base-content hover:border-base-content/30': activeCategory !== 'GST'}"
+                :class="{'semantic-blue-text font-medium': activeCategory === 'GST', 'border-transparent text-base-content/60 hover:text-base-content hover:border-base-content/30': activeCategory !== 'GST'}"
+                :style="(getTypeCount('GST') > 0 && activeCategory === 'GST') ? 'border-bottom-color: var(--blue-text)' : ''"
                 class="py-4 px-1 border-b-2 text-sm transition-colors whitespace-nowrap duration-200 ease-in-out focus:outline-none">
                 Visitor (<span x-text="getTypeCount('GST')"></span>)
             </button>
@@ -30,7 +33,8 @@
             <button
                 x-show="getTypeCount('RST') > 0"
                 @click="activeCategory = 'RST'"
-                :class="{'semantic-blue-border semantic-blue-text font-medium': activeCategory === 'RST', 'border-transparent text-base-content/60 hover:text-base-content hover:border-base-content/30': activeCategory !== 'RST'}"
+                :class="{'semantic-blue-text font-medium': activeCategory === 'RST', 'border-transparent text-base-content/60 hover:text-base-content hover:border-base-content/30': activeCategory !== 'RST'}"
+                :style="(getTypeCount('RST') > 0 && activeCategory === 'RST') ? 'border-bottom-color: var(--blue-text)' : ''"
                 class="py-4 px-1 border-b-2 text-sm transition-colors whitespace-nowrap duration-200 ease-in-out focus:outline-none">
                 Roster (<span x-text="getTypeCount('RST')"></span>)
             </button>

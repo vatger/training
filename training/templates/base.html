@@ -355,6 +355,58 @@
           </div>
         {% endif %}
         <script>
+          window.formatHoursToTime = function(decimalHours) {
+            if (decimalHours === null || decimalHours === undefined || decimalHours === "") {
+              return "0:00";
+            }
+
+            const hours = Math.floor(decimalHours);
+            const minutes = Math.round((decimalHours - hours) * 60);
+
+            return `${hours}:${minutes.toString().padStart(2, '0')}`;
+          };
+
+          window.formatMinutesToTime = function(totalMinutes) {
+            if (totalMinutes === null || totalMinutes === undefined || totalMinutes === "") {
+              return "0:00";
+            }
+
+            const hours = Math.floor(totalMinutes / 60);
+            const minutes = totalMinutes % 60;
+
+            return `${hours}:${minutes.toString().padStart(2, '0')}`;
+          };
+
+          window.formatActivityDisplay = function(activityHours) {
+            return `${window.formatHoursToTime(activityHours)} hours`;
+          };
+
+          // Auto-convert activity hours on page load
+          document.addEventListener('DOMContentLoaded', function() {
+            // Convert all elements with data-activity-hours attribute
+            document.querySelectorAll('[data-activity-hours]').forEach(function(element) {
+              const activityHours = parseFloat(element.getAttribute('data-activity-hours'));
+              if (!isNaN(activityHours)) {
+                element.textContent = window.formatActivityDisplay(activityHours);
+              }
+            });
+
+            // Convert all elements with data-time-hours attribute (without "hours" suffix)
+            document.querySelectorAll('[data-time-hours]').forEach(function(element) {
+              const timeHours = parseFloat(element.getAttribute('data-time-hours'));
+              if (!isNaN(timeHours)) {
+                element.textContent = window.formatHoursToTime(timeHours);
+              }
+            });
+
+            // Convert all elements with data-time-minutes attribute
+            document.querySelectorAll('[data-time-minutes]').forEach(function(element) {
+              const timeMinutes = parseInt(element.getAttribute('data-time-minutes'));
+              if (!isNaN(timeMinutes)) {
+                element.textContent = window.formatMinutesToTime(timeMinutes);
+              }
+            });
+          });
           document.addEventListener('alpine:init', () => {
             Alpine.data('themeManager', () => ({
               currentTheme: 'vatger-light',
