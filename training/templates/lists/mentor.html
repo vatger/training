@@ -182,14 +182,14 @@
                                 </div>
                                 <div class="w-full semantic-gray-bg rounded-full h-2.5">
                                     <div
-    class="h-2.5 rounded-full"
-    :style="{
-        'width': Math.min(course.waiting_count * 2, 100) + '%',
-        'background-color': course.waiting_count > 40 ? 'var(--red-text)' :
-                           (course.waiting_count > 0 && course.waiting_count <= 40) ? 'var(--yellow-text)' :
-                           'var(--gray-text)'
-    }">
-</div>
+                                        class="h-2.5 rounded-full"
+                                        :style="{
+                                                'width': Math.min(course.waiting_count * 2, 100) + '%',
+                                                'background-color': course.waiting_count > 40 ? 'var(--red-text)' :
+                                                (course.waiting_count > 0 && course.waiting_count <= 40) ? 'var(--yellow-text)' :
+                                                'var(--gray-text)'
+                                                }">
+                                    </div>
                                 </div>
                             </div>
 
