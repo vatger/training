@@ -6,11 +6,11 @@ from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
 from dotenv import load_dotenv
-from lists.models import Course
-from overview.helpers.trainee import get_core_theory_passed, CoreState
 from training.eud_header import eud_header
 from training.permissions import mentor_required
 
+from lists.models import Course
+from overview.helpers.trainee import get_core_theory_passed, CoreState
 from .forms import CPTCreateForm, DocumentForm
 from .models import CPT, Examiner, CPTLog
 
@@ -72,7 +72,19 @@ def cpt_confirmed(cpt: CPT) -> bool:
 @mentor_required
 def index(request):
     cpts = CPT.objects.filter(passed=None).order_by("date")
-    return render(request, "cpt/index.html", {"cpts": cpts})
+    total_cpts = cpts.count()
+    confirmed_cpts = cpts.filter(confirmed=True).count()
+    pending_cpts = cpts.filter(confirmed=False).count()
+    return render(
+        request,
+        "cpt/index.html",
+        {
+            "cpts": cpts,
+            "total_cpts": total_cpts,
+            "confirmed_cpts": confirmed_cpts,
+            "pending_cpts": pending_cpts,
+        },
+    )
 
 
 @mentor_required
