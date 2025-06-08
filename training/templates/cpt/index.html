@@ -73,7 +73,7 @@
         </div>
         <div class="mt-4">
           <span class="text-3xl font-bold text-base-content">
-            {% for cpt in cpts %}{% if not cpt.confirmed %}{{ forloop.counter0|add:1 }}{% endif %}{% empty %}0{% endfor %}
+            {{ pending_count }}
           </span>
         </div>
       </div>
