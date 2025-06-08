@@ -54,8 +54,8 @@
         </div>
         <div class="mt-4">
           <span class="text-3xl font-bold text-base-content" x-data="{
-            confirmedCount: {{ cpts|length }} > 0 ? [{% for cpt in cpts %}{% if cpt.confirmed %}1{% else %}0{% endif %}{% if not forloop.last %},{% endif %}{% endfor %}].reduce((a, b) => a + b, 0) : 0
-          }" x-text="confirmedCount"></span>
+                                                                     confirmedCount: {{ cpts|length }} > 0 ? [{% for cpt in cpts %}{% if cpt.confirmed %}1{% else %}0{% endif %}{% if not forloop.last %},{% endif %}{% endfor %}].reduce((a, b) => a + b, 0) : 0
+                                                                     }" x-text="confirmedCount"></span>
         </div>
       </div>
 
