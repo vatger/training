@@ -1,4 +1,5 @@
 {% csrf_token %}
+
 <div x-show="course?.waiting_list.length === 0" class="py-8 text-center">
     <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 semantic-gray-text mx-auto mb-4"
          fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -71,7 +72,7 @@
                     <td class="px-6 py-4 whitespace-nowrap" x-show="course.type === 'RTG'">
                         <a :href="'https://stats.vatsim.net/stats/' + trainee.vatsim_id + '?range=2months'"
                            target="_blank" class="text-sm semantic-blue-text hover:opacity-80">
-                            <span x-text="trainee.activity + ' hours'"></span>
+                            <span x-text="window.formatActivityDisplay(trainee.activity)"></span>
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 inline ml-1"
                                  fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round"

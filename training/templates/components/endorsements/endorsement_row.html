@@ -1,6 +1,5 @@
 {% load endorsement_tags %}
 
-<!-- Make sure CSRF token is available in the parent template -->
 {% csrf_token %}
 
 <tr x-show="filter === 'all' || (filter === 'low' && {{ entry.activity }} < {{ min_hours_required }}) || (filter === 'removal' && {{ entry.removal }} >= 0)"
@@ -40,7 +39,7 @@
                    {% else %}
                      semantic-red-text
                    {% endif %}">
-        {{ entry.activity }} hours
+        <span data-activity-hours="{{ entry.activity }}">{{ entry.activity }} hours</span>
       </span>
     </div>
   </td>
@@ -83,7 +82,6 @@
 </tr>
 
 <script>
-
   function removeTier1(endorsementId) {
     // Get CSRF token
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
