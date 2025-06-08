@@ -1,68 +1,281 @@
 {% extends 'base.html' %}
 
 {% block content %}
-  <style>
-    .messages .success {
-      color: green;
-    }
-    .messages .error {
-      color: red;
-    }
-    .messages .warning {
-      color: orange;
-    }
-    .messages .info {
-      color: blue;
-    }
-  </style>
-
   <div class="container px-4 py-5">
     {% include "components/breadcrumbs.html" with auto=True current_title="CPT Planning" %}
 
     <div class="mb-8">
-      <h1 class="text-3xl font-bold text-gray-800">CPT Management</h1>
-      <p class="text-gray-600 mt-2">Plan CPTs and sign up as examiner.</p>
-    </div>
-
-    {% if messages %}
-      <div class="mb-8">
-        <ul class="messages">
-          {% for message in messages %}
-            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-            </div>
-          {% endfor %}
-        </ul>
-    {% endif %}
-
-    <div class="overflow-x-auto">
-      <table class="min-w-full divide-y divide-base-content/20">
-        <thead class="bg-gray-50">
-          <tr>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Station</th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trainee</th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Examiner</th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Local</th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-          </tr>
-        </thead>
-        <tbody class="bg-white divide-y divide-base-content/20">
-          {% for cpt in cpts %}
-            {% include "components/cpt/index_row.html" %}
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-
-    <div class="container">
-      <div class="flex space-x-2">
-        <a href="{% url 'cpt:create_cpt' %}" class="btn btn-sm btn-primary">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-          </svg>
-          New CPT
-        </a>
+      <div class="flex flex-wrap justify-between items-start gap-4">
+        <div>
+          <h1 class="text-3xl font-bold text-base-content">CPT Management</h1>
+          <p class="text-base-content/60 mt-2">Plan and manage Competency Check Tests across all courses.</p>
+        </div>
+        <div class="flex space-x-2">
+          <a href="{% url 'cpt:create_cpt' %}" class="btn btn-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Schedule New CPT
+          </a>
+        </div>
       </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div class="bg-base-100 rounded-xl shadow-md p-6 semantic-neutral-border border">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-lg font-semibold text-base-content">Total CPTs</h3>
+            <p class="text-base-content/60 text-sm mt-1">Scheduled tests</p>
+          </div>
+          <div class="p-3 rounded-full semantic-blue-bg">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 semantic-blue-text" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+          </div>
+        </div>
+        <div class="mt-4">
+          <span class="text-3xl font-bold text-base-content">{{ cpts|length }}</span>
+        </div>
+      </div>
+
+      <div class="bg-base-100 rounded-xl shadow-md p-6 semantic-neutral-border border">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-lg font-semibold text-base-content">Confirmed CPTs</h3>
+            <p class="text-base-content/60 text-sm mt-1">Ready to proceed</p>
+          </div>
+          <div class="p-3 rounded-full semantic-green-bg">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 semantic-green-text" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+        </div>
+        <div class="mt-4">
+          <span class="text-3xl font-bold text-base-content" x-data="{
+            confirmedCount: {{ cpts|length }} > 0 ? [{% for cpt in cpts %}{% if cpt.confirmed %}1{% else %}0{% endif %}{% if not forloop.last %},{% endif %}{% endfor %}].reduce((a, b) => a + b, 0) : 0
+          }" x-text="confirmedCount"></span>
+        </div>
+      </div>
+
+      <div class="bg-base-100 rounded-xl shadow-md p-6 semantic-neutral-border border">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-lg font-semibold text-base-content">Pending</h3>
+            <p class="text-base-content/60 text-sm mt-1">Need examiner/local</p>
+          </div>
+          <div class="p-3 rounded-full semantic-yellow-bg">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 semantic-yellow-text" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+        </div>
+        <div class="mt-4">
+          <span class="text-3xl font-bold text-base-content">
+            {% for cpt in cpts %}{% if not cpt.confirmed %}{{ forloop.counter0|add:1 }}{% endif %}{% empty %}0{% endfor %}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CPT List -->
+    <div class="bg-base-100 rounded-xl shadow-md border semantic-neutral-border overflow-hidden">
+      <div class="p-4 bg-base-200 border-b border-base-content/20 flex justify-between items-center">
+        <div>
+          <h3 class="font-medium text-lg text-base-content">Scheduled CPTs</h3>
+          <p class="text-sm text-base-content/60">Manage competency check tests and assignments</p>
+        </div>
+      </div>
+
+      {% if cpts %}
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-base-content/20 semantic-neutral-border">
+            <thead class="bg-base-200">
+              <tr>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-base-content/60 uppercase tracking-wider">Station & Status</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-base-content/60 uppercase tracking-wider">Trainee</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-base-content/60 uppercase tracking-wider">Date & Time</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-base-content/60 uppercase tracking-wider">Examiner</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-base-content/60 uppercase tracking-wider">Local Examiner</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-base-content/60 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="bg-base-100 divide-y divide-base-content/20 semantic-neutral-border">
+              {% for cpt in cpts %}
+                <tr class="hover:bg-base-200 transition-colors">
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="flex items-center">
+                      <div>
+                        <div class="text-sm font-medium text-base-content flex items-center">
+                          {% if cpt.confirmed %}
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 semantic-green-text mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                          {% else %}
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 semantic-yellow-text mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                          {% endif %}
+                          {{ cpt.course.solo_station }}
+                        </div>
+                        <div class="text-xs {% if cpt.confirmed %}semantic-green-text{% else %}semantic-yellow-text{% endif %}">
+                          {% if cpt.confirmed %}Confirmed{% else %}Pending Setup{% endif %}
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="flex items-center">
+                      <div class="flex-shrink-0 h-8 w-8">
+                        <div class="h-8 w-8 rounded-full semantic-blue-bg flex items-center justify-center semantic-blue-text text-sm font-medium">
+                          {{ cpt.trainee.first_name|slice:":1" }}{{ cpt.trainee.last_name|slice:":1" }}
+                        </div>
+                      </div>
+                      <div class="ml-3">
+                        <div class="text-sm font-medium text-base-content">
+                          <a href="{% url 'trainee:mentor_view' cpt.trainee.username %}" class="hover:semantic-blue-text">
+                            {{ cpt.trainee.get_full_name }}
+                          </a>
+                        </div>
+                        <div class="text-sm text-base-content/60">{{ cpt.trainee.username }}</div>
+                      </div>
+                    </div>
+                  </td>
+
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm font-medium text-base-content">
+                      {{ cpt.date|date:"d M Y" }}
+                    </div>
+                    <div class="text-sm text-base-content/60">
+                      {{ cpt.date|date:"H:i" }} LCL
+                    </div>
+                  </td>
+
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    {% if cpt.examiner %}
+                      <div class="flex items-center">
+                        <div class="flex-shrink-0 h-6 w-6">
+                          <div class="h-6 w-6 rounded-full semantic-green-bg flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 semantic-green-text" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                          </div>
+                        </div>
+                        <div class="ml-2">
+                          <div class="text-sm font-medium text-base-content">{{ cpt.examiner.get_full_name }}</div>
+                          {% if request.user == cpt.examiner %}
+                            <button
+                              @click="$dispatch('open-confirm', {
+                                      action: 'remove',
+                                      message: 'Are you sure you want to cancel as examiner?',
+                                      href: '{% url 'cpt:leave_examiner' cpt.id %}'
+                                      })"
+                              class="text-xs semantic-red-text hover:opacity-80">
+                              Cancel Assignment
+                            </button>
+                          {% endif %}
+                        </div>
+                      </div>
+                    {% else %}
+                      <a href="{% url 'cpt:join_examiner' cpt.id %}" class="btn btn-sm btn-outline">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                        Sign Up
+                      </a>
+                    {% endif %}
+                  </td>
+
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    {% if cpt.local %}
+                      <div class="flex items-center">
+                        <div class="flex-shrink-0 h-6 w-6">
+                          <div class="h-6 w-6 rounded-full semantic-blue-bg flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 semantic-blue-text" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                          </div>
+                        </div>
+                        <div class="ml-2">
+                          <div class="text-sm font-medium text-base-content">{{ cpt.local.get_full_name }}</div>
+                          {% if request.user == cpt.local %}
+                            <button
+                              @click="$dispatch('open-confirm', {
+                                      action: 'remove',
+                                      message: 'Are you sure you want to cancel as local examiner?',
+                                      href: '{% url 'cpt:leave_local' cpt.id %}'
+                                      })"
+                              class="text-xs semantic-red-text hover:opacity-80">
+                              Cancel Assignment
+                            </button>
+                          {% endif %}
+                        </div>
+                      </div>
+                    {% else %}
+                      <a href="{% url 'cpt:join_local' cpt.id %}" class="btn btn-sm btn-outline">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                        Sign Up
+                      </a>
+                    {% endif %}
+                  </td>
+
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="flex items-center space-x-2">
+                      {% if request.user.is_superuser and cpt.log_uploaded %}
+                        <a href="{% url 'cpt:upload_pdf' cpt.id %}" class="btn btn-sm btn-warning">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                          Review Upload
+                        </a>
+                      {% elif request.user == cpt.examiner or request.user == cpt.local or request.user.is_superuser and not cpt.log_uploaded %}
+                        <a href="{% url 'cpt:upload_pdf' cpt.id %}" class="btn btn-sm btn-primary">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                          </svg>
+                          Upload Log
+                        </a>
+                      {% endif %}
+
+                      <button
+                        @click="$dispatch('open-confirm', {
+                                action: 'remove',
+                                message: 'Are you sure you want to delete {{ cpt.trainee.get_full_name }}\'s CPT? This action cannot be undone.',
+                                href: '{% url 'cpt:delete_cpt' cpt.id %}'
+                                })"
+                        class="btn btn-sm btn-error">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="py-12 text-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 semantic-gray-text" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+          </svg>
+          <h3 class="mt-2 text-sm font-medium text-base-content">No CPTs scheduled</h3>
+          <p class="mt-1 text-sm text-base-content/60">Get started by scheduling your first competency check test.</p>
+          <div class="mt-6">
+            <a href="{% url 'cpt:create_cpt' %}" class="btn btn-primary">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+              Schedule New CPT
+            </a>
+          </div>
+        </div>
+      {% endif %}
     </div>
   </div>
 
