@@ -77,7 +77,7 @@ def course_valid_for_user(course, user) -> [bool, str]:
         len(endorsement_groups & get_user_endorsements(user.username))
         == len(endorsement_groups)
         and len(endorsement_groups) > 0
-    ):
+    ) and course.type == "EDMT":
         print("Endorsements exist")
         return False, "You already have the required endorsements for this course."
 
