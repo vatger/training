@@ -208,6 +208,11 @@ def leave_local(request, cpt_id: int):
 @mentor_required
 def join_examiner(request, cpt_id: int):
     try:
+        request.user.examiner
+    except:
+        messages.error(request, "You must be an examiner to join as examiner.")
+        return redirect("cpt:index")
+    try:
         cpt = CPT.objects.get(id=cpt_id)
         if request.user == cpt.examiner:
             messages.error(request, "You are already registered as examiner.")
