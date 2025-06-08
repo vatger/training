@@ -1,119 +1,351 @@
 {% extends 'base.html' %}
-{% load widget_tweaks %}
-
 
 {% block content %}
   <div class="container px-4 py-5">
+    {% include "components/breadcrumbs.html" with auto=True current_title="Upload CPT Log" %}
 
-    {% include "components/breadcrumbs.html" with auto=True current_title="Upload Log" %}
     <div class="mb-8">
-      <h1 class="text-3xl font-bold text-gray-800">Upload Log</h1>
-    </div>
-
-    {% if documents %}
-      <div align="center">
-        <iframe src="{{ documents.0.log_file.url }}" width="1000" height="800"></iframe>
-      </div>
-    {% endif %}
-
-    {% if request.user.is_superuser and documents %}
-      <div align="center">
-        <div class="text-sm font-medium text-gray-900">
-          <a href="{% url 'cpt:grade_cpt' cpt.id 1 %}" class="btn btn-sm bg-green-500">
-            <svg xmlns="http://www.w3.org/2000/svg"
-                 fill="none"
-                 viewBox="0 0 24 24"
-                 stroke-width="1.5"
-                 stroke="currentColor"
-                 class="w-6 h-6 text-white">
-              <path stroke-linecap="round" stroke-linejoin="round"
-                    d="M4.5 12.75l6 6 9-13.5" />
+      <div class="flex flex-wrap justify-between items-start gap-4">
+        <div>
+          <h1 class="text-3xl font-bold text-base-content">CPT Log Upload</h1>
+          <p class="text-base-content/60 mt-2">
+            Upload the training log for {{ cpt.trainee.get_full_name }}'s CPT at {{ cpt.course.solo_station }}
+          </p>
+        </div>
+        <div class="flex space-x-2">
+          <a href="{% url 'cpt:index' %}" class="btn btn-outline">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
-          </a>
-
-          <a href="{% url 'cpt:grade_cpt' cpt.id 0 %}" class="btn btn-sm bg-red-500">
-            <svg xmlns="http://www.w3.org/2000/svg"
-                 fill="none"
-                 viewBox="0 0 24 24"
-                 stroke-width="1.5"
-                 stroke="currentColor"
-                 class="w-6 h-6 text-white">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-            </svg>
-
+            Back to CPT List
           </a>
         </div>
       </div>
-    {% endif %}
-
-    <br>
-    <form method="post" enctype="multipart/form-data" class="max-w-2xl mx-auto mt-10" id="upload-form">
-      {% csrf_token %}
-
-  <!-- Dropzone -->
-      <div id="dropzone" class="flex flex-col items-center justify-center p-10 border-2 border-dashed border-blue-400 rounded-lg bg-base-200 hover:bg-base-300 transition-colors duration-200 cursor-pointer">
-        <svg class="w-12 h-12 text-blue-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4M17 8h4m-2-2v12m-2-2l4 4m0-4l-4 4" />
-        </svg>
-        <p class="text-sm text-blue-600">Drag and drop a PDF here, or click to select</p>
-
-        <input type="file" name="log_file" id="file-input" class="hidden" accept="application/pdf" required>
-        <p id="file-name" class="mt-2 text-sm text-gray-600"></p>
-      </div>
-
-      <button type="submit" class="btn btn-primary mt-6 w-full">Upload</button>
-    </form>
-
-    <div>
-      {{ documents|length }} documents uploaded.
-      {% for document in documents %}
-        <div class="mt-4 p-4 bg-white rounded-lg shadow">
-          <h3 class="text-lg font-semibold">{{ document.name }}</h3>
-          <p class="text-sm text-gray-600">File {{ forloop.counter }}, uploaded on: {{ document.uploaded_at|date:"Y-m-d H:i" }}</p>
-          <a href="{{ document.log_file.url }}" class="text-blue-500 hover:underline mt-2 inline-block" target="_blank">Download</a>
-        </div>
-      {% endfor %}
     </div>
 
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Main Upload Section -->
+      <div class="lg:col-span-2 space-y-6">
+
+        <!-- CPT Information Card -->
+        <div class="bg-base-100 rounded-xl shadow-md p-6 border semantic-neutral-border">
+          <h2 class="text-xl font-semibold mb-4 text-base-content">CPT Session Details</h2>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-4">
+              <div>
+                <p class="text-sm font-medium text-base-content/60">Trainee</p>
+                <div class="flex items-center mt-1">
+                  <div class="flex-shrink-0 h-8 w-8">
+                    <div class="h-8 w-8 rounded-full semantic-blue-bg flex items-center justify-center semantic-blue-text text-sm font-medium">
+                      {{ cpt.trainee.first_name|slice:":1" }}{{ cpt.trainee.last_name|slice:":1" }}
+                    </div>
+                  </div>
+                  <div class="ml-3">
+                    <p class="text-sm font-medium text-base-content">{{ cpt.trainee.get_full_name }}</p>
+                    <p class="text-xs text-base-content/60">{{ cpt.trainee.username }}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <p class="text-sm font-medium text-base-content/60">Station</p>
+                <p class="mt-1 font-medium text-base-content">{{ cpt.course.solo_station }}</p>
+              </div>
+            </div>
+
+            <div class="space-y-4">
+              <div>
+                <p class="text-sm font-medium text-base-content/60">Date & Time</p>
+                <p class="mt-1 font-medium text-base-content">{{ cpt.date|date:"d M Y, H:i" }} LCL</p>
+              </div>
+
+              <div>
+                <p class="text-sm font-medium text-base-content/60">Course</p>
+                <p class="mt-1 font-medium text-base-content">{{ cpt.course.name }}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 pt-6 border-t border-base-content/20">
+            <div>
+              <p class="text-sm font-medium text-base-content/60">Examiner</p>
+              {% if cpt.examiner %}
+                <p class="mt-1 font-medium text-base-content">{{ cpt.examiner.get_full_name }}</p>
+              {% else %}
+                <p class="mt-1 text-sm semantic-yellow-text">Not assigned</p>
+              {% endif %}
+            </div>
+
+            <div>
+              <p class="text-sm font-medium text-base-content/60">Local Contact</p>
+              {% if cpt.local %}
+                <p class="mt-1 font-medium text-base-content">{{ cpt.local.get_full_name }}</p>
+              {% else %}
+                <p class="mt-1 text-sm semantic-yellow-text">Not assigned</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Upload Form -->
+        {% if not documents or not request.user.is_superuser or not documents.0.log_file %}
+          <div class="bg-base-100 rounded-xl shadow-md p-6 border semantic-neutral-border">
+            <h2 class="text-xl font-semibold mb-4 text-base-content">Upload Training Log</h2>
+
+            <form method="post" enctype="multipart/form-data" id="upload-form" x-data="uploadForm">
+              {% csrf_token %}
+
+              <!-- Dropzone -->
+              <div
+                id="dropzone"
+                class="flex flex-col items-center justify-center p-12 border-2 border-dashed semantic-blue-border rounded-lg semantic-blue-bg hover:bg-opacity-20 transition-colors duration-200 cursor-pointer"
+                @click="$refs.fileInput.click()"
+                @dragover.prevent="dragOver = true"
+                @dragleave.prevent="dragOver = false"
+                @drop.prevent="handleDrop($event)"
+                :class="{'semantic-green-border semantic-green-bg': dragOver}"
+              >
+                <svg class="w-16 h-16 semantic-blue-text mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+                <h3 class="text-lg font-medium semantic-blue-text mb-2">Upload CPT Log</h3>
+                <p class="text-sm semantic-blue-text text-center mb-4">
+                  Drag and drop your PDF file here, or click to browse
+                </p>
+                <p class="text-xs text-base-content/60">
+                  PDF files only • Maximum size: 10MB
+                </p>
+
+                <input
+                  type="file"
+                  name="log_file"
+                  x-ref="fileInput"
+                  class="hidden"
+                  accept="application/pdf"
+                  required
+                  @change="handleFileSelect($event)"
+                >
+              </div>
+
+              <!-- File Preview -->
+              <div x-show="selectedFile" class="mt-4 p-4 semantic-green-bg rounded-lg border semantic-green-border">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 semantic-red-text mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                    </svg>
+                    <div>
+                      <p class="text-sm font-medium semantic-green-text" x-text="selectedFile?.name"></p>
+                      <p class="text-xs semantic-green-text" x-text="formatFileSize(selectedFile?.size)"></p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    @click="clearFile()"
+                    class="text-sm semantic-green-text hover:opacity-80"
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
+
+              <!-- Upload Button -->
+              <div class="flex justify-end mt-6">
+                <button
+                  type="submit"
+                  class="btn btn-primary"
+                  :disabled="!selectedFile"
+                  x-show="selectedFile"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                  </svg>
+                  Upload Log
+                </button>
+              </div>
+            </form>
+          </div>
+        {% endif %}
+
+        <!-- Uploaded Documents -->
+        {% if documents %}
+          <div class="bg-base-100 rounded-xl shadow-md border semantic-neutral-border overflow-hidden">
+            <div class="p-4 bg-base-200 border-b border-base-content/20 flex justify-between items-center">
+              <div>
+                <h3 class="font-medium text-lg text-base-content">Uploaded Documents</h3>
+                <p class="text-sm text-base-content/60">{{ documents|length }} document{{ documents|length|pluralize }} uploaded</p>
+              </div>
+            </div>
+
+            <div class="divide-y divide-base-content/20">
+              {% for document in documents %}
+                <div class="p-6">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                      <div class="flex-shrink-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 semantic-red-text" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                      <div class="ml-4">
+                        <h4 class="text-lg font-semibold text-base-content">{{ document.name|default:"CPT Training Log" }}</h4>
+                        <div class="flex items-center space-x-4 mt-1">
+                          <p class="text-sm text-base-content/60">
+                            Uploaded: {{ document.uploaded_at|date:"d M Y, H:i" }}
+                          </p>
+                          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium semantic-green-bg semantic-green-text">
+                            PDF Document
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="flex space-x-2">
+                      <a
+                        href="{{ document.log_file.url }}"
+                        target="_blank"
+                        class="btn btn-outline btn-sm"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                        View
+                      </a>
+                      <a
+                        href="{{ document.log_file.url }}"
+                        download
+                        class="btn btn-primary btn-sm"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                        </svg>
+                        Download
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- Document Viewer -->
+          {% if documents.0.log_file %}
+            <div class="bg-base-100 rounded-xl shadow-md border semantic-neutral-border overflow-hidden">
+              <div class="p-4 bg-base-200 border-b border-base-content/20">
+                <h3 class="font-medium text-lg text-base-content">Document Preview</h3>
+                <p class="text-sm text-base-content/60">Preview of the uploaded training log</p>
+              </div>
+              <div class="p-4">
+                <div class="w-full" style="height: 600px;">
+                  <iframe
+                    src="{{ documents.0.log_file.url }}"
+                    class="w-full h-full border-0 rounded-lg"
+                    title="CPT Training Log Preview">
+                  </iframe>
+                </div>
+              </div>
+            </div>
+          {% endif %}
+        {% endif %}
+      </div>
+
+      <!-- Actions Panel -->
+      <div class="lg:col-span-1">
+        {% if request.user.is_superuser and documents %}
+          <!-- Admin Review Panel -->
+          <div class="bg-base-100 rounded-xl shadow-md p-6 border semantic-neutral-border mb-6">
+            <h3 class="text-lg font-semibold mb-4 text-base-content">CPT Review</h3>
+            <p class="text-sm text-base-content/60 mb-6">
+              As an administrator, you can approve or reject this CPT submission.
+            </p>
+
+            <div class="space-y-3">
+              <a
+                href="{% url 'cpt:grade_cpt' cpt.id 1 %}"
+                class="btn btn-success w-full"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Approve CPT
+              </a>
+
+              <a
+                href="{% url 'cpt:grade_cpt' cpt.id 0 %}"
+                class="btn btn-error w-full"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                Reject CPT
+              </a>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
   </div>
 
   <script>
-    const dropzone = document.getElementById('dropzone');
-    const fileInput = document.getElementById('file-input');
-    const fileNameDisplay = document.getElementById('file-name');
+    document.addEventListener('alpine:init', () => {
+      Alpine.data('uploadForm', () => ({
+        selectedFile: null,
+        dragOver: false,
 
-  // Open file picker on click
-    dropzone.addEventListener('click', () => fileInput.click());
+        handleFileSelect(event) {
+          const file = event.target.files[0];
+          this.validateAndSetFile(file);
+        },
 
-  // Show file name on change
-    fileInput.addEventListener('change', () => {
-      if (fileInput.files.length > 0) {
-        fileNameDisplay.textContent = fileInput.files[0].name;
-      }
-    });
+        handleDrop(event) {
+          this.dragOver = false;
+          const file = event.dataTransfer.files[0];
+          this.validateAndSetFile(file);
+        },
 
-  // Handle drag events
-    dropzone.addEventListener('dragover', e => {
-      e.preventDefault();
-      dropzone.classList.add('bg-base-300');
-    });
+        validateAndSetFile(file) {
+          if (!file) return;
 
-    dropzone.addEventListener('dragleave', () => {
-      dropzone.classList.remove('bg-base-300');
-    });
+          // Check file type
+          if (file.type !== 'application/pdf') {
+            alert('Please select a PDF file only.');
+            return;
+          }
 
-    dropzone.addEventListener('drop', e => {
-      e.preventDefault();
-      dropzone.classList.remove('bg-base-300');
+          // Check file size (10MB limit)
+          if (file.size > 10 * 1024 * 1024) {
+            alert('File size must be less than 10MB.');
+            return;
+          }
 
-      const files = e.dataTransfer.files;
-      if (files.length > 0 && files[0].type === "application/pdf") {
-        fileInput.files = files;
-        fileNameDisplay.textContent = files[0].name;
-      } else {
-        alert("Only PDF files are allowed.");
-      }
+          this.selectedFile = file;
+          // Update the actual file input
+          const fileInput = this.$refs.fileInput;
+          const dataTransfer = new DataTransfer();
+          dataTransfer.items.add(file);
+          fileInput.files = dataTransfer.files;
+        },
+
+        clearFile() {
+          this.selectedFile = null;
+          this.$refs.fileInput.value = '';
+        },
+
+        formatFileSize(bytes) {
+          if (!bytes) return '0 Bytes';
+          const k = 1024;
+          const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+          const i = Math.floor(Math.log(bytes) / Math.log(k));
+          return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+      }));
     });
   </script>
-
-{% endblock %}
+{% endblock %}0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+</svg>
+Complete session evaluation
+</li>
+<li class="flex items-start">
+  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 semantic-green-text mr-2 mt-0.5 flex-shrink-
