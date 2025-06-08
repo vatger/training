@@ -1,0 +1,232 @@
+<div
+    x-data="{
+            open: false,
+            courseId: null,
+            course: null,
+            trainees: [],
+            loading: false,
+            error: null,
+
+            async fetchPastTrainees(courseId) {
+            this.loading = true;
+            this.error = null;
+            this.trainees = [];
+
+            try {
+            const response = await fetch(`/overview/past_trainees/${courseId}/`, {
+            method: 'GET',
+            headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Content-Type': 'application/json',
+            },
+            credentials: 'same-origin'
+            });
+
+            if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            this.trainees = data.trainees || [];
+
+            // Set course data from the SAME AJAX response
+            if (data.course) {
+            this.course = data.course;
+            }
+            } catch (error) {
+            console.error('Error fetching past trainees:', error);
+            this.error = 'Failed to load past trainees data';
+            } finally {
+            this.loading = false;
+            }
+            }
+            }"
+    @open-past-trainee-modal.window="
+                                     open = true;
+                                     courseId = $event.detail.courseId;
+                                     course = $event.detail.course || null;
+                                     if (courseId) fetchPastTrainees(courseId);
+                                    "
+    x-show="open"
+    x-cloak
+    class="fixed inset-0 z-50 overflow-y-auto"
+    aria-labelledby="modal-title"
+    role="dialog"
+    aria-modal="true">
+
+    <div
+        x-show="open"
+        @click="open = false"
+        x-transition:enter="ease-out duration-300"
+        x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100"
+        x-transition:leave="ease-in duration-200"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
+        class="fixed inset-0 transition-opacity z-10"
+        style="background-color: rgba(0, 0, 0, 0.4);"
+        aria-hidden="true">
+    </div>
+
+    <div class="flex items-center justify-center min-h-screen">
+        <div
+            x-show="open"
+            x-transition:enter="ease-out duration-300"
+            x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+            x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+            x-transition:leave="ease-in duration-200"
+            x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+            x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+            class="bg-base-100 rounded-lg overflow-hidden shadow-xl transform transition-all sm:max-w-6xl w-full mx-4 z-20 relative">
+
+            <div class="px-6 py-4 bg-base-200 border-b border-base-content/20 flex items-center justify-between">
+                <div class="flex items-center">
+                    <div
+                        x-show="course"
+                        :class="{
+                                'semantic-gray-bg semantic-gray-text': course?.position === 'GND',
+                                'semantic-blue-bg semantic-blue-text': course?.position === 'TWR',
+                                'semantic-green-bg semantic-green-text': course?.position === 'APP',
+                                'semantic-purple-bg semantic-purple-text': course?.position === 'CTR'
+                                }"
+                        class="p-2 rounded-lg mr-3">
+                        <svg x-show="course?.position === 'GND'" xmlns="http://www.w3.org/2000/svg"
+                             class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/>
+                        </svg>
+                        <svg x-show="course?.position === 'TWR'" xmlns="http://www.w3.org/2000/svg"
+                             class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                        </svg>
+                        <svg x-show="course?.position === 'APP'" xmlns="http://www.w3.org/2000/svg"
+                             class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+                        </svg>
+                        <svg x-show="course?.position === 'CTR'" xmlns="http://www.w3.org/2000/svg"
+                             class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold text-base-content" x-text="course?.name"></h3>
+                        <div class="flex items-center space-x-2 mt-1">
+                            <span
+                                x-show="course"
+                                :class="{
+                                        'semantic-blue-bg semantic-blue-text': course?.type === 'RTG',
+                                        'semantic-purple-bg semantic-purple-text': course?.type === 'EDMT',
+                                        'semantic-yellow-bg semantic-yellow-text': course?.type === 'FAM',
+                                        'semantic-gray-bg semantic-gray-text': course?.type === 'GST'
+                                        }"
+                                class="px-2 py-0.5 rounded-full text-xs font-medium"
+                                x-text="course?.type_display">
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <button
+                    @click="open = false"
+                    class="text-base-content/60 hover:text-base-content focus:outline-none">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="p-6 max-h-[70vh] overflow-y-auto">
+                <!-- Loading State -->
+                <div x-show="loading" class="flex items-center justify-center py-8">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-base-content"></div>
+                    <span class="ml-3 text-base-content">Loading past trainees...</span>
+                </div>
+
+                <!-- Error State -->
+                <div x-show="error && !loading" class="text-center py-8">
+                    <div class="text-error mb-2">
+                        <svg class="h-12 w-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                        </svg>
+                    </div>
+                    <p class="text-error" x-text="error"></p>
+                    <button @click="fetchPastTrainees(courseId)"
+                            class="btn btn-sm btn-outline mt-4">
+                        Try Again
+                    </button>
+                </div>
+
+                <!-- Past Trainees Table -->
+                <div x-show="!loading && !error && trainees.length > 0">
+                    <div class="overflow-x-auto">
+                        <table class="table w-full">
+                            <thead>
+                                <tr>
+                                    <th class="text-left">Trainee</th>
+                                    <th class="text-left">Last Session</th>
+                                    <th class="text-left">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template x-for="trainee in trainees" :key="trainee.id">
+                                    <tr class="hover:bg-base-200">
+                                        <td>
+                                            <div class="flex items-center space-x-3">
+                                                <div class="avatar placeholder">
+                                                    <div class="bg-neutral-focus text-neutral-content rounded-full w-8 h-8">
+                                                        <span class="text-xs" x-text="trainee.first_name?.charAt(0) + trainee.last_name?.charAt(0)"></span>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <div class="font-medium" x-text="trainee.first_name + ' ' + trainee.last_name"></div>
+                                                    <div class="text-sm text-base-content/60" x-text="trainee.username"></div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span x-text="trainee.last_trainee_date ? new Date(trainee.last_trainee_date).toLocaleDateString() : 'N/A'"
+                                                  class="text-sm"></span>
+                                        </td>
+                                        <td>
+                                            <div class="flex space-x-2">
+                                                <a class="btn btn-xs btn-outline" :href="trainee.mentor_url">
+                                                    Profile
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Empty State -->
+                <div x-show="!loading && !error && trainees.length === 0" class="text-center py-8">
+                    <div class="text-base-content/60 mb-2">
+                        <svg class="h-12 w-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                        </svg>
+                    </div>
+                    <p class="text-base-content/60">No past trainees found for this course.</p>
+                </div>
+            </div>
+
+            <div class="px-6 py-4 bg-base-200 border-t border-base-content/20 flex justify-end">
+                <button @click="open = false" class="btn btn-ghost gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                         stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

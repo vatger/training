@@ -12,6 +12,7 @@ from overview.views import (
     delete_solo,
     assign_core_test_view,
 )
+from overview.views.overview import past_trainees
 
 app_name = "overview"
 
@@ -36,4 +37,5 @@ urlpatterns = [
     path(
         "remark/<int:trainee_id>/<int:course_id>/", update_remark, name="update_remark"
     ),
+    path("past_trainees/<int:course_id>/", past_trainees, name="past_trainees"),
 ]

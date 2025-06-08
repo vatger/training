@@ -1,17 +1,19 @@
 from django.contrib.admin.models import CHANGE
 from django.contrib.auth.models import User
+from django.db.models import Max
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.shortcuts import render, redirect
-from overview.helpers.course import get_solos
-from overview.helpers.trainee import inform_user_course_start, get_course_completion
-from training.helpers import log_admin_action
-from training.permissions import mentor_required
-
+from django.shortcuts import reverse
 from lists.models import Course, WaitingListEntry
 from lists.views import enrol_into_required_moodles
 from logs.models import Log
 from overview.forms import AddUserForm
+from overview.helpers.course import get_solos
+from overview.helpers.trainee import inform_user_course_start, get_course_completion
 from overview.models import TraineeClaim, TraineeRemark
+from training.helpers import log_admin_action
+from training.permissions import mentor_required
 
 
 @mentor_required
@@ -172,4 +174,55 @@ def overview(request):
             "claimed_trainees_count": claimed_trainees_count,
             "waiting_trainees_count": waiting_trainees_count,
         },
+    )
+
+
+@mentor_required
+def past_trainees(request, course_id):
+    course = get_object_or_404(Course, id=course_id)
+    if course not in request.user.mentored_courses.all():
+        return JsonResponse(
+            {"error": "You are not authorized to view this course."}, status=403
+        )
+
+    # Get past trainees (not currently active)
+    trainees = (
+        User.objects.filter(trainee__course=course)
+        .exclude(id__in=course.active_trainees.values_list("id", flat=True))
+        .annotate(last_trainee_date=Max("trainee__session_date"))
+        .order_by("-last_trainee_date")
+        .distinct()
+    )
+
+    # Serialize the trainee data
+    trainees_data = []
+    for trainee in trainees:
+        trainees_data.append(
+            {
+                "id": trainee.id,
+                "username": trainee.username,
+                "first_name": trainee.first_name,
+                "last_name": trainee.last_name,
+                "email": trainee.email,
+                "last_trainee_date": (
+                    trainee.last_trainee_date.strftime("%d.%m.%Y")
+                    if trainee.last_trainee_date
+                    else None
+                ),
+                "mentor_url": reverse("trainee:mentor_view", args=[trainee.username]),
+            }
+        )
+
+    return JsonResponse(
+        {
+            "course": {
+                "id": course.id,
+                "name": course.name,
+                "position": course.position,
+                "type": course.type,
+                "type_display": course.get_type_display(),
+            },
+            "trainees": trainees_data,
+        },
+        status=200,
     )
