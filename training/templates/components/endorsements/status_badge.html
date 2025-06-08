@@ -4,7 +4,7 @@
   </span>
 {% elif activity < min_hours %}
   <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full semantic-yellow-bg semantic-yellow-text">
-    ⚠️ Activity below required minimum{% if updated %} (last checked {{ updated }}){% endif %}
+    ⚠️ Activity below required minimum (<span data-time-hours="{{ activity }}">{{ activity }}</span>){% if updated %} (last checked {{ updated }}){% endif %}
   </span>
 {% else %}
   <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full semantic-green-bg semantic-green-text">
