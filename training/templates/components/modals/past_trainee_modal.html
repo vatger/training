@@ -1,29 +1,29 @@
 <div
     x-data="{
-    open: false,
-    courseId: null,
-    course: null,
-    trainees: [],
-    loading: false,
-    error: null,
+            open: false,
+            courseId: null,
+            course: null,
+            trainees: [],
+            loading: false,
+            error: null,
 
-    async fetchPastTrainees(courseId) {
-        this.loading = true;
-        this.error = null;
-        this.trainees = [];
+            async fetchPastTrainees(courseId) {
+            this.loading = true;
+            this.error = null;
+            this.trainees = [];
 
-        try {
+            try {
             const response = await fetch(`/overview/past_trainees/${courseId}/`, {
-                method: 'GET',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Content-Type': 'application/json',
-                },
-                credentials: 'same-origin'
+            method: 'GET',
+            headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Content-Type': 'application/json',
+            },
+            credentials: 'same-origin'
             });
 
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+            throw new Error(`HTTP error! status: ${response.status}`);
             }
 
             const data = await response.json();
@@ -31,22 +31,22 @@
 
             // Set course data from the SAME AJAX response
             if (data.course) {
-                this.course = data.course;
+            this.course = data.course;
             }
-        } catch (error) {
+            } catch (error) {
             console.error('Error fetching past trainees:', error);
             this.error = 'Failed to load past trainees data';
-        } finally {
+            } finally {
             this.loading = false;
-        }
-    }
-}"
+            }
+            }
+            }"
     @open-past-trainee-modal.window="
-        open = true;
-        courseId = $event.detail.courseId;
-        course = $event.detail.course || null;
-        if (courseId) fetchPastTrainees(courseId);
-        "
+                                     open = true;
+                                     courseId = $event.detail.courseId;
+                                     course = $event.detail.course || null;
+                                     if (courseId) fetchPastTrainees(courseId);
+                                    "
     x-show="open"
     x-cloak
     class="fixed inset-0 z-50 overflow-y-auto"
