@@ -129,9 +129,13 @@ def callback_view(request):
         )
         user_detail.rating = profile["rating_atc"]
         user_detail.subdivision = profile["subdivision_code"]
-        user_detail.last_rating_change = datetime.strptime(
-            profile["last_rating_change_at"], "%Y-%m-%d %H:%M:%S"
-        ).replace(tzinfo=timezone.utc)
+        user_detail.last_rating_change = (
+            datetime.strptime(
+                profile["last_rating_change_at"], "%Y-%m-%d %H:%M:%S"
+            ).replace(tzinfo=timezone.utc)
+            if profile["last_rating_change_at"] is not None
+            else datetime(2000, 1, 1, 0, 0, 0)
+        )
         user_detail.save()
 
         login(request, user)
