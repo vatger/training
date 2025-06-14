@@ -166,7 +166,7 @@
         // Make parallel requests but update immediately when each completes
         const promises = statusRequests.map(async (request) => {
             try {
-                const response = await fetch(`/moodle_completion/${request.course_id}/${request.username}/`);
+                const response = await fetch(`/overview/moodle_completion/${request.course_id}/${request.username}/`);
                 const data = await response.json();
 
                 if (response.ok) {
