@@ -150,9 +150,8 @@
         </script>
     </div>
 
-
 <script>
-async function updateAllMoodleStatuses() {
+    async function updateAllMoodleStatuses() {
     try {
         // Get all moodle status elements
         const elements = document.querySelectorAll('.moodle-status');
@@ -192,5 +191,33 @@ async function updateAllMoodleStatuses() {
         console.error('Error updating moodle statuses:', error);
     }
 }
+
+function updateElementStatus(element, isCompleted, hasError = false, errorMessage = '') {
+    // Remove old classes
+    element.classList.remove('semantic-green-bg', 'semantic-green-text', 'semantic-red-bg', 'semantic-red-text');
+
+    if (hasError) {
+        // Handle error state
+        element.classList.add('semantic-red-bg', 'semantic-red-text');
+        element.setAttribute('data-moodle-status', 'error');
+        element.textContent = errorMessage === 'You are not authorized to view this course.' ? 'Unauthorized' : 'Error';
+        element.title = errorMessage; // Show full error on hover
+    } else if (isCompleted) {
+        // Completed state
+        element.classList.add('semantic-green-bg', 'semantic-green-text');
+        element.setAttribute('data-moodle-status', 'true');
+        element.textContent = 'Completed';
+    } else {
+        // Not completed state
+        element.classList.add('semantic-red-bg', 'semantic-red-text');
+        element.setAttribute('data-moodle-status', 'false');
+        element.textContent = 'Not Completed';
+    }
+}
+
+// Call when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    updateAllMoodleStatuses();
+});
 </script>
-{% endblock %}
+{% endblxxock %}
