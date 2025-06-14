@@ -151,11 +151,11 @@
     </div>
 
 
-<script>
-async function updateAllMoodleStatuses() {
-    try {
+    <script>
+        async function updateAllMoodleStatuses() {
+            try {
         // Get all moodle status elements
-        const elements = document.querySelectorAll('.moodle-status');
+                const elements = document.querySelectorAll('.moodle-status');
 
         // Extract course_id and username from the template data attributes
         const statusRequests = Array.from(elements).map(el => ({
