@@ -154,34 +154,34 @@
     async function updateAllMoodleStatuses() {
     try {
         // Get all moodle status elements
-        const elements = document.querySelectorAll('.moodle-status');
+                const elements = document.querySelectorAll('.moodle-status');
 
         // Extract course_id and username from the template data attributes
-        const statusRequests = Array.from(elements).map(el => ({
-            course_id: el.dataset.courseId,
-            username: el.dataset.username,
-            element: el
-        }));
+                const statusRequests = Array.from(elements).map(el => ({
+                    course_id: el.dataset.courseId,
+                    username: el.dataset.username,
+                    element: el
+                }));
 
         // Make parallel requests but update immediately when each completes
-        const promises = statusRequests.map(async (request) => {
-            try {
-                const response = await fetch(`/moodle_completion/${request.course_id}/${request.username}/`);
-                const data = await response.json();
+                const promises = statusRequests.map(async (request) => {
+                    try {
+                        const response = await fetch(`/moodle_completion/${request.course_id}/${request.username}/`);
+                        const data = await response.json();
 
-                if (response.ok) {
+                        if (response.ok) {
                     // Update immediately when data arrives
-                    updateElementStatus(request.element, data.moodle_completed);
-                } else {
+                            updateElementStatus(request.element, data.moodle_completed);
+                        } else {
                     // Handle error responses (like 403)
-                    console.error(`Error for course ${request.course_id}, user ${request.username}:`, data.error);
-                    updateElementStatus(request.element, false, true, data.error || 'Unknown error');
-                }
-            } catch (error) {
-                console.error(`Network error for course ${request.course_id}, user ${request.username}:`, error);
-                updateElementStatus(request.element, false, true, 'Network error');
-            }
-        });
+                            console.error(`Error for course ${request.course_id}, user ${request.username}:`, data.error);
+                            updateElementStatus(request.element, false, true, data.error || 'Unknown error');
+                        }
+                    } catch (error) {
+                        console.error(`Network error for course ${request.course_id}, user ${request.username}:`, error);
+                        updateElementStatus(request.element, false, true, 'Network error');
+                    }
+                });
 
         // Still wait for all to complete (for error handling or logging)
         await Promise.all(promises);
@@ -220,4 +220,4 @@ document.addEventListener('DOMContentLoaded', function() {
     updateAllMoodleStatuses();
 });
 </script>
-{% endblxxock %}
+{% endblock %}
