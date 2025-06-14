@@ -170,8 +170,13 @@
                 {% endif %}
             </div>
         {% else %}
-            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if data.moodle %}semantic-green-bg semantic-green-text{% else %}semantic-red-bg semantic-red-text{% endif %}">
-                {{ data.moodle|yesno:"Completed,Incomplete" }}
+            <span
+                class="moodle-status inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium semantic-red-bg semantic-red-text"
+                data-course-id="{{ course.id }}"
+                data-username="{{ trainee.username }}"
+                data-moodle-status="false"
+                id="moodle-status-{{ course.id }}-{{ trainee.username }}">
+                Loading...
             </span>
         {% endif %}
     </td>
