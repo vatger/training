@@ -166,7 +166,7 @@
         // Make parallel requests but update immediately when each completes
                 const promises = statusRequests.map(async (request) => {
                     try {
-                        const response = await fetch(`/moodle_completion/${request.course_id}/${request.username}/`);
+                        const response = await fetch(`/overview/moodle_completion/${request.course_id}/${request.username}/`);
                         const data = await response.json();
 
                         if (response.ok) {
@@ -194,7 +194,12 @@
 
         function updateElementStatus(element, isCompleted, hasError = false, errorMessage = '') {
     // Remove old classes
-            element.classList.remove('semantic-green-bg', 'semantic-green-text', 'semantic-red-bg', 'semantic-red-text');
+            element.classList.remove(
+        'semantic-green-bg', 'semantic-green-text',
+        'semantic-red-bg', 'semantic-red-text',
+        'semantic-gray-bg', 'semantic-gray-text',  // Add these
+        'semantic-grey-bg', 'semantic-grey-text'   // And these (in case you use British spelling)
+    );
 
             if (hasError) {
         // Handle error state
