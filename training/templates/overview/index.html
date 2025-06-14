@@ -151,92 +151,92 @@
     </div>
 
 
-<script>
-async function updateAllMoodleStatuses() {
-    try {
+    <script>
+        async function updateAllMoodleStatuses() {
+            try {
         // Get all moodle status elements
-        const elements = document.querySelectorAll('.moodle-status');
+                const elements = document.querySelectorAll('.moodle-status');
 
         // Extract course_id and username from the template data attributes
-        const statusRequests = Array.from(elements).map(el => ({
-            course_id: el.dataset.courseId,    // This comes from data-course-id="{{ course.id }}"
-            username: el.dataset.username,     // This comes from data-username="{{ trainee.username }}"
-            element: el
-        }));
+                const statusRequests = Array.from(elements).map(el => ({
+                    course_id: el.dataset.courseId,    // This comes from data-course-id="{{ course.id }}"
+                    username: el.dataset.username,     // This comes from data-username="{{ trainee.username }}"
+                    element: el
+                }));
 
         // Make parallel requests to individual endpoints
-        const promises = statusRequests.map(async (request) => {
-            try {
-                const response = await fetch(`/overview/moodle_completion/${request.course_id}/${request.username}/`);
-                const data = await response.json();
+                const promises = statusRequests.map(async (request) => {
+                    try {
+                        const response = await fetch(`/overview/moodle_completion/${request.course_id}/${request.username}/`);
+                        const data = await response.json();
 
-                if (response.ok) {
-                    return {
-                        element: request.element,
-                        status: data.moodle_completed,  // From your Django view
-                        course_id: request.course_id,
-                        username: request.username
-                    };
-                } else {
+                        if (response.ok) {
+                            return {
+                                element: request.element,
+                                status: data.moodle_completed,  // From your Django view
+                                course_id: request.course_id,
+                                username: request.username
+                            };
+                        } else {
                     // Handle error responses (like 403)
-                    console.error(`Error for course ${request.course_id}, user ${request.username}:`, data.error);
-                    return {
-                        element: request.element,
-                        status: false,
-                        error: true,
-                        errorMessage: data.error || 'Unknown error'
-                    };
-                }
-            } catch (error) {
-                console.error(`Network error for course ${request.course_id}, user ${request.username}:`, error);
-                return {
-                    element: request.element,
-                    status: false,
-                    error: true,
-                    errorMessage: 'Network error'
-                };
-            }
-        });
+                            console.error(`Error for course ${request.course_id}, user ${request.username}:`, data.error);
+                            return {
+                                element: request.element,
+                                status: false,
+                                error: true,
+                                errorMessage: data.error || 'Unknown error'
+                            };
+                        }
+                    } catch (error) {
+                        console.error(`Network error for course ${request.course_id}, user ${request.username}:`, error);
+                        return {
+                            element: request.element,
+                            status: false,
+                            error: true,
+                            errorMessage: 'Network error'
+                        };
+                    }
+                });
 
         // Wait for all requests to complete
-        const results = await Promise.all(promises);
+                const results = await Promise.all(promises);
 
         // Update all elements
-        results.forEach(result => {
-            updateElementStatus(result.element, result.status, result.error, result.errorMessage);
-        });
+                results.forEach(result => {
+                    updateElementStatus(result.element, result.status, result.error, result.errorMessage);
+                });
 
-    } catch (error) {
-        console.error('Error updating moodle statuses:', error);
-    }
-}
+            } catch (error) {
+                console.error('Error updating moodle statuses:', error);
+            }
+        }
 
-function updateElementStatus(element, isCompleted, hasError = false, errorMessage = '') {
+        function updateElementStatus(element, isCompleted, hasError = false, errorMessage = '') {
     // Remove old classes
-    element.classList.remove('semantic-green-bg', 'semantic-green-text', 'semantic-red-bg', 'semantic-red-text');
+            element.classList.remove('semantic-green-bg', 'semantic-green-text', 'semantic-red-bg', 'semantic-red-text');
 
-    if (hasError) {
+            if (hasError) {
         // Handle error state
-        element.classList.add('semantic-red-bg', 'semantic-red-text');
-        element.setAttribute('data-moodle-status', 'error');
-        element.textContent = errorMessage === 'You are not authorized to view this course.' ? 'Unauthorized' : 'Error';
-        element.title = errorMessage; // Show full error on hover
-    } else if (isCompleted) {
+                element.classList.add('semantic-red-bg', 'semantic-red-text');
+                element.setAttribute('data-moodle-status', 'error');
+                element.textContent = errorMessage === 'You are not authorized to view this course.' ? 'Unauthorized' : 'Error';
+                element.title = errorMessage; // Show full error on hover
+            } else if (isCompleted) {
         // Completed state
-        element.classList.add('semantic-green-bg', 'semantic-green-text');
-        element.setAttribute('data-moodle-status', 'true');
-        element.textContent = 'Completed';
-    } else {
+                element.classList.add('semantic-green-bg', 'semantic-green-text');
+                element.setAttribute('data-moodle-status', 'true');
+                element.textContent = 'Completed';
+            } else {
         // Not completed state
-        element.classList.add('semantic-red-bg', 'semantic-red-text');
-        element.setAttribute('data-moodle-status', 'false');
-        element.textContent = 'Not Completed';
-    }
-}
+                element.classList.add('semantic-red-bg', 'semantic-red-text');
+                element.setAttribute('data-moodle-status', 'false');
+                element.textContent = 'Not Completed';
+            }
+        }
 
 // Call when page loads
-document.addEventListener('DOMContentLoaded', function() {
-    updateAllMoodleStatuses();
-});
-</script>
+        document.addEventListener('DOMContentLoaded', function() {
+            updateAllMoodleStatuses();
+        });
+    </script>
 {% endblock %}
