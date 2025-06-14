@@ -150,10 +150,9 @@
         </script>
     </div>
 
-
-    <script>
-        async function updateAllMoodleStatuses() {
-            try {
+<script>
+    async function updateAllMoodleStatuses() {
+    try {
         // Get all moodle status elements
                 const elements = document.querySelectorAll('.moodle-status');
 
@@ -185,12 +184,40 @@
                 });
 
         // Still wait for all to complete (for error handling or logging)
-                await Promise.all(promises);
-                console.log('All moodle status updates completed');
+        await Promise.all(promises);
+        console.log('All moodle status updates completed');
 
-            } catch (error) {
-                console.error('Error updating moodle statuses:', error);
-            }
-        }
-    </script>
+    } catch (error) {
+        console.error('Error updating moodle statuses:', error);
+    }
+}
+
+function updateElementStatus(element, isCompleted, hasError = false, errorMessage = '') {
+    // Remove old classes
+    element.classList.remove('semantic-green-bg', 'semantic-green-text', 'semantic-red-bg', 'semantic-red-text');
+
+    if (hasError) {
+        // Handle error state
+        element.classList.add('semantic-red-bg', 'semantic-red-text');
+        element.setAttribute('data-moodle-status', 'error');
+        element.textContent = errorMessage === 'You are not authorized to view this course.' ? 'Unauthorized' : 'Error';
+        element.title = errorMessage; // Show full error on hover
+    } else if (isCompleted) {
+        // Completed state
+        element.classList.add('semantic-green-bg', 'semantic-green-text');
+        element.setAttribute('data-moodle-status', 'true');
+        element.textContent = 'Completed';
+    } else {
+        // Not completed state
+        element.classList.add('semantic-red-bg', 'semantic-red-text');
+        element.setAttribute('data-moodle-status', 'false');
+        element.textContent = 'Not Completed';
+    }
+}
+
+// Call when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    updateAllMoodleStatuses();
+});
+</script>
 {% endblock %}
