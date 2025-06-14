@@ -68,14 +68,6 @@ def overview(request):
                 if claim[0].mentor == request.user:
                     claimed_trainees_count += 1
 
-            # Moodle check for EDMT and GST
-            moodle_completed = True
-            if course.type != "RTG":
-                for moodle_course_id in course.moodle_course_ids:
-                    moodle_completed = moodle_completed and get_course_completion(
-                        trainee.username, moodle_course_id
-                    )
-
             # Check solo status
             solo = [
                 solo
@@ -133,7 +125,6 @@ def overview(request):
                     else None
                 ),
                 "solo": solo[0] if solo else "Add Solo",
-                "moodle": moodle_completed,
                 "remark": remark_text,
                 "remark_updated": remark_updated,
                 "remark_updated_by": remark_updated_by,
@@ -224,5 +215,24 @@ def past_trainees(request, course_id):
             },
             "trainees": trainees_data,
         },
+        status=200,
+    )
+
+
+@mentor_required
+def moodle_completion(request, course_id, vatsim_id):
+    course = get_object_or_404(Course, id=course_id)
+    if course not in request.user.mentored_courses.all():
+        return JsonResponse(
+            {"error": "You are not authorized to view this course."}, status=403
+        )
+
+    moodle_completed = True
+    for moodle_course_id in course.moodle_course_ids:
+        moodle_completed = moodle_completed and get_course_completion(
+            vatsim_id, moodle_course_id
+        )
+    return JsonResponse(
+        {"moodle_completed": moodle_completed},
         status=200,
     )
