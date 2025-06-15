@@ -195,11 +195,11 @@
         function updateElementStatus(element, isCompleted, hasError = false, errorMessage = '') {
     // Remove old classes
             element.classList.remove(
-        'semantic-green-bg', 'semantic-green-text',
-        'semantic-red-bg', 'semantic-red-text',
-        'semantic-gray-bg', 'semantic-gray-text',  // Add these
-        'semantic-grey-bg', 'semantic-grey-text'   // And these (in case you use British spelling)
-    );
+                'semantic-green-bg', 'semantic-green-text',
+                'semantic-red-bg', 'semantic-red-text',
+                'semantic-gray-bg', 'semantic-gray-text',  // Add these
+                'semantic-grey-bg', 'semantic-grey-text'   // And these (in case you use British spelling)
+            );
 
             if (hasError) {
         // Handle error state
