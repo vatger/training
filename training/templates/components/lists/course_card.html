@@ -46,7 +46,12 @@
             {% endif %}
 
             <div>
-                <h3 class="text-lg font-semibold text-base-content">{{ course.name }}</h3>
+                <div class="flex items-center gap-2">
+                    <h3 class="text-lg font-semibold text-base-content">{{ course.name }}</h3>
+                    <span class="px-3 py-1 bg-indigo-100 text-indigo-800 dark:bg-indigo-900/20 dark:text-indigo-400 rounded-full text-sm font-medium">
+                        {{ course.mentor_group.name|slice:":4" }} <!-- Gives the FIR of the course -->
+                    </span>
+                </div>
                 <div class="flex flex-wrap items-center gap-2 mt-1">
                     <span class="text-sm text-base-content/60">{{ course.get_position_display }}</span>
                     <span class="text-base-content/40">•</span>
