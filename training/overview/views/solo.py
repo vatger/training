@@ -64,6 +64,7 @@ def add_solo(request, vatsim_id, course_id):
                 headers=eud_header,
                 json=data,
             )
+            get_solos(refetch=True)
             if res.status_code == 200:
                 return redirect("overview:overview")
             else:
@@ -119,7 +120,7 @@ def delete_solo(request, solo_id: int):
                 )
             except Exception as e:
                 print(f"Error extending solo: {e}")
-
+    get_solos(refetch=True)
     return redirect("overview:overview")
 
 

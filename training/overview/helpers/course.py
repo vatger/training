@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+import functools
 
 import requests
 from cachetools import cached, TTLCache
@@ -6,7 +7,27 @@ from django.conf import settings
 from training.eud_header import eud_header
 
 
-@cached(cache=TTLCache(maxsize=1024, ttl=60 * 10))
+def cached_with_refetch(cache):
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, refetch=False, **kwargs):
+            # Create cache key
+            key = str(args) + str(sorted(kwargs.items()))
+
+            if refetch and key in cache:
+                del cache[key]
+
+            if key not in cache:
+                cache[key] = func(*args, **kwargs)
+
+            return cache[key]
+
+        return wrapper
+
+    return decorator
+
+
+@cached_with_refetch(cache=TTLCache(maxsize=1024, ttl=60 * 10))
 def get_solos():
     if settings.USE_CORE_MOCK:
         solos = [
