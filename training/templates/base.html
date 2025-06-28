@@ -8,22 +8,22 @@
 
     {% vite_hmr_client %} {% vite_asset 'src/main.js' %}
 
-  <style>
-  [x-cloak] { display: none !important; }
+    <style>
+      [x-cloak] { display: none !important; }
 
-  html, body {
-    transition: background-color 0.3s ease, color 0.3s ease !important;
-  }
+      html, body {
+        transition: background-color 0.3s ease, color 0.3s ease !important;
+      }
 
-  * {
-    color-scheme: inherit;
-  }
+      * {
+        color-scheme: inherit;
+      }
 
-  body:not(.admin) {
-    background: var(--color-base-200) !important;
-    color: var(--color-base-content) !important;
-  }
-</style>
+      body:not(.admin) {
+        background: var(--color-base-200) !important;
+        color: var(--color-base-content) !important;
+      }
+    </style>
   </head>
   <body class="bg-base-100 text-base-content">
     <pre style="font-size: larger; margin-bottom: 100vh" class="hidden">The Training System is currently undergoing maintenance.</pre>
@@ -420,214 +420,214 @@
               }
             });
           });
-document.addEventListener('alpine:init', () => {
-  Alpine.data('themeManager', () => ({
-    currentTheme: 'vatger-light',
-    userPreference: 'system',
-    isInitialized: false,
+          document.addEventListener('alpine:init', () => {
+            Alpine.data('themeManager', () => ({
+              currentTheme: 'vatger-light',
+              userPreference: 'system',
+              isInitialized: false,
 
-    init() {
-      this.initializeTheme();
-      this.setupEventListeners();
-      this.forceThemeReapplication();
-    },
+              init() {
+                this.initializeTheme();
+                this.setupEventListeners();
+                this.forceThemeReapplication();
+              },
 
-    initializeTheme() {
-      const savedPreference = localStorage.getItem('themePreference');
-      const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+              initializeTheme() {
+                const savedPreference = localStorage.getItem('themePreference');
+                const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-      if (savedPreference && ['light', 'dark', 'system'].includes(savedPreference)) {
-        this.userPreference = savedPreference;
-      } else {
-        this.userPreference = 'system';
-        localStorage.setItem('themePreference', 'system');
-      }
+                if (savedPreference && ['light', 'dark', 'system'].includes(savedPreference)) {
+                  this.userPreference = savedPreference;
+                } else {
+                  this.userPreference = 'system';
+                  localStorage.setItem('themePreference', 'system');
+                }
 
-      this.currentTheme = this.resolveThemeFromPreference(this.userPreference, systemPrefersDark);
+                this.currentTheme = this.resolveThemeFromPreference(this.userPreference, systemPrefersDark);
 
-      this.applyThemeComprehensively();
-      this.isInitialized = true;
-    },
+                this.applyThemeComprehensively();
+                this.isInitialized = true;
+              },
 
-    resolveThemeFromPreference(preference, systemPrefersDark) {
-      switch (preference) {
-        case 'light':
-          return 'vatger-light';
-        case 'dark':
-          return 'vatger-dark';
-        case 'system':
-        default:
-          return systemPrefersDark ? 'vatger-dark' : 'vatger-light';
-      }
-    },
+              resolveThemeFromPreference(preference, systemPrefersDark) {
+                switch (preference) {
+                  case 'light':
+                    return 'vatger-light';
+                  case 'dark':
+                    return 'vatger-dark';
+                  case 'system':
+                  default:
+                    return systemPrefersDark ? 'vatger-dark' : 'vatger-light';
+                }
+              },
 
-    setupEventListeners() {
-      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-        if (this.userPreference === 'system') {
-          this.currentTheme = e.matches ? 'vatger-dark' : 'vatger-light';
-          this.applyThemeComprehensively();
-        }
-      });
+              setupEventListeners() {
+                window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+                  if (this.userPreference === 'system') {
+                    this.currentTheme = e.matches ? 'vatger-dark' : 'vatger-light';
+                    this.applyThemeComprehensively();
+                  }
+                });
 
-      document.addEventListener('visibilitychange', () => {
-        if (!document.hidden && this.isInitialized) {
-          setTimeout(() => {
-            this.forceThemeReapplication();
-          }, 100);
-        }
-      });
+                document.addEventListener('visibilitychange', () => {
+                  if (!document.hidden && this.isInitialized) {
+                    setTimeout(() => {
+                      this.forceThemeReapplication();
+                    }, 100);
+                  }
+                });
 
-      window.addEventListener('focus', () => {
-        if (this.isInitialized) {
-          setTimeout(() => {
-            this.forceThemeReapplication();
-          }, 50);
-        }
-      });
-    },
+                window.addEventListener('focus', () => {
+                  if (this.isInitialized) {
+                    setTimeout(() => {
+                      this.forceThemeReapplication();
+                    }, 50);
+                  }
+                });
+              },
 
-    toggleTheme() {
-      if (this.userPreference === 'light') {
-        this.setThemePreference('dark');
-      } else if (this.userPreference === 'dark') {
-        this.setThemePreference('light');
-      } else {
-        const newPreference = this.currentTheme === 'vatger-light' ? 'dark' : 'light';
-        this.setThemePreference(newPreference);
-      }
-    },
+              toggleTheme() {
+                if (this.userPreference === 'light') {
+                  this.setThemePreference('dark');
+                } else if (this.userPreference === 'dark') {
+                  this.setThemePreference('light');
+                } else {
+                  const newPreference = this.currentTheme === 'vatger-light' ? 'dark' : 'light';
+                  this.setThemePreference(newPreference);
+                }
+              },
 
-    setThemePreference(preference) {
-      if (!['light', 'dark', 'system'].includes(preference)) {
-        console.warn('Invalid theme preference:', preference);
-        return;
-      }
+              setThemePreference(preference) {
+                if (!['light', 'dark', 'system'].includes(preference)) {
+                  console.warn('Invalid theme preference:', preference);
+                  return;
+                }
 
-      this.userPreference = preference;
-      localStorage.setItem('themePreference', preference);
+                this.userPreference = preference;
+                localStorage.setItem('themePreference', preference);
 
-      const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      this.currentTheme = this.resolveThemeFromPreference(preference, systemPrefersDark);
+                const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                this.currentTheme = this.resolveThemeFromPreference(preference, systemPrefersDark);
 
-      this.applyThemeComprehensively();
+                this.applyThemeComprehensively();
 
-      window.dispatchEvent(new CustomEvent('themeChanged', {
-        detail: {
-          theme: this.currentTheme,
-          preference: this.userPreference
-        }
-      }));
-    },
+                window.dispatchEvent(new CustomEvent('themeChanged', {
+                  detail: {
+                    theme: this.currentTheme,
+                    preference: this.userPreference
+                  }
+                }));
+              },
 
-    setTheme(theme) {
-      if (theme === 'vatger-light') {
-        this.setThemePreference('light');
-      } else if (theme === 'vatger-dark') {
-        this.setThemePreference('dark');
-      }
-    },
+              setTheme(theme) {
+                if (theme === 'vatger-light') {
+                  this.setThemePreference('light');
+                } else if (theme === 'vatger-dark') {
+                  this.setThemePreference('dark');
+                }
+              },
 
-    applyThemeComprehensively() {
-      this.removeConflictingClasses();
+              applyThemeComprehensively() {
+                this.removeConflictingClasses();
 
-      const elements = [document.documentElement, document.body];
+                const elements = [document.documentElement, document.body];
 
-      elements.forEach(element => {
-        if (element) {
-          element.classList.remove('vatger-light', 'vatger-dark');
+                elements.forEach(element => {
+                  if (element) {
+                    element.classList.remove('vatger-light', 'vatger-dark');
 
-          element.setAttribute('data-theme', this.currentTheme);
+                    element.setAttribute('data-theme', this.currentTheme);
 
-          element.classList.add(this.currentTheme);
+                    element.classList.add(this.currentTheme);
 
-          element.style.colorScheme = this.currentTheme === 'vatger-dark' ? 'dark' : 'light';
-        }
-      });
+                    element.style.colorScheme = this.currentTheme === 'vatger-dark' ? 'dark' : 'light';
+                  }
+                });
 
-      document.body.offsetHeight;
+                document.body.offsetHeight;
 
-      console.log('Theme applied:', this.currentTheme, 'Preference:', this.userPreference);
-    },
+                console.log('Theme applied:', this.currentTheme, 'Preference:', this.userPreference);
+              },
 
-    removeConflictingClasses() {
-      const adminClasses = ['admin-theme-light', 'admin-theme-dark', 'django-admin'];
-      const body = document.body;
+              removeConflictingClasses() {
+                const adminClasses = ['admin-theme-light', 'admin-theme-dark', 'django-admin'];
+                const body = document.body;
 
-      adminClasses.forEach(className => {
-        body.classList.remove(className);
-      });
+                adminClasses.forEach(className => {
+                  body.classList.remove(className);
+                });
 
-      const conflictingElements = document.querySelectorAll('[style*="background"], [style*="color"]');
-      conflictingElements.forEach(el => {
-        if (!el.hasAttribute('data-theme-style')) {
-          const style = el.getAttribute('style');
-          if (style && (style.includes('admin') || style.includes('django'))) {
-            el.removeAttribute('style');
-          }
-        }
-      });
-    },
+                const conflictingElements = document.querySelectorAll('[style*="background"], [style*="color"]');
+                conflictingElements.forEach(el => {
+                  if (!el.hasAttribute('data-theme-style')) {
+                    const style = el.getAttribute('style');
+                    if (style && (style.includes('admin') || style.includes('django'))) {
+                      el.removeAttribute('style');
+                    }
+                  }
+                });
+              },
 
-    forceThemeReapplication() {
-      const savedPreference = localStorage.getItem('themePreference');
-      if (savedPreference && ['light', 'dark', 'system'].includes(savedPreference)) {
-        this.userPreference = savedPreference;
+              forceThemeReapplication() {
+                const savedPreference = localStorage.getItem('themePreference');
+                if (savedPreference && ['light', 'dark', 'system'].includes(savedPreference)) {
+                  this.userPreference = savedPreference;
 
-        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        this.currentTheme = this.resolveThemeFromPreference(this.userPreference, systemPrefersDark);
-      }
+                  const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                  this.currentTheme = this.resolveThemeFromPreference(this.userPreference, systemPrefersDark);
+                }
 
-      this.applyThemeComprehensively();
+                this.applyThemeComprehensively();
 
-      setTimeout(() => {
-        this.cleanupThemeConflicts();
-      }, 200);
-    },
+                setTimeout(() => {
+                  this.cleanupThemeConflicts();
+                }, 200);
+              },
 
-    cleanupThemeConflicts() {
-      const root = document.documentElement;
-      const body = document.body;
+              cleanupThemeConflicts() {
+                const root = document.documentElement;
+                const body = document.body;
 
-      [root, body].forEach(element => {
-        if (element.getAttribute('data-theme') !== this.currentTheme) {
-          element.setAttribute('data-theme', this.currentTheme);
-        }
+                [root, body].forEach(element => {
+                  if (element.getAttribute('data-theme') !== this.currentTheme) {
+                    element.setAttribute('data-theme', this.currentTheme);
+                  }
 
-        if (!element.classList.contains(this.currentTheme)) {
-          element.classList.remove('vatger-light', 'vatger-dark');
-          element.classList.add(this.currentTheme);
-        }
-      });
+                  if (!element.classList.contains(this.currentTheme)) {
+                    element.classList.remove('vatger-light', 'vatger-dark');
+                    element.classList.add(this.currentTheme);
+                  }
+                });
 
-      const allElements = document.querySelectorAll('[class*="admin"], [class*="django"]');
-      allElements.forEach(el => {
-        if (el.closest('.admin-panel') === null) {
-          el.setAttribute('data-theme', this.currentTheme);
-        }
-      });
-    },
+                const allElements = document.querySelectorAll('[class*="admin"], [class*="django"]');
+                allElements.forEach(el => {
+                  if (el.closest('.admin-panel') === null) {
+                    el.setAttribute('data-theme', this.currentTheme);
+                  }
+                });
+              },
 
-    isLight() {
-      return this.userPreference === 'light';
-    },
+              isLight() {
+                return this.userPreference === 'light';
+              },
 
-    isDark() {
-      return this.userPreference === 'dark';
-    },
+              isDark() {
+                return this.userPreference === 'dark';
+              },
 
-    isSystem() {
-      return this.userPreference === 'system';
-    },
+              isSystem() {
+                return this.userPreference === 'system';
+              },
 
-    getCurrentAppliedTheme() {
-      return this.currentTheme;
-    },
+              getCurrentAppliedTheme() {
+                return this.currentTheme;
+              },
 
-    getUserPreference() {
-      return this.userPreference;
-    }
-  }));
-});
+              getUserPreference() {
+                return this.userPreference;
+              }
+            }));
+          });
         </script>
       </body>
     </html>
