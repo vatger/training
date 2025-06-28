@@ -46,7 +46,10 @@ def calculate_activity(endorsement: dict, connections: list[dict]) -> float:
     activity_min = 0
     if endorsement["position"].split("_")[-1] == "CTR":
         for connection in connections:
-            if connection["callsign"][:6] == endorsement["position"][:6]:
+            if connection["callsign"][:6] == endorsement["position"][:6] or (
+                endorsement["position"] == "EDWW_W_CTR"
+                and connection["callsign"] == "EDWW_CTR"
+            ):
                 activity_min += float(connection["minutes_on_callsign"])
     else:
         station = endorsement["position"].split("_")[-1]
