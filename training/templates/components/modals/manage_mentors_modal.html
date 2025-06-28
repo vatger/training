@@ -13,98 +13,98 @@
             addMentorError: '',
 
             async fetchCourseMentors(courseId) {
-                this.loading = true;
-                this.error = null;
-                this.mentors = [];
+            this.loading = true;
+            this.error = null;
+            this.mentors = [];
 
-                try {
-                    const response = await fetch(`/overview/mentors/${courseId}/`, {
-                        method: 'GET',
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'Content-Type': 'application/json',
-                        },
-                        credentials: 'same-origin'
-                    });
+            try {
+            const response = await fetch(`/overview/mentors/${courseId}/`, {
+            method: 'GET',
+            headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Content-Type': 'application/json',
+            },
+            credentials: 'same-origin'
+            });
 
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
+            if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+            }
 
-                    const data = await response.json();
-                    this.mentors = data.mentors || [];
-                    this.course = data.course || null;
-                } catch (error) {
-                    console.error('Error fetching course mentors:', error);
-                    this.error = 'Failed to load course mentors data';
-                } finally {
-                    this.loading = false;
-                }
+            const data = await response.json();
+            this.mentors = data.mentors || [];
+            this.course = data.course || null;
+            } catch (error) {
+            console.error('Error fetching course mentors:', error);
+            this.error = 'Failed to load course mentors data';
+            } finally {
+            this.loading = false;
+            }
             },
 
             async addMentor() {
-                if (!this.newMentorId.trim()) return;
+            if (!this.newMentorId.trim()) return;
 
-                this.addingMentor = true;
-                this.addMentorError = '';
+            this.addingMentor = true;
+            this.addMentorError = '';
 
-                try {
-                    const formData = new FormData();
-                    formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
-                    formData.append('course_id', this.courseId);
-                    formData.append('username', this.newMentorId);
+            try {
+            const formData = new FormData();
+            formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+            formData.append('course_id', this.courseId);
+            formData.append('username', this.newMentorId);
 
-                    const response = await fetch(`/overview/mentors/${this.courseId}/`, {
-                        method: 'POST',
-                        body: formData,
-                        credentials: 'same-origin'
-                    });
+            const response = await fetch(`/overview/mentors/${this.courseId}/`, {
+            method: 'POST',
+            body: formData,
+            credentials: 'same-origin'
+            });
 
-                    const data = await response.json();
+            const data = await response.json();
 
-                    if (data.success) {
-                        // Refresh the mentors list
-                        await this.fetchCourseMentors(this.courseId);
-                        this.newMentorId = '';
-                        this.addMentorError = '';
-                    } else {
-                        this.addMentorError = data.error || 'Failed to add mentor';
-                    }
-                } catch (error) {
-                    console.error('Error adding mentor:', error);
-                    this.addMentorError = 'An error occurred while adding the mentor';
-                } finally {
-                    this.addingMentor = false;
-                }
+            if (data.success) {
+            // Refresh the mentors list
+            await this.fetchCourseMentors(this.courseId);
+            this.newMentorId = '';
+            this.addMentorError = '';
+            } else {
+            this.addMentorError = data.error || 'Failed to add mentor';
+            }
+            } catch (error) {
+            console.error('Error adding mentor:', error);
+            this.addMentorError = 'An error occurred while adding the mentor';
+            } finally {
+            this.addingMentor = false;
+            }
             },
 
             async removeMentor(mentorId) {
-                try {
-                    const response = await fetch(`/overview/remove_mentor/${this.courseId}/${mentorId}/`, {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-                        },
-                        credentials: 'same-origin'
-                    });
+            try {
+            const response = await fetch(`/overview/remove_mentor/${this.courseId}/${mentorId}/`, {
+            method: 'POST',
+            headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            },
+            credentials: 'same-origin'
+            });
 
-                    if (response.ok) {
-                        // Refresh the mentors list
-                        await this.fetchCourseMentors(this.courseId);
-                    } else {
-                        console.error('Failed to remove mentor');
-                    }
-                } catch (error) {
-                    console.error('Error removing mentor:', error);
-                }
+            if (response.ok) {
+            // Refresh the mentors list
+            await this.fetchCourseMentors(this.courseId);
+            } else {
+            console.error('Failed to remove mentor');
+            }
+            } catch (error) {
+            console.error('Error removing mentor:', error);
+            }
             }
             }"
     @open-manage-mentors-modal.window="
-                                     open = true;
-                                     courseId = $event.detail.courseId;
-                                     course = $event.detail.course || null;
-                                     if (courseId) fetchCourseMentors(courseId);
-                                    "
+                                       open = true;
+                                       courseId = $event.detail.courseId;
+                                       course = $event.detail.course || null;
+                                       if (courseId) fetchCourseMentors(courseId);
+                                      "
     x-show="open"
     x-cloak
     class="fixed inset-0 z-10 overflow-y-auto"

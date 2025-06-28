@@ -30,10 +30,10 @@
             </button>
             <button
                 @click="$dispatch('open-manage-mentors-modal', { courseId: courseId, course: {
-                            id: '{{ course.id }}',
-                            name: '{{ course.name|escapejs }}',
-                            position: '{{ course.position }}',
-                            mentor_group_name: '{{ course.mentor_group.name|escapejs }}'
+                        id: '{{ course.id }}',
+                        name: '{{ course.name|escapejs }}',
+                        position: '{{ course.position }}',
+                        mentor_group_name: '{{ course.mentor_group.name|escapejs }}'
                         }})"
                 class="text-sm semantic-blue-text hover:opacity-80 flex items-center cursor-pointer">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24"
