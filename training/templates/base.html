@@ -7,6 +7,23 @@
     <title>VATSIM Germany Training</title>
 
     {% vite_hmr_client %} {% vite_asset 'src/main.js' %}
+
+  <style>
+  [x-cloak] { display: none !important; }
+
+  html, body {
+    transition: background-color 0.3s ease, color 0.3s ease !important;
+  }
+
+  * {
+    color-scheme: inherit;
+  }
+
+  body:not(.admin) {
+    background: var(--color-base-200) !important;
+    color: var(--color-base-content) !important;
+  }
+</style>
   </head>
   <body class="bg-base-100 text-base-content">
     <pre style="font-size: larger; margin-bottom: 100vh" class="hidden">The Training System is currently undergoing maintenance.</pre>
@@ -253,7 +270,7 @@
               x-transition:leave="transition ease-in duration-75"
               x-transition:leave-start="transform opacity-100 scale-100"
               x-transition:leave-end="transform opacity-0 scale-95"
-              class="fixed z-50 bg-base-100 border border-base-300 rounded-md shadow-lg"
+              class="fixed z-50 bg-base-100 border border-base-300 rounded-md shadow-lg user-dropdown"
               style="display: none; bottom: 20px; left: 100%; width: 250px;">
 
               <!-- User info section -->
@@ -381,9 +398,7 @@
             return `${window.formatHoursToTime(activityHours)} hours`;
           };
 
-          // Auto-convert activity hours on page load
           document.addEventListener('DOMContentLoaded', function() {
-            // Convert all elements with data-activity-hours attribute
             document.querySelectorAll('[data-activity-hours]').forEach(function(element) {
               const activityHours = parseFloat(element.getAttribute('data-activity-hours'));
               if (!isNaN(activityHours)) {
@@ -391,7 +406,6 @@
               }
             });
 
-            // Convert all elements with data-time-hours attribute (without "hours" suffix)
             document.querySelectorAll('[data-time-hours]').forEach(function(element) {
               const timeHours = parseFloat(element.getAttribute('data-time-hours'));
               if (!isNaN(timeHours)) {
@@ -399,7 +413,6 @@
               }
             });
 
-            // Convert all elements with data-time-minutes attribute
             document.querySelectorAll('[data-time-minutes]').forEach(function(element) {
               const timeMinutes = parseInt(element.getAttribute('data-time-minutes'));
               if (!isNaN(timeMinutes)) {
@@ -407,154 +420,214 @@
               }
             });
           });
-          document.addEventListener('alpine:init', () => {
-            Alpine.data('themeManager', () => ({
-              currentTheme: 'vatger-light',
+document.addEventListener('alpine:init', () => {
+  Alpine.data('themeManager', () => ({
+    currentTheme: 'vatger-light',
+    userPreference: 'system',
+    isInitialized: false,
 
-              init() {
-                const savedTheme = localStorage.getItem('theme');
-                const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    init() {
+      this.initializeTheme();
+      this.setupEventListeners();
+      this.forceThemeReapplication();
+    },
 
-                if (savedTheme) {
-                  this.currentTheme = savedTheme;
-                } else {
-                  this.currentTheme = systemPrefersDark ? 'vatger-dark' : 'vatger-light';
-                }
+    initializeTheme() {
+      const savedPreference = localStorage.getItem('themePreference');
+      const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-                this.applyTheme();
+      if (savedPreference && ['light', 'dark', 'system'].includes(savedPreference)) {
+        this.userPreference = savedPreference;
+      } else {
+        this.userPreference = 'system';
+        localStorage.setItem('themePreference', 'system');
+      }
 
-                window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-                  if (!localStorage.getItem('theme')) {
-                    this.currentTheme = e.matches ? 'vatger-dark' : 'vatger-light';
-                    this.applyTheme();
-                  }
-                });
-              },
+      this.currentTheme = this.resolveThemeFromPreference(this.userPreference, systemPrefersDark);
 
-              toggleTheme() {
-                this.currentTheme = this.currentTheme === 'vatger-light' ? 'vatger-dark' : 'vatger-light';
-                this.saveAndApplyTheme();
-              },
+      this.applyThemeComprehensively();
+      this.isInitialized = true;
+    },
 
-              setTheme(theme) {
-                this.currentTheme = theme;
-                this.saveAndApplyTheme();
-              },
+    resolveThemeFromPreference(preference, systemPrefersDark) {
+      switch (preference) {
+        case 'light':
+          return 'vatger-light';
+        case 'dark':
+          return 'vatger-dark';
+        case 'system':
+        default:
+          return systemPrefersDark ? 'vatger-dark' : 'vatger-light';
+      }
+    },
 
-              saveAndApplyTheme() {
-                localStorage.setItem('theme', this.currentTheme);
-                this.applyTheme();
-              },
+    setupEventListeners() {
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+        if (this.userPreference === 'system') {
+          this.currentTheme = e.matches ? 'vatger-dark' : 'vatger-light';
+          this.applyThemeComprehensively();
+        }
+      });
 
-              applyTheme() {
-                document.documentElement.setAttribute('data-theme', this.currentTheme);
-                document.body.setAttribute('data-theme', this.currentTheme);
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden && this.isInitialized) {
+          setTimeout(() => {
+            this.forceThemeReapplication();
+          }, 100);
+        }
+      });
 
-                document.documentElement.className = this.currentTheme;
+      window.addEventListener('focus', () => {
+        if (this.isInitialized) {
+          setTimeout(() => {
+            this.forceThemeReapplication();
+          }, 50);
+        }
+      });
+    },
 
-                console.log('Theme applied:', this.currentTheme);
-              }
-            }));
+    toggleTheme() {
+      if (this.userPreference === 'light') {
+        this.setThemePreference('dark');
+      } else if (this.userPreference === 'dark') {
+        this.setThemePreference('light');
+      } else {
+        const newPreference = this.currentTheme === 'vatger-light' ? 'dark' : 'light';
+        this.setThemePreference(newPreference);
+      }
+    },
 
-            Alpine.store('colors', {
-      // Get semantic color classes for any color
-              getClasses(color, types = ['bg', 'text', 'border']) {
-                const classes = types.map(type => `semantic-${color}-${type}`);
-                return classes.join(' ');
-              },
+    setThemePreference(preference) {
+      if (!['light', 'dark', 'system'].includes(preference)) {
+        console.warn('Invalid theme preference:', preference);
+        return;
+      }
 
-      // Get position-specific classes
-              getPositionClasses(position) {
-                const positionMap = {
-                  'GND': 'gray',
-                  'TWR': 'blue',
-                  'APP': 'green',
-                  'CTR': 'purple'
-                };
-                const color = positionMap[position] || 'gray';
-                return this.getClasses(color, ['bg', 'text']);
-              },
+      this.userPreference = preference;
+      localStorage.setItem('themePreference', preference);
 
-      // Get badge classes based on type and value
-              getBadgeClasses(type, value) {
-                const badgeMap = {
-                  session: {
-                    'O': 'blue',      // Online
-                    'S': 'green'      // Sim
-                  },
-                  result: {
-                    true: 'green',    // Passed
-                    false: 'red'      // Failed
-                  },
-                  status: {
-                    'success': 'green',
-                    'warning': 'yellow',
-                    'error': 'red',
-                    'info': 'blue'
-                  }
-                };
+      const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      this.currentTheme = this.resolveThemeFromPreference(preference, systemPrefersDark);
 
-                const color = badgeMap[type]?.[value] || 'gray';
-                return this.getClasses(color, ['bg', 'text']);
-              }
-            });
+      this.applyThemeComprehensively();
 
-    // Enhanced theme manager with color utilities
-            Alpine.data('themeManager', () => ({
-              currentTheme: 'vatger-light',
+      window.dispatchEvent(new CustomEvent('themeChanged', {
+        detail: {
+          theme: this.currentTheme,
+          preference: this.userPreference
+        }
+      }));
+    },
 
-              init() {
-                const savedTheme = localStorage.getItem('theme');
-                const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    setTheme(theme) {
+      if (theme === 'vatger-light') {
+        this.setThemePreference('light');
+      } else if (theme === 'vatger-dark') {
+        this.setThemePreference('dark');
+      }
+    },
 
-                if (savedTheme) {
-                  this.currentTheme = savedTheme;
-                } else {
-                  this.currentTheme = systemPrefersDark ? 'vatger-dark' : 'vatger-light';
-                }
+    applyThemeComprehensively() {
+      this.removeConflictingClasses();
 
-                this.applyTheme();
+      const elements = [document.documentElement, document.body];
 
-                window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-                  if (!localStorage.getItem('theme')) {
-                    this.currentTheme = e.matches ? 'vatger-dark' : 'vatger-light';
-                    this.applyTheme();
-                  }
-                });
-              },
+      elements.forEach(element => {
+        if (element) {
+          element.classList.remove('vatger-light', 'vatger-dark');
 
-              toggleTheme() {
-                this.currentTheme = this.currentTheme === 'vatger-light' ? 'vatger-dark' : 'vatger-light';
-                this.saveAndApplyTheme();
-              },
+          element.setAttribute('data-theme', this.currentTheme);
 
-              setTheme(theme) {
-                this.currentTheme = theme;
-                this.saveAndApplyTheme();
-              },
+          element.classList.add(this.currentTheme);
 
-              saveAndApplyTheme() {
-                localStorage.setItem('theme', this.currentTheme);
-                this.applyTheme();
-              },
+          element.style.colorScheme = this.currentTheme === 'vatger-dark' ? 'dark' : 'light';
+        }
+      });
 
-              applyTheme() {
-                document.documentElement.setAttribute('data-theme', this.currentTheme);
-                document.body.setAttribute('data-theme', this.currentTheme);
-                document.documentElement.className = this.currentTheme;
-              },
+      document.body.offsetHeight;
 
-      // Color helper methods that can be used in templates
-              getSemanticClasses(color, types = 'bg text') {
-                return types.split(' ').map(type => `semantic-${color}-${type}`).join(' ');
-              },
+      console.log('Theme applied:', this.currentTheme, 'Preference:', this.userPreference);
+    },
 
-              getPositionColor(position) {
-                const map = { 'GND': 'gray', 'TWR': 'blue', 'APP': 'green', 'CTR': 'purple' };
-                return map[position] || 'gray';
-              }
-            }));
-          });
+    removeConflictingClasses() {
+      const adminClasses = ['admin-theme-light', 'admin-theme-dark', 'django-admin'];
+      const body = document.body;
+
+      adminClasses.forEach(className => {
+        body.classList.remove(className);
+      });
+
+      const conflictingElements = document.querySelectorAll('[style*="background"], [style*="color"]');
+      conflictingElements.forEach(el => {
+        if (!el.hasAttribute('data-theme-style')) {
+          const style = el.getAttribute('style');
+          if (style && (style.includes('admin') || style.includes('django'))) {
+            el.removeAttribute('style');
+          }
+        }
+      });
+    },
+
+    forceThemeReapplication() {
+      const savedPreference = localStorage.getItem('themePreference');
+      if (savedPreference && ['light', 'dark', 'system'].includes(savedPreference)) {
+        this.userPreference = savedPreference;
+
+        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        this.currentTheme = this.resolveThemeFromPreference(this.userPreference, systemPrefersDark);
+      }
+
+      this.applyThemeComprehensively();
+
+      setTimeout(() => {
+        this.cleanupThemeConflicts();
+      }, 200);
+    },
+
+    cleanupThemeConflicts() {
+      const root = document.documentElement;
+      const body = document.body;
+
+      [root, body].forEach(element => {
+        if (element.getAttribute('data-theme') !== this.currentTheme) {
+          element.setAttribute('data-theme', this.currentTheme);
+        }
+
+        if (!element.classList.contains(this.currentTheme)) {
+          element.classList.remove('vatger-light', 'vatger-dark');
+          element.classList.add(this.currentTheme);
+        }
+      });
+
+      const allElements = document.querySelectorAll('[class*="admin"], [class*="django"]');
+      allElements.forEach(el => {
+        if (el.closest('.admin-panel') === null) {
+          el.setAttribute('data-theme', this.currentTheme);
+        }
+      });
+    },
+
+    isLight() {
+      return this.userPreference === 'light';
+    },
+
+    isDark() {
+      return this.userPreference === 'dark';
+    },
+
+    isSystem() {
+      return this.userPreference === 'system';
+    },
+
+    getCurrentAppliedTheme() {
+      return this.currentTheme;
+    },
+
+    getUserPreference() {
+      return this.userPreference;
+    }
+  }));
+});
         </script>
       </body>
     </html>
