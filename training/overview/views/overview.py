@@ -5,6 +5,9 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.shortcuts import render, redirect
 from django.shortcuts import reverse
+from training.helpers import log_admin_action
+from training.permissions import mentor_required
+
 from lists.models import Course, WaitingListEntry
 from lists.views import enrol_into_required_moodles
 from logs.models import Log
@@ -12,8 +15,6 @@ from overview.forms import AddUserForm
 from overview.helpers.course import get_solos
 from overview.helpers.trainee import inform_user_course_start, get_course_completion
 from overview.models import TraineeClaim, TraineeRemark
-from training.helpers import log_admin_action
-from training.permissions import mentor_required
 
 
 @mentor_required

@@ -1,0 +1,325 @@
+{% csrf_token %}
+
+<div
+    x-data="{
+            open: false,
+            courseId: null,
+            course: null,
+            mentors: [],
+            loading: false,
+            error: null,
+            addingMentor: false,
+            newMentorId: '',
+            addMentorError: '',
+
+            async fetchCourseMentors(courseId) {
+            this.loading = true;
+            this.error = null;
+            this.mentors = [];
+
+            try {
+            const response = await fetch(`/overview/mentors/${courseId}/`, {
+            method: 'GET',
+            headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Content-Type': 'application/json',
+            },
+            credentials: 'same-origin'
+            });
+
+            if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            this.mentors = data.mentors || [];
+            this.course = data.course || null;
+            } catch (error) {
+            console.error('Error fetching course mentors:', error);
+            this.error = 'Failed to load course mentors data';
+            } finally {
+            this.loading = false;
+            }
+            },
+
+            async addMentor() {
+            if (!this.newMentorId.trim()) return;
+
+            this.addingMentor = true;
+            this.addMentorError = '';
+
+            try {
+            const formData = new FormData();
+            formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+            formData.append('course_id', this.courseId);
+            formData.append('username', this.newMentorId);
+
+            const response = await fetch(`/overview/mentors/${this.courseId}/`, {
+            method: 'POST',
+            body: formData,
+            credentials: 'same-origin'
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+            // Refresh the mentors list
+            await this.fetchCourseMentors(this.courseId);
+            this.newMentorId = '';
+            this.addMentorError = '';
+            } else {
+            this.addMentorError = data.error || 'Failed to add mentor';
+            }
+            } catch (error) {
+            console.error('Error adding mentor:', error);
+            this.addMentorError = 'An error occurred while adding the mentor';
+            } finally {
+            this.addingMentor = false;
+            }
+            },
+
+            async removeMentor(mentorId) {
+            try {
+            const response = await fetch(`/overview/remove_mentor/${this.courseId}/${mentorId}/`, {
+            method: 'POST',
+            headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            },
+            credentials: 'same-origin'
+            });
+
+            if (response.ok) {
+            // Refresh the mentors list
+            await this.fetchCourseMentors(this.courseId);
+            } else {
+            console.error('Failed to remove mentor');
+            }
+            } catch (error) {
+            console.error('Error removing mentor:', error);
+            }
+            }
+            }"
+    @open-manage-mentors-modal.window="
+                                       open = true;
+                                       courseId = $event.detail.courseId;
+                                       course = $event.detail.course || null;
+                                       if (courseId) fetchCourseMentors(courseId);
+                                      "
+    x-show="open"
+    x-cloak
+    class="fixed inset-0 z-10 overflow-y-auto"
+    aria-labelledby="modal-title"
+    role="dialog"
+    aria-modal="true">
+
+    <div
+        x-show="open"
+        @click="open = false"
+        x-transition:enter="ease-out duration-300"
+        x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100"
+        x-transition:leave="ease-in duration-200"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
+        class="fixed inset-0 transition-opacity z-10"
+        style="background-color: rgba(0, 0, 0, 0.4);"
+        aria-hidden="true">
+    </div>
+
+    <div class="flex items-center justify-center min-h-screen">
+        <div
+            x-show="open"
+            x-transition:enter="ease-out duration-300"
+            x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+            x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+            x-transition:leave="ease-in duration-200"
+            x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+            x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+            class="bg-base-100 rounded-lg overflow-hidden shadow-xl transform transition-all sm:max-w-5xl w-full mx-4 z-10 relative">
+
+            <div class="px-6 py-4 bg-base-200 border-b border-base-content/20 flex items-center justify-between">
+                <div class="flex items-center">
+                    <div
+                        x-show="course"
+                        :class="{
+                                'semantic-gray-bg semantic-gray-text': course?.position === 'GND',
+                                'semantic-blue-bg semantic-blue-text': course?.position === 'TWR',
+                                'semantic-green-bg semantic-green-text': course?.position === 'APP',
+                                'semantic-purple-bg semantic-purple-text': course?.position === 'CTR'
+                                }"
+                        class="p-2 rounded-lg mr-3">
+                        <svg x-show="course?.position === 'GND'" xmlns="http://www.w3.org/2000/svg"
+                             class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/>
+                        </svg>
+                        <svg x-show="course?.position === 'TWR'" xmlns="http://www.w3.org/2000/svg"
+                             class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                        </svg>
+                        <svg x-show="course?.position === 'APP'" xmlns="http://www.w3.org/2000/svg"
+                             class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+                        </svg>
+                        <svg x-show="course?.position === 'CTR'" xmlns="http://www.w3.org/2000/svg"
+                             class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold text-base-content" x-text="course?.name"></h3>
+                        <p class="text-sm text-base-content/60">Manage Mentors</p>
+                    </div>
+                </div>
+                <button
+                    @click="open = false"
+                    class="text-base-content/60 hover:text-base-content focus:outline-none">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="p-6 max-h-[70vh] overflow-y-auto">
+                <!-- Loading State -->
+                <div x-show="loading" class="flex items-center justify-center py-8">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-base-content"></div>
+                    <span class="ml-3 text-base-content">Loading mentors...</span>
+                </div>
+
+                <!-- Error State -->
+                <div x-show="error && !loading" class="text-center py-8">
+                    <div class="text-error mb-2">
+                        <svg class="h-12 w-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                        </svg>
+                    </div>
+                    <p class="text-error" x-text="error"></p>
+                    <button @click="fetchCourseMentors(courseId)"
+                            class="btn btn-sm btn-outline mt-4">
+                        Try Again
+                    </button>
+                </div>
+
+                <!-- Content -->
+                <div x-show="!loading && !error" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Current Mentors List -->
+                    <div class="bg-base-100 rounded-xl shadow-md p-6 border semantic-neutral-border">
+                        <h2 class="text-xl font-semibold mb-6 text-base-content">Current Mentors</h2>
+
+                        <div x-show="mentors.length > 0">
+                            <div class="overflow-x-auto">
+                                <table class="table w-full">
+                                    <thead>
+                                        <tr class="bg-base-200">
+                                            <th class="py-3 px-4 text-left text-xs font-medium text-base-content/60 uppercase tracking-wider">Name</th>
+                                            <th class="py-3 px-4 text-left text-xs font-medium text-base-content/60 uppercase tracking-wider">VATSIM ID</th>
+                                            <th class="py-3 px-4 text-left text-xs font-medium text-base-content/60 uppercase tracking-wider">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-base-content/20">
+                                        <template x-for="mentor in mentors" :key="mentor.id">
+                                            <tr class="hover:bg-base-200">
+                                                <td class="py-4 px-4 whitespace-nowrap">
+                                                    <div class="flex items-center">
+                                                        <div class="flex-shrink-0 h-10 w-10">
+                                                            <div class="h-10 w-10 rounded-full semantic-blue-bg flex items-center justify-center semantic-blue-text font-medium">
+                                                                <span x-text="mentor.initials"></span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="ml-4">
+                                                            <div class="text-sm font-medium text-base-content" x-text="mentor.name"></div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td class="py-4 px-4 whitespace-nowrap">
+                                                    <div class="text-sm text-base-content" x-text="mentor.username"></div>
+                                                </td>
+                                                <td class="py-4 px-4 whitespace-nowrap">
+                                                    <button
+                                                        type="button"
+                                                        class="btn semantic-red-text semantic-red-border semantic-red-bg btn-sm"
+                                                        @click="$dispatch('open-confirm', {
+                                                                action: 'remove',
+                                                                message: `Are you sure you want to remove ${mentor.name} as a mentor for ${course.name}?`,
+                                                                callback: () => removeMentor(mentor.id)
+                                                                })"
+                                                    >
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                        </svg>
+                                                        Remove
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div x-show="mentors.length === 0" class="py-10 text-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 semantic-gray-text mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                            </svg>
+                            <h3 class="text-sm font-medium text-base-content">No mentors assigned</h3>
+                            <p class="mt-1 text-sm text-base-content/60">Get started by adding a mentor to this course.</p>
+                        </div>
+                    </div>
+
+                    <!-- Add Mentor Form -->
+                    <div class="bg-base-100 rounded-xl shadow-md p-6 border semantic-neutral-border">
+                        <h2 class="text-xl font-semibold mb-6 text-base-content">Add New Mentor</h2>
+
+                        <form @submit.prevent="addMentor()" class="space-y-6">
+                            <div>
+                                <label for="newMentorId" class="block text-sm font-medium text-base-content mb-1">VATSIM ID</label>
+                                <div class="flex">
+                                    <input
+                                        type="text"
+                                        id="newMentorId"
+                                        x-model="newMentorId"
+                                        class="input input-bordered w-full"
+                                        placeholder="Enter VATSIM ID"
+                                        :disabled="addingMentor"
+                                        required
+                                    >
+                                </div>
+                                <div x-show="addMentorError" class="mt-2 text-sm semantic-red-text" x-text="addMentorError"></div>
+                                <p class="mt-2 text-xs text-base-content/60" x-show="course">
+                                    Note: The user must be a member of the <span x-text="course?.mentor_group_name"></span> group to be added as a mentor.
+                                </p>
+                            </div>
+
+                            <div class="flex justify-end">
+                                <button type="submit" class="btn btn-primary" :disabled="addingMentor || !newMentorId.trim()">
+                                    <svg x-show="!addingMentor" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                    </svg>
+                                    <div x-show="addingMentor" class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-1"></div>
+                                    <span x-text="addingMentor ? 'Adding...' : 'Add Mentor'"></span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="px-6 py-4 bg-base-200 border-t border-base-content/20 flex justify-end">
+                <button @click="open = false" class="btn btn-ghost gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                         stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
