@@ -3,7 +3,7 @@
     @open-confirm.window="open = true; action = $event.detail.action; message = $event.detail.message; href = $event.detail.href || ''; callback = $event.detail.callback || null"
     x-show="open"
     x-cloak
-    class="fixed z-10 inset-0 overflow-y-auto"
+    class="fixed z-50 inset-0 overflow-y-auto"
     aria-labelledby="modal-title"
     role="dialog"
     aria-modal="true">
@@ -16,7 +16,7 @@
             x-transition:leave="ease-in duration-200"
             x-transition:leave-start="opacity-100"
             x-transition:leave-end="opacity-0"
-            class="fixed inset-0 transition-opacity z-10"
+            class="fixed inset-0 transition-opacity z-50"
             @click="open = false"
             style="background-color: rgba(0, 0, 0, 0.4);"
             aria-hidden="true"></div>
@@ -30,7 +30,7 @@
             x-transition:leave="ease-in duration-200"
             x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
             x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-            class="inline-block align-middle bg-base-100 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-lg sm:w-full z-20 relative">
+            class="inline-block align-middle bg-base-100 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-lg sm:w-full z-50 relative">
             <div class="bg-base-100 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <div class="sm:flex sm:items-start">
                     <div x-show="action === 'finish' || action === 'start'"
