@@ -1,6 +1,6 @@
 {% if removal_date %}
   <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full semantic-red-bg semantic-red-text">
-    ⚠️ Endorsement will be removed on {{ removal_date|date:"d M Y" }}
+    ⚠️ Endorsement will be removed on {{ removal_date|date:"d M Y" }} {% if updated %} (last checked {{ updated }}){% endif %}
   </span>
 {% elif activity < min_hours %}
   <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full semantic-yellow-bg semantic-yellow-text">
