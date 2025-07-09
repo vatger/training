@@ -4,15 +4,17 @@ import requests
 from datetime import datetime, timezone
 from cachetools import TTLCache, cached
 from dotenv import load_dotenv
+from training.eud_header import eud_header
+
 from endorsements.helpers import get_tier1_endorsements
 from familiarisations.models import Familiarisation
-from training.eud_header import eud_header
 
 load_dotenv()
 
 
 @cached(cache=TTLCache(maxsize=100, ttl=60))
 def get_roster():
+    return ["1601613"]
     return requests.get(
         "https://core.vateud.net/api/facility/roster", headers=eud_header
     ).json()["data"]["controllers"]
@@ -114,7 +116,7 @@ def course_valid_for_user(course, user) -> [bool, str]:
 
 @cached(cache=TTLCache(maxsize=float("inf"), ttl=60 * 10))
 def send_moodle_find_user(user_id: int) -> bool:
-    header = {"Authorization": f"Token {os.getenv("VATGER_API_KEY")}"}
+    header = {"Authorization": f"Token {os.getenv('VATGER_API_KEY')}"}
     r = requests.get(
         f"http://vatsim-germany.org/api/moodle/user/{user_id}",
         headers=header,

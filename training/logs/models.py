@@ -34,6 +34,7 @@ class Log(models.Model):
         CAVOK = "CAVOK", "CAVOK"
         VMC = "VMC", "VMC"
         IMC = "IMC", "IMC"
+        WINDY = "WIND", "Strong Wind"
         MARGINAL = "MARG", "Marginal"
 
     trainee = models.ForeignKey(User, on_delete=models.CASCADE, related_name="trainee")

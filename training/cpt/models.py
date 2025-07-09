@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
 from dotenv import load_dotenv
+
 from lists.models import Position, Course
 
 load_dotenv()
@@ -12,7 +13,7 @@ load_dotenv()
 
 def send_confirmed():
     header = {
-        "Authorization": f"Token {os.getenv("VATGER_API_KEY")}",
+        "Authorization": f"Token {os.getenv('VATGER_API_KEY')}",
         "Content-Type": "application/json",
         "Accept": "application/json",
     }

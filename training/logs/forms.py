@@ -19,10 +19,13 @@ class TrainingLogForm(forms.ModelForm):
             "traffic_complexity": forms.Select(),
             "weather_conditions": forms.Select(),
             "runway_configuration": forms.TextInput(
-                attrs={"placeholder": "e.g. 25L/07R, ILS 25L"}
+                attrs={"placeholder": "e.g. 25L/25R"}
             ),
             "surrounding_stations": forms.Textarea(
-                attrs={"rows": 2, "placeholder": "e.g. EDDF_TWR, EDDF_GND, EDDF_N_APP"}
+                attrs={
+                    "rows": 2,
+                    "placeholder": "e.g. EDDF_C_TWR, EDDK_GND, EDDF_N_APP",
+                }
             ),
             "session_duration": forms.NumberInput(
                 attrs={"placeholder": "Duration in minutes"}

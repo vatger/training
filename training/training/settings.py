@@ -29,7 +29,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 USE_CORE_MOCK = os.getenv("CORE_API") == ""
 
 ALLOWED_HOSTS = ast.literal_eval(os.getenv("ALLOWED_HOSTS"))
@@ -149,7 +149,7 @@ LOGIN_URL = "/connect/login"
 
 DJANGO_VITE = {
     "default": {
-        "dev_mode": False,
+        "dev_mode": DEBUG,
         "manifest_path": BASE_DIR / "frontend" / "dist" / "manifest.json",
     }
 }
