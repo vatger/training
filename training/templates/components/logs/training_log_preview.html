@@ -22,15 +22,15 @@
           {{ log.result|yesno:"Passed,Not Passed" }}
         </span>
         {% if log.traffic_level %}
-        <span class="px-2 py-0.5 rounded-full text-xs font-medium semantic-gray-bg semantic-gray-text">
-          {{ log.get_traffic_level_display }}
-        </span>
+          <span class="px-2 py-0.5 rounded-full text-xs font-medium semantic-gray-bg semantic-gray-text">
+            {{ log.get_traffic_level_display }}
+          </span>
         {% endif %}
       </div>
       <p class="text-xs text-base-content/60 mt-1">{{ log.session_date|date:"d M Y" }}</p>
       <p class="text-xs text-base-content/60 mt-1">{{ log.mentor }}</p>
       {% if log.session_duration %}
-      <p class="text-xs text-base-content/60">{{ log.session_duration }} min</p>
+        <p class="text-xs text-base-content/60">{{ log.session_duration }} min</p>
       {% endif %}
     </div>
     <div class="flex space-x-2">
