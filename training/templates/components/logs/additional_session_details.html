@@ -1,0 +1,89 @@
+<div x-data="{ expanded: false }" class="bg-base-100 rounded-xl shadow-md border semantic-neutral-border mb-6">
+  <div class="p-6">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-xl font-semibold text-base-content">Additional Session Details</h2>
+      <button
+        type="button"
+        @click="expanded = !expanded"
+        class="btn btn-ghost btn-sm"
+        :class="{'btn-active': expanded}">
+        <span class="text-sm mr-2" x-text="expanded ? 'Hide Details' : 'Show Details'"></span>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-4 w-4 transition-transform duration-200"
+          :class="{'rotate-180': expanded}"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+    </div>
+
+    <p class="text-sm text-base-content/60 mb-4">
+      Optional additional information about the training session conditions and environment.
+    </p>
+
+    <div x-show="expanded" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform scale-95" x-transition:enter-end="opacity-100 transform scale-100" class="space-y-6">
+      <!-- Traffic Conditions -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label for="id_traffic_level" class="block text-sm font-medium text-base-content mb-1">Traffic Level</label>
+          <select name="traffic_level" id="id_traffic_level" class="select select-bordered w-full" x-model="formData.traffic_level" @change="saveFormState">
+            <option value="">Not specified</option>
+            <option value="L">Low</option>
+            <option value="M">Medium</option>
+            <option value="H">High</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="id_traffic_complexity" class="block text-sm font-medium text-base-content mb-1">Traffic Complexity</label>
+          <select name="traffic_complexity" id="id_traffic_complexity" class="select select-bordered w-full" x-model="formData.traffic_complexity" @change="saveFormState">
+            <option value="">Not specified</option>
+            <option value="L">Low</option>
+            <option value="M">Medium</option>
+            <option value="H">High</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Duration and Runway Configuration -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label for="id_session_duration" class="block text-sm font-medium text-base-content mb-1">Session Duration</label>
+          <div class="relative">
+            <input type="number" name="session_duration" id="id_session_duration" class="input input-bordered w-full pr-16" placeholder="Duration in minutes" x-model="formData.session_duration" @input="saveFormState" min="1" max="600">
+            <span class="absolute inset-y-0 right-0 flex items-center pr-3 text-base-content/60 text-sm">minutes</span>
+          </div>
+        </div>
+
+        <div>
+          <label for="id_runway_configuration" class="block text-sm font-medium text-base-content mb-1">Runway Configuration</label>
+          <input type="text" name="runway_configuration" id="id_runway_configuration" class="input input-bordered w-full" placeholder="e.g. 25L/07R, ILS 25L" x-model="formData.runway_configuration" @input="saveFormState" maxlength="50">
+        </div>
+      </div>
+
+      <!-- Text Areas -->
+      <div class="space-y-4">
+        <div>
+          <label for="id_surrounding_stations" class="block text-sm font-medium text-base-content mb-1">Surrounding Stations</label>
+          <textarea name="surrounding_stations" id="id_surrounding_stations" rows="2" class="textarea textarea-bordered w-full" placeholder="e.g. EDDF_TWR, EDDF_GND, EDDF_N_APP" x-model="formData.surrounding_stations" @input="saveFormState"></textarea>
+          <p class="text-xs text-base-content/60 mt-1">List of active surrounding positions during the session</p>
+        </div>
+
+        <div>
+          <label for="id_special_procedures" class="block text-sm font-medium text-base-content mb-1">Special Procedures</label>
+          <textarea name="special_procedures" id="id_special_procedures" rows="2" class="textarea textarea-bordered w-full" placeholder="Any special procedures or events" x-model="formData.special_procedures" @input="saveFormState"></textarea>
+          <p class="text-xs text-base-content/60 mt-1">Any special procedures, events, or circumstances during the session</p>
+        </div>
+
+        <div>
+          <label for="id_airspace_restrictions" class="block text-sm font-medium text-base-content mb-1">Airspace Restrictions</label>
+          <textarea name="airspace_restrictions" id="id_airspace_restrictions" rows="2" class="textarea textarea-bordered w-full" placeholder="NOTAMs, restrictions, etc." x-model="formData.airspace_restrictions" @input="saveFormState"></textarea>
+          <p class="text-xs text-base-content/60 mt-1">Any active NOTAMs, restrictions, or special airspace configurations</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -48,6 +48,8 @@
                     {% include "components/logs/log_meta_info.html" %}
                 </div>
 
+                {% include "components/logs/additional_session_details.html" %}
+
             <!-- Evaluation Categories -->
                 <div class="bg-base-100 rounded-xl shadow-md p-6 border semantic-neutral-border">
                     <h2 class="text-xl font-semibold mb-6 text-base-content">
@@ -123,6 +125,16 @@
                         {% else %}new Date().toISOString().split("T")[0]{% endif %},
                         position: '{{ form.position.value|default:"" }}',
                         type: '{{ form.type.value|default:"O" }}',
+                        // Additional session details
+                        traffic_level: '{{ form.traffic_level.value|default:"" }}',
+                        traffic_complexity: '{{ form.traffic_complexity.value|default:"" }}',
+                        runway_configuration: '{{ form.runway_configuration.value|default:"" }}',
+                        surrounding_stations: '{{ form.surrounding_stations.value|default:"" }}',
+                        session_duration: '{{ form.session_duration.value|default:"" }}',
+                        special_procedures: '{{ form.special_procedures.value|default:"" }}',
+                        airspace_restrictions: '{{ form.airspace_restrictions.value|default:"" }}',
+
+                        // Rating categories
                         theory: '{{ form.theory.value|default:"0" }}',
                         phraseology: '{{ form.phraseology.value|default:"0" }}',
                         coordination: '{{ form.coordination.value|default:"0" }}',
@@ -166,6 +178,13 @@
                             session_date: new Date().toISOString().split("T")[0],
                             position: '',
                             type: 'O',
+                            traffic_level: '',
+                            traffic_complexity: '',
+                            runway_configuration: '',
+                            surrounding_stations: '',
+                            session_duration: '',
+                            special_procedures: '',
+                            airspace_restrictions: '',
                             theory: '0',
                             phraseology: '0',
                             coordination: '0',

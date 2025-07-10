@@ -278,6 +278,25 @@ def edit_training_log(request, log_id):
         ),
         "position": str(log.position) if log.position else "",
         "type": str(log.type) if log.type else "O",
+        # Additional session details
+        "traffic_level": str(log.traffic_level) if log.traffic_level else "",
+        "traffic_complexity": (
+            str(log.traffic_complexity) if log.traffic_complexity else ""
+        ),
+        "runway_configuration": (
+            str(log.runway_configuration) if log.runway_configuration else ""
+        ),
+        "surrounding_stations": (
+            str(log.surrounding_stations) if log.surrounding_stations else ""
+        ),
+        "session_duration": str(log.session_duration) if log.session_duration else "",
+        "special_procedures": (
+            str(log.special_procedures) if log.special_procedures else ""
+        ),
+        "airspace_restrictions": (
+            str(log.airspace_restrictions) if log.airspace_restrictions else ""
+        ),
+        # Rating categories
         "theory": str(log.theory) if log.theory is not None else "0",
         "phraseology": str(log.phraseology) if log.phraseology is not None else "0",
         "coordination": str(log.coordination) if log.coordination is not None else "0",

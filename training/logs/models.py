@@ -17,6 +17,16 @@ class Log(models.Model):
         THREE = 3, "Requirements met"
         FOUR = 4, "Requirements exceeded"
 
+    class TrafficLevel(models.TextChoices):
+        LOW = "L", "Low"
+        MEDIUM = "M", "Medium"
+        HIGH = "H", "High"
+
+    class TrafficComplexity(models.TextChoices):
+        LOW = "L", "Low"
+        MEDIUM = "M", "Medium"
+        HIGH = "H", "High"
+
     trainee = models.ForeignKey(User, on_delete=models.CASCADE, related_name="trainee")
     mentor = models.ForeignKey(
         User, on_delete=models.SET_NULL, null=True, related_name="mentor"
@@ -25,6 +35,34 @@ class Log(models.Model):
     course = models.ForeignKey(Course, on_delete=models.SET_NULL, null=True)
     position = models.CharField(max_length=25)
     type = models.TextField(max_length=1, choices=Type.choices)
+
+    traffic_level = models.CharField(
+        max_length=2, choices=TrafficLevel.choices, blank=True, null=True
+    )
+    traffic_complexity = models.CharField(
+        max_length=2, choices=TrafficComplexity.choices, blank=True, null=True
+    )
+    runway_configuration = models.CharField(
+        max_length=50, blank=True, null=True, help_text="e.g. 25L/25R, RNP X, etc."
+    )
+    surrounding_stations = models.TextField(
+        blank=True,
+        null=True,
+        help_text="List of active surrounding positions during the session",
+    )
+    session_duration = models.PositiveIntegerField(
+        blank=True, null=True, help_text="Session duration in minutes"
+    )
+    special_procedures = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Any special procedures, events, or circumstances during the session",
+    )
+    airspace_restrictions = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Any active NOTAMs, restrictions, or special airspace configurations",
+    )
 
     # Rating categories with positives and negatives
     theory = models.IntegerField(choices=Rating.choices)
