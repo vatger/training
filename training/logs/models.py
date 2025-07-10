@@ -18,24 +18,14 @@ class Log(models.Model):
         FOUR = 4, "Requirements exceeded"
 
     class TrafficLevel(models.TextChoices):
-        VERY_LOW = "VL", "Very Low"
         LOW = "L", "Low"
         MEDIUM = "M", "Medium"
         HIGH = "H", "High"
-        VERY_HIGH = "VH", "Very High"
 
     class TrafficComplexity(models.TextChoices):
-        SIMPLE = "S", "Simple"
-        MODERATE = "M", "Moderate"
-        COMPLEX = "C", "Complex"
-        VERY_COMPLEX = "VC", "Very Complex"
-
-    class WeatherConditions(models.TextChoices):
-        CAVOK = "CAVOK", "CAVOK"
-        VMC = "VMC", "VMC"
-        IMC = "IMC", "IMC"
-        WINDY = "WIND", "Strong Wind"
-        MARGINAL = "MARG", "Marginal"
+        LOW = "L", "Low"
+        MEDIUM = "M", "Medium"
+        HIGH = "H", "High"
 
     trainee = models.ForeignKey(User, on_delete=models.CASCADE, related_name="trainee")
     mentor = models.ForeignKey(
@@ -51,9 +41,6 @@ class Log(models.Model):
     )
     traffic_complexity = models.CharField(
         max_length=2, choices=TrafficComplexity.choices, blank=True, null=True
-    )
-    weather_conditions = models.CharField(
-        max_length=5, choices=WeatherConditions.choices, blank=True, null=True
     )
     runway_configuration = models.CharField(
         max_length=50, blank=True, null=True, help_text="e.g. 25L/25R, RNP X, etc."

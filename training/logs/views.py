@@ -283,9 +283,6 @@ def edit_training_log(request, log_id):
         "traffic_complexity": (
             str(log.traffic_complexity) if log.traffic_complexity else ""
         ),
-        "weather_conditions": (
-            str(log.weather_conditions) if log.weather_conditions else ""
-        ),
         "runway_configuration": (
             str(log.runway_configuration) if log.runway_configuration else ""
         ),

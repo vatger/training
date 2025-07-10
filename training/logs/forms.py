@@ -17,7 +17,6 @@ class TrainingLogForm(forms.ModelForm):
             # Additional session details
             "traffic_level": forms.Select(),
             "traffic_complexity": forms.Select(),
-            "weather_conditions": forms.Select(),
             "runway_configuration": forms.TextInput(
                 attrs={"placeholder": "e.g. 25L/25R"}
             ),

@@ -223,6 +223,8 @@ def trainee_view(request):
 
         res_t1.append(entry)
 
+    res_t1 = sorted(res_t1, key=lambda x: x["position"])
+
     tier_2 = get_tier2_endorsements()
     tier_2 = [
         t2["position"] for t2 in tier_2 if t2["user_cid"] == int(request.user.username)

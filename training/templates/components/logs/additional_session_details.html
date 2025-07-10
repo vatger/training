@@ -25,17 +25,15 @@
     </p>
 
     <div x-show="expanded" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform scale-95" x-transition:enter-end="opacity-100 transform scale-100" class="space-y-6">
-      <!-- Traffic and Weather Conditions -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <!-- Traffic Conditions -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label for="id_traffic_level" class="block text-sm font-medium text-base-content mb-1">Traffic Level</label>
           <select name="traffic_level" id="id_traffic_level" class="select select-bordered w-full" x-model="formData.traffic_level" @change="saveFormState">
             <option value="">Not specified</option>
-            <option value="VL">Very Low</option>
-            <option value="L">Low</option>
+              <option value="L">Low</option>
             <option value="M">Medium</option>
             <option value="H">High</option>
-            <option value="VH">Very High</option>
           </select>
         </div>
 
@@ -43,22 +41,9 @@
           <label for="id_traffic_complexity" class="block text-sm font-medium text-base-content mb-1">Traffic Complexity</label>
           <select name="traffic_complexity" id="id_traffic_complexity" class="select select-bordered w-full" x-model="formData.traffic_complexity" @change="saveFormState">
             <option value="">Not specified</option>
-            <option value="S">Simple</option>
-            <option value="M">Moderate</option>
-            <option value="C">Complex</option>
-            <option value="VC">Very Complex</option>
-          </select>
-        </div>
-
-        <div>
-          <label for="id_weather_conditions" class="block text-sm font-medium text-base-content mb-1">Weather Conditions</label>
-          <select name="weather_conditions" id="id_weather_conditions" class="select select-bordered w-full" x-model="formData.weather_conditions" @change="saveFormState">
-            <option value="">Not specified</option>
-            <option value="CAVOK">CAVOK</option>
-            <option value="VMC">VMC</option>
-            <option value="IMC">IMC</option>
-            <option value="WIND">Strong Wind</option>
-            <option value="MARG">Marginal</option>
+              <option value="L">Low</option>
+            <option value="M">Medium</option>
+            <option value="H">High</option>
           </select>
         </div>
       </div>

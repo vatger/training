@@ -33,7 +33,7 @@
       </div>
     </div>
 
-    {% if log.surrounding_stations or log.special_procedures or log.airspace_restrictions or log.session_duration or log.traffic_level or log.traffic_complexity or log.weather_conditions or log.runway_configuration %}
+    {% if log.surrounding_stations or log.special_procedures or log.airspace_restrictions or log.session_duration or log.traffic_level or log.traffic_complexity or log.runway_configuration %}
       <div class="mt-6 pt-4 border-t border-base-content/20">
         <h3 class="text-sm font-semibold text-base-content mb-3">Additional Details</h3>
 
@@ -55,13 +55,6 @@
           <div class="mb-3">
             <p class="text-xs font-medium text-base-content/60 mb-1">Traffic Complexity</p>
             <p class="text-sm">{{ log.get_traffic_complexity_display }}</p>
-          </div>
-        {% endif %}
-
-        {% if log.weather_conditions %}
-          <div class="mb-3">
-            <p class="text-xs font-medium text-base-content/60 mb-1">Weather</p>
-            <p class="text-sm">{{ log.get_weather_conditions_display }}</p>
           </div>
         {% endif %}
 
