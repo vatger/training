@@ -226,9 +226,19 @@ def trainee_view(request):
     def sort_endorsements(endorsement):
         position = endorsement["position"]
 
-        # EDGG_KTG_CTR always comes first
-        if position == "EDGG_KTG_CTR":
-            return ("0", "")
+        if position.endswith("_CTR"):
+            ctr_code = position[:-4]
+
+            if position == "EDGG_KTG_CTR":
+                return ("0_CTR", "EDGG_KTG")
+            elif position == "EDWW_CTR":
+                return ("0_CTR", "EDWW")
+            elif position == "EDMM_RDG_CTR":
+                return ("0_CTR", "EDMM_RDG")
+            elif position == "EDMM_CTR":
+                return ("0_CTR", "EDMM")
+            else:
+                return ("0_CTR", ctr_code)
 
         parts = position.split("_")
         if len(parts) >= 2:
@@ -238,10 +248,9 @@ def trainee_view(request):
             type_priority = {"APP": "1", "TWR": "2", "GNDDEL": "3"}
 
             priority = type_priority.get(endorsement_type, "9")
-            return (airport, priority)
+            return ("1_" + airport, priority)
 
-        # Fallback for any unexpected format
-        return (position, "")
+        return ("9_" + position, "")
 
     res_t1 = sorted(res_t1, key=sort_endorsements)
 
