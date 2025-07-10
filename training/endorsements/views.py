@@ -233,6 +233,8 @@ def trainee_view(request):
                 return ("0_CTR", "EDGG_KTG")
             elif position == "EDWW_CTR":
                 return ("0_CTR", "EDWW")
+            elif position == "EDWW_W_CTR":
+                return ("0_CTR", "EDWW_W")
             elif position == "EDMM_RDG_CTR":
                 return ("0_CTR", "EDMM_RDG")
             elif position == "EDMM_CTR":
