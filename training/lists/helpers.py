@@ -14,7 +14,6 @@ load_dotenv()
 
 @cached(cache=TTLCache(maxsize=100, ttl=60))
 def get_roster():
-    return ["1601613"]
     return requests.get(
         "https://core.vateud.net/api/facility/roster", headers=eud_header
     ).json()["data"]["controllers"]
