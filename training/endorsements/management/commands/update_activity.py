@@ -131,6 +131,7 @@ class Command(BaseCommand):
                         "message": f"""Your endorsement for {endorsement.group.name} will be removed on {endorsement.removal_date.strftime("%d.%m.%Y")}.
                         If you wish to keep it, please ensure you meet the minimum activity requirements by then.""",
                         "source_name": "VATGER ATD",
+                        "via": "board.ping",
                     }
                     header = {"Authorization": f"Token {os.getenv("VATGER_API_KEY")}"}
                     r = requests.post(

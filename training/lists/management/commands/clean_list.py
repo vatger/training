@@ -34,6 +34,7 @@ class Command(BaseCommand):
                     "title": "Waiting List Removal",
                     "message": f"You have been removed from the waiting list for the {entry.course.name} course. {reason} If you have any questions, please contact the VATGER ATD.",
                     "source_name": "VATGER ATD",
+                    "via": "board.ping",
                 }
                 header = {"Authorization": f"Token {os.getenv("VATGER_API_KEY")}"}
                 r = requests.post(

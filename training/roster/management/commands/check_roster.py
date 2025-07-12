@@ -50,6 +50,7 @@ def inform_roster_removal(vatsim_id: int):
         please log in to the VATSIM network and control at least once in the next 35 days. 
         If you do not, your account will be removed from the roster. If you believe this is a mistake, please contact the ATD.""",
         "source_name": "VATGER ATD",
+        "via": "board.ping",
     }
     header = {"Authorization": f"Token {os.getenv("VATGER_API_KEY")}"}
     r = requests.post(

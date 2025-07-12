@@ -95,6 +95,7 @@ def inform_user_course_start(vatsim_id: int, course_name: str):
         "source_name": "VATGER ATD",
         "link_text": "Training Centre",
         "link_url": "https://training.vatsim-germany.org/",
+        "via": "board.ping",
     }
     header = {"Authorization": f"Token {os.getenv('VATGER_API_KEY')}"}
     r = requests.post(
