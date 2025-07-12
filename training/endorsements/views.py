@@ -38,40 +38,7 @@ def overview(request):
         .order_by("name")
     )
 
-    endorsements_unsorted = get_tier1_endorsements()
-
-    def sort_endorsements(endorsement):
-        position = endorsement["position"]
-
-        if position.endswith("_CTR"):
-            ctr_code = position[:-4]
-
-            if position == "EDGG_KTG_CTR":
-                return ("0_CTR", "EDGG_KTG")
-            elif position == "EDWW_CTR":
-                return ("0_CTR", "EDWW")
-            elif position == "EDWW_W_CTR":
-                return ("0_CTR", "EDWW_W")
-            elif position == "EDMM_RDG_CTR":
-                return ("0_CTR", "EDMM_RDG")
-            elif position == "EDMM_CTR":
-                return ("0_CTR", "EDMM")
-            else:
-                return ("0_CTR", ctr_code)
-
-        parts = position.split("_")
-        if len(parts) >= 2:
-            airport = parts[0]
-            endorsement_type = "_".join(parts[1:])
-
-            type_priority = {"APP": "1", "TWR": "2", "GNDDEL": "3"}
-
-            priority = type_priority.get(endorsement_type, "9")
-            return ("1_" + airport, priority)
-
-        return ("9_" + position, "")
-
-    endorsements = sorted(endorsements_unsorted, key=sort_endorsements)
+    endorsements = get_tier1_endorsements()
 
     total_endorsements = 0
     inactive_count = 0
@@ -255,39 +222,6 @@ def trainee_view(request):
             entry["bar_width"] = int((activity_hours / min_hours_required) * 100)
 
         res_t1.append(entry)
-
-    def sort_endorsements(endorsement):
-        position = endorsement["position"]
-
-        if position.endswith("_CTR"):
-            ctr_code = position[:-4]
-
-            if position == "EDGG_KTG_CTR":
-                return ("0_CTR", "EDGG_KTG")
-            elif position == "EDWW_CTR":
-                return ("0_CTR", "EDWW")
-            elif position == "EDWW_W_CTR":
-                return ("0_CTR", "EDWW_W")
-            elif position == "EDMM_RDG_CTR":
-                return ("0_CTR", "EDMM_RDG")
-            elif position == "EDMM_CTR":
-                return ("0_CTR", "EDMM")
-            else:
-                return ("0_CTR", ctr_code)
-
-        parts = position.split("_")
-        if len(parts) >= 2:
-            airport = parts[0]
-            endorsement_type = "_".join(parts[1:])
-
-            type_priority = {"APP": "1", "TWR": "2", "GNDDEL": "3"}
-
-            priority = type_priority.get(endorsement_type, "9")
-            return ("1_" + airport, priority)
-
-        return ("9_" + position, "")
-
-    res_t1 = sorted(res_t1, key=sort_endorsements)
 
     tier_2 = get_tier2_endorsements()
     tier_2 = [
