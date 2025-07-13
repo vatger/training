@@ -1,7 +1,7 @@
 import os
+from datetime import datetime, timezone
 
 import requests
-from datetime import datetime, timezone
 from cachetools import TTLCache, cached
 from dotenv import load_dotenv
 from training.eud_header import eud_header

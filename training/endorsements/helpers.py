@@ -2,10 +2,29 @@ import requests
 from cachetools import cached, TTLCache
 from django.conf import settings
 from dotenv import load_dotenv
-from django.conf import settings
 from training.eud_header import eud_header
 
 load_dotenv()
+
+
+def sort_endorsements(endorsement):
+    position = endorsement["position"]
+
+    if position.endswith("_CTR"):
+        ctr_code = position[:-4]
+        return ("0_CTR", ctr_code)
+
+    parts = position.split("_")
+    if len(parts) >= 2:
+        airport = parts[0]
+        endorsement_type = "_".join(parts[1:])
+
+        type_priority = {"APP": "1", "TWR": "2", "GNDDEL": "3"}
+        priority = type_priority.get(endorsement_type, "9")
+
+        return (f"1_{airport}", priority)
+
+    return (f"9_{position}", "")
 
 
 @cached(cache=TTLCache(maxsize=1024, ttl=60 * 10))
@@ -21,20 +40,13 @@ def get_tier1_endorsements():
                 "created_at": "2025-04-19T12:02:38.000000Z",
                 "updated_at": "2025-04-19T12:02:38.000000Z",
             },
-            {
-                "id": 2,
-                "user_cid": 1601613,
-                "instructor_cid": 1439797,
-                "position": "EDDL_APP",
-                "facility": 9,
-                "created_at": "2025-04-19T12:02:38.000000Z",
-                "updated_at": "2025-04-19T12:02:38.000000Z",
-            },
         ]
     endorsements = requests.get(
         "https://core.vateud.net/api/facility/endorsements/tier-1", headers=eud_header
     ).json()["data"]
-    return endorsements
+
+    res_t1 = sorted(endorsements, key=sort_endorsements)
+    return res_t1
 
 
 def get_tier2_endorsements():

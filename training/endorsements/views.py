@@ -223,28 +223,6 @@ def trainee_view(request):
 
         res_t1.append(entry)
 
-    def sort_endorsements(endorsement):
-        position = endorsement["position"]
-
-        # EDGG_KTG_CTR always comes first
-        if position == "EDGG_KTG_CTR":
-            return ("0", "")
-
-        parts = position.split("_")
-        if len(parts) >= 2:
-            airport = parts[0]
-            endorsement_type = "_".join(parts[1:])
-
-            type_priority = {"APP": "1", "TWR": "2", "GNDDEL": "3"}
-
-            priority = type_priority.get(endorsement_type, "9")
-            return (airport, priority)
-
-        # Fallback for any unexpected format
-        return (position, "")
-
-    res_t1 = sorted(res_t1, key=sort_endorsements)
-
     tier_2 = get_tier2_endorsements()
     tier_2 = [
         t2["position"] for t2 in tier_2 if t2["user_cid"] == int(request.user.username)
