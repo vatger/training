@@ -7,6 +7,26 @@ from training.eud_header import eud_header
 load_dotenv()
 
 
+def sort_endorsements(endorsement):
+    position = endorsement["position"]
+
+    if position.endswith("_CTR"):
+        ctr_code = position[:-4]
+        return ("0_CTR", ctr_code)
+
+    parts = position.split("_")
+    if len(parts) >= 2:
+        airport = parts[0]
+        endorsement_type = "_".join(parts[1:])
+
+        type_priority = {"APP": "1", "TWR": "2", "GNDDEL": "3"}
+        priority = type_priority.get(endorsement_type, "9")
+
+        return (f"1_{airport}", priority)
+
+    return (f"9_{position}", "")
+
+
 @cached(cache=TTLCache(maxsize=1024, ttl=60 * 10))
 def get_tier1_endorsements():
     if settings.USE_CORE_MOCK:
@@ -24,25 +44,6 @@ def get_tier1_endorsements():
     endorsements = requests.get(
         "https://core.vateud.net/api/facility/endorsements/tier-1", headers=eud_header
     ).json()["data"]
-
-    def sort_endorsements(endorsement):
-        position = endorsement["position"]
-
-        if position.endswith("_CTR"):
-            ctr_code = position[:-4]
-            return ("0_CTR", ctr_code)
-
-        parts = position.split("_")
-        if len(parts) >= 2:
-            airport = parts[0]
-            endorsement_type = "_".join(parts[1:])
-
-            type_priority = {"APP": "1", "TWR": "2", "GNDDEL": "3"}
-            priority = type_priority.get(endorsement_type, "9")
-
-            return (f"1_{airport}", priority)
-
-        return (f"9_{position}", "")
 
     res_t1 = sorted(endorsements, key=sort_endorsements)
     return res_t1
