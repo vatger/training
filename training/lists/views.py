@@ -16,6 +16,9 @@ from django.shortcuts import (
 )
 from django.utils.safestring import mark_safe
 from dotenv import load_dotenv
+from training.helpers import log_admin_action
+from training.permissions import mentor_required
+
 from familiarisations.models import Familiarisation
 from lists.helpers import (
     course_valid_for_user,
@@ -24,9 +27,6 @@ from lists.helpers import (
     send_moodle_find_user,
 )
 from overview.helpers.trainee import inform_user_course_start
-from training.helpers import log_admin_action
-from training.permissions import mentor_required
-
 from .models import Course, WaitingListEntry
 
 load_dotenv()
@@ -363,6 +363,42 @@ def mentor_view(request):
             first_initial = entry.user.first_name[0] if entry.user.first_name else ""
             last_initial = entry.user.last_name[0] if entry.user.last_name else ""
 
+            # Calculate waiting duration
+            from django.utils import timezone
+
+            waiting_duration = timezone.now() - entry.date_added
+            days = waiting_duration.days
+
+            # Format waiting time elegantly
+            if days == 0:
+                waiting_time = "Today"
+            elif days == 1:
+                waiting_time = "1 day"
+            elif days < 7:
+                waiting_time = f"{days} days"
+            elif days < 30:
+                weeks = days // 7
+                remaining_days = days % 7
+                if weeks == 1:
+                    waiting_time = f"1 week" + (
+                        f", {remaining_days}d" if remaining_days > 0 else ""
+                    )
+                else:
+                    waiting_time = f"{weeks} weeks" + (
+                        f", {remaining_days}d" if remaining_days > 0 else ""
+                    )
+            else:
+                months = days // 30
+                remaining_days = days % 30
+                if months == 1:
+                    waiting_time = f"1 month" + (
+                        f", {remaining_days}d" if remaining_days > 0 else ""
+                    )
+                else:
+                    waiting_time = f"{months} months" + (
+                        f", {remaining_days}d" if remaining_days > 0 else ""
+                    )
+
             waiting_list.append(
                 {
                     "id": entry.id,
@@ -371,6 +407,8 @@ def mentor_view(request):
                     "vatsim_id": entry.user.username,
                     "activity": round(entry.activity, 1),
                     "remarks": entry.remarks,
+                    "waiting_time": waiting_time,
+                    "waiting_days": days,  # For potential styling based on duration
                 }
             )
 
