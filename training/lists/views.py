@@ -1,9 +1,10 @@
 import json
 import os
-from datetime import datetime, timezone
+from datetime import datetime
 
 import requests
 from cachetools import TTLCache
+from dateutil.relativedelta import relativedelta
 from django.contrib import messages
 from django.contrib.admin.models import CHANGE
 from django.contrib.auth.decorators import login_required
@@ -14,6 +15,7 @@ from django.shortcuts import (
     HttpResponseRedirect,
     reverse,
 )
+from django.utils import timezone
 from django.utils.safestring import mark_safe
 from dotenv import load_dotenv
 from training.helpers import log_admin_action
@@ -363,41 +365,47 @@ def mentor_view(request):
             first_initial = entry.user.first_name[0] if entry.user.first_name else ""
             last_initial = entry.user.last_name[0] if entry.user.last_name else ""
 
-            # Calculate waiting duration
-            from django.utils import timezone
-
             waiting_duration = timezone.now() - entry.date_added
             days = waiting_duration.days
 
-            # Format waiting time elegantly
             if days == 0:
                 waiting_time = "Today"
             elif days == 1:
                 waiting_time = "1 day"
             elif days < 7:
                 waiting_time = f"{days} days"
-            elif days < 30:
-                weeks = days // 7
-                remaining_days = days % 7
-                if weeks == 1:
-                    waiting_time = f"1 week" + (
-                        f", {remaining_days}d" if remaining_days > 0 else ""
-                    )
-                else:
-                    waiting_time = f"{weeks} weeks" + (
-                        f", {remaining_days}d" if remaining_days > 0 else ""
-                    )
             else:
-                months = days // 30
-                remaining_days = days % 30
-                if months == 1:
-                    waiting_time = f"1 month" + (
-                        f", {remaining_days}d" if remaining_days > 0 else ""
-                    )
+                now = timezone.now().date()
+                date_added = entry.date_added.date()
+                delta = relativedelta(now, date_added)
+
+                if delta.years > 0:
+                    if delta.years == 1:
+                        waiting_time = f"1 year"
+                        if delta.months > 0:
+                            waiting_time += f", {delta.months}mo"
+                    else:
+                        waiting_time = f"{delta.years} years"
+                elif delta.months > 0:
+                    if delta.months == 1:
+                        waiting_time = f"1 month"
+                        if delta.days > 0:
+                            waiting_time += f", {delta.days}d"
+                    else:
+                        waiting_time = f"{delta.months} months"
+                        if delta.days > 0:
+                            waiting_time += f", {delta.days}d"
                 else:
-                    waiting_time = f"{months} months" + (
-                        f", {remaining_days}d" if remaining_days > 0 else ""
-                    )
+                    weeks = days // 7
+                    remaining_days = days % 7
+                    if weeks == 1:
+                        waiting_time = f"1 week"
+                        if remaining_days > 0:
+                            waiting_time += f", {remaining_days}d"
+                    else:
+                        waiting_time = f"{weeks} weeks"
+                        if remaining_days > 0:
+                            waiting_time += f", {remaining_days}d"
 
             waiting_list.append(
                 {
@@ -408,7 +416,7 @@ def mentor_view(request):
                     "activity": round(entry.activity, 1),
                     "remarks": entry.remarks,
                     "waiting_time": waiting_time,
-                    "waiting_days": days,  # For potential styling based on duration
+                    "waiting_days": days,
                 }
             )
 
