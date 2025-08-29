@@ -1,6 +1,4 @@
 import os
-from datetime import datetime
-from typing import Any
 
 import requests
 from cachetools import cached, TTLCache
@@ -19,6 +17,7 @@ from endorsements.views import min_hours_required
 from familiarisations.helpers import get_familiarisations
 from lists.models import Course
 from logs.models import Log
+from overview.helpers import get_solos
 from overview.helpers.trainee import get_course_completion
 from trainee.forms import UserDetailForm
 from training import settings
@@ -73,37 +72,6 @@ def get_moodles(user) -> list:
     return moodles
 
 
-def get_solos(vatsim_id: int) -> list[dict[str, int | str]] | Any:
-    if settings.USE_CORE_MOCK:
-        solos = [
-            {
-                "id": 0,
-                "user_cid": 1601613,
-                "instructor_cid": 0,
-                "position": "EDDL_TWR",
-                "expiry": "2025-08-30T19:57:29.286Z",
-                "max_days": 13,
-                "facility": 0,
-                "created_at": "2025-08-27T19:57:29.286Z",
-                "updated_at": "2025-08-27T19:57:29.286Z",
-            }
-        ]
-    else:
-        solos = requests.get(
-            "https://core.vateud.net/api/facility/endorsements/solo", headers=eud_header
-        ).json()["data"]
-
-    for solo in solos:
-        if isinstance(solo.get("expiry"), str):
-            try:
-                expiry_str = solo["expiry"].replace("Z", "+00:00")
-                solo["expiry"] = datetime.fromisoformat(expiry_str)
-            except (ValueError, AttributeError):
-                solo["expiry"] = "N/A"
-
-    return solos
-
-
 @login_required
 def home(request):
     logs = Log.objects.filter(trainee=request.user).order_by("-session_date")
@@ -115,7 +83,7 @@ def home(request):
     # Get required Moodle courses
     moodles = get_moodles(request.user)
     fams = get_familiarisations(request.user.username)
-    solos = get_solos(request.user.username)
+    solos = get_solos()
 
     return render(
         request,

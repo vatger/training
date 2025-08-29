@@ -22,44 +22,35 @@
                   <span class="text-sm font-medium text-base-content">{{ solo.position }}</span>
                 </td>
                 <td class="px-4 py-3">
-                  {% if solo.expiry %}
-                    {% now "Y-m-d" as today_date %}
-                    {% if solo.expiry.date|date:"Y-m-d" < today_date %}
-                      <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium semantic-red-bg semantic-red-text">
-                        Expired
-                      </span>
-                    {% else %}
-                      {% with solo.expiry|timeuntil as time_until %}
-                        {% if "day" in time_until %}
-                          {% with time_until|cut:" days"|cut:" day" as days_only %}
-                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {% if days_only|add:0 <= 7 %}semantic-red-bg semantic-red-text{% elif days_only|add:0 <= 14 %}semantic-yellow-bg semantic-yellow-text{% else %}semantic-green-bg semantic-green-text{% endif %}">
-                              {{ days_only }} left
-                            </span>
-                          {% endwith %}
-                        {% else %}
-                          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium semantic-red-bg semantic-red-text">
-                            < 1 day
-                          </span>
-                        {% endif %}
-                      {% endwith %}
-                    {% endif %}
-                  {% else %}
+                  {% if solo.remaining_days < 0 %}
                     <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium semantic-red-bg semantic-red-text">
-                      Invalid
+                      Expired
+                    </span>
+                  {% elif solo.remaining_days == 0 %}
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium semantic-red-bg semantic-red-text">
+                      Expires today
+                    </span>
+                  {% elif solo.remaining_days <= 7 %}
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium semantic-red-bg semantic-red-text">
+                      {{ solo.remaining_days }} days left
+                    </span>
+                  {% elif solo.remaining_days <= 14 %}
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium semantic-yellow-bg semantic-yellow-text">
+                      {{ solo.remaining_days }} days left
+                    </span>
+                  {% else %}
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium semantic-green-bg semantic-green-text">
+                      {{ solo.remaining_days }} days left
                     </span>
                   {% endif %}
                 </td>
                 <td class="px-4 py-3">
                   <span class="text-sm text-base-content/70">
-                    {% if solo.expiry %}
-                      {{ solo.expiry|date:"d M Y" }}
-                    {% else %}
-                      N/A
-                    {% endif %}
+                    {{ solo.expiry|date:"d M Y" }}
                   </span>
                 </td>
                 <td class="px-4 py-3">
-                  <span class="text-sm text-base-content/70">{{ solo.max_days }} days</span>
+                  <span class="text-sm text-base-content/70">{{ solo.max_days }}</span>
                 </td>
               </tr>
             {% endfor %}

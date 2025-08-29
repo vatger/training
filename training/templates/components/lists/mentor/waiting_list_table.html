@@ -22,6 +22,10 @@
                     Name
                 </th>
                 <th scope="col"
+                    class="px-6 py-3 text-left text-xs font-medium text-base-content/60 uppercase tracking-wider">
+                    VATSIM ID
+                </th>
+                <th scope="col"
                     class="px-6 py-3 text-left text-xs font-medium text-base-content/60 uppercase tracking-wider"
                     x-show="course.type === 'RTG'">Activity
                 </th>
@@ -47,26 +51,23 @@
                             'bg-base-100': !(course.type === 'RTG' && trainee.activity < {{ activity_min }})
                             }">
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="tooltip tooltip-right" :data-tip="'Waiting for ' + trainee.waiting_time">
-                            <span class="text-sm font-medium text-base-content cursor-help" x-text="index + 1"></span>
-                        </div>
+                        <span class="text-sm font-medium text-base-content" x-text="index + 1"></span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center">
                             <div class="flex-shrink-0 h-8 w-8">
-                                <div class="h-8 w-8 rounded-full semantic-blue-bg flex items-center justify-center semantic-blue-text text-sm font-medium">
+                                <div class="semantic-blue-bg semantic-blue-text h-8 w-8 rounded-full flex items-center justify-center">
                                     <span x-text="trainee.initials"></span>
                                 </div>
                             </div>
-                            <div class="ml-3">
-                                <div class="text-sm font-medium text-base-content">
-                                    <a :href="'/trainee/' + trainee.vatsim_id + '/'" class="hover:semantic-blue-text">
-                                        <span x-text="trainee.name"></span>
-                                    </a>
-                                </div>
-                                <a :href="'https://stats.vatsim.net/stats/' + trainee.vatsim_id" target="_blank" class="text-sm text-base-content/60" x-text="trainee.vatsim_id"></a>
+                            <div class="ml-4">
+                                <div class="text-sm font-medium text-base-content"
+                                     x-text="trainee.name"></div>
                             </div>
                         </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-base-content" x-text="trainee.vatsim_id"></div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap" x-show="course.type === 'RTG'">
                         <a :href="'https://stats.vatsim.net/stats/' + trainee.vatsim_id + '?range=2months'"
