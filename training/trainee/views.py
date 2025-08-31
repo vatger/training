@@ -83,7 +83,9 @@ def home(request):
     # Get required Moodle courses
     moodles = get_moodles(request.user)
     fams = get_familiarisations(request.user.username)
-    solos = get_solos()
+    solos = [
+        solo for solo in get_solos() if solo["user_cid"] == int(request.user.username)
+    ]
 
     return render(
         request,

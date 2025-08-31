@@ -1,9 +1,10 @@
 import json
 import os
-from datetime import datetime, timezone
+from datetime import datetime
 
 import requests
 from cachetools import TTLCache
+from dateutil.relativedelta import relativedelta
 from django.contrib import messages
 from django.contrib.admin.models import CHANGE
 from django.contrib.auth.decorators import login_required
@@ -14,6 +15,7 @@ from django.shortcuts import (
     HttpResponseRedirect,
     reverse,
 )
+from django.utils import timezone
 from django.utils.safestring import mark_safe
 from dotenv import load_dotenv
 from training.helpers import log_admin_action
@@ -363,6 +365,48 @@ def mentor_view(request):
             first_initial = entry.user.first_name[0] if entry.user.first_name else ""
             last_initial = entry.user.last_name[0] if entry.user.last_name else ""
 
+            waiting_duration = timezone.now() - entry.date_added
+            days = waiting_duration.days
+
+            if days == 0:
+                waiting_time = "Today"
+            elif days == 1:
+                waiting_time = "1 day"
+            elif days < 7:
+                waiting_time = f"{days} days"
+            else:
+                now = timezone.now().date()
+                date_added = entry.date_added.date()
+                delta = relativedelta(now, date_added)
+
+                if delta.years > 0:
+                    if delta.years == 1:
+                        waiting_time = f"1 year"
+                        if delta.months > 0:
+                            waiting_time += f", {delta.months}mo"
+                    else:
+                        waiting_time = f"{delta.years} years"
+                elif delta.months > 0:
+                    if delta.months == 1:
+                        waiting_time = f"1 month"
+                        if delta.days > 0:
+                            waiting_time += f", {delta.days}d"
+                    else:
+                        waiting_time = f"{delta.months} months"
+                        if delta.days > 0:
+                            waiting_time += f", {delta.days}d"
+                else:
+                    weeks = days // 7
+                    remaining_days = days % 7
+                    if weeks == 1:
+                        waiting_time = f"1 week"
+                        if remaining_days > 0:
+                            waiting_time += f", {remaining_days}d"
+                    else:
+                        waiting_time = f"{weeks} weeks"
+                        if remaining_days > 0:
+                            waiting_time += f", {remaining_days}d"
+
             waiting_list.append(
                 {
                     "id": entry.id,
@@ -371,6 +415,8 @@ def mentor_view(request):
                     "vatsim_id": entry.user.username,
                     "activity": round(entry.activity, 1),
                     "remarks": entry.remarks,
+                    "waiting_time": waiting_time,
+                    "waiting_days": days,
                 }
             )
 
