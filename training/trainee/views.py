@@ -2,22 +2,25 @@ import os
 
 import requests
 from cachetools import cached, TTLCache
-from connect.views import mentor_groups
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404, HttpResponseRedirect, reverse, redirect
 from django.shortcuts import render
 from dotenv import load_dotenv
+from training.eud_header import eud_header
+from training.permissions import mentor_required
+
+from connect.views import mentor_groups
 from endorsements.helpers import get_tier1_endorsements, get_tier2_endorsements
 from endorsements.models import EndorsementActivity
 from endorsements.views import min_hours_required
 from familiarisations.helpers import get_familiarisations
 from lists.models import Course
 from logs.models import Log
+from overview.helpers import get_solos
 from overview.helpers.trainee import get_course_completion
 from trainee.forms import UserDetailForm
-from training.permissions import mentor_required
-
+from training import settings
 from .forms import CommentForm
 
 load_dotenv()
@@ -80,11 +83,18 @@ def home(request):
     # Get required Moodle courses
     moodles = get_moodles(request.user)
     fams = get_familiarisations(request.user.username)
+    solos = get_solos()
 
     return render(
         request,
         "trainee/dashboard.html",
-        {"active": active, "inactive": inactive, "moodles": moodles, "fams": fams},
+        {
+            "active": active,
+            "inactive": inactive,
+            "moodles": moodles,
+            "fams": fams,
+            "solos": solos,
+        },
     )
 
 
