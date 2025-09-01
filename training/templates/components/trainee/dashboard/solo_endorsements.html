@@ -10,9 +10,8 @@
           <thead class="bg-base-200/50 border-b border-base-content/10">
             <tr>
               <th scope="col" class="px-4 py-3 text-left text-sm font-medium text-base-content">Position</th>
-              <th scope="col" class="px-4 py-3 text-left text-sm font-medium text-base-content">Status</th>
-              <th scope="col" class="px-4 py-3 text-left text-sm font-medium text-base-content">Expires</th>
-              <th scope="col" class="px-4 py-3 text-left text-sm font-medium text-base-content">Used Solo Days</th>
+              <th scope="col" class="px-4 py-3 text-left text-sm font-medium text-base-content">Days Remaining</th>
+              <th scope="col" class="px-4 py-3 text-left text-sm font-medium text-base-content">Solo Days Used</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-base-content/10">
@@ -32,25 +31,20 @@
                     </span>
                   {% elif solo.remaining_days <= 7 %}
                     <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium semantic-red-bg semantic-red-text">
-                      {{ solo.remaining_days }} days left
+                      {{ solo.remaining_days }} days
                     </span>
                   {% elif solo.remaining_days <= 14 %}
                     <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium semantic-yellow-bg semantic-yellow-text">
-                      {{ solo.remaining_days }} days left
+                      {{ solo.remaining_days }} days
                     </span>
                   {% else %}
                     <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium semantic-green-bg semantic-green-text">
-                      {{ solo.remaining_days }} days left
+                      {{ solo.remaining_days }} days
                     </span>
                   {% endif %}
                 </td>
                 <td class="px-4 py-3">
-                  <span class="text-sm text-base-content/70">
-                    {{ solo.expiry|date:"d M Y" }}
-                  </span>
-                </td>
-                <td class="px-4 py-3">
-                  <span class="text-sm text-base-content/70">{{ solo.max_days }}</span>
+                  <span class="text-sm text-base-content/70">{{ solo.position_days }} days</span>
                 </td>
               </tr>
             {% endfor %}

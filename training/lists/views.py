@@ -1,6 +1,5 @@
 import json
 import os
-from datetime import datetime
 
 import requests
 from cachetools import TTLCache
@@ -54,37 +53,39 @@ connections_cache = TTLCache(maxsize=float("inf"), ttl=10 * 60 * 60)
 def get_connections(user):
     api_url = f"https://api.vatsim.net/api/ratings/{user.username}/atcsessions"
     try:
-        res = requests.get(api_url).json()
+        res = requests.get(api_url, timeout=10).json()  # Add timeout
         response = res["results"]
-    except:
-        print("Error fetching data from VATSIM API")
-        return -1
 
-    twr_s1 = sum(
-        float(session["minutes_on_callsign"])
-        for session in response
-        if session["callsign"].split("_")[-1] == "TWR"
-        and session["rating"] == 2
-        and session["callsign"].split("_")[1] != "I"
-    )
-    twr_s2 = sum(
-        float(session["minutes_on_callsign"])
-        for session in response
-        if session["callsign"].split("_")[-1] == "TWR"
-        and session["rating"] == 3
-        and session["callsign"].split("_")[1] != "I"
-    )
-    app_s3 = sum(
-        float(session["minutes_on_callsign"])
-        for session in response
-        if session["callsign"].split("_")[-1] == "APP"
-    )
+        twr_s1 = sum(
+            float(session["minutes_on_callsign"])
+            for session in response
+            if session["callsign"].split("_")[-1] == "TWR"
+            and session["rating"] == 2
+            and session["callsign"].split("_")[1] != "I"
+        )
+        twr_s2 = sum(
+            float(session["minutes_on_callsign"])
+            for session in response
+            if session["callsign"].split("_")[-1] == "TWR"
+            and session["rating"] == 3
+            and session["callsign"].split("_")[1] != "I"
+        )
+        app_s3 = sum(
+            float(session["minutes_on_callsign"])
+            for session in response
+            if session["callsign"].split("_")[-1] == "APP"
+        )
 
-    result = (twr_s1 / 60, twr_s2 / 60, app_s3 / 60)
+        result = (twr_s1 / 60, twr_s2 / 60, app_s3 / 60)
 
-    # Store in cache only if the request was successful
-    connections_cache[user.username] = result
-    return result
+        # Store in cache only if the request was successful
+        connections_cache[user.username] = result
+        return result
+
+    except (requests.RequestException, KeyError, ValueError, TypeError) as e:
+        print(f"Error fetching data from VATSIM API for user {user.username}: {e}")
+        # Return default values as a tuple to maintain consistency
+        return (0.0, 0.0, 0.0)
 
 
 # Wrapper function to check cache first
@@ -124,7 +125,7 @@ def view_lists(request):
     # For S3 courses, check whether last rating upgrade is longer than 3 months ago
     if request.user.userdetail.rating == 3:
         if request.user.userdetail.last_rating_change is not None and (
-            datetime.now(timezone.utc) - request.user.userdetail.last_rating_change
+            timezone.now() - request.user.userdetail.last_rating_change
         ).days < int(os.getenv("S3_RATING_CHANGE_DAYS", 90)):
             courses = courses.exclude(type="RTG")
             messages.error(
@@ -141,8 +142,11 @@ def view_lists(request):
     try:
         twr_s1, twr_s2, app_s3 = get_cached_connections(request.user)
         error = False
-    except:
-        twr_s1, twr_s2, app_s3 = 0, 0, 0
+    except Exception as e:
+        print(
+            f"Unexpected error in get_cached_connections for user {request.user.username}: {e}"
+        )
+        twr_s1, twr_s2, app_s3 = 0.0, 0.0, 0.0
         error = True
 
     hours_dict = {

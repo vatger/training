@@ -29,19 +29,19 @@ def cached_with_refetch(cache):
 
 @cached_with_refetch(cache=TTLCache(maxsize=1024, ttl=60 * 10))
 def get_solos():
-    if settings.USE_CORE_MOCK:
+    if not settings.USE_CORE_MOCK:
         solos = [
             {
-                "id": 1,
+                "id": 1808,
                 "user_cid": 1601613,
-                "instructor_cid": 1439797,
-                "position": "EDDL_APP",
-                "expiry": "2025-09-20T00:00:00.000000Z",
-                "max_days": 13,
-                "position_days": 13,
+                "instructor_cid": 1626019,
+                "position": "EDDM_TWR",
+                "expiry": "2025-09-06T00:00:00.000000Z",
+                "max_days": 90,
                 "facility": 9,
-                "created_at": "2025-03-05T02:10:40.000000Z",
-                "updated_at": "2025-04-07T19:47:47.000000Z",
+                "created_at": "2025-08-07T11:12:29.000000Z",
+                "updated_at": "2025-08-07T11:12:29.000000Z",
+                "position_days": 25,
             },
         ]
     else:
