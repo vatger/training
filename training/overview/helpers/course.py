@@ -29,7 +29,7 @@ def cached_with_refetch(cache):
 
 @cached_with_refetch(cache=TTLCache(maxsize=1024, ttl=60 * 10))
 def get_solos():
-    if not settings.USE_CORE_MOCK:
+    if settings.USE_CORE_MOCK:
         solos = [
             {
                 "id": 1808,
