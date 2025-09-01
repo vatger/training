@@ -53,7 +53,7 @@ connections_cache = TTLCache(maxsize=float("inf"), ttl=10 * 60 * 60)
 def get_connections(user):
     api_url = f"https://api.vatsim.net/api/ratings/{user.username}/atcsessions"
     try:
-        res = requests.get(api_url, timeout=10).json()  # Add timeout
+        res = requests.get(api_url, timeout=10).json()
         response = res["results"]
 
         twr_s1 = sum(
@@ -84,7 +84,6 @@ def get_connections(user):
 
     except (requests.RequestException, KeyError, ValueError, TypeError) as e:
         print(f"Error fetching data from VATSIM API for user {user.username}: {e}")
-        # Return default values as a tuple to maintain consistency
         return (0.0, 0.0, 0.0)
 
 
