@@ -41,12 +41,38 @@ def get_tier1_endorsements():
                 "updated_at": "2025-04-19T12:02:38.000000Z",
             },
         ]
-    endorsements = requests.get(
-        "https://core.vateud.net/api/facility/endorsements/tier-1", headers=eud_header
-    ).json()["data"]
 
-    res_t1 = sorted(endorsements, key=sort_endorsements)
-    return res_t1
+    try:
+        response = requests.get(
+            "https://core.vateud.net/api/facility/endorsements/tier-1",
+            headers=eud_header,
+            timeout=10,
+        )
+        response.raise_for_status()
+
+        data = response.json()
+
+        # Handle different possible response structures
+        if "data" in data:
+            endorsements = data["data"]
+        elif isinstance(data, list):
+            endorsements = data
+        else:
+            print(f"Unexpected endorsements API response structure: {data}")
+            return []
+
+        res_t1 = sorted(endorsements, key=sort_endorsements)
+        return res_t1
+
+    except requests.exceptions.RequestException as e:
+        print(f"Network error fetching tier1 endorsements: {e}")
+        return []
+    except ValueError as e:  # JSON decode error
+        print(f"Invalid JSON response from tier1 endorsements API: {e}")
+        return []
+    except Exception as e:
+        print(f"Unexpected error fetching tier1 endorsements: {e}")
+        return []
 
 
 def get_tier2_endorsements():

@@ -14,20 +14,52 @@ load_dotenv()
 
 @cached(cache=TTLCache(maxsize=100, ttl=60))
 def get_roster():
-    return requests.get(
-        "https://core.vateud.net/api/facility/roster", headers=eud_header
-    ).json()["data"]["controllers"]
+    try:
+        response = requests.get(
+            "https://core.vateud.net/api/facility/roster",
+            headers=eud_header,
+            timeout=10,
+        )
+        response.raise_for_status()  # Raises an HTTPError for bad responses
+
+        data = response.json()
+
+        # Handle different possible response structures
+        if "data" in data and "controllers" in data["data"]:
+            return data["data"]["controllers"]
+        elif "controllers" in data:
+            return data["controllers"]
+        elif isinstance(data, list):
+            # If the response is directly a list of controllers
+            return data
+        else:
+            print(f"Unexpected roster API response structure: {data}")
+            return []
+
+    except requests.exceptions.RequestException as e:
+        print(f"Network error fetching roster: {e}")
+        return []
+    except ValueError as e:  # JSON decode error
+        print(f"Invalid JSON response from roster API: {e}")
+        return []
+    except KeyError as e:
+        print(f"Missing key in roster API response: {e}")
+        return []
+    except Exception as e:
+        print(f"Unexpected error fetching roster: {e}")
+        return []
 
 
 @cached(cache=TTLCache(maxsize=1024, ttl=60 * 60))
 def get_user_endorsements(user_id: int) -> set:
-    return set(
-        [
-            end["position"]
-            for end in get_tier1_endorsements()
-            if end["user_cid"] == user_id
-        ]
-    )
+    try:
+        endorsements = get_tier1_endorsements()
+        return set(
+            [end["position"] for end in endorsements if end["user_cid"] == user_id]
+        )
+    except Exception as e:
+        print(f"Error fetching user endorsements for {user_id}: {e}")
+        return set()
 
 
 def course_valid_for_user(course, user) -> [bool, str]:
