@@ -14,40 +14,9 @@ load_dotenv()
 
 @cached(cache=TTLCache(maxsize=100, ttl=60))
 def get_roster():
-    try:
-        response = requests.get(
-            "https://core.vateud.net/api/facility/roster",
-            headers=eud_header,
-            timeout=10,
-        )
-        response.raise_for_status()  # Raises an HTTPError for bad responses
-
-        data = response.json()
-
-        # Handle different possible response structures
-        if "data" in data and "controllers" in data["data"]:
-            return data["data"]["controllers"]
-        elif "controllers" in data:
-            return data["controllers"]
-        elif isinstance(data, list):
-            # If the response is directly a list of controllers
-            return data
-        else:
-            print(f"Unexpected roster API response structure: {data}")
-            return []
-
-    except requests.exceptions.RequestException as e:
-        print(f"Network error fetching roster: {e}")
-        return []
-    except ValueError as e:  # JSON decode error
-        print(f"Invalid JSON response from roster API: {e}")
-        return []
-    except KeyError as e:
-        print(f"Missing key in roster API response: {e}")
-        return []
-    except Exception as e:
-        print(f"Unexpected error fetching roster: {e}")
-        return []
+    return requests.get(
+        "https://core.vateud.net/api/facility/roster", headers=eud_header
+    ).json()["data"]["controllers"]
 
 
 @cached(cache=TTLCache(maxsize=1024, ttl=60 * 60))
