@@ -4,7 +4,7 @@ RUN mkdir /opt/training
 
 WORKDIR /opt/training
 
-RUN apk add --no-cache nginx nodejs npm
+RUN apk add --no-cache nginx nodejs npm pkgconf
 
 COPY . .
 
