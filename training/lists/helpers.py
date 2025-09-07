@@ -39,6 +39,10 @@ def course_valid_for_user(course, user) -> [bool, str]:
     :param user:
     :return:
     """
+    try:
+        roster = get_roster()
+    except:
+        return True, ""
     if (
         not (course.min_rating <= user.userdetail.rating <= course.max_rating)
         and course.type != "GST"
@@ -84,7 +88,7 @@ def course_valid_for_user(course, user) -> [bool, str]:
         return False, "You already have the required endorsements for this course."
 
     if (
-        int(user.username) not in get_roster()
+        int(user.username) not in roster
         and user.userdetail.subdivision == "GER"
         and course.type != "RST"
     ):
@@ -92,7 +96,7 @@ def course_valid_for_user(course, user) -> [bool, str]:
         print("User not on roster")
         return False, "You are not on the roster."
 
-    if int(user.username) in get_roster() and course.type == "RST":
+    if int(user.username) in roster and course.type == "RST":
         print("User on roster in RST course")
         return (
             False,
