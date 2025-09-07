@@ -4,7 +4,12 @@ RUN mkdir /opt/training
 
 WORKDIR /opt/training
 
-RUN apk add --no-cache nginx nodejs npm pkgconf
+RUN apk add --no-cache nginx nodejs npm pkgconf gcc musl-dev \
+    mariadb-connector-c-dev \
+    mariadb-dev \
+    pkgconfig \
+    python3-dev \
+    build-base
 
 COPY . .
 
