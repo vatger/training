@@ -121,9 +121,12 @@ def overview(request):
 @mentor_required
 @require_http_methods(["POST"])
 def remove_tier1(request, endorsement_id: int):
+    print(f"Requesting removal for id {endorsement_id}")
     try:
         endorsement = EndorsementActivity.objects.get(id=endorsement_id)
+        print("Endorsement found")
     except EndorsementActivity.DoesNotExist:
+        print("Endorsement not found")
         return JsonResponse(
             {
                 "success": False,
