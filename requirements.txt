@@ -1,5 +1,5 @@
 asgiref==3.8.1
-Authlib==1.5.1
+Authlib==1.6.5
 beautifulsoup4==4.13.3
 black==24.10.0
 bleach==6.2.0
