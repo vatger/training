@@ -1,7 +1,7 @@
 # Training Centre
 
-Short description outlining the aim of the project and the functionality this project / application provides. 
-An example of this can be found [here](https://github.com/vatger/teamspeak-station-bot).
+Application to manage the training, trainees and endorsements for the ATD.
+Has CPT planning and VATEUD core integration.
 
 ## Contact
 
@@ -18,13 +18,4 @@ The naming convention is as follows:
 - 
 ## Running the Application
 
-This section should outline how the project can be executed in a local environment and should
-include any non-standard packages that are required to be installed before executing the
-application.
-
-
-## Any other subsections that could be useful for users/developers
-
-## TODO for v1.1
-- CoT role
-- Remove from waiting list with email
+Use docker to run the thing.
