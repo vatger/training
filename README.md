@@ -7,8 +7,8 @@ Has CPT planning and VATEUD core integration.
 
 |         Name         | Responsible for |                     Contact                     |
 | :------------------: | :-------------: | :---------------------------------------------: |
-| Felix S. - 1439797 |    *     |  |
-| Ben B. - 1601613 |    frontend     |  |
+| Felix S. - 1439797 |    *     | atd@vatger.de |
+| Ben B. - 1601613 |    frontend     | atd@vatger.de |
 
 ## Prerequisites
 - **python**
