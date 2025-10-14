@@ -1,5 +1,5 @@
-*/3 * * * * cd /opt/training/training && python manage.py update_activity
+# */3 * * * * cd /opt/training/training && python manage.py update_activity
 1-59/3 * * * * cd /opt/training/training && python manage.py remove_endorsement
-2-59/3 * * * * cd /opt/training/training && python manage.py check_waiting_list
-0 * * * * cd /opt/training/training && python manage.py check_roster
+# 2-59/3 * * * * cd /opt/training/training && python manage.py check_waiting_list
+# 0 * * * * cd /opt/training/training && python manage.py check_roster
 0 0 * * * cd /opt/training/training && python manage.py clean_list
