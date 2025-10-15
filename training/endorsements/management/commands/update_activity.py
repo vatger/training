@@ -68,7 +68,7 @@ def get_hours(endorsement: dict) -> float:
     start = dj_timezone.now() - dj_timezone.timedelta(days=180)
     start = start.strftime("%Y-%m-%d")
     api_url = (
-        lambda id, start: f"https://stats.vatsim-germany.org/api/atc/{id}/sessions/?start={start}"
+        lambda id, start: f"http://stats.vatsim-germany.org/api/atc/{id}/sessions/?start={start}"
     )
     try:
         response = requests.get(api_url(vatsim_id, start)).json()
@@ -86,11 +86,13 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         tier1_endorsements = get_tier1_endorsements()
         for t1 in tier1_endorsements:
-            print(t1)
             try:
                 EndorsementActivity.objects.get(id=t1["id"])
             except EndorsementActivity.DoesNotExist:
-                group = EndorsementGroup.objects.get(name=t1["position"])
+                try:
+                    group = EndorsementGroup.objects.get(name=t1["position"])
+                except EndorsementGroup.DoesNotExist:
+                    continue
                 created_at = datetime.strptime(
                     t1["created_at"], "%Y-%m-%dT%H:%M:%S.%fZ"
                 ).replace(tzinfo=timezone.utc)

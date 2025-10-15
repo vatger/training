@@ -18,7 +18,7 @@ def get_last_session(vatsim_id: int):
     # Get sessions from past year
     date = timezone.now() - timezone.timedelta(days=365)
     connections = requests.get(
-        f"https://stats.vatsim-germany.org/api/atc/{vatsim_id}/sessions/?start={date.year}-{date.month}-{date.day}",
+        f"http://stats.vatsim-germany.org/api/atc/{vatsim_id}/sessions/?start={date.year}-{date.month}-{date.day}",
     ).json()
     for connection in connections:
         if connection["callsign"][:2] in ["ED", "ET"]:
