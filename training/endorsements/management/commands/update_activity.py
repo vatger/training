@@ -8,6 +8,8 @@ from dotenv import load_dotenv
 from endorsements.helpers import get_tier1_endorsements
 from endorsements.models import EndorsementActivity, EndorsementGroup
 
+from tqdm import tqdm
+
 load_dotenv()
 
 viable_suffixes = {
@@ -106,8 +108,9 @@ class Command(BaseCommand):
                 )
 
         endorsement = EndorsementActivity.objects.order_by("updated").first()
+        endorsements = EndorsementActivity.objects.order_by("updated")
 
-        if endorsement:
+        for endorsement in tqdm(endorsements):
             # Get endorsement from list of tier1_endorsements by id, and delete EndorsementActivity if no longer exists
             try:
                 tier1_entry = next(

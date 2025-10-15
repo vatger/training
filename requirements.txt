@@ -29,3 +29,4 @@ urllib3==2.5.0
 webencodings==0.5.1
 python-dateutil>=2.8.0
 mysqlclient
+tqdm
