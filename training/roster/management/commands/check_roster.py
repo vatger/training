@@ -18,11 +18,11 @@ def get_last_session(vatsim_id: int):
     # Get sessions from past year
     date = timezone.now() - timezone.timedelta(days=365)
     connections = requests.get(
-        f"https://api.vatsim.net/api/ratings/{vatsim_id}/atcsessions/?start={date.year}-{date.month}-{date.day}",
-    ).json()["results"]
+        f"https://stats.vatsim-germany.org/api/atc/{vatsim_id}/sessions/?start={date.year}-{date.month}-{date.day}",
+    ).json()
     for connection in connections:
         if connection["callsign"][:2] in ["ED", "ET"]:
-            time = datetime.fromisoformat(connection["end"])
+            time = datetime.fromisoformat(connection["disconnected_at"])
             return timezone.make_aware(time)
     print(f"No connections for this user {vatsim_id}")
     return timezone.make_aware(datetime(1970, 1, 1, 0, 0, 0))

@@ -5,7 +5,7 @@ import requests
 
 
 api_url = (
-    lambda id, start: f"https://api.vatsim.net/api/ratings/{id}/atcsessions/?start={start}"
+    lambda id, start: f"https://stats.vatsim-germany.org/api/atc/{id}/sessions/?start={start}"
 )
 
 
@@ -20,7 +20,7 @@ def get_hours(id: int, airport: str, position: str, fir: str):
     start = start.strftime("%Y-%m-%d")
     try:
         # Get ATC sessions
-        response = requests.get(api_url(id, start)).json()["results"]
+        response = requests.get(api_url(id, start)).json()
     except:
         return -1
     match position:
