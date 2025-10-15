@@ -68,7 +68,7 @@ def get_hours(endorsement: dict) -> float:
     start = dj_timezone.now() - dj_timezone.timedelta(days=180)
     start = start.strftime("%Y-%m-%d")
     api_url = (
-        lambda id, start: f"https://stats.vatsim-germany.org/api/atc/{id}/sessions/?start={start}"
+        lambda id, start: f"http://stats.vatsim-germany.org/api/atc/{id}/sessions/?start={start}"
     )
     try:
         response = requests.get(api_url(vatsim_id, start)).json()

@@ -5,7 +5,7 @@ import requests
 
 
 api_url = (
-    lambda id, start: f"https://stats.vatsim-germany.org/api/atc/{id}/sessions/?start={start}"
+    lambda id, start: f"http://stats.vatsim-germany.org/api/atc/{id}/sessions/?start={start}"
 )
 
 

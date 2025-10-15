@@ -51,7 +51,7 @@ connections_cache = TTLCache(maxsize=float("inf"), ttl=10 * 60 * 60)
 
 
 def get_connections(user):
-    api_url = f"https://stats.vatsim-germany.org/api/atc/{user.username}/sessions"
+    api_url = f"http://stats.vatsim-germany.org/api/atc/{user.username}/sessions"
     try:
         response = requests.get(api_url, timeout=10).json()
 
