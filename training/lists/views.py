@@ -51,27 +51,26 @@ connections_cache = TTLCache(maxsize=float("inf"), ttl=10 * 60 * 60)
 
 
 def get_connections(user):
-    api_url = f"https://api.vatsim.net/api/ratings/{user.username}/atcsessions"
+    api_url = f"https://stats.vatsim-germany.org/api/atc/{user.username}/sessions"
     try:
-        res = requests.get(api_url, timeout=10).json()
-        response = res["results"]
+        response = requests.get(api_url, timeout=10).json()
 
         twr_s1 = sum(
-            float(session["minutes_on_callsign"])
+            float(session["minutes_online"])
             for session in response
             if session["callsign"].split("_")[-1] == "TWR"
-            and session["rating"] == 2
+            and session["qualification_id"] == 2
             and session["callsign"].split("_")[1] != "I"
         )
         twr_s2 = sum(
-            float(session["minutes_on_callsign"])
+            float(session["minutes_online"])
             for session in response
             if session["callsign"].split("_")[-1] == "TWR"
-            and session["rating"] == 3
+            and session["qualification_id"] == 3
             and session["callsign"].split("_")[1] != "I"
         )
         app_s3 = sum(
-            float(session["minutes_on_callsign"])
+            float(session["minutes_online"])
             for session in response
             if session["callsign"].split("_")[-1] == "APP"
         )

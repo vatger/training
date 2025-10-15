@@ -50,7 +50,7 @@ def calculate_activity(endorsement: dict, connections: list[dict]) -> float:
                 endorsement["position"] == "EDWW_W_CTR"
                 and connection["callsign"] == "EDWW_CTR"
             ):
-                activity_min += float(connection["minutes_on_callsign"])
+                activity_min += float(connection["minutes_online"])
     else:
         station = endorsement["position"].split("_")[-1]
         apt = endorsement["position"].split("_")[0]
@@ -59,7 +59,7 @@ def calculate_activity(endorsement: dict, connections: list[dict]) -> float:
             if connection["callsign"][:6] in stations_to_consider or suffix_condition(
                 apt, station, connection["callsign"]
             ):
-                activity_min += float(connection["minutes_on_callsign"])
+                activity_min += float(connection["minutes_online"])
     return activity_min
 
 
@@ -68,10 +68,10 @@ def get_hours(endorsement: dict) -> float:
     start = dj_timezone.now() - dj_timezone.timedelta(days=180)
     start = start.strftime("%Y-%m-%d")
     api_url = (
-        lambda id, start: f"https://api.vatsim.net/api/ratings/{id}/atcsessions/?start={start}"
+        lambda id, start: f"https://stats.vatsim-germany.org/api/atc/{id}/sessions/?start={start}"
     )
     try:
-        response = requests.get(api_url(vatsim_id, start)).json()["results"]
+        response = requests.get(api_url(vatsim_id, start)).json()
     except:
         return -1
     activity = calculate_activity(endorsement, response)
