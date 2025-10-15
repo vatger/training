@@ -29,8 +29,9 @@ def get_last_session(vatsim_id: int):
 
 
 def s1_check(vatsim_id: int):
-    api_res = requests.get(f"https://api.vatsim.net/api/ratings/{vatsim_id}/").json()
-    rating = api_res["rating"]
+    header = {"Authorization": f"Token {os.getenv("VATGER_API_KEY")}"}
+    api_res = requests.get(f"http://vatsim-germany.org/api/user/{vatsim_id}/", headers=header).json()
+    rating = api_res["atc_rating"]
     if rating == 2:
         rating_change = datetime.fromisoformat(api_res["lastratingchange"])
         rating_change = timezone.make_aware(rating_change)
