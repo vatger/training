@@ -60,12 +60,11 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         # Get waiting list entries where their course type is RTG and order by hours_updated
-        waiting_list_entry = (
+        waiting_list_entries = (
             WaitingListEntry.objects.filter(course__type="RTG")
             .order_by("hours_updated")
-            .first()
         )
-        if waiting_list_entry:
+        for waiting_list_entry in waiting_list_entries:
             hours = get_hours(
                 waiting_list_entry.user.username,
                 waiting_list_entry.course.airport_icao,
