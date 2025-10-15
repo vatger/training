@@ -86,7 +86,6 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         tier1_endorsements = get_tier1_endorsements()
         for t1 in tier1_endorsements:
-            print(t1)
             try:
                 EndorsementActivity.objects.get(id=t1["id"])
             except EndorsementActivity.DoesNotExist:
