@@ -89,7 +89,10 @@ class Command(BaseCommand):
             try:
                 EndorsementActivity.objects.get(id=t1["id"])
             except EndorsementActivity.DoesNotExist:
-                group = EndorsementGroup.objects.get(name=t1["position"])
+                try:
+                    group = EndorsementGroup.objects.get(name=t1["position"])
+                except EndorsementGroup.DoesNotExist:
+                    continue
                 created_at = datetime.strptime(
                     t1["created_at"], "%Y-%m-%dT%H:%M:%S.%fZ"
                 ).replace(tzinfo=timezone.utc)
