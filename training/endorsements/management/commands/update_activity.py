@@ -119,12 +119,12 @@ class Command(BaseCommand):
             except StopIteration:
                 endorsement.delete()
                 self.stdout.write("EndorsementActivity entry deleted.")
-                return
+                continue
 
             hours = get_hours(tier1_entry)
             if hours == -1:
                 self.stdout.write("Error fetching hours from VATSIM API.")
-                return
+                continue
             if hours >= float(os.getenv("T1_MIN_MINUTES")):
                 # Set removal_date field to blank
                 endorsement.removal_date = None
