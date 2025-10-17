@@ -37,13 +37,13 @@ def get_hours(id: int, airport: str, position: str, fir: str):
             stations = [station["logon"] for station in filtered]
             # Calculate hours
             hours = sum(
-                float(session["minutes_on_callsign"]) / 60
+                float(session["minutes_online"]) / 60
                 for session in response
                 if any(equal_str(session["callsign"], station) for station in stations)
             )
         case "APP":
             hours = sum(
-                float(session["minutes_on_callsign"]) / 60
+                float(session["minutes_online"]) / 60
                 for session in response
                 if equal_str(session["callsign"], f"{airport.upper()}_TWR")
             )
