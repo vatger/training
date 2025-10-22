@@ -151,7 +151,7 @@
                     </svg>
                     <span>Need more activity: <span data-activity-hours="{{ result.activity|default:0 }}">{{ result.activity|default:0|floatformat:"-1" }} hours</span>/<span data-time-hours="{{ min_activity }}">{{ min_activity }} hours</span> in 2 months (No. {{ result.list_spot }} on list)</span>
                 </div>
-            {% elif not result.hours_reached and course.type == "RTG" %}
+            {% elif not result.hours_reached and course.type == "RTG" and not result.entered %}
                 <div class="flex items-center text-sm semantic-yellow-text">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 semantic-yellow-text mr-1.5"
                          fill="none" viewBox="0 0 24 24" stroke="currentColor">
