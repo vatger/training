@@ -85,7 +85,8 @@ def familiarisations(request):
         if auth_header == f"Token {os.getenv('INT_API_KEY')}":
             data = list(Familiarisation.objects.values(
                 'user__username',
-                'sector__name'
+                'sector__name',
+                'sector__fir'
             ))
             return JsonResponse(data, safe=False, status=200)
         else:
