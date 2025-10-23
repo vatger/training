@@ -87,7 +87,7 @@ def familiarisations(request):
                 'user__username',
                 'sector__name'
             ))
-            return JsonResponse(data, status=200)
+            return JsonResponse(data, safe=False, status=200)
         else:
             return JsonResponse({"error": "Unauthorized"}, status=401)
     else:
