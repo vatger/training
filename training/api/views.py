@@ -86,7 +86,7 @@ def familiarisations(request):
             data = list(Familiarisation.objects.values(
                 'id',
                 'user__username',
-                'sector__name'  # Assuming your sector model has a 'name' field
+                'sector__name'
             ))
             return JsonResponse(data, status=200)
         else:
