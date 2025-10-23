@@ -7,6 +7,7 @@ import os
 import requests
 
 from training.eud_header import eud_header
+from familiarisations.models import Familiarisation
 from endorsements.helpers import remove_roster_and_endorsements
 
 load_dotenv()
@@ -58,3 +59,37 @@ def user_retrieve_view(request, vatsim_id):
             return JsonResponse({"error": "Unauthorized"}, status=401)
     else:
         return HttpResponse(status=405)  # Method Not Allowed
+
+
+@csrf_exempt
+def tier1_endorsements(request):
+    if request.method == "GET":
+        auth_header = request.headers.get("Authorization")
+        if auth_header == f"Token {os.getenv('INT_API_KEY')}":
+            response = requests.get(
+                "https://core.vateud.net/api/facility/endorsements/tier-1",
+                headers=eud_header,
+                timeout=10,
+            ).json()
+            return JsonResponse(response, status=200)
+        else:
+            return JsonResponse({"error": "Unauthorized"}, status=401)
+    else:
+        return HttpResponse(status=405)
+
+
+@csrf_exempt
+def familiarisations(request):
+    if request.method == "GET":
+        auth_header = request.headers.get("Authorization")
+        if auth_header == f"Token {os.getenv('INT_API_KEY')}":
+            data = list(Familiarisation.objects.values(
+                'id',
+                'user__username',
+                'sector__name'  # Assuming your sector model has a 'name' field
+            ))
+            return JsonResponse(data, status=200)
+        else:
+            return JsonResponse({"error": "Unauthorized"}, status=401)
+    else:
+        return HttpResponse(status=405)
