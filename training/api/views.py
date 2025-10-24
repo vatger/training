@@ -93,3 +93,20 @@ def familiarisations(request):
             return JsonResponse({"error": "Unauthorized"}, status=401)
     else:
         return HttpResponse(status=405)
+
+
+@csrf_exempt
+def solos(request):
+    if request.method == "GET":
+        auth_header = request.headers.get("Authorization")
+        if auth_header == f"Token {os.getenv('INT_API_KEY')}":
+            data = requests.get(
+                "https://core.vateud.net/api/facility/endorsements/solo",
+                headers=eud_header,
+                timeout=10,
+            ).json()
+            return JsonResponse(data, safe=False, status=200)
+        else:
+            return JsonResponse({"error": "Unauthorized"}, status=401)
+    else:
+        return HttpResponse(status=405)
