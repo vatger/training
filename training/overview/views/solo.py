@@ -131,5 +131,5 @@ def assign_core_test_view(request, vatsim_id: int, course_id: int):
         return redirect("overview:overview")
     if get_core_theory_passed(vatsim_id, course.position) != CoreState.NOT_ASSIGNED:
         return redirect("overview:overview")
-    assign_core_test(assign_core_test, vatsim_id, course.position)
+    assign_core_test(os.getenv("ATD_LEAD_CID"), vatsim_id, course.position)
     return redirect("overview:overview")
