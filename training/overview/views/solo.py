@@ -57,7 +57,7 @@ def add_solo(request, vatsim_id, course_id):
                 "user_cid": vatsim_id,
                 "position": course.solo_station,
                 "expire_at": formatted_str,
-                "instructor_cid": request.user.username,
+                "instructor_cid": os.getenv("ATD_LEAD_CID"),
             }
             res = requests.post(
                 "https://core.vateud.net/api/facility/endorsements/solo",
@@ -111,7 +111,7 @@ def delete_solo(request, solo_id: int):
                     "user_cid": trainee_id,
                     "position": course.solo_station,
                     "expire_at": formatted_str,
-                    "instructor_cid": request.user.username,
+                    "instructor_cid": os.getenv("ATD_LEAD_CID"),
                 }
                 requests.post(
                     "https://core.vateud.net/api/facility/endorsements/solo",
