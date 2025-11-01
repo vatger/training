@@ -137,7 +137,7 @@ def complete_trainee_course(request_user, trainee, course):
             json={
                 "user_cid": int(trainee.username),
                 "position": endorsement_group.name,
-                "instructor_cid": request_user.username,
+                "instructor_cid": os.getenv("ATD_LEAD_CID"),
             },
         )
 

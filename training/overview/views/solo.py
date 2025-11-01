@@ -1,7 +1,12 @@
+import os
 from datetime import datetime
 
 import requests
+from django.contrib.admin.models import CHANGE
 from django.shortcuts import render, redirect, get_object_or_404
+from dotenv import load_dotenv
+from lists.models import Course
+from overview.forms import SoloForm
 from overview.helpers.course import get_solos
 from overview.helpers.trainee import (
     get_core_theory_passed,
@@ -10,10 +15,10 @@ from overview.helpers.trainee import (
     get_course_completion,
 )
 from training.eud_header import eud_header
+from training.helpers import log_admin_action
 from training.permissions import mentor_required
 
-from lists.models import Course
-from overview.forms import SoloForm
+load_dotenv()
 
 
 @mentor_required
@@ -57,12 +62,18 @@ def add_solo(request, vatsim_id, course_id):
                 "user_cid": vatsim_id,
                 "position": course.solo_station,
                 "expire_at": formatted_str,
-                "instructor_cid": request.user.username,
+                "instructor_cid": os.getenv("ATD_LEAD_CID"),
             }
             res = requests.post(
                 "https://core.vateud.net/api/facility/endorsements/solo",
                 headers=eud_header,
                 json=data,
+            )
+            log_admin_action(
+                request.user,
+                course,
+                CHANGE,
+                f"Added solo for {vatsim_id}",
             )
             get_solos(refetch=True)
             if res.status_code == 200:
@@ -111,12 +122,18 @@ def delete_solo(request, solo_id: int):
                     "user_cid": trainee_id,
                     "position": course.solo_station,
                     "expire_at": formatted_str,
-                    "instructor_cid": request.user.username,
+                    "instructor_cid": os.getenv("ATD_LEAD_CID"),
                 }
                 requests.post(
                     "https://core.vateud.net/api/facility/endorsements/solo",
                     headers=eud_header,
                     json=data,
+                )
+                log_admin_action(
+                    request.user,
+                    course,
+                    CHANGE,
+                    f"Added solo for {trainee_id}",
                 )
             except Exception as e:
                 print(f"Error extending solo: {e}")
@@ -131,5 +148,5 @@ def assign_core_test_view(request, vatsim_id: int, course_id: int):
         return redirect("overview:overview")
     if get_core_theory_passed(vatsim_id, course.position) != CoreState.NOT_ASSIGNED:
         return redirect("overview:overview")
-    assign_core_test(request.user.username, vatsim_id, course.position)
+    assign_core_test(os.getenv("ATD_LEAD_CID"), vatsim_id, course.position)
     return redirect("overview:overview")
