@@ -22,6 +22,7 @@ services:
       - SECRET_KEY
       - ALLOWED_HOSTS
       - CSRF_TRUSTED_ORIGINS
+      - ADMINS
 
     labels:
       com.centurylinklabs.watchtower.enable: true

@@ -1,4 +1,5 @@
 import os
+import ast
 from datetime import datetime, timezone
 import requests
 from authlib.integrations.django_client import OAuth
@@ -15,6 +16,8 @@ from training.eud_header import eud_header
 from .models import UserDetail
 
 load_dotenv()
+
+admins = ast.literal_eval(os.getenv("ADMINS"))
 
 mentor_groups = {"EDGG Mentor", "EDMM Mentor", "EDWW Mentor"}
 
@@ -85,9 +88,9 @@ def callback_view(request):
                 "last_name": profile["lastname"],
                 "is_staff": len(mentor_groups & set(profile["teams"])) > 0
                 or "ATD Leitung" in profile["teams"]
-                or "VATGER Leitung" in profile["teams"],
+                or "VATGER Leitung" in profile["teams"] or profile["id"] in admins,
                 "is_superuser": "ATD Leitung" in profile["teams"]
-                or "VATGER Leitung" in profile["teams"],
+                or "VATGER Leitung" in profile["teams"] or profile["id"] in admins,
             },
         )
         user.first_name = profile["firstname"]
@@ -96,9 +99,10 @@ def callback_view(request):
             len(mentor_groups & set(profile["teams"])) > 0
             or "ATD Leitung" in profile["teams"]
             or "VATGER Leitung" in profile["teams"]
+            or profile["id"] in admins
         )
         user.is_superuser = (
-            "ATD Leitung" in profile["teams"] or "VATGER Leitung" in profile["teams"]
+            "ATD Leitung" in profile["teams"] or "VATGER Leitung" in profile["teams"] or profile["id"] in admins
         )
         user.save()
         is_mentor = False
