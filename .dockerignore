@@ -1,6 +1,9 @@
-.github
-.env.example
-.gitignore
-README.md
-.idea
-training/db/db.sqlite3
+vendor/
+node_modules/
+.env
+.git/
+bootstrap/cache/*.php
+!bootstrap/cache/.gitignore
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
