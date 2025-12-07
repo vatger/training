@@ -1,0 +1,91 @@
+services:
+  app:
+    image: "ghcr.io/vatger/training:latest"
+    container_name: vatger-training
+    restart: unless-stopped
+    logging:
+      options:
+        max-size: 10m
+    volumes:
+      - training_storage:/var/www/html/storage
+      - training_cache:/var/www/html/bootstrap/cache
+    ports:
+      - "8082:80"
+    environment:
+      - APP_NAME
+      - APP_KEY
+      - APP_ENV
+      - APP_DEBUG
+      - APP_URL
+      - APP_LOCALE
+      - APP_FALLBACK_LOCALE
+      - APP_MAINTENANCE_DRIVER
+      - PHP_CLI_SERVER_WORKERS
+      - BCRYPT_ROUNDS
+      - LOG_CHANNEL
+      - LOG_STACK
+      - LOG_DEPRECATIONS_CHANNEL
+      - LOG_LEVEL
+      - DB_CONNECTION
+      - DB_HOST
+      - DB_PORT
+      - DB_DATABASE
+      - DB_USERNAME
+      - DB_PASSWORD
+      - SESSION_DRIVER
+      - SESSION_LIFETIME
+      - SESSION_ENCRYPT
+      - SESSION_PATH
+      - SESSION_DOMAIN
+      - SESSION_SECURE_COOKIE
+      - BROADCAST_CONNECTION
+      - FILESYSTEM_DISK
+      - QUEUE_CONNECTION
+      - CACHE_STORE
+      - MEMCACHED_HOST
+      - REDIS_CLIENT
+      - REDIS_HOST
+      - REDIS_PASSWORD
+      - REDIS_PORT
+      - VITE_APP_NAME
+      - INERTIA_SSR_ENABLED
+      - VATEUD_TOKEN
+      - VATEUD_USE_MOCK
+      - VATEUD_MIN_ACTIVITY_MINUTES
+      - VATEUD_REMOVAL_WARNING_DAYS
+      - VATEUD_MIN_ENDORSEMENT_AGE_DAYS
+      - VATEUD_ATD_LEAD_CID
+      - TRAINING_MIN_HOURS
+      - TRAINING_MIN_ACTIVITY
+      - TRAINING_DISPLAY_ACTIVITY
+      - TRAINING_S3_RATING_CHANGE_DAYS
+      - ROSTER_INACTIVITY_WARNING_DAYS
+      - ROSTER_REMOVAL_GRACE_DAYS
+      - ROSTER_MAX_INACTIVITY_DAYS
+      - VATGER_API_KEY
+      - VATGER_API_URL
+      - VATGER_OAUTH_CLIENT_ID
+      - VATGER_OAUTH_CLIENT_SECRET
+      - VATGER_OAUTH_REDIRECT_URI
+      - VATGER_OAUTH_AUTH_URL
+      - VATGER_OAUTH_TOKEN_URL
+      - VATGER_OAUTH_BASE_URL
+    command: >
+      sh -c "
+        (while true; do php artisan schedule:run --verbose --no-interaction; sleep 60; done) &
+        apache2-foreground
+      "
+    depends_on:
+      - redis
+      
+  redis:
+    image: redis:7-alpine
+    container_name: vatger-training-redis
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+
+volumes:
+  training_storage:
+  training_cache:
+  redis_data:

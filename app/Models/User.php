@@ -30,7 +30,6 @@ class User extends Authenticatable implements FilamentUser
         'is_superuser',
         'is_admin',
         'password',
-        'solo_days_used',
     ];
 
     /**
@@ -57,6 +56,7 @@ class User extends Authenticatable implements FilamentUser
         'vatsim_id' => 'integer',
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'solo_days_used' => 'integer',
     ];
 
     /**

@@ -59,7 +59,6 @@ class HandleInertiaRequests extends Middleware
                     'roles' => $request->user()->isVatsimUser() ? $request->user()->roles->pluck('name') : [],
                     'is_mentor' => $request->user()->isVatsimUser() ? $request->user()->isMentor() : false,
                     'is_leadership' => $request->user()->isVatsimUser() ? $request->user()->isLeadership() : false,
-                    'solo_days_used' => $request->user()->solo_days_used,
                 ] : null,
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
