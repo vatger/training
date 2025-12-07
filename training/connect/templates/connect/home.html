@@ -1,9 +1,0 @@
-{% if user %}
-<pre>
-{{ user }}
-</pre>
-    <hr>
-    <a href="{% url "logout" %}">logout</a>
-{% else %}
-    <a href="{% url "login" %}">login</a>
-{% endif %}
