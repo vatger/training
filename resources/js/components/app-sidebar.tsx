@@ -15,7 +15,19 @@ import { UserSearchModal } from '@/components/user-search-modal';
 import { dashboard } from '@/routes';
 import { SharedData, type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpenIcon, CheckCircle, CircleCheck, ClipboardList, Database, Globe, GraduationCap, LayoutGrid, Search, Send, Users } from 'lucide-react';
+import {
+    BookOpen,
+    BookOpenIcon,
+    CheckCircle,
+    CircleCheck,
+    ClipboardList,
+    Database,
+    Folder,
+    GraduationCap,
+    LayoutGrid,
+    Search,
+    Users,
+} from 'lucide-react';
 import { useState } from 'react';
 import AppLogo from './app-logo';
 
@@ -98,14 +110,14 @@ const adminSection = {
 
 const footerNavItems: NavItem[] = [
     {
-        title: 'Homepage',
-        href: 'https://vatsim-germany.org',
-        icon: Globe,
+        title: 'GPDR',
+        href: 'https://vatsim-germany.org/policies/gdpr',
+        icon: Folder,
     },
     {
-        title: 'Forum',
-        href: 'https://board.vatsim-germany.org',
-        icon: Send,
+        title: 'Imprint',
+        href: 'https://vatsim-germany.org/policies/imprint',
+        icon: BookOpen,
     },
 ];
 

@@ -20,43 +20,40 @@ class UserSearchController extends Controller
 
         try {
             if (is_numeric($query)) {
-                $users = User::where('vatsim_id', $query)
+                $users = User::where('vatsim_id', 'LIKE', $query . '%')
                     ->whereNotNull('vatsim_id')
                     ->limit(10)
                     ->get(['id', 'vatsim_id', 'first_name', 'last_name', 'email']);
             } else {
                 $searchTerm = strtolower($query);
-
+                
                 $users = User::select(['id', 'vatsim_id', 'first_name', 'last_name', 'email'])
                     ->whereNotNull('vatsim_id')
                     ->where(function ($q) use ($searchTerm) {
                         $q->whereRaw('LOWER(first_name) LIKE ?', [$searchTerm . '%'])
                             ->orWhereRaw('LOWER(last_name) LIKE ?', [$searchTerm . '%'])
-                            ->orWhereRaw('LOWER(first_name || \' \' || last_name) LIKE ?', [$searchTerm . '%']);
+                            ->orWhereRaw('LOWER(CONCAT(first_name, \' \', last_name)) LIKE ?', [$searchTerm . '%'])
+                            ->orWhereRaw('LOWER(first_name) LIKE ?', ['%' . $searchTerm . '%'])
+                            ->orWhereRaw('LOWER(last_name) LIKE ?', ['%' . $searchTerm . '%']);
                     })
                     ->orderByRaw("
                         CASE
-                            WHEN LOWER(first_name) = ? THEN 1
-                            WHEN LOWER(last_name) = ? THEN 2
-                            WHEN LOWER(first_name) LIKE ? THEN 3
-                            WHEN LOWER(last_name) LIKE ? THEN 4
-                            ELSE 5
+                            WHEN LOWER(first_name) LIKE ? THEN 1
+                            WHEN LOWER(last_name) LIKE ? THEN 2
+                            WHEN LOWER(CONCAT(first_name, ' ', last_name)) LIKE ? THEN 3
+                            WHEN LOWER(first_name) LIKE ? THEN 4
+                            WHEN LOWER(last_name) LIKE ? THEN 5
+                            ELSE 6
                         END
-                    ", [$searchTerm, $searchTerm, $searchTerm . '%', $searchTerm . '%'])
+                    ", [
+                        $searchTerm . '%',
+                        $searchTerm . '%',
+                        $searchTerm . '%',
+                        '%' . $searchTerm . '%',
+                        '%' . $searchTerm . '%'
+                    ])
                     ->limit(10)
                     ->get();
-
-                if ($users->isEmpty() && strlen($searchTerm) > 2) {
-                    $users = User::select(['id', 'vatsim_id', 'first_name', 'last_name', 'email'])
-                        ->whereNotNull('vatsim_id')
-                        ->where(function ($q) use ($searchTerm) {
-                            $q->whereRaw('LOWER(first_name) LIKE ?', ['%' . $searchTerm . '%'])
-                                ->orWhereRaw('LOWER(last_name) LIKE ?', ['%' . $searchTerm . '%'])
-                                ->orWhereRaw('LOWER(first_name || \' \' || last_name) LIKE ?', ['%' . $searchTerm . '%']);
-                        })
-                        ->limit(10)
-                        ->get();
-                }
             }
 
             $results = $users->map(function ($user) {

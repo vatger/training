@@ -43,8 +43,8 @@ class WaitingListController extends Controller
             ->groupBy('courses.id', 'courses.name', 'courses.type', 'courses.position');
 
         if (!$user->is_superuser && !$user->is_admin) {
-            $query->join('course_mentor', 'courses.id', '=', 'course_mentor.course_id')
-                ->where('course_mentor.user_id', $user->id);
+            $query->join('course_mentors', 'courses.id', '=', 'course_mentors.course_id')
+                ->where('course_mentors.user_id', $user->id);
         }
 
         $courses = $query->get();
@@ -134,9 +134,16 @@ class WaitingListController extends Controller
         }
 
         $user = $request->user();
-        
-        if (!$user->is_superuser && !$user->is_admin && !$user->mentorCourses()->where('id', $entry->course_id)->exists()) {
-            return response()->json(['error' => 'You cannot mentor this course'], 403);
+
+        if (!$user->is_superuser && !$user->is_admin) {
+            $isMentorForCourse = DB::table('course_mentors')
+                ->where('course_id', $entry->course_id)
+                ->where('user_id', $user->id)
+                ->exists();
+
+            if (!$isMentorForCourse) {
+                return response()->json(['error' => 'You cannot mentor this course'], 403);
+            }
         }
 
         try {
@@ -177,8 +184,15 @@ class WaitingListController extends Controller
         $entry = WaitingListEntry::findOrFail($request->entry_id);
         $user = $request->user();
 
-        if (!$user->is_superuser && !$user->is_admin && !$user->mentorCourses()->where('id', $entry->course_id)->exists()) {
-            return back()->withErrors(['error' => 'You cannot modify this entry']);
+        if (!$user->is_superuser && !$user->is_admin) {
+            $isMentorForCourse = DB::table('course_mentors')
+                ->where('course_id', $entry->course_id)
+                ->where('user_id', $user->id)
+                ->exists();
+
+            if (!$isMentorForCourse) {
+                return back()->withErrors(['error' => 'You cannot modify this entry']);
+            }
         }
 
         try {

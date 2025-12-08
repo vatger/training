@@ -100,10 +100,10 @@ class CourseController extends Controller
                     'can_join' => $canJoin,
                     'join_error' => $joinError,
                 ];
-            });
+            })->values();
 
             return Inertia::render('training/courses', [
-                'courses' => $formattedCourses,
+                'courses' => $formattedCourses->toArray(),
                 'isVatsimUser' => true,
                 'moodleSignedUp' => $moodleSignedUp,
                 'userHasActiveRtgCourse' => $userHasActiveRtgCourse,
@@ -120,6 +120,7 @@ class CourseController extends Controller
                 'courses' => [],
                 'isVatsimUser' => true,
                 'moodleSignedUp' => $moodleSignedUp ?? false,
+                'userHasActiveRtgCourse' => false,
                 'error' => 'Failed to load courses. Please try again.',
             ]);
         }
@@ -202,34 +203,27 @@ class CourseController extends Controller
     protected function filterCoursesForUser($courses, User $user)
     {
         return $courses->filter(function ($course) use ($user) {
-            // Determine roster status
             try {
                 $isOnRoster = $this->validationService->isUserOnRoster($user->vatsim_id);
             } catch (\Exception $e) {
-                // If roster check fails, assume not on roster for safety
                 $isOnRoster = false;
             }
 
             $isGerSubdivision = $user->subdivision === 'GER';
 
-            // Filter based on user type
             if ($isGerSubdivision && $isOnRoster) {
-                // Regular VATGER members: Can see RTG, EDMT, FAM - NOT RST or GST
                 if ($course->type === 'RST')
                     return false;
                 if ($course->type === 'GST')
                     return false;
             } elseif ($isGerSubdivision && !$isOnRoster) {
-                // GER subdivision but not on roster: ONLY RST courses
                 if ($course->type !== 'RST')
                     return false;
             } else {
-                // Non-GER subdivision (visitors): ONLY GST courses
                 if ($course->type !== 'GST')
                     return false;
             }
 
-            // Existing RTG restriction logic
             if ($course->type === 'RTG') {
                 $hasActiveRtg = $user->activeRatingCourses()
                     ->wherePivot('completed_at', null)
@@ -240,7 +234,6 @@ class CourseController extends Controller
                 }
             }
 
-            // Existing S3 APP restriction logic
             if ($user->rating === 3 && $course->type === 'RTG' && $course->position === 'APP') {
                 $minDays = config('services.training.s3_rating_change_days', 90);
                 if ($user->last_rating_change) {
