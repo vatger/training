@@ -29,7 +29,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('trainee');
 
         // Mentor/Management routes
-        Route::middleware('can:mentor')->group(function () {
+        Route::middleware('mentor')->group(function () {
             Route::get('/manage', [EndorsementController::class, 'mentorView'])
                 ->name('manage');
 
@@ -53,7 +53,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // Waiting list management for mentors
-    Route::prefix('waiting-lists')->name('waiting-lists.')->middleware('can:mentor')->group(function () {
+    Route::prefix('waiting-lists')->name('waiting-lists.')->middleware('mentor')->group(function () {
         Route::get('/manage', [WaitingListController::class, 'mentorView'])->name('manage');
         Route::post('/{entry}/start-training', [WaitingListController::class, 'startTraining'])->name('start-training');
         Route::post('/update-remarks', [WaitingListController::class, 'updateRemarks'])->name('update-remarks');
@@ -66,7 +66,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // Mentor Overview
-    Route::middleware(['can:mentor'])->group(function () {
+    Route::middleware('mentor')->group(function () {
 
         Route::post('users/search', [UserSearchController::class, 'search'])->name('users.search');
         Route::get('users/{vatsimId}', [UserSearchController::class, 'show'])->name('users.profile');
@@ -140,18 +140,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/', [TrainingLogController::class, 'index'])
             ->name('index');
 
-        // Create new log
+        // Create new log (authorization handled in controller)
         Route::get('/create/{traineeId}/{courseId}', [TrainingLogController::class, 'create'])
-            ->name('create')
-            ->middleware('can:create,App\Models\TrainingLog');
+            ->name('create');
 
         Route::get('/view/{traineeId}/{courseId}', [TrainingLogController::class, 'viewTraineeLogs'])
             ->name('view');
 
-        // Store new log
+        // Store new log (authorization handled in controller)
         Route::post('/', [TrainingLogController::class, 'store'])
-            ->name('store')
-            ->middleware('can:create,App\Models\TrainingLog');
+            ->name('store');
 
         // View specific log
         Route::get('/{id}', [TrainingLogController::class, 'show'])
@@ -180,7 +178,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/', [CptController::class, 'store'])->name('store');
         Route::get('/course-data', [CptController::class, 'getCourseData'])->name('course-data');
 
-        Route::get('/log/{log}', action: [CptController::class, 'viewLog'])->name('log.view');
+        Route::get('/log/{log}', [CptController::class, 'viewLog'])->name('log.view');
 
         Route::post('/{cpt}/join-examiner', [CptController::class, 'joinExaminer'])->name('join-examiner');
         Route::post('/{cpt}/leave-examiner', [CptController::class, 'leaveExaminer'])->name('leave-examiner');
@@ -192,12 +190,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::delete('/{cpt}', [CptController::class, 'destroy'])->name('destroy');
 
-        // Admin only
-        Route::post('/{cpt}/grade/{result}', [CptController::class, 'grade'])
-            ->name('grade')
-            ->middleware('superuser');
+        Route::post('/{cpt}/grade/{result}', [CptController::class, 'grade'])->name('grade');
     });
 });
 
-require __DIR__.'/settings.php';
 require __DIR__ . '/auth.php';

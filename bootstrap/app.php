@@ -22,6 +22,10 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
         ]);
+
+        $middleware->alias([
+            'mentor' => \App\Http\Middleware\EnsureUserIsMentor::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

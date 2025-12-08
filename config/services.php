@@ -20,6 +20,7 @@ return [
         'min_activity_minutes' => (int) env('VATEUD_MIN_ACTIVITY_MINUTES', 180),
         'removal_warning_days' => (int) env('VATEUD_REMOVAL_WARNING_DAYS', 31),
         'min_endorsement_age_days' => (int) env('VATEUD_MIN_ENDORSEMENT_AGE_DAYS', 180),
+        'atd_lead_cid' => env('VATEUD_ATD_LEAD_CID', 1441619)
     ],
 
     'training' => [

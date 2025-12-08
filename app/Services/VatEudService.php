@@ -20,9 +20,6 @@ class VatEudService
         ];
     }
 
-    /**
-     * Get Tier 1 endorsements from VatEUD
-     */
     public function getTier1Endorsements(): array
     {
         if (config('services.vateud.use_mock', false)) {
@@ -36,7 +33,7 @@ class VatEudService
             return Cache::remember($cacheKey, now()->addMinutes(10), function () {
                 Log::info('Fetching Tier 1 endorsements from VatEUD API', [
                     'url' => "{$this->baseUrl}/facility/endorsements/tier-1",
-                    'headers' => array_keys($this->headers), // Don't log the actual API key
+                    'headers' => array_keys($this->headers),
                 ]);
 
                 $response = Http::withHeaders($this->headers)
@@ -59,7 +56,6 @@ class VatEudService
 
                 $data = $response->json();
                 
-                // Handle different response structures
                 if (isset($data['data'])) {
                     $endorsements = $data['data'];
                 } elseif (is_array($data)) {
@@ -71,7 +67,7 @@ class VatEudService
 
                 Log::info('Processed Tier 1 endorsements', [
                     'count' => count($endorsements),
-                    'sample' => array_slice($endorsements, 0, 2), // Log first 2 for debugging
+                    'sample' => array_slice($endorsements, 0, 2),
                 ]);
 
                 return $this->sortEndorsements($endorsements);
@@ -85,9 +81,6 @@ class VatEudService
         }
     }
 
-    /**
-     * Create a Tier 1 endorsement
-     */
     public function createTier1Endorsement(int $userCid, string $position, int $instructorCid): array
     {
         if (config('services.vateud.use_mock', false)) {
@@ -111,7 +104,7 @@ class VatEudService
                 ->post("{$this->baseUrl}/facility/endorsements/tier-1", [
                     'user_cid' => $userCid,
                     'position' => $position,
-                    'instructor_cid' => config('services.vateud.atd_lead_cid', 1439797),
+                    'instructor_cid' => config('services.vateud.atd_lead_cid', 1441619),
                 ]);
 
             if ($response->successful()) {
@@ -156,9 +149,6 @@ class VatEudService
         }
     }
 
-    /**
-     * Get Tier 2 endorsements from VatEUD
-     */
     public function getTier2Endorsements(): array
     {
         if (config('services.vateud.use_mock', false)) {
@@ -183,7 +173,6 @@ class VatEudService
 
                 $data = $response->json();
                 
-                // Handle different response structures
                 if (isset($data['data'])) {
                     return $data['data'];
                 } elseif (is_array($data)) {
@@ -202,9 +191,6 @@ class VatEudService
         }
     }
 
-    /**
-     * Get solo endorsements from VatEUD
-     */
     public function getSoloEndorsements(): array
     {
         if (config('services.vateud.use_mock', false)) {
@@ -247,9 +233,6 @@ class VatEudService
         }
     }
 
-    /**
-     * Remove roster and endorsements for a user (GDPR compliance)
-     */
     public function removeRosterAndEndorsements(int $vatsimId): bool
     {
         if (config('services.vateud.use_mock', false)) {
@@ -257,11 +240,9 @@ class VatEudService
         }
 
         try {
-            // Remove from roster
             $rosterResponse = Http::withHeaders($this->headers)
                 ->delete("{$this->baseUrl}/facility/roster/{$vatsimId}");
 
-            // Get user's endorsements and remove them
             $tier1 = collect($this->getTier1Endorsements())
                 ->where('user_cid', $vatsimId);
             
@@ -288,9 +269,6 @@ class VatEudService
         }
     }
 
-    /**
-     * Remove a specific Tier 1 endorsement
-     */
     public function removeTier1Endorsement(int $endorsementId): bool
     {
         if (config('services.vateud.use_mock', false)) {
@@ -311,9 +289,6 @@ class VatEudService
         }
     }
 
-    /**
-     * Create a Tier 2 endorsement
-     */
     public function createTier2Endorsement(int $userCid, string $position, int $instructorCid): bool
     {
         if (config('services.vateud.use_mock', false)) {
@@ -325,7 +300,7 @@ class VatEudService
                 ->post("{$this->baseUrl}/facility/endorsements/tier-2", [
                     'user_cid' => $userCid,
                     'position' => $position,
-                    'instructor_cid' => config('services.vateud.atd_lead_cid', 1439797),
+                    'instructor_cid' => config('services.vateud.atd_lead_cid', 1441619),
                 ]);
 
             return $response->successful();
@@ -340,9 +315,6 @@ class VatEudService
         }
     }
 
-    /**
-     * Create a solo endorsement
-     */
     public function createSoloEndorsement(int $userCid, string $position, string $expireAt, int $instructorCid): array
     {
         if (config('services.vateud.use_mock', false)) {
@@ -369,11 +341,10 @@ class VatEudService
                     'user_cid' => $userCid,
                     'position' => $position,
                     'expire_at' => $expireAt,
-                    'instructor_cid' => config('services.vateud.atd_lead_cid', 1439797),
+                    'instructor_cid' => config('services.vateud.atd_lead_cid', 1441619),
                 ]);
 
             if ($response->successful()) {
-                // Clear cache to force refresh
                 Cache::forget('vateud:solo_endorsements');
 
                 Log::info('Solo endorsement created successfully', [
@@ -415,9 +386,6 @@ class VatEudService
         }
     }
 
-    /**
-     * Remove a solo endorsement
-     */
     public function removeSoloEndorsement(int $soloId): bool
     {
         if (config('services.vateud.use_mock', false)) {
@@ -430,7 +398,6 @@ class VatEudService
                 ->delete("{$this->baseUrl}/facility/endorsements/solo/{$soloId}");
 
             if ($response->successful()) {
-                // Clear cache to force refresh
                 Cache::forget('vateud:solo_endorsements');
 
                 Log::info('Solo endorsement removed successfully', ['solo_id' => $soloId]);
@@ -453,9 +420,6 @@ class VatEudService
         }
     }
 
-    /**
-     * Refresh endorsement cache (force refetch from API)
-     */
     public function refreshEndorsementCache(): void
     {
         Cache::forget('vateud:tier1_endorsements');
@@ -465,9 +429,6 @@ class VatEudService
         Log::info('Endorsement cache cleared');
     }
 
-    /**
-     * Sort endorsements by position (matching Python logic)
-     */
     protected function sortEndorsements(array $endorsements): array
     {
         usort($endorsements, function ($a, $b) {
@@ -480,9 +441,6 @@ class VatEudService
         return $endorsements;
     }
 
-    /**
-     * Get sort key for endorsement position (matching Python logic)
-     */
     protected function getEndorsementSortKey(string $position): string
     {
         if (str_ends_with($position, '_CTR')) {
@@ -508,16 +466,13 @@ class VatEudService
         return "9_{$position}_";
     }
 
-    /**
-     * Mock data for development/testing
-     */
     protected function getMockTier1Data(): array
     {
         return [
             [
                 'id' => 1,
                 'user_cid' => 1601613,
-                'instructor_cid' => 1439797,
+                'instructor_cid' => 1441619,
                 'position' => 'EDDL_TWR',
                 'facility' => 9,
                 'created_at' => '2025-04-19T12:02:38.000000Z',
@@ -526,7 +481,7 @@ class VatEudService
             [
                 'id' => 2,
                 'user_cid' => 1601613,
-                'instructor_cid' => 1439797,
+                'instructor_cid' => 1441619,
                 'position' => 'EDDL_APP',
                 'facility' => 9,
                 'created_at' => '2025-04-19T12:02:38.000000Z',
@@ -540,8 +495,8 @@ class VatEudService
         return [
             [
                 'id' => 25,
-                'user_cid' => 1439797,
-                'instructor_cid' => 1439797,
+                'user_cid' => 1441619,
+                'instructor_cid' => 1441619,
                 'position' => 'EDXX_AFIS',
                 'facility' => 9,
                 'created_at' => '2024-02-29T22:39:33.000000Z',
@@ -592,9 +547,6 @@ class VatEudService
         ];
     }
 
-    /**
-     * Get user exam results and assignments from VatEUD
-     */
     public function getUserExams(int $vatsimId): array
     {
         if (config('services.vateud.use_mock', false)) {
@@ -633,9 +585,6 @@ class VatEudService
         }
     }
 
-    /**
-     * Assign core theory test to a trainee
-     */
     public function assignCoreTheoryTest(int $vatsimId, int $examId, int $instructorId): array
     {
         if (config('services.vateud.use_mock', false)) {
@@ -659,7 +608,7 @@ class VatEudService
                 ->post("{$this->baseUrl}/facility/training/exams/assign", [
                     'user_cid' => $vatsimId,
                     'exam_id' => $examId,
-                    'instructor_cid' => config('services.vateud.atd_lead_cid', 1439797),
+                    'instructor_cid' => config('services.vateud.atd_lead_cid', 1441619),
                 ]);
 
             if ($response->successful()) {
@@ -704,9 +653,6 @@ class VatEudService
         }
     }
 
-    /**
-     * Mock exam data for development/testing
-     */
     protected function getMockExamData(int $vatsimId): array
     {
         return [
@@ -726,5 +672,133 @@ class VatEudService
                 ]
             ]
         ];
+    }
+
+    public function uploadCptLog(int $traineeCid, int $examinerCid, string $position, string $note, bool $cptPass, string $filePath): array
+    {
+        if (config('services.vateud.use_mock', false)) {
+            Log::info('Mock: Uploading CPT log', [
+                'trainee_cid' => $traineeCid,
+                'examiner_cid' => $examinerCid,
+                'position' => $position,
+                'cpt_pass' => $cptPass,
+            ]);
+            return ['success' => true];
+        }
+
+        try {
+            Log::info('Uploading CPT log to VatEUD', [
+                'trainee_cid' => $traineeCid,
+                'examiner_cid' => $examinerCid,
+                'position' => $position,
+                'cpt_pass' => $cptPass,
+            ]);
+
+            $response = Http::withHeaders($this->headers)
+                ->attach(
+                    'file',
+                    file_get_contents($filePath),
+                    basename($filePath)
+                )
+                ->post("{$this->baseUrl}/facility/user/{$traineeCid}/notes/cpt", [
+                    'examiner_cid' => $examinerCid,
+                    'position' => $position,
+                    'note' => $note,
+                    'cpt_pass' => (int) $cptPass,
+                ]);
+
+            if ($response->successful()) {
+                Log::info('CPT log uploaded successfully', [
+                    'trainee_cid' => $traineeCid,
+                    'position' => $position,
+                ]);
+
+                return ['success' => true];
+            }
+
+            $errorMessage = $response->json()['message'] ?? 'Failed to upload CPT log';
+
+            Log::error('Failed to upload CPT log', [
+                'trainee_cid' => $traineeCid,
+                'status' => $response->status(),
+                'error' => $errorMessage,
+            ]);
+
+            return [
+                'success' => false,
+                'message' => $errorMessage
+            ];
+
+        } catch (\Exception $e) {
+            Log::error('Exception uploading CPT log', [
+                'trainee_cid' => $traineeCid,
+                'error' => $e->getMessage(),
+            ]);
+
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    public function requestUpgrade(int $traineeCid, int $instructorCid, int $newRating): array
+    {
+        if (config('services.vateud.use_mock', false)) {
+            Log::info('Mock: Requesting rating upgrade', [
+                'trainee_cid' => $traineeCid,
+                'instructor_cid' => $instructorCid,
+                'new_rating' => $newRating,
+            ]);
+            return ['success' => true];
+        }
+
+        try {
+            Log::info('Requesting rating upgrade', [
+                'trainee_cid' => $traineeCid,
+                'instructor_cid' => $instructorCid,
+                'new_rating' => $newRating,
+            ]);
+
+            $response = Http::withHeaders($this->headers)
+                ->timeout(10)
+                ->post("{$this->baseUrl}/facility/user/{$traineeCid}/upgrade", [
+                    'instructor_cid' => $instructorCid,
+                    'new_rating' => $newRating,
+                ]);
+
+            if ($response->successful()) {
+                Log::info('Rating upgrade requested successfully', [
+                    'trainee_cid' => $traineeCid,
+                    'new_rating' => $newRating,
+                ]);
+
+                return ['success' => true];
+            }
+
+            $errorMessage = $response->json()['message'] ?? 'Failed to request rating upgrade';
+
+            Log::error('Failed to request rating upgrade', [
+                'trainee_cid' => $traineeCid,
+                'status' => $response->status(),
+                'error' => $errorMessage,
+            ]);
+
+            return [
+                'success' => false,
+                'message' => $errorMessage
+            ];
+
+        } catch (\Exception $e) {
+            Log::error('Exception requesting rating upgrade', [
+                'trainee_cid' => $traineeCid,
+                'error' => $e->getMessage(),
+            ]);
+
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
+        }
     }
 }

@@ -8,6 +8,8 @@ use App\Models\Course;
 use App\Models\Examiner;
 use App\Models\User;
 use App\Services\ActivityLogger;
+use App\Services\VatgerService;
+use App\Services\VatEudService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -15,10 +17,117 @@ use Carbon\Carbon;
 
 class CptController extends Controller
 {
+    protected $vatgerApi;
+    protected $vatEudService;
+
+    public function __construct(VatgerService $vatgerApi, VatEudService $vatEudService)
+    {
+        $this->vatgerApi = $vatgerApi;
+        $this->vatEudService = $vatEudService;
+    }
+
+    private function sendConfirmedCpts()
+    {
+        return; // TODO: Remove with release
+        $cpts = Cpt::with(['trainee', 'course'])
+            ->where('confirmed', true)
+            ->whereNull('passed')
+            ->orderBy('date')
+            ->get();
+
+        if ($cpts->isEmpty()) {
+            return;
+        }
+
+        $cptData = $cpts->map(function ($cpt) {
+            return [
+                'trainee' => $cpt->trainee->full_name,
+                'date' => $cpt->date->format('d.m.y H:i') . 'lcl',
+                'position' => $cpt->course->solo_station,
+            ];
+        })->toArray();
+
+        $this->vatgerApi->postConfirmedCpts($cptData);
+    }
+
+    private function notifyAvailableCpt(Cpt $cpt)
+    {
+
+        $notifyUsers = collect();
+
+        if (!$cpt->examiner_id) {
+            $possibleExaminers = Examiner::with('user')
+                ->whereJsonContains('positions', $cpt->course->position)
+                ->get();
+
+            foreach ($possibleExaminers as $examiner) {
+                $notifyUsers->push($examiner->user);
+            }
+        }
+
+        if (!$cpt->local_id) {
+            $cpt->course->load('mentors');
+            foreach ($cpt->course->mentors as $mentor) {
+                $notifyUsers->push($mentor);
+            }
+        }
+
+        $notifyUsers = $notifyUsers->unique('id');
+
+        foreach ($notifyUsers as $user) {
+            if ($user->vatsim_id) {
+                $this->vatgerApi->sendNotification(
+                    $user->vatsim_id,
+                    'Available CPT',
+                    "A new CPT is available: {$cpt->course->solo_station} on {$cpt->date->format('d.m.Y at H:i')}lcl.",
+                    'Training Centre',
+                    route('cpt.index')
+                );
+            }
+        }
+    }
+
+    private function notifyUnassignment(Cpt $cpt, string $role, User $unassignedUser)
+    {
+        $cpt->load(['trainee', 'course', 'examiner', 'local']);
+
+        $notifyUsers = collect();
+
+        if ($cpt->examiner_id && $cpt->examiner_id !== $unassignedUser->id) {
+            $notifyUsers->push($cpt->examiner);
+        }
+
+        if ($cpt->local_id && $cpt->local_id !== $unassignedUser->id) {
+            $notifyUsers->push($cpt->local);
+        }
+
+        $creator = User::where('id', $cpt->created_by ?? null)->first();
+        if ($creator && $creator->id !== $unassignedUser->id) {
+            $notifyUsers->push($creator);
+        }
+
+        $notifyUsers = $notifyUsers->unique('id');
+
+        $roleText = $role === 'examiner' ? 'examiner' : 'local contact';
+        $message = "{$unassignedUser->full_name} has unassigned themselves as {$roleText} from the CPT for {$cpt->trainee->full_name} at {$cpt->course->solo_station} on {$cpt->date->format('d.m.Y at H:i')}lcl.";
+
+        foreach ($notifyUsers as $user) {
+            if ($user->vatsim_id) {
+                $this->vatgerApi->sendNotification(
+                    $user->vatsim_id,
+                    'CPT Assignment Changed',
+                    $message,
+                    'View CPT',
+                    route('cpt.index')
+                );
+            }
+        }
+    }
+
     public function index(Request $request)
     {
         $user = $request->user();
-        $user->load('examiner.user'); // Eager load examiner relationship
+        $user->load('examiner.user');
 
         $cptsQuery = Cpt::with(['trainee', 'examiner.examiner', 'local', 'course.mentors'])
             ->pending()
@@ -121,17 +230,14 @@ class CptController extends Controller
         if (isset($validated['examiner_id'])) {
             $examinerUser = User::with('examiner')->find($validated['examiner_id']);
             
-            // Check if user has examiner profile
             if (!$examinerUser || !$examinerUser->examiner) {
                 return back()->withErrors(['examiner_id' => 'Selected user is not an examiner.']);
             }
             
-            // Check if examiner has required position
             if (!$examinerUser->examiner->hasPosition($course->position)) {
                 return back()->withErrors(['examiner_id' => 'Selected examiner is not authorized for this position.']);
             }
 
-            // Check 36-hour rule for course mentors
             $date = Carbon::parse($validated['date']);
             if ($course->mentors->contains($examinerUser->id) && $date->diffInHours(now()) > 36) {
                 return back()->withErrors(['examiner_id' => 'Course mentors cannot be examiners more than 36 hours in advance.']);
@@ -139,13 +245,21 @@ class CptController extends Controller
         }
 
         if (isset($validated['local_id'])) {
-            // Local contact must be a mentor of this course
             if (!$course->mentors->contains($validated['local_id'])) {
                 return back()->withErrors(['local_id' => 'Selected user is not a mentor for this course.']);
             }
         }
 
+        $wasConfirmed = false;
+        $isNowConfirmed = isset($validated['examiner_id']) && isset($validated['local_id']);
+
         $cpt = Cpt::create($validated);
+
+        if (!$wasConfirmed && $isNowConfirmed) {
+            $this->sendConfirmedCpts();
+        }
+
+        $this->notifyAvailableCpt($cpt);
 
         ActivityLogger::cptCreated(
             $cpt,
@@ -171,11 +285,9 @@ class CptController extends Controller
         $course = Course::with(['activeTrainees', 'mentors'])->findOrFail($courseId);
         $date = Carbon::parse($date);
 
-        // Get examiners who have the required position for this course
         $examinersQuery = Examiner::with('user')
             ->whereJsonContains('positions', $course->position);
 
-        // If CPT is more than 36 hours away, exclude mentors of this course from examiner list
         if ($date->diffInHours(now()) > 36) {
             $courseMentorIds = $course->mentors->pluck('id')->toArray();
             $examinersQuery->whereNotIn('user_id', $courseMentorIds);
@@ -188,7 +300,6 @@ class CptController extends Controller
             ];
         });
 
-        // Local contacts are simply the course mentors (they don't need to be examiners)
         $mentors = $course->mentors->map(function ($mentor) {
             return [
                 'id' => $mentor->id,
@@ -203,16 +314,6 @@ class CptController extends Controller
                 'vatsim_id' => $trainee->vatsim_id,
             ];
         })->values();
-
-        \Log::info('Course Data Response', [
-            'course_id' => $courseId,
-            'course_name' => $course->name,
-            'position' => $course->position,
-            'examiners_count' => $examiners->count(),
-            'mentors_count' => $mentors->count(),
-            'trainees_count' => $trainees->count(),
-            'mentors' => $mentors,
-        ]);
 
         return response()->json([
             'examiners' => $examiners,
@@ -249,7 +350,13 @@ class CptController extends Controller
             }
         }
 
+        $wasConfirmed = $cpt->confirmed;
         $cpt->update(['examiner_id' => $user->id]);
+        $cpt->refresh();
+
+        if (!$wasConfirmed && $cpt->confirmed) {
+            $this->sendConfirmedCpts();
+        }
 
         ActivityLogger::cptExaminerJoined(
             $cpt,
@@ -270,7 +377,15 @@ class CptController extends Controller
             return back()->withErrors(['error' => 'You are not the examiner for this CPT.']);
         }
 
+        $wasConfirmed = $cpt->confirmed;
         $cpt->update(['examiner_id' => null]);
+        $cpt->refresh();
+
+        if ($wasConfirmed && !$cpt->confirmed) {
+            $this->sendConfirmedCpts();
+        }
+
+        $this->notifyUnassignment($cpt, 'examiner', $user);
 
         ActivityLogger::cptExaminerLeft(
             $cpt,
@@ -299,7 +414,13 @@ class CptController extends Controller
             return back()->withErrors(['error' => 'You must be a mentor of this course to join as local contact.']);
         }
 
+        $wasConfirmed = $cpt->confirmed;
         $cpt->update(['local_id' => $user->id]);
+        $cpt->refresh();
+
+        if (!$wasConfirmed && $cpt->confirmed) {
+            $this->sendConfirmedCpts();
+        }
 
         ActivityLogger::cptLocalJoined(
             $cpt,
@@ -320,7 +441,15 @@ class CptController extends Controller
             return back()->withErrors(['error' => 'You are not the local contact for this CPT.']);
         }
 
+        $wasConfirmed = $cpt->confirmed;
         $cpt->update(['local_id' => null]);
+        $cpt->refresh();
+
+        if ($wasConfirmed && !$cpt->confirmed) {
+            $this->sendConfirmedCpts();
+        }
+
+        $this->notifyUnassignment($cpt, 'local', $user);
 
         ActivityLogger::cptLocalLeft(
             $cpt,
@@ -345,6 +474,8 @@ class CptController extends Controller
             return back()->withErrors(['error' => 'Cannot delete a graded CPT.']);
         }
 
+        $wasConfirmed = $cpt->confirmed;
+
         ActivityLogger::cptDeleted(
             $cpt,
             $cpt->course,
@@ -354,6 +485,10 @@ class CptController extends Controller
 
         $cpt->delete();
 
+        if ($wasConfirmed) {
+            $this->sendConfirmedCpts();
+        }
+
         return back()->with('success', 'CPT deleted successfully.');
     }
 
@@ -362,7 +497,6 @@ class CptController extends Controller
         $user = auth()->user();
         $cpt->load(['trainee', 'examiner', 'local', 'course', 'logs.uploadedBy']);
 
-        // Check if user can access this page
         $canAccess = $user->isSuperuser() 
             || $user->isLeadership()
             || $cpt->examiner_id === $user->id 
@@ -372,12 +506,10 @@ class CptController extends Controller
             return redirect()->route('cpt.index')->withErrors(['error' => 'You do not have permission to view logs for this CPT.']);
         }
 
-        // Determine if user can upload (examiner, local, or admin)
         $canUpload = $user->isSuperuser() 
             || $cpt->examiner_id === $user->id 
             || $cpt->local_id === $user->id;
 
-        // Determine if user can review/grade (superuser only)
         $canReview = $user->isSuperuser() && $cpt->log_uploaded;
 
         return Inertia::render('cpt/upload', [
@@ -436,7 +568,6 @@ class CptController extends Controller
             return back()->withErrors(['error' => 'You do not have permission to upload logs for this CPT.']);
         }
 
-        // Store in public storage (consistent with existing files)
         $path = $request->file('log_file')->store('cpt_logs', 'public');
 
         $cptLog = CptLog::create([
@@ -474,7 +605,36 @@ class CptController extends Controller
         $passed = $result === 1;
         $cpt->update(['passed' => $passed]);
 
-        $cpt->load('course', 'trainee');
+        $cpt->load('course', 'trainee', 'examiner', 'logs');
+
+        if ($cpt->log_uploaded && $cpt->logs->count() > 0) {
+            $latestLog = $cpt->logs->sortByDesc('created_at')->first();
+
+            $filePath = storage_path('app/' . $latestLog->log_file);
+            if (!file_exists($filePath)) {
+                $filePath = storage_path('app/public/' . $latestLog->log_file);
+            }
+
+            if (file_exists($filePath) && $cpt->examiner) {
+                $uploadResult = $this->vatEudService->uploadCptLog(
+                    $cpt->trainee->vatsim_id,
+                    $cpt->examiner->vatsim_id,
+                    $cpt->course->solo_station,
+                    'See log',
+                    $passed,
+                    $filePath
+                );
+
+                if ($uploadResult['success'] && $passed) {
+                    $this->vatEudService->requestUpgrade(
+                        $cpt->trainee->vatsim_id,
+                        $user->vatsim_id,
+                        $cpt->trainee->rating + 1
+                    );
+                }
+            }
+        }
+
         ActivityLogger::cptGraded(
             $cpt,
             $cpt->course,
@@ -491,7 +651,6 @@ class CptController extends Controller
         $user = auth()->user();
         $cpt = $log->cpt()->with('course.mentors')->first();
 
-        // Check if user has permission to view this log
         $canView = $user->isSuperuser() 
             || $user->isLeadership()
             || $cpt->examiner_id === $user->id 
@@ -501,10 +660,8 @@ class CptController extends Controller
             abort(403, 'Unauthorized access to CPT log.');
         }
 
-        // Try private storage first (new uploads)
         $filePath = storage_path('app/' . $log->log_file);
         
-        // If not found, try public storage (legacy uploads)
         if (!file_exists($filePath)) {
             $filePath = storage_path('app/public/' . $log->log_file);
         }
@@ -513,7 +670,6 @@ class CptController extends Controller
             abort(404, 'File not found.');
         }
 
-        // Return the file as a response
         return response()->file($filePath, [
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => 'inline; filename="' . $log->file_name . '"'
@@ -522,37 +678,30 @@ class CptController extends Controller
 
     private function canJoinAsExaminer(User $user, Cpt $cpt): bool
     {
-        // Already assigned as examiner
         if ($cpt->examiner_id === $user->id) {
             return false;
         }
 
-        // Cannot be both examiner and local contact
         if ($cpt->local_id === $user->id) {
             return false;
         }
 
-        // Load examiner relationship if not loaded
         if (!$user->relationLoaded('examiner')) {
             $user->load('examiner');
         }
 
-        // Must have examiner profile
         if (!$user->examiner) {
             return false;
         }
 
-        // Must have required position for this course
         if (!$user->examiner->hasPosition($cpt->course->position)) {
             return false;
         }
 
-        // Load course mentors if not loaded
         if (!$cpt->course->relationLoaded('mentors')) {
             $cpt->course->load('mentors');
         }
 
-        // If user is a mentor of this course, check 36-hour rule
         if ($cpt->course->mentors->contains($user->id)) {
             if ($cpt->date->diffInHours(now()) > 36) {
                 return false;
@@ -564,22 +713,18 @@ class CptController extends Controller
 
     private function canJoinAsLocal(User $user, Cpt $cpt): bool
     {
-        // Already assigned as local contact
         if ($cpt->local_id === $user->id) {
             return false;
         }
 
-        // Cannot be both examiner and local contact
         if ($cpt->examiner_id === $user->id) {
             return false;
         }
 
-        // Load course mentors if not loaded
         if (!$cpt->course->relationLoaded('mentors')) {
             $cpt->course->load('mentors');
         }
 
-        // Must be a mentor of this course
         if (!$cpt->course->mentors->contains($user->id)) {
             return false;
         }

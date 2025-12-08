@@ -267,7 +267,7 @@ class EndorsementController extends Controller
             $success = $this->vatEudService->createTier2Endorsement(
                 $user->vatsim_id,
                 $tier2Endorsement->position,
-                config('services.vateud.atd_lead_cid', 1439797)
+                config('services.vateud.atd_lead_cid', 1441619)
             );
 
             if (!$success) {
