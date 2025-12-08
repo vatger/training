@@ -53,6 +53,11 @@ export function CourseFilter({
                                 Visitor ({getCategoryCount('GST')})
                             </TabsTrigger>
                         )}
+                        {getCategoryCount('RST') > 0 && (
+                            <TabsTrigger className="max-w-68" value="RST">
+                                Roster Reentry ({getCategoryCount('RST')})
+                            </TabsTrigger>
+                        )}
                     </TabsList>
                 </Tabs>
             </CardHeader>
@@ -70,9 +75,7 @@ export function CourseFilter({
                                         : 'border-border bg-background hover:bg-muted'
                                 }`}
                             >
-                                <div className={`rounded-full p-1 ${getPositionColor(course.position)}`}>
-                                    {getPositionIcon(course.position)}
-                                </div>
+                                <div className={`rounded-full p-1 ${getPositionColor(course.position)}`}>{getPositionIcon(course.position)}</div>
                                 {course.name}
                                 <Badge variant="secondary" className="ml-1 rounded-full">
                                     {course.activeTrainees}
