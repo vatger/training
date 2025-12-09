@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Log;
 class MoodleService
 {
     protected $apiKey;
-    protected $baseUrl = 'https://vatsim-germany.org/api/moodle';
+    protected $baseUrl = 'http://hp.vatsim-germany.org/api/moodle';
     protected $cacheTtl;
 
     public function __construct()

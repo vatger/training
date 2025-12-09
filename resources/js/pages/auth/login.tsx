@@ -36,10 +36,6 @@ export default function Login({ status }: LoginProps) {
                             Login with VATGER Connect
                         </Button>
 
-                        <div className="mt-0 text-center text-sm text-gray-600">
-                            <p>Only VATSIM Germany members can access this system.</p>
-                        </div>
-
                         {/* Debug/Admin access hint for development */}
                         {process.env.NODE_ENV === 'development' && (
                             <div className="mt-6 rounded-md border border-yellow-200 bg-yellow-50 p-3">
