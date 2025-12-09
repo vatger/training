@@ -25,9 +25,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        if (app()->isProduction()) {
+        if (config('app.forcehttps')) {
             \Illuminate\Support\Facades\URL::forceScheme('https');
         }
+
+        date_default_timezone_set(config('app.timezone', 'UTC'));
 
         Gate::define('mentor', [EndorsementPolicy::class, 'mentor']);
         Gate::define('endorsements.manage', [EndorsementPolicy::class, 'viewManagement']);
