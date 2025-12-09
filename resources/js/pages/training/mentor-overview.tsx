@@ -21,7 +21,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 interface Props {
     courses: MentorCourse[];
     statistics: MentorStatistics;
-    initialCourseId?: number; // NEW: from backend to indicate which course has data loaded
+    initialCourseId?: number;
 }
 
 export default function MentorOverview({ courses: initialCourses, statistics, initialCourseId }: Props) {
@@ -35,14 +35,36 @@ export default function MentorOverview({ courses: initialCourses, statistics, in
     const [isClaimDialogOpen, setIsClaimDialogOpen] = useState(false);
     const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
 
-    // FIX: Update courses state when initialCourses changes (from Inertia visits)
+    // FIXED: Preserve loaded course data when Inertia updates
     useEffect(() => {
         console.log('Initial courses received:', {
             count: initialCourses.length,
             loadedCourses: initialCourses.filter((c) => c.loaded).map((c) => ({ id: c.id, name: c.name, trainees: c.trainees?.length || 0 })),
             initialCourseId,
         });
-        setCourses(initialCourses);
+
+        setCourses((prevCourses) => {
+            return initialCourses.map((newCourse) => {
+                const existingCourse = prevCourses.find((c) => c.id === newCourse.id);
+
+                // If backend sent loaded data with trainees, use it
+                if (newCourse.loaded && newCourse.trainees && newCourse.trainees.length > 0) {
+                    return newCourse;
+                }
+
+                // If we have previously loaded data for this course, preserve it
+                if (existingCourse?.loaded && existingCourse.trainees && existingCourse.trainees.length > 0) {
+                    return {
+                        ...newCourse,
+                        trainees: existingCourse.trainees,
+                        loaded: true,
+                    };
+                }
+
+                // Otherwise use the new course data as-is
+                return newCourse;
+            });
+        });
     }, [initialCourses]);
 
     const filteredCourses = courses.filter((course) => {
@@ -88,26 +110,21 @@ export default function MentorOverview({ courses: initialCourses, statistics, in
         }
     };
 
-    // FIX: Handle initial course selection properly
     useEffect(() => {
         if (!isInitialized) return;
 
         if (filteredCourses.length > 0) {
-            // If no course is selected yet
             if (!selectedCourse || !filteredCourses.find((c) => c.id === selectedCourse.id)) {
-                // Try to use the initially loaded course from backend first
                 let newSelectedCourse: MentorCourse | undefined;
 
                 if (initialCourseId) {
                     newSelectedCourse = filteredCourses.find((c) => c.id === initialCourseId);
                 }
 
-                // If no initialCourseId or it's not in filtered courses, use first loaded course
                 if (!newSelectedCourse) {
                     newSelectedCourse = filteredCourses.find((c) => c.loaded === true);
                 }
 
-                // Fallback to first course
                 if (!newSelectedCourse) {
                     newSelectedCourse = filteredCourses[0];
                 }
@@ -123,13 +140,11 @@ export default function MentorOverview({ courses: initialCourses, statistics, in
 
                 setSelectedCourse(newSelectedCourse);
 
-                // Load data if not already loaded
                 if (!newSelectedCourse.loaded) {
                     console.log('Course not loaded, fetching data for:', newSelectedCourse.id);
                     loadCourseData(newSelectedCourse.id);
                 }
             } else if (selectedCourse && !selectedCourse.loaded) {
-                // If selected course exists but isn't loaded, load it
                 console.log('Selected course not loaded, fetching data for:', selectedCourse.id);
                 loadCourseData(selectedCourse.id);
             }
@@ -177,6 +192,14 @@ export default function MentorOverview({ courses: initialCourses, statistics, in
     };
 
     const currentCourse = selectedCourse ? courses.find((c) => c.id === selectedCourse.id) || selectedCourse : null;
+
+    console.log('Render state:', {
+        selectedCourseId: selectedCourse?.id,
+        currentCourseId: currentCourse?.id,
+        currentCourseLoaded: currentCourse?.loaded,
+        currentCourseTrainees: currentCourse?.trainees?.length || 0,
+        isLoading: currentCourse ? loadingCourses.has(currentCourse.id) : false,
+    });
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>

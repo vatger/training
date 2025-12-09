@@ -14,7 +14,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { CourseMentor, Trainee } from '@/types/mentor';
+import { Mentor, Trainee } from '@/types/mentor';
 import { router } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 
@@ -39,11 +39,14 @@ export function ClaimConfirmDialog({ trainee, courseId, isOpen, onClose }: Claim
                 course_id: courseId,
             },
             {
+                preserveScroll: true,
+                preserveState: true,
+                only: ['courses'],
                 onFinish: () => {
                     setIsClaiming(false);
                     onClose();
                 },
-            }
+            },
         );
     };
 
@@ -56,14 +59,16 @@ export function ClaimConfirmDialog({ trainee, courseId, isOpen, onClose }: Claim
                         {trainee?.claimedBy && trainee.claimedBy !== 'You' ? (
                             <>
                                 <span className="font-medium">{trainee.name}</span> is currently claimed by{' '}
-                                <span className="font-medium">{trainee.claimedBy}</span>. 
-                                <br /><br />
+                                <span className="font-medium">{trainee.claimedBy}</span>.
+                                <br />
+                                <br />
                                 By claiming this trainee, you will take over responsibility for their training.
                             </>
                         ) : (
                             <>
                                 Are you sure you want to claim <span className="font-medium">{trainee?.name}</span>?
-                                <br /><br />
+                                <br />
+                                <br />
                                 You will become the responsible mentor for this trainee.
                             </>
                         )}
@@ -90,7 +95,7 @@ interface AssignDialogProps {
 }
 
 export function AssignDialog({ trainee, courseId, isOpen, onClose }: AssignDialogProps) {
-    const [mentors, setMentors] = useState<CourseMentor[]>([]);
+    const [mentors, setMentors] = useState<Mentor[]>([]);
     const [selectedMentorId, setSelectedMentorId] = useState<string>('');
     const [isLoading, setIsLoading] = useState(false);
     const [isAssigning, setIsAssigning] = useState(false);
@@ -122,12 +127,15 @@ export function AssignDialog({ trainee, courseId, isOpen, onClose }: AssignDialo
                 mentor_id: parseInt(selectedMentorId),
             },
             {
+                preserveScroll: true,
+                preserveState: true,
+                only: ['courses'],
                 onFinish: () => {
                     setIsAssigning(false);
                     setSelectedMentorId('');
                     onClose();
                 },
-            }
+            },
         );
     };
 
