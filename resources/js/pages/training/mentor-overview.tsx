@@ -35,36 +35,14 @@ export default function MentorOverview({ courses: initialCourses, statistics, in
     const [isClaimDialogOpen, setIsClaimDialogOpen] = useState(false);
     const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
 
-    // FIXED: Preserve loaded course data when Inertia updates
+    // Update courses state when initialCourses changes
     useEffect(() => {
         console.log('Initial courses received:', {
             count: initialCourses.length,
             loadedCourses: initialCourses.filter((c) => c.loaded).map((c) => ({ id: c.id, name: c.name, trainees: c.trainees?.length || 0 })),
             initialCourseId,
         });
-
-        setCourses((prevCourses) => {
-            return initialCourses.map((newCourse) => {
-                const existingCourse = prevCourses.find((c) => c.id === newCourse.id);
-
-                // If backend sent loaded data with trainees, use it
-                if (newCourse.loaded && newCourse.trainees && newCourse.trainees.length > 0) {
-                    return newCourse;
-                }
-
-                // If we have previously loaded data for this course, preserve it
-                if (existingCourse?.loaded && existingCourse.trainees && existingCourse.trainees.length > 0) {
-                    return {
-                        ...newCourse,
-                        trainees: existingCourse.trainees,
-                        loaded: true,
-                    };
-                }
-
-                // Otherwise use the new course data as-is
-                return newCourse;
-            });
-        });
+        setCourses(initialCourses);
     }, [initialCourses]);
 
     const filteredCourses = courses.filter((course) => {
@@ -191,6 +169,7 @@ export default function MentorOverview({ courses: initialCourses, statistics, in
         setSelectedTrainee(null);
     };
 
+    // Always get the latest course data from the courses array
     const currentCourse = selectedCourse ? courses.find((c) => c.id === selectedCourse.id) || selectedCourse : null;
 
     console.log('Render state:', {

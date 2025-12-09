@@ -62,25 +62,11 @@ class MentorOverviewController extends Controller
             $courseToLoadId = $courses->first()->id;
         }
 
-        $coursesMetadata = $courses->map(function ($course) {
-            return [
-                'id' => $course->id,
-                'name' => $course->name,
-                'position' => $course->position,
-                'type' => $course->type,
-                'soloStation' => $course->solo_station,
-                'activeTrainees' => $course->active_trainees_count,
-                'trainees' => [],
-                'loaded' => false,
-            ];
-        });
-
         if ($courseToLoadId) {
             try {
                 $courseToLoad = \App\Models\Course::find($courseToLoadId);
                 if ($courseToLoad) {
                     $loadedCourseData = $this->loadCourseData($courseToLoad, $user);
-
                     $loadedCourseData['loaded'] = true;
 
                     $coursesMetadata = $coursesMetadata->map(function ($meta) use ($loadedCourseData) {
@@ -119,6 +105,72 @@ class MentorOverviewController extends Controller
         ]);
     }
 
+    protected function returnWithRefreshedCourse($courseId, $user)
+    {
+        if ($user->is_superuser || $user->is_admin) {
+            $courses = \App\Models\Course::select(['id', 'name', 'position', 'type', 'solo_station'])
+                ->withCount('activeTrainees')
+                ->get();
+        } else {
+            $courses = $user->mentorCourses()
+                ->select(['courses.id', 'courses.name', 'courses.position', 'courses.type', 'courses.solo_station'])
+                ->withCount('activeTrainees')
+                ->get();
+        }
+
+        $ctrCourses = $courses->filter(fn($c) => $c->position === 'CTR');
+        $nonCtrCourses = $courses->filter(fn($c) => $c->position !== 'CTR');
+
+        $positionOrder = ['GND' => 1, 'TWR' => 2, 'APP' => 3];
+        $nonCtrCourses = $nonCtrCourses
+            ->sortBy(function ($course) use ($positionOrder) {
+                return $positionOrder[$course->position] ?? 999;
+            })
+            ->sortBy('name');
+
+        $ctrCourses = $ctrCourses->sortBy('name');
+        $courses = $nonCtrCourses->concat($ctrCourses)->values();
+
+        $coursesMetadata = $courses->map(function ($course) use ($courseId, $user) {
+            if ($course->id === $courseId) {
+                try {
+                    $fullCourse = \App\Models\Course::find($courseId);
+                    if ($fullCourse) {
+                        $courseData = $this->loadCourseData($fullCourse, $user);
+                        $courseData['loaded'] = true;
+                        return $courseData;
+                    }
+                } catch (\Exception $e) {
+                    \Log::error('Failed to load course', ['course_id' => $courseId, 'error' => $e->getMessage()]);
+                }
+            }
+
+            return [
+                'id' => $course->id,
+                'name' => $course->name,
+                'position' => $course->position,
+                'type' => $course->type,
+                'soloStation' => $course->solo_station,
+                'activeTrainees' => $course->active_trainees_count,
+                'trainees' => [],
+                'loaded' => false,
+            ];
+        });
+
+        $totalActiveTrainees = $courses->sum(fn($c) => $c->active_trainees_count);
+
+        return Inertia::render('training/mentor-overview', [
+            'courses' => $coursesMetadata->values(),
+            'initialCourseId' => $courseId,
+            'statistics' => [
+                'activeTrainees' => $totalActiveTrainees,
+                'claimedTrainees' => 0,
+                'trainingSessions' => 0,
+                'waitingList' => 0,
+            ],
+        ]);
+    }
+
     public function loadCourseTrainees(Request $request, $courseId)
     {
         $user = $request->user();
@@ -138,7 +190,7 @@ class MentorOverviewController extends Controller
         return response()->json($courseData);
     }
 
-    protected function loadCourseData($course, $user): array
+    public function loadCourseData($course, $user): array
     {
         $allSolos = Cache::remember('vateud_solos', 300, function () {
             try {
@@ -312,17 +364,8 @@ class MentorOverviewController extends Controller
         }
     }
 
-    /**
-     * OPTIMIZED formatTrainee - fixes the 2102ms bottleneck
-     * 
-     * Key optimizations:
-     * 1. Use pre-indexed solosByVatsimId instead of filtering entire collection
-     * 2. Use pre-fetched claimed mentor name from join (no User::find)
-     * 3. Minimize Carbon parsing and string operations
-     */
     protected function formatTraineeOptimized($trainee, $course, $currentMentor, $solosByVatsimId, $tier1ByVatsimId, $allTrainingLogs, $pivotData): array
     {
-        // Solo status - O(1) lookup instead of O(n) filter
         $traineeVatsimId = $trainee->vatsim_id;
         $soloEndorsements = $solosByVatsimId->get($traineeVatsimId, collect());
 
@@ -336,7 +379,6 @@ class MentorOverviewController extends Controller
 
         $soloStatus = null;
         if ($solo) {
-            // Parse date once, reuse
             $expiryDate = \Carbon\Carbon::parse($solo['expiry']);
             $now = \Carbon\Carbon::now();
             $daysRemaining = max(0, ceil($now->diffInHours($expiryDate, false) / 24));
@@ -350,7 +392,6 @@ class MentorOverviewController extends Controller
             ];
         }
 
-        // Endorsement status - O(1) lookup
         $endorsementStatus = null;
         if (
             (in_array($course->type, ['GST', 'EDMT']) || ($course->type === 'RTG' && $course->position === 'GND'))
@@ -364,7 +405,6 @@ class MentorOverviewController extends Controller
             }
         }
 
-        // Training logs
         $logKey = $trainee->id . '_' . $course->id;
         $traineeLogsForCourse = $allTrainingLogs->get($logKey, collect());
 
@@ -376,7 +416,6 @@ class MentorOverviewController extends Controller
             ? $traineeLogsForCourse->first()->next_step
             : '';
 
-        // Pivot data - CRITICAL FIX: No more User::find()!
         $pivotKey = $course->id . '_' . $trainee->id;
         $pivot = $pivotData->get($pivotKey);
 
@@ -384,7 +423,6 @@ class MentorOverviewController extends Controller
         $claimedByMentorId = $pivot?->claimed_by_mentor_id;
 
         if ($claimedByMentorId) {
-            // Use pre-fetched data from the join - NO User::find() call!
             if ($pivot->claimed_mentor_id) {
                 if ($pivot->claimed_mentor_id === $currentMentor->id) {
                     $claimedBy = 'You';
@@ -434,9 +472,6 @@ class MentorOverviewController extends Controller
         return strtoupper($firstInitial . $lastInitial);
     }
 
-    /**
-     * Get available mentors for a course
-     */
     public function getCourseMentors(Request $request, $courseId)
     {
         $user = $request->user();
@@ -462,9 +497,6 @@ class MentorOverviewController extends Controller
         return response()->json($mentors);
     }
 
-    /**
-     * Update remark for a trainee
-     */
     public function updateRemark(Request $request)
     {
         $user = $request->user();
@@ -498,7 +530,7 @@ class MentorOverviewController extends Controller
 
             ActivityLogger::remarksUpdated($course, $trainee, $user, $request->remark ?? '');
 
-            return back()->with('success', 'Remark updated successfully');
+            return $this->returnWithRefreshedCourse($course->id, $user);
         } catch (\Exception $e) {
             \Log::error('Error updating trainee remark', [
                 'mentor_id' => $user->id,
@@ -511,9 +543,6 @@ class MentorOverviewController extends Controller
         }
     }
 
-    /**
-     * Remove trainee from course
-     */
     public function removeTrainee(Request $request)
     {
         $user = $request->user();
@@ -539,7 +568,7 @@ class MentorOverviewController extends Controller
 
             ActivityLogger::traineeRemoved($course, $trainee, $user);
 
-            return back()->with('success', "Successfully removed {$trainee->name} from {$course->name}");
+            return $this->returnWithRefreshedCourse($course->id, $user);
         } catch (\Exception $e) {
             \Log::error('Error removing trainee from course', [
                 'mentor_id' => $user->id,
@@ -552,9 +581,6 @@ class MentorOverviewController extends Controller
         }
     }
 
-    /**
-     * Claim a trainee (assign yourself as the responsible mentor)
-     */
     public function claimTrainee(Request $request)
     {
         $user = $request->user();
@@ -595,7 +621,7 @@ class MentorOverviewController extends Controller
 
             ActivityLogger::traineeClaimed($course, $trainee, $user);
 
-            return back()->with('success', "Successfully claimed {$trainee->name}");
+            return $this->returnWithRefreshedCourse($course->id, $user);
         } catch (\Exception $e) {
             \Log::error('Error claiming trainee', [
                 'mentor_id' => $user->id,
@@ -608,9 +634,6 @@ class MentorOverviewController extends Controller
         }
     }
 
-    /**
-     * Assign a trainee to another mentor
-     */
     public function assignTrainee(Request $request)
     {
         $user = $request->user();
@@ -657,7 +680,7 @@ class MentorOverviewController extends Controller
 
             ActivityLogger::traineeAssigned($course, $trainee, $newMentor, $user);
 
-            return back()->with('success', "Successfully assigned {$trainee->name} to {$newMentor->name}");
+            return $this->returnWithRefreshedCourse($course->id, $user);
         } catch (\Exception $e) {
             \Log::error('Error assigning trainee', [
                 'mentor_id' => $user->id,
@@ -671,9 +694,6 @@ class MentorOverviewController extends Controller
         }
     }
 
-    /**
-     * Unclaim a trainee (remove yourself as the responsible mentor)
-     */
     public function unclaimTrainee(Request $request)
     {
         $user = $request->user();
@@ -709,7 +729,7 @@ class MentorOverviewController extends Controller
 
             ActivityLogger::traineeUnclaimed($course, $trainee, $user);
 
-            return back()->with('success', "Successfully unclaimed {$trainee->name}");
+            return $this->returnWithRefreshedCourse($course->id, $user);
         } catch (\Exception $e) {
             \Log::error('Error unclaiming trainee', [
                 'mentor_id' => $user->id,
@@ -722,9 +742,6 @@ class MentorOverviewController extends Controller
         }
     }
 
-    /**
-     * Add a mentor to a course
-     */
     public function addMentor(Request $request)
     {
         $user = $request->user();
@@ -771,9 +788,6 @@ class MentorOverviewController extends Controller
         }
     }
 
-    /**
-     * Remove a mentor from a course
-     */
     public function removeMentor(Request $request)
     {
         $user = $request->user();
@@ -828,9 +842,6 @@ class MentorOverviewController extends Controller
         }
     }
 
-    /**
-     * Add a trainee to a course - WITH AUTOMATIC REACTIVATION
-     */
     public function addTraineeToCourse(Request $request)
     {
         $user = $request->user();
@@ -887,7 +898,7 @@ class MentorOverviewController extends Controller
                     $user,
                 );
 
-                return back()->with('success', "Successfully reactivated {$trainee->name} in the course");
+                return $this->returnWithRefreshedCourse($course->id, $user);
             }
 
             $course->activeTrainees()->attach($trainee->id, [
@@ -926,7 +937,7 @@ class MentorOverviewController extends Controller
                 'course_name' => $course->name
             ]);
 
-            return back()->with('success', "Successfully added {$trainee->name} to the course");
+            return $this->returnWithRefreshedCourse($course->id, $user);
         } catch (\Exception $e) {
             \Log::error('Error adding trainee to course', [
                 'mentor_id' => $user->id,
@@ -939,9 +950,6 @@ class MentorOverviewController extends Controller
         }
     }
 
-    /**
-     * Grant endorsement to a trainee
-     */
     public function grantEndorsement(Request $request)
     {
         $user = $request->user();
@@ -977,7 +985,7 @@ class MentorOverviewController extends Controller
                 return back()->withErrors(['error' => 'Course does not have any endorsement groups configured']);
             }
 
-            $moodleCompleted = true; // TODO: Add moodle completion
+            $moodleCompleted = true;
 
             if (!$moodleCompleted) {
                 return back()->withErrors(['error' => 'Trainee has not completed all required Moodle courses']);
@@ -1015,7 +1023,7 @@ class MentorOverviewController extends Controller
 
             if (!empty($grantedEndorsements) && empty($failedEndorsements)) {
                 $endorsementsList = implode(', ', $grantedEndorsements);
-                return back()->with('success', "Successfully granted endorsements to {$trainee->name}: {$endorsementsList}");
+                return $this->returnWithRefreshedCourse($course->id, $user);
             } elseif (!empty($grantedEndorsements) && !empty($failedEndorsements)) {
                 $granted = implode(', ', $grantedEndorsements);
                 $failed = implode(', ', array_column($failedEndorsements, 'name'));
@@ -1038,9 +1046,6 @@ class MentorOverviewController extends Controller
         }
     }
 
-    /**
-     * Finish a trainee's course (mark as completed instead of removing)
-     */
     public function finishCourse(Request $request)
     {
         $user = $request->user();
@@ -1092,7 +1097,7 @@ class MentorOverviewController extends Controller
 
             ActivityLogger::courseFinished($course, $trainee, $user);
 
-            return back()->with('success', "Successfully finished {$course->name} for {$trainee->name}");
+            return $this->returnWithRefreshedCourse($course->id, $user);
         } catch (\Exception $e) {
             \Log::error('Error finishing course', [
                 'mentor_id' => $user->id,
@@ -1106,9 +1111,6 @@ class MentorOverviewController extends Controller
         }
     }
 
-    /**
-     * Get past trainees for a course
-     */
     public function getPastTrainees(Request $request, $courseId)
     {
         $user = $request->user();
@@ -1160,9 +1162,6 @@ class MentorOverviewController extends Controller
         }
     }
 
-    /**
-     * Reactivate a trainee (move from completed back to active)
-     */
     public function reactivateTrainee(Request $request)
     {
         $user = $request->user();
@@ -1205,7 +1204,7 @@ class MentorOverviewController extends Controller
 
             ActivityLogger::traineeReactivated($course, $trainee, $user);
 
-            return back()->with('success', "Successfully reactivated {$trainee->name} for {$course->name}");
+            return $this->returnWithRefreshedCourse($course->id, $user);
         } catch (\Exception $e) {
             \Log::error('Error reactivating trainee', [
                 'mentor_id' => $user->id,
@@ -1218,9 +1217,6 @@ class MentorOverviewController extends Controller
         }
     }
 
-    /**
-     * Grant endorsements to a trainee
-     */
     protected function grantEndorsements(\App\Models\User $trainee, array $endorsementGroups, \App\Models\User $mentor): void
     {
         try {
@@ -1273,9 +1269,6 @@ class MentorOverviewController extends Controller
         }
     }
 
-    /**
-     * Add all familiarisations for a FIR (for CTR courses)
-     */
     protected function addFIRFamiliarisations(\App\Models\User $trainee, \App\Models\Course $course, \App\Models\User $mentor): void
     {
         try {
@@ -1330,9 +1323,6 @@ class MentorOverviewController extends Controller
         }
     }
 
-    /**
-     * Add a single familiarisation (for FAM courses)
-     */
     protected function addSingleFamiliarisation(\App\Models\User $trainee, \App\Models\Course $course, \App\Models\User $mentor): void
     {
         try {

@@ -76,9 +76,6 @@ function TraineeRowActions({
                 course_id: courseId,
             },
             {
-                preserveScroll: true,
-                preserveState: true,
-                only: ['courses'],
                 onFinish: () => {
                     setIsRemoving(false);
                     setRemoveOpen(false);
@@ -96,9 +93,6 @@ function TraineeRowActions({
                 course_id: courseId,
             },
             {
-                preserveScroll: true,
-                preserveState: true,
-                only: ['courses'],
                 onFinish: () => setIsFinishing(false),
             },
         );
@@ -256,9 +250,6 @@ export function TraineeDataTable({ trainees, course, onRemarkClick, onClaimClick
                 course_id: course.id,
             },
             {
-                preserveScroll: true,
-                preserveState: true,
-                only: ['courses'],
                 onFinish: () => setIsUnclaiming(null),
             },
         );
@@ -322,7 +313,6 @@ export function TraineeDataTable({ trainees, course, onRemarkClick, onClaimClick
             {
                 preserveScroll: true,
                 preserveState: true,
-                only: ['courses'],
                 onError: (errors) => {
                     console.error('Failed to update trainee order:', errors);
                     setData(trainees);
