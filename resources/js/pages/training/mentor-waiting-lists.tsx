@@ -281,19 +281,21 @@ export default function MentorWaitingLists({ courses, config }: PageProps) {
                                                                                 <div className="text-sm text-muted-foreground">{entry.vatsim_id}</div>
                                                                                 <Badge variant="secondary">#{index + 1}</Badge>
                                                                             </div>
-                                                                            <Badge
-                                                                                className={cn(
-                                                                                    entry.activity >= config.min_activity &&
-                                                                                        'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-                                                                                    entry.activity >= config.display_activity &&
-                                                                                        entry.activity < config.min_activity &&
-                                                                                        'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-                                                                                    entry.activity < config.display_activity &&
-                                                                                        'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
-                                                                                )}
-                                                                            >
-                                                                                {entry.activity}h
-                                                                            </Badge>
+                                                                            {selectedCourse.type === 'RTG' && (
+                                                                                <Badge
+                                                                                    className={cn(
+                                                                                        entry.activity >= config.min_activity &&
+                                                                                            'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
+                                                                                        entry.activity >= config.display_activity &&
+                                                                                            entry.activity < config.min_activity &&
+                                                                                            'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
+                                                                                        entry.activity < config.display_activity &&
+                                                                                            'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
+                                                                                    )}
+                                                                                >
+                                                                                    {entry.activity}h
+                                                                                </Badge>
+                                                                            )}
                                                                         </div>
 
                                                                         <div className="flex items-center gap-1 text-sm text-muted-foreground">
@@ -391,7 +393,7 @@ export default function MentorWaitingLists({ courses, config }: PageProps) {
                                                                 <TableRow>
                                                                     <TableHead>Position</TableHead>
                                                                     <TableHead>Trainee</TableHead>
-                                                                    <TableHead>Activity</TableHead>
+                                                                    {selectedCourse.type === 'RTG' && <TableHead>Activity</TableHead>}
                                                                     <TableHead>Waiting Time</TableHead>
                                                                     <TableHead>Remarks</TableHead>
                                                                     <TableHead className="text-right">Actions</TableHead>
@@ -407,20 +409,22 @@ export default function MentorWaitingLists({ courses, config }: PageProps) {
                                                                                 <div className="text-sm text-muted-foreground">{entry.vatsim_id}</div>
                                                                             </div>
                                                                         </TableCell>
-                                                                        <TableCell>
-                                                                            <span
-                                                                                className={cn(
-                                                                                    'font-medium',
-                                                                                    entry.activity >= config.min_activity && 'text-green-600',
-                                                                                    entry.activity >= config.display_activity &&
-                                                                                        entry.activity < config.min_activity &&
-                                                                                        'text-yellow-600',
-                                                                                    entry.activity < config.display_activity && 'text-red-600',
-                                                                                )}
-                                                                            >
-                                                                                {entry.activity}h
-                                                                            </span>
-                                                                        </TableCell>
+                                                                        {selectedCourse.type === 'RTG' && (
+                                                                            <TableCell>
+                                                                                <span
+                                                                                    className={cn(
+                                                                                        'font-medium',
+                                                                                        entry.activity >= config.min_activity && 'text-green-600',
+                                                                                        entry.activity >= config.display_activity &&
+                                                                                            entry.activity < config.min_activity &&
+                                                                                            'text-yellow-600',
+                                                                                        entry.activity < config.display_activity && 'text-red-600',
+                                                                                    )}
+                                                                                >
+                                                                                    {entry.activity}h
+                                                                                </span>
+                                                                            </TableCell>
+                                                                        )}
                                                                         <TableCell>
                                                                             <div className="flex items-center gap-1 text-sm text-muted-foreground">
                                                                                 <Clock className="h-3 w-3" />
