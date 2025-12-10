@@ -112,7 +112,7 @@ class SyncWaitingListActivity extends Command
         $fir = substr($course->mentorGroup->name, 0, 4);
 
         $start = Carbon::now()->subDays(60)->format('Y-m-d');
-        $apiUrl = "https://stats.vatsim-germany.org/api/atc/{$user->vatsim_id}/sessions/?cid={$user->vatsim_id}&start_date={$start}";
+        $apiUrl = "http://stats.vatsim-germany.org/api/atc/{$user->vatsim_id}/sessions/?start_date={$start}";
 
         try {
             $response = \Http::timeout(15)->retry(2, 1000)->get($apiUrl);

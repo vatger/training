@@ -86,7 +86,7 @@ class VatsimActivityService
         
         return Cache::remember($cacheKey, now()->addHours(1), function () use ($vatsimId) {
             $start = Carbon::now()->subDays(180)->format('Y-m-d');
-            $apiUrl = "https://stats.vatsim-germany.org/api/atc/{$vatsimId}/sessions/?cid={$vatsimId}&start_date={$start}";
+            $apiUrl = "http://stats.vatsim-germany.org/api/atc/{$vatsimId}/sessions/?start_date={$start}";
             
             try {
                 Log::debug('Fetching VATSIM activity from vatsim-germany.org', [

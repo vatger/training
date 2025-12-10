@@ -152,7 +152,7 @@ class CheckRosterStatus extends Command
     protected function getLastSession(int $vatsimId): Carbon
     {
         $date = now()->subDays(365);
-        $apiUrl = "https://stats.vatsim-germany.org/api/atc/{$vatsimId}/sessions/?cid={$vatsimId}&start_date={$date->format('Y-m-d')}";
+        $apiUrl = "http://stats.vatsim-germany.org/api/atc/{$vatsimId}/sessions/?start_date={$date->format('Y-m-d')}";
 
         try {
             $response = Http::timeout(15)->get($apiUrl);
