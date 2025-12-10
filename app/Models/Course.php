@@ -33,7 +33,10 @@ class Course extends Model
         'moodle_course_ids' => 'array',
     ];
 
-    // Relationships
+    protected $attributes = [
+        'moodle_course_ids' => '[]',
+    ];
+
     public function mentorGroup(): BelongsTo
     {
         return $this->belongsTo(Role::class, 'mentor_group_id');
@@ -56,7 +59,6 @@ class Course extends Model
 
     public function endorsementGroups()
     {
-        // This returns the endorsement group names as a collection
         return collect(
             \DB::table('course_endorsement_groups')
                 ->where('course_id', $this->id)
@@ -64,7 +66,17 @@ class Course extends Model
         );
     }
 
-    // Helper methods
+    public function getMoodleCourseIdsAttribute($value)
+    {
+        $decoded = json_decode($value, true);
+        return is_array($decoded) ? $decoded : [];
+    }
+
+    public function setMoodleCourseIdsAttribute($value)
+    {
+        $this->attributes['moodle_course_ids'] = json_encode(is_array($value) ? $value : []);
+    }
+
     public function getTypeDisplayAttribute(): string
     {
         return match($this->type) {
@@ -91,7 +103,6 @@ class Course extends Model
         return "{$this->airport_name} {$this->position_display} - {$this->type_display}";
     }
 
-    // Scopes
     public function scopeForRating($query, int $rating)
     {
         return $query->where('min_rating', '<=', $rating)
@@ -110,9 +121,6 @@ class Course extends Model
         });
     }
 
-    /**
-     * Active trainees relationship - excludes completed trainees
-     */
     public function activeTrainees()
     {
         return $this->belongsToMany(User::class, 'course_trainees')
@@ -126,13 +134,10 @@ class Course extends Model
                 'custom_order',
                 'custom_order_mentor_id'
             ])
-            ->whereNull('course_trainees.completed_at') // Only get trainees who haven't completed
+            ->whereNull('course_trainees.completed_at')
             ->withTimestamps();
     }
 
-    /**
-     * All trainees relationship - includes both active and completed
-     */
     public function allTrainees()
     {
         return $this->belongsToMany(User::class, 'course_trainees')
@@ -149,9 +154,6 @@ class Course extends Model
             ->withTimestamps();
     }
 
-    /**
-     * Completed trainees relationship
-     */
     public function completedTrainees()
     {
         return $this->belongsToMany(User::class, 'course_trainees')
@@ -165,7 +167,7 @@ class Course extends Model
                 'custom_order',
                 'custom_order_mentor_id'
             ])
-            ->whereNotNull('course_trainees.completed_at') // Only get completed trainees
+            ->whereNotNull('course_trainees.completed_at')
             ->withTimestamps();
     }
 }
