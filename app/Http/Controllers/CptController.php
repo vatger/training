@@ -28,7 +28,8 @@ class CptController extends Controller
 
     private function sendConfirmedCpts()
     {
-        return; // TODO: Remove with release
+        if (env('APP_ENV') !== 'production')
+            return;
         $cpts = Cpt::with(['trainee', 'course'])
             ->where('confirmed', true)
             ->whereNull('passed')
@@ -568,7 +569,7 @@ class CptController extends Controller
             return back()->withErrors(['error' => 'You do not have permission to upload logs for this CPT.']);
         }
 
-        $path = $request->file('log_file')->store('cpt_logs', 'public');
+        $path = $request->file('log_file')->store('cpt_logs', 'private');
 
         $cptLog = CptLog::create([
             'cpt_id' => $cpt->id,
@@ -660,20 +661,27 @@ class CptController extends Controller
             abort(403, 'Unauthorized access to CPT log.');
         }
 
-        $filePath = storage_path('app/' . $log->log_file);
-        
-        if (!file_exists($filePath)) {
-            $filePath = storage_path('app/public/' . $log->log_file);
+        if (!\Storage::disk('private')->exists($log->log_file)) {
+            // Fallback to public disk for old files
+            if (!\Storage::disk('public')->exists($log->log_file)) {
+                abort(404, 'File not found.');
+            }
+            return response()->file(
+                \Storage::disk('public')->path($log->log_file),
+                [
+                    'Content-Type' => 'application/pdf',
+                    'Content-Disposition' => 'inline; filename="' . $log->file_name . '"'
+                ]
+            );
         }
 
-        if (!file_exists($filePath)) {
-            abort(404, 'File not found.');
-        }
-
-        return response()->file($filePath, [
-            'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'inline; filename="' . $log->file_name . '"'
-        ]);
+        return response()->file(
+            \Storage::disk('private')->path($log->log_file),
+            [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'inline; filename="' . $log->file_name . '"'
+            ]
+        );
     }
 
     private function canJoinAsExaminer(User $user, Cpt $cpt): bool
