@@ -2,7 +2,7 @@ import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Head, router } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { Calendar, FileText, Plus, Trash2, Upload, UserCheck, UserPlus } from 'lucide-react';
 import { BreadcrumbItem } from '@/types';
 import { cn } from '@/lib/utils';
@@ -65,35 +65,51 @@ interface PageProps {
 
 export default function CptManagement({ cpts, statistics }: PageProps) {
     const handleJoinExaminer = (cptId: number) => {
-        router.post(route('cpt.join-examiner', cptId), {}, {
-            preserveScroll: true,
-            onSuccess: () => toast.success('Successfully joined as examiner'),
-            onError: () => toast.error('Failed to join as examiner'),
-        });
+        router.post(
+            route('cpt.join-examiner', cptId),
+            {},
+            {
+                preserveScroll: true,
+                onSuccess: () => toast.success('Successfully joined as examiner'),
+                onError: () => toast.error('Failed to join as examiner'),
+            },
+        );
     };
 
     const handleLeaveExaminer = (cptId: number) => {
-        router.post(route('cpt.leave-examiner', cptId), {}, {
-            preserveScroll: true,
-            onSuccess: () => toast.success('Successfully left as examiner'),
-            onError: () => toast.error('Failed to leave as examiner'),
-        });
+        router.post(
+            route('cpt.leave-examiner', cptId),
+            {},
+            {
+                preserveScroll: true,
+                onSuccess: () => toast.success('Successfully left as examiner'),
+                onError: () => toast.error('Failed to leave as examiner'),
+            },
+        );
     };
 
     const handleJoinLocal = (cptId: number) => {
-        router.post(route('cpt.join-local', cptId), {}, {
-            preserveScroll: true,
-            onSuccess: () => toast.success('Successfully joined as local mentor'),
-            onError: () => toast.error('Failed to join as local mentor'),
-        });
+        router.post(
+            route('cpt.join-local', cptId),
+            {},
+            {
+                preserveScroll: true,
+                onSuccess: () => toast.success('Successfully joined as local mentor'),
+                onError: () => toast.error('Failed to join as local mentor'),
+            },
+        );
     };
 
     const handleLeaveLocal = (cptId: number) => {
-        router.post(route('cpt.leave-local', cptId), {}, {
-            preserveScroll: true,
-            onSuccess: () => toast.success('Successfully left as local mentor'),
-            onError: () => toast.error('Failed to leave as local mentor'),
-        });
+        router.post(
+            route('cpt.leave-local', cptId),
+            {},
+            {
+                preserveScroll: true,
+                onSuccess: () => toast.success('Successfully left as local mentor'),
+                onError: () => toast.error('Failed to leave as local mentor'),
+            },
+        );
     };
 
     const handleDelete = (cptId: number) => {
@@ -110,14 +126,11 @@ export default function CptManagement({ cpts, statistics }: PageProps) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="CPT Management" />
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                <Card className="@container/card">
+                    <Card className="@container/card">
                         <CardHeader>
                             <CardDescription>Total CPTs</CardDescription>
-                            <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-                                {statistics.total_cpts}
-                            </CardTitle>
+                            <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">{statistics.total_cpts}</CardTitle>
                         </CardHeader>
                         <CardContent className="text-sm text-muted-foreground">Currently scheduled exams</CardContent>
                     </Card>
@@ -125,9 +138,7 @@ export default function CptManagement({ cpts, statistics }: PageProps) {
                     <Card className="@container/card">
                         <CardHeader>
                             <CardDescription>Confirmed CPTs</CardDescription>
-                            <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-                                {statistics.confirmed_cpts}
-                            </CardTitle>
+                            <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">{statistics.confirmed_cpts}</CardTitle>
                         </CardHeader>
                         <CardContent className="text-sm text-muted-foreground">Ready to proceed</CardContent>
                     </Card>
@@ -135,26 +146,23 @@ export default function CptManagement({ cpts, statistics }: PageProps) {
                     <Card className="@container/card">
                         <CardHeader>
                             <CardDescription>Pending</CardDescription>
-                            <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-                                {statistics.pending_cpts}
-                            </CardTitle>
+                            <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">{statistics.pending_cpts}</CardTitle>
                         </CardHeader>
                         <CardContent className="text-sm text-muted-foreground">Need examiner/mentor</CardContent>
                     </Card>
-
                 </div>
 
                 <Card>
-                    <CardHeader className='flex justify-between items-center'>
+                    <CardHeader className="flex items-center justify-between">
                         <div>
-                        <h3 className="text-lg font-medium">Scheduled CPTs</h3>
-                        <p className="text-sm text-muted-foreground">Manage CPTs and assignments</p>
+                            <h3 className="text-lg font-medium">Scheduled CPTs</h3>
+                            <p className="text-sm text-muted-foreground">Manage CPTs and assignments</p>
                         </div>
-                        
+
                         <Button onClick={() => router.visit(route('cpt.create'))}>
-                        <Plus className="mr-2 h-4 w-4" />
-                        Schedule New CPT
-                    </Button>
+                            <Plus className="mr-2 h-4 w-4" />
+                            Schedule New CPT
+                        </Button>
                     </CardHeader>
 
                     {cpts.length === 0 ? (
@@ -170,11 +178,11 @@ export default function CptManagement({ cpts, statistics }: PageProps) {
                             </div>
                         </CardContent>
                     ) : (
-                        <CardContent className="overflow-x-auto">
+                        <CardContent className="overflow-x-auto px-0">
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>Station & Status</TableHead>
+                                        <TableHead className="pl-6">Station & Status</TableHead>
                                         <TableHead>Trainee</TableHead>
                                         <TableHead>Date & Time</TableHead>
                                         <TableHead>Examiner</TableHead>
@@ -185,18 +193,12 @@ export default function CptManagement({ cpts, statistics }: PageProps) {
                                 <TableBody>
                                     {cpts.map((cpt) => (
                                         <TableRow key={cpt.id}>
-                                            <TableCell>
+                                            <TableCell className="pl-6">
                                                 <div className="flex items-center gap-2">
-                                                    <div className={cn(
-                                                        'h-2 w-2 rounded-full',
-                                                        cpt.confirmed ? 'bg-green-500' : 'bg-yellow-500'
-                                                    )} />
+                                                    <div className={cn('h-2 w-2 rounded-full', cpt.confirmed ? 'bg-green-500' : 'bg-yellow-500')} />
                                                     <div>
                                                         <div className="font-medium">{cpt.course.solo_station}</div>
-                                                        <div className={cn(
-                                                            'text-xs',
-                                                            cpt.confirmed ? 'text-green-600' : 'text-yellow-600'
-                                                        )}>
+                                                        <div className={cn('text-xs', cpt.confirmed ? 'text-green-600' : 'text-yellow-600')}>
                                                             {cpt.confirmed ? 'Confirmed' : 'Pending'}
                                                         </div>
                                                     </div>
@@ -204,9 +206,18 @@ export default function CptManagement({ cpts, statistics }: PageProps) {
                                             </TableCell>
 
                                             <TableCell>
-                                                <div>
-                                                    <div className="font-medium">{cpt.trainee.name}</div>
-                                                    <div className="text-sm text-muted-foreground">{cpt.trainee.vatsim_id}</div>
+                                                <div className="flex flex-col">
+                                                    <Link href={`/users/${cpt.trainee.vatsim_id}`} className="font-medium hover:underline">
+                                                        {cpt.trainee.name}
+                                                    </Link>
+                                                    <a
+                                                        href={`https://stats.vatsim.net/stats/${cpt.trainee.vatsim_id}`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="text-sm text-muted-foreground hover:underline"
+                                                    >
+                                                        {cpt.trainee.vatsim_id}
+                                                    </a>
                                                 </div>
                                             </TableCell>
 
@@ -236,11 +247,7 @@ export default function CptManagement({ cpts, statistics }: PageProps) {
                                                         </div>
                                                     </div>
                                                 ) : cpt.can_join_examiner ? (
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                        onClick={() => handleJoinExaminer(cpt.id)}
-                                                    >
+                                                    <Button variant="outline" size="sm" onClick={() => handleJoinExaminer(cpt.id)}>
                                                         <UserPlus className="mr-1 h-4 w-4" />
                                                         Sign Up
                                                     </Button>
@@ -268,11 +275,7 @@ export default function CptManagement({ cpts, statistics }: PageProps) {
                                                         </div>
                                                     </div>
                                                 ) : cpt.can_join_local ? (
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                        onClick={() => handleJoinLocal(cpt.id)}
-                                                    >
+                                                    <Button variant="outline" size="sm" onClick={() => handleJoinLocal(cpt.id)}>
                                                         <UserPlus className="mr-1 h-4 w-4" />
                                                         Sign Up
                                                     </Button>
@@ -281,7 +284,7 @@ export default function CptManagement({ cpts, statistics }: PageProps) {
                                                 )}
                                             </TableCell>
 
-                                            <TableCell className="text-right">
+                                            <TableCell className="pr-6 text-right">
                                                 <div className="flex items-center justify-end gap-2">
                                                     {cpt.can_view_upload && (
                                                         <Button
@@ -304,11 +307,7 @@ export default function CptManagement({ cpts, statistics }: PageProps) {
                                                     )}
 
                                                     {cpt.can_delete && (
-                                                        <Button
-                                                            variant="destructive"
-                                                            size="sm"
-                                                            onClick={() => handleDelete(cpt.id)}
-                                                        >
+                                                        <Button variant="destructive" size="sm" onClick={() => handleDelete(cpt.id)}>
                                                             <Trash2 className="h-4 w-4" />
                                                         </Button>
                                                     )}

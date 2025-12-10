@@ -135,6 +135,15 @@ class CourseForm
                             ->helperText('Trainees will be enrolled in these Moodle courses')
                             ->separator(','),
                     ]),
+
+                Section::make('Endorsement Groups')
+                    ->schema([
+                        Forms\Components\TagsInput::make('endorsement_groups')
+                            ->label('Endorsement Group Names')
+                            ->placeholder('Add endorsement group names')
+                            ->helperText('Endorsement groups associated with this course')
+                            ->separator(','),
+                    ]),
             ]);
     }
 }

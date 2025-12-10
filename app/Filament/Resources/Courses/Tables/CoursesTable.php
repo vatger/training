@@ -82,7 +82,7 @@ class CoursesTable
                         default => (string) $state,
                     })
                     ->sortable()
-                    ->toggleable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('max_rating')
                     ->label('Max Rating')
@@ -99,21 +99,8 @@ class CoursesTable
                         default => (string) $state,
                     })
                     ->sortable()
-                    ->toggleable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
 
-                TextColumn::make('activeTrainees_count')
-                    ->label('Active Trainees')
-                    ->counts('activeTrainees')
-                    ->badge()
-                    ->color('success')
-                    ->sortable(),
-
-                TextColumn::make('waitingListEntries_count')
-                    ->label('Waiting List')
-                    ->counts('waitingListEntries')
-                    ->badge()
-                    ->color('danger')
-                    ->sortable(),
 
                 TextColumn::make('created_at')
                     ->dateTime()
