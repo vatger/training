@@ -76,21 +76,34 @@ class EndorsementController extends Controller
             abort(403, 'Access denied. Mentor privileges required.');
         }
 
-        // --- Build strict allowed positions -----------------------
         if ($user->is_superuser || $user->is_admin) {
             $allowedPositions = null;
         } else {
             $allowedPositions = $user->mentorCourses
-                ->map(fn(Course $course) => $course->airport_icao . '_' . $course->position)
+                ->flatMap(function (Course $course) {
+                    $airport = $course->airport_icao;
+                    $position = $course->position;
+
+                    if ($position === 'GND') {
+                        return [
+                            "{$airport}_GNDDEL",
+                        ];
+                    }
+
+                    return [
+                        "{$airport}_{$position}",
+                    ];
+                })
                 ->unique()
                 ->values();
         }
+        
 
         // --- Load Tier1 endorsements ------------------------------
         $allTier1 = $this->vatEudService->getTier1Endorsements();
 
-        $endorsementIds = collect($allTier1)->pluck('id')->toArray();
-        $vatsimIds = collect($allTier1)->pluck('user_cid')->unique()->toArray();
+        $endorsementIds = collect(value: $allTier1)->pluck('id')->toArray();
+        $vatsimIds = collect(value: $allTier1)->pluck('user_cid')->unique()->toArray();
 
         $activities = EndorsementActivity::whereIn('endorsement_id', $endorsementIds)
             ->get()
