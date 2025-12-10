@@ -181,51 +181,45 @@ class VatsimActivityService
             if (count($parts) >= 2) {
                 $airport = $parts[0];
                 $station = end($parts);
-                
-                $stationsToConsider = $this->ctrTopdown[$airport] ?? [];
-                
-                Log::debug('Airport position setup', [
-                    'position' => $position,
-                    'airport' => $airport,
-                    'station' => $station,
-                    'ctr_stations' => $stationsToConsider
-                ]);
-                
+
+                $ctrStations = $this->ctrTopdown[$airport] ?? [];
+
+                $ctrAllowedStations = ['APP', 'TWR', 'GNDDEL'];
+
                 foreach ($connections as $connection) {
                     $callsign = $connection['callsign'] ?? '';
                     $minutes = floatval($connection['minutes_online'] ?? 0);
-                    
-                    // Check CTR topdown
-                    $matchesCtr = false;
-                    foreach ($stationsToConsider as $ctrStation) {
-                        if (str_starts_with($callsign, $ctrStation)) {
-                            $matchesCtr = true;
-                            break;
-                        }
-                    }
-                    
-                    // Check suffix condition
+
                     $matchesSuffix = $this->suffixCondition($airport, $station, $callsign);
-                    
-                    if ($matchesCtr || $matchesSuffix) {
-                        $activityMinutes += $minutes;
 
-                        // Update last activity date
-                        $connectionDate = $this->parseConnectionDate($connection);
-                        if ($connectionDate && ($lastActivityDate === null || $connectionDate->greaterThan($lastActivityDate))) {
-                            $lastActivityDate = $connectionDate;
+                    $matchesCtr = false;
+                    if (in_array($station, $ctrAllowedStations, true)) {
+                        foreach ($ctrStations as $ctrStation) {
+                            if (str_starts_with($callsign, $ctrStation)) {
+                                $matchesCtr = true;
+                                break;
+                            }
                         }
-
-                        Log::debug('Connection match found', [
-                            'position' => $position,
-                            'callsign' => $callsign,
-                            'minutes' => $minutes,
-                            'date' => $connectionDate?->format('Y-m-d'),
-                            'matches_ctr' => $matchesCtr,
-                            'matches_suffix' => $matchesSuffix,
-                            'total_so_far' => $activityMinutes
-                        ]);
                     }
+
+                    if (!$matchesCtr && !$matchesSuffix) {
+                        continue;
+                    }
+
+                    $activityMinutes += $minutes;
+
+                    $connectionDate = $this->parseConnectionDate($connection);
+                    if ($connectionDate && ($lastActivityDate === null || $connectionDate->greaterThan($lastActivityDate))) {
+                        $lastActivityDate = $connectionDate;
+                    }
+
+                    Log::debug('Connection counted', [
+                        'position' => $position,
+                        'callsign' => $callsign,
+                        'minutes' => $minutes,
+                        'matched_by' => $matchesCtr ? 'CTR' : 'APT',
+                        'date' => $connectionDate?->format('Y-m-d'),
+                    ]);
                 }
             }
         }
@@ -277,21 +271,19 @@ class VatsimActivityService
      */
     protected function suffixCondition(string $endorsementApt, string $endorsementStation, string $callsign): bool
     {
-        $parts = explode('_', $callsign);
-        if (count($parts) < 2) {
+        if (!str_starts_with($callsign, $endorsementApt . '_')) {
             return false;
         }
-        
-        $csApt = $parts[0];
-        
-        // Handle different callsign formats:
-        // EDDL_GND, EDDL_M_GND, EDDL__GND, EDDL_APP, etc.
-        $csStation = end($parts); // Get the last part (actual station)
-        
+
+        $parts = explode('_', $callsign);
+
+        $csStation = end($parts);
+
         $viableSuffixes = $this->viableSuffixes[$endorsementStation] ?? [];
-        
-        return $csApt === $endorsementApt && in_array($csStation, $viableSuffixes);
+
+        return in_array($csStation, $viableSuffixes, true);
     }
+
 
     /**
      * Get activity status based on hours and requirements

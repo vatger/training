@@ -133,7 +133,6 @@ class UserSearchController extends Controller
                                 'next_step',
                             ])
                             ->orderBy('session_date', 'desc')
-                            ->limit(5)
                             ->get()
                             ->map(function ($log) {
                                 return [

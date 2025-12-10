@@ -251,7 +251,19 @@ class User extends Authenticatable implements FilamentUser
      */
     public function activeCourses()
     {
-        return $this->belongsToMany(Course::class, 'course_trainees');
+        return $this->belongsToMany(Course::class, 'course_trainees')
+            ->whereNull('course_trainees.completed_at')
+            ->withPivot([
+                'claimed_by_mentor_id',
+                'claimed_at',
+                'completed_at',
+                'remarks',
+                'remark_author_id',
+                'remark_updated_at',
+                'custom_order',
+                'custom_order_mentor_id'
+            ])
+            ->withTimestamps();
     }
 
     /**
