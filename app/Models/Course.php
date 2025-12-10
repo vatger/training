@@ -33,6 +33,40 @@ class Course extends Model
         'moodle_course_ids' => 'array',
     ];
 
+    public function setMoodleCourseIdsAttribute($value)
+    {
+        if ($value === null || $value === '') {
+            $this->attributes['moodle_course_ids'] = json_encode([]);
+        } elseif (is_string($value)) {
+            $decoded = json_decode($value, true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                $this->attributes['moodle_course_ids'] = $value;
+            } else {
+                $this->attributes['moodle_course_ids'] = json_encode([]);
+            }
+        } elseif (is_array($value)) {
+            $this->attributes['moodle_course_ids'] = json_encode($value);
+        } else {
+            $this->attributes['moodle_course_ids'] = json_encode([]);
+        }
+    }
+
+    public function getMoodleCourseIdsAttribute($value)
+    {
+        if ($value === null || $value === '') {
+            return [];
+        }
+
+        if (is_string($value)) {
+            $decoded = json_decode($value, true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                return $decoded;
+            }
+        }
+
+        return [];
+    }
+
     public function mentorGroup(): BelongsTo
     {
         return $this->belongsTo(Role::class, 'mentor_group_id');
@@ -60,23 +94,6 @@ class Course extends Model
                 ->where('course_id', $this->id)
                 ->pluck('endorsement_group_name')
         );
-    }
-
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::creating(function ($course) {
-            if (!isset($course->moodle_course_ids) || $course->moodle_course_ids === null) {
-                $course->moodle_course_ids = [];
-            }
-        });
-
-        static::updating(function ($course) {
-            if (!isset($course->moodle_course_ids) || $course->moodle_course_ids === null) {
-                $course->moodle_course_ids = [];
-            }
-        });
     }
 
     public function getTypeDisplayAttribute(): string
