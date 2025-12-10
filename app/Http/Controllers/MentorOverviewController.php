@@ -395,14 +395,26 @@ class MentorOverviewController extends Controller
         $endorsementStatus = null;
         if (
             (in_array($course->type, ['GST', 'EDMT']) || ($course->type === 'RTG' && $course->position === 'GND'))
-            && !empty($course->solo_station)
         ) {
             $traineeEndorsements = $tier1ByVatsimId->get($traineeVatsimId, collect());
-            $endorsement = $traineeEndorsements->first(fn($e) => $e['position'] === $course->solo_station);
 
+            $endorsementGroups = $course->endorsementGroups()->toArray();
+
+            foreach ($endorsementGroups as $groupName) {
+                $endorsement = $traineeEndorsements->first(fn($e) => $e['position'] === $groupName);
+                if ($endorsement) {
+                    $endorsementStatus = $groupName;
+                    break;
+                }
+            }
+
+            // Fallback to solo_station check if no endorsement groups found
+            if (!$endorsementStatus && !empty($course->solo_station)) {
+                $endorsement = $traineeEndorsements->first(fn($e) => $e['position'] === $course->solo_station);
             if ($endorsement) {
                 $endorsementStatus = $course->solo_station;
             }
+        }
         }
 
         $logKey = $trainee->id . '_' . $course->id;

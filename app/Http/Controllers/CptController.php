@@ -30,7 +30,7 @@ class CptController extends Controller
     {
         if (env('APP_ENV') !== 'production')
             return;
-        $cpts = Cpt::with(['trainee', 'course'])
+        $cpts = Cpt::with(relations: ['trainee', 'course'])
             ->where('confirmed', true)
             ->whereNull('passed')
             ->orderBy('date')

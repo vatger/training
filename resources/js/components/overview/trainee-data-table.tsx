@@ -472,8 +472,8 @@ export function TraineeDataTable({ trainees, course, onRemarkClick, onClaimClick
             header: 'Endorsement',
             cell: ({ row }) => {
                 const trainee = row.original;
-                const endorsementStatus = (trainee as any).endorsementStatus;
-
+                const endorsementStatus = trainee.endorsementStatus;
+        
                 return endorsementStatus ? (
                     <Badge variant="outline" className="border-green-200 bg-green-50 text-green-700">
                         <Award className="mr-1 h-3 w-3" />

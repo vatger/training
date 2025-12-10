@@ -169,16 +169,7 @@ export default function MentorOverview({ courses: initialCourses, statistics, in
         setSelectedTrainee(null);
     };
 
-    // Always get the latest course data from the courses array
     const currentCourse = selectedCourse ? courses.find((c) => c.id === selectedCourse.id) || selectedCourse : null;
-
-    console.log('Render state:', {
-        selectedCourseId: selectedCourse?.id,
-        currentCourseId: currentCourse?.id,
-        currentCourseLoaded: currentCourse?.loaded,
-        currentCourseTrainees: currentCourse?.trainees?.length || 0,
-        isLoading: currentCourse ? loadingCourses.has(currentCourse.id) : false,
-    });
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
