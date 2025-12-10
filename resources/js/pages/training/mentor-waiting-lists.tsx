@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Link, router } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { Clock, Play, Search, Users, X, Eye, MessageSquare } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -191,6 +191,7 @@ export default function MentorWaitingLists({ courses, config }: PageProps) {
 
     return (
         <AppLayout breadcrumbs={[{ title: 'Waiting Lists', href: route('waiting-lists.manage') }]}>
+            <Head title="Waiting Lists" />
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="flex flex-wrap items-center gap-3">
                     <div className="relative min-w-[300px] flex-1">
