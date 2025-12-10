@@ -33,10 +33,6 @@ class Course extends Model
         'moodle_course_ids' => 'array',
     ];
 
-    protected $attributes = [
-        'moodle_course_ids' => '[]',
-    ];
-
     public function mentorGroup(): BelongsTo
     {
         return $this->belongsTo(Role::class, 'mentor_group_id');
@@ -66,15 +62,21 @@ class Course extends Model
         );
     }
 
-    public function getMoodleCourseIdsAttribute($value)
+    protected static function boot()
     {
-        $decoded = json_decode($value, true);
-        return is_array($decoded) ? $decoded : [];
-    }
+        parent::boot();
 
-    public function setMoodleCourseIdsAttribute($value)
-    {
-        $this->attributes['moodle_course_ids'] = json_encode(is_array($value) ? $value : []);
+        static::creating(function ($course) {
+            if (!isset($course->moodle_course_ids) || $course->moodle_course_ids === null) {
+                $course->moodle_course_ids = [];
+            }
+        });
+
+        static::updating(function ($course) {
+            if (!isset($course->moodle_course_ids) || $course->moodle_course_ids === null) {
+                $course->moodle_course_ids = [];
+            }
+        });
     }
 
     public function getTypeDisplayAttribute(): string
