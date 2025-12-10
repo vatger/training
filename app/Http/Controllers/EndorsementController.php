@@ -82,14 +82,9 @@ class EndorsementController extends Controller
             $courses = $user->mentorCourses;
         }
 
-        $allowedPositions = $courses->map(function ($course) {
-            return [
-                'airport' => $course->airport_icao,
-                'position' => $course->position,
-            ];
-        })->unique(function ($item) {
-            return $item['airport'] . '_' . $item['position'];
-        });
+        $allowedCourseIds = $user->is_superuser || $user->is_admin
+            ? null
+            : $user->mentorCourses->pluck('id')->values();
 
         $allTier1 = $this->vatEudService->getTier1Endorsements();
 
@@ -97,8 +92,12 @@ class EndorsementController extends Controller
         $vatsimIds = collect($allTier1)->pluck('user_cid')->unique()->toArray();
 
         $activities = EndorsementActivity::whereIn('endorsement_id', $endorsementIds)
+            ->when($allowedCourseIds, function ($query) use ($allowedCourseIds) {
+                $query->whereIn('course_id', $allowedCourseIds);
+            })
             ->get()
             ->keyBy('endorsement_id');
+
 
         $users = User::whereIn('vatsim_id', $vatsimIds)
             ->get()
@@ -133,23 +132,6 @@ class EndorsementController extends Controller
                 ];
             })
             ->filter()
-            ->filter(function ($endorsement) use ($allowedPositions, $user) {
-                if ($user->is_superuser || $user->is_admin) {
-                    return true;
-                }
-
-                $parts = explode('_', $endorsement['position']);
-                $airport = $parts[0];
-                $positionType = end($parts);
-
-                if ($positionType === 'GNDDEL') {
-                    $positionType = 'GND';
-                }
-
-                return $allowedPositions->contains(function ($allowed) use ($airport, $positionType) {
-                    return $allowed['airport'] === $airport && $allowed['position'] === $positionType;
-                });
-            })
             ->values()
             ->toArray();
 
@@ -187,18 +169,9 @@ class EndorsementController extends Controller
             }
 
             if (!$user->is_superuser && !$user->is_admin) {
-                $hasCourse = $user->mentorCourses()->where(function ($query) use ($endorsement) {
-                    $parts = explode('_', $endorsement->position);
-                    $airport = $parts[0];
-                    $position = end($parts);
-
-                    if ($position === 'GNDDEL') {
-                        $position = 'GND';
-                    }
-
-                    $query->where('airport_icao', $airport)
-                        ->where('position', $position);
-                })->exists();
+                $hasCourse = $user->mentorCourses()
+                    ->where('id', $endorsement->course_id)
+                    ->exists();
 
                 if (!$hasCourse) {
                     return back()->with('error', 'You do not have permission to manage this endorsement');
@@ -212,6 +185,14 @@ class EndorsementController extends Controller
             $minRequiredMinutes = config('services.vateud.min_activity_minutes', 180);
             if ($endorsement->activity_minutes >= $minRequiredMinutes) {
                 return back()->with('error', 'Endorsement has sufficient activity and cannot be marked for removal');
+            }
+
+            if (!$endorsement->course_id) {
+                Log::warning('Endorsement missing course_id', [
+                    'endorsement_id' => $endorsement->endorsement_id,
+                ]);
+
+                return back()->with('error', 'Endorsement is not linked to a course');
             }
 
             $endorsement->removal_date = Carbon::now()->addDays(
