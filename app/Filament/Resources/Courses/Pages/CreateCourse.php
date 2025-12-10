@@ -17,13 +17,15 @@ class CreateCourse extends CreateRecord
 
         $record = static::getModel()::create($data);
 
-        foreach ($endorsementGroups as $groupName) {
-            \DB::table('course_endorsement_groups')->insert([
-                'course_id' => $record->id,
-                'endorsement_group_name' => $groupName,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+        if (is_array($endorsementGroups)) {
+            foreach ($endorsementGroups as $groupName) {
+                \DB::table('course_endorsement_groups')->insert([
+                    'course_id' => $record->id,
+                    'endorsement_group_name' => $groupName,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
         }
 
         return $record;

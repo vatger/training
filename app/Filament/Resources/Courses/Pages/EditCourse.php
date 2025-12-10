@@ -20,7 +20,12 @@ class EditCourse extends EditRecord
 
     protected function mutateFormDataBeforeFill(array $data): array
     {
-        $data['endorsement_groups'] = $this->record->endorsementGroups()->toArray();
+        $endorsementGroups = \DB::table('course_endorsement_groups')
+            ->where('course_id', $this->record->id)
+            ->pluck('endorsement_group_name')
+            ->toArray();
+
+        $data['endorsement_groups'] = $endorsementGroups;
 
         return $data;
     }
@@ -36,13 +41,15 @@ class EditCourse extends EditRecord
             ->where('course_id', $record->id)
             ->delete();
 
-        foreach ($endorsementGroups as $groupName) {
-            \DB::table('course_endorsement_groups')->insert([
-                'course_id' => $record->id,
-                'endorsement_group_name' => $groupName,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+        if (is_array($endorsementGroups)) {
+            foreach ($endorsementGroups as $groupName) {
+                \DB::table('course_endorsement_groups')->insert([
+                    'course_id' => $record->id,
+                    'endorsement_group_name' => $groupName,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
         }
 
         return $record;
