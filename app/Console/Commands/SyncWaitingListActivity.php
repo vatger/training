@@ -86,17 +86,25 @@ class SyncWaitingListActivity extends Command
         try {
             $course = $entry->course;
             $user = $entry->user;
-
+    
             if (!$user->isVatsimUser()) {
+                Log::info('User is not VATSIM user', ['entry_id' => $entry->id]);
                 return;
             }
-
+    
             $activityHours = $this->getActivityHours($course, $user);
-
+            
+            Log::info('Calculated activity hours', [
+                'entry_id' => $entry->id,
+                'user_id' => $user->id,
+                'vatsim_id' => $user->vatsim_id,
+                'hours' => $activityHours
+            ]);
+    
             $entry->activity = $activityHours;
             $entry->hours_updated = now();
             $entry->save();
-
+    
         } catch (\Exception $e) {
             Log::error('Failed to update waiting list activity', [
                 'entry_id' => $entry->id,
