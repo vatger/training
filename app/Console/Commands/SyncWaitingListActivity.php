@@ -148,8 +148,9 @@ class SyncWaitingListActivity extends Command
 
     protected function calculateS1TowerHours(array $connections, string $fir): float
     {
-        $url = "https://raw.githubusercontent.com/VATGER-Nav/datahub/refs/heads/production/api/{$fir}/twr.json";
-        
+        $firLower = strtolower($fir);
+        $url = "https://raw.githubusercontent.com/VATGER-Nav/datahub/refs/heads/production/api/{$firLower}/twr.json";
+
         try {
             $response = \Http::get($url);
             if (!$response->successful()) {
@@ -158,10 +159,10 @@ class SyncWaitingListActivity extends Command
             }
 
             $hub = $response->json();
-            
+
             $stations = collect($hub)
                 ->filter(function ($station) {
-                    return isset($station['s1_twr']) 
+                    return isset($station['s1_twr'])
                         && $station['s1_twr'] === true
                         && !str_contains($station['logon'] ?? '', '_I_');
                 })
@@ -171,7 +172,7 @@ class SyncWaitingListActivity extends Command
             $totalMinutes = 0;
             foreach ($connections as $session) {
                 $callsign = $session['callsign'] ?? '';
-                
+
                 foreach ($stations as $station) {
                     if ($this->equalStr($callsign, $station)) {
                         $totalMinutes += floatval($session['minutes_online'] ?? 0);
