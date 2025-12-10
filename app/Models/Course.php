@@ -28,8 +28,6 @@ class Course extends Model
     protected $casts = [
         'min_rating' => 'integer',
         'max_rating' => 'integer',
-        'type' => 'string',
-        'position' => 'string',
         'moodle_course_ids' => 'array',
     ];
 
@@ -37,18 +35,18 @@ class Course extends Model
     {
         if ($value === null || $value === '') {
             $this->attributes['moodle_course_ids'] = json_encode([]);
-        } elseif (is_string($value)) {
-            $decoded = json_decode($value, true);
-            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
-                $this->attributes['moodle_course_ids'] = $value;
-            } else {
-                $this->attributes['moodle_course_ids'] = json_encode([]);
-            }
-        } elseif (is_array($value)) {
-            $this->attributes['moodle_course_ids'] = json_encode($value);
-        } else {
-            $this->attributes['moodle_course_ids'] = json_encode([]);
+            return;
         }
+
+        if (is_array($value)) {
+            $integers = array_map('intval', array_filter($value, function ($item) {
+                return is_numeric($item);
+            }));
+            $this->attributes['moodle_course_ids'] = json_encode(array_values($integers));
+            return;
+        }
+
+        $this->attributes['moodle_course_ids'] = json_encode([]);
     }
 
     public function getMoodleCourseIdsAttribute($value)
@@ -57,14 +55,12 @@ class Course extends Model
             return [];
         }
 
-        if (is_string($value)) {
-            $decoded = json_decode($value, true);
-            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
-                return $decoded;
-            }
+        $decoded = json_decode($value, true);
+        if (!is_array($decoded)) {
+            return [];
         }
 
-        return [];
+        return array_map('intval', $decoded);
     }
 
     public function mentorGroup(): BelongsTo

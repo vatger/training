@@ -107,6 +107,7 @@ class CourseForm
                                 7 => 'C3 (Senior Controller)',
                                 8 => 'I1 (Instructor)',
                                 10 => 'I3 (Senior Instructor)',
+                                1000 => 'Unlimited',
                             ])
                             ->default(2),
                         
@@ -123,6 +124,7 @@ class CourseForm
                                 7 => 'C3 (Senior Controller)',
                                 8 => 'I1 (Instructor)',
                                 10 => 'I3 (Senior Instructor)',
+                                1000 => 'Unlimited',
                             ])
                             ->default(3),
                     ])->columns(2),
@@ -131,18 +133,16 @@ class CourseForm
                     ->schema([
                         Forms\Components\TagsInput::make('moodle_course_ids')
                             ->label('Moodle Course IDs')
-                            ->placeholder('Add course IDs')
-                            ->helperText('Trainees will be enrolled in these Moodle courses')
-                            ->separator(','),
+                            ->placeholder('Type ID and press Enter')
+                            ->helperText('Enter Moodle course IDs - trainees will be auto-enrolled'),
                     ]),
 
                 Section::make('Endorsement Groups')
                     ->schema([
                         Forms\Components\TagsInput::make('endorsement_groups')
                             ->label('Endorsement Group Names')
-                            ->placeholder('Add endorsement group names')
-                            ->helperText('Endorsement groups associated with this course')
-                            ->separator(','),
+                            ->placeholder('Type group name and press Enter')
+                            ->helperText('Endorsement groups associated with this course'),
                     ]),
             ]);
     }
