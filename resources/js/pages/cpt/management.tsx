@@ -2,11 +2,13 @@ import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Head, Link, router } from '@inertiajs/react';
-import { Calendar, FileText, Plus, Trash2, Upload, UserCheck, UserPlus } from 'lucide-react';
+import { Calendar, Download, FileText, Plus, Trash2, Upload, UserCheck, UserPlus } from 'lucide-react';
 import { BreadcrumbItem } from '@/types';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -58,12 +60,78 @@ interface Statistics {
     pending_cpts: number;
 }
 
+interface CptTemplate {
+    name: string;
+    filename: string;
+    description: string;
+}
+
 interface PageProps {
     cpts: Cpt[];
     statistics: Statistics;
+    cpt_templates: CptTemplate[];
 }
 
-export default function CptManagement({ cpts, statistics }: PageProps) {
+function CptTemplatesModal({ templates }: { templates: CptTemplate[] }) {
+    const [open, setOpen] = useState(false);
+
+    const handleDownload = (filename: string) => {
+        const link = document.createElement('a');
+        link.href = `/storage/cpt-templates/${filename}`;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        toast.success('Template download started');
+    };
+
+    return (
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+                <Button variant="outline">
+                    <Download className="mr-2 h-4 w-4" />
+                    CPT Templates
+                </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                    <DialogTitle>CPT Log Templates</DialogTitle>
+                    <DialogDescription>Download CPT log templates for different positions and scenarios.</DialogDescription>
+                </DialogHeader>
+                <div className="mt-4 space-y-3">
+                    {templates.length === 0 ? (
+                        <div className="py-8 text-center text-muted-foreground">
+                            <FileText className="mx-auto mb-2 h-12 w-12 opacity-50" />
+                            <p>No templates available</p>
+                        </div>
+                    ) : (
+                        templates.map((template) => (
+                            <Card key={template.filename} className="overflow-hidden">
+                                <div className="flex items-center justify-between p-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className="rounded bg-blue-100 p-2 dark:bg-blue-900">
+                                            <FileText className="h-5 w-5 text-blue-600" />
+                                        </div>
+                                        <div>
+                                            <h4 className="font-medium">{template.name}</h4>
+                                            <p className="text-sm text-muted-foreground">{template.description}</p>
+                                        </div>
+                                    </div>
+                                    <Button size="sm" onClick={() => handleDownload(template.filename)}>
+                                        <Download className="mr-1 h-4 w-4" />
+                                        Download
+                                    </Button>
+                                </div>
+                            </Card>
+                        ))
+                    )}
+                </div>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
+export default function CptManagement({ cpts, statistics, cpt_templates }: PageProps) {
     const handleJoinExaminer = (cptId: number) => {
         router.post(
             route('cpt.join-examiner', cptId),
@@ -153,16 +221,19 @@ export default function CptManagement({ cpts, statistics }: PageProps) {
                 </div>
 
                 <Card>
-                    <CardHeader className="flex items-center justify-between">
+                    <CardHeader className="flex flex-row items-center justify-between">
                         <div>
                             <h3 className="text-lg font-medium">Scheduled CPTs</h3>
                             <p className="text-sm text-muted-foreground">Manage CPTs and assignments</p>
                         </div>
 
-                        <Button onClick={() => router.visit(route('cpt.create'))}>
-                            <Plus className="mr-2 h-4 w-4" />
-                            Schedule New CPT
-                        </Button>
+                        <div className="flex gap-2">
+                            <CptTemplatesModal templates={cpt_templates || []} />
+                            <Button onClick={() => router.visit(route('cpt.create'))}>
+                                <Plus className="mr-2 h-4 w-4" />
+                                Schedule New CPT
+                            </Button>
+                        </div>
                     </CardHeader>
 
                     {cpts.length === 0 ? (

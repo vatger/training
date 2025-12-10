@@ -177,10 +177,62 @@ class CptController extends Controller
             'pending_cpts' => $cpts->where('confirmed', false)->count(),
         ];
 
+        $cptTemplates = $this->getCptTemplates();
+
         return Inertia::render('cpt/management', [
             'cpts' => $cpts,
             'statistics' => $statistics,
+            'cpt_templates' => $cptTemplates,
         ]);
+    }
+
+    private function getCptTemplates(): array
+    {
+        $templatesPath = storage_path('app/public/cpt-templates');
+
+        if (!file_exists($templatesPath)) {
+            return [];
+        }
+
+        $files = Storage::disk('public')->files('cpt-templates');
+        $templates = [];
+
+        $templateMappings = [
+            'TWR' => 'Tower',
+            'APP' => 'Approach',
+            'CTR' => 'Centre',
+            'GND' => 'Ground',
+        ];
+
+        foreach ($files as $file) {
+            $filename = basename($file);
+
+            if (pathinfo($filename, PATHINFO_EXTENSION) !== 'pdf') {
+                continue;
+            }
+
+            $position = null;
+            $name = pathinfo($filename, PATHINFO_FILENAME);
+
+            foreach ($templateMappings as $code => $label) {
+                if (stripos($name, $code) !== false || stripos($name, $label) !== false) {
+                    $position = $label;
+                    break;
+                }
+            }
+
+            $templates[] = [
+                'name' => $name,
+                'filename' => $filename,
+                'description' => $position ? "CPT Log Template for {$position}" : 'CPT Log Template',
+            ];
+        }
+
+        usort($templates, function ($a, $b) {
+            return strcmp($a['name'], $b['name']);
+        });
+
+        return $templates;
     }
 
     public function create(Request $request)
@@ -662,7 +714,6 @@ class CptController extends Controller
         }
 
         if (!\Storage::disk('private')->exists($log->log_file)) {
-            // Fallback to public disk for old files
             if (!\Storage::disk('public')->exists($log->log_file)) {
                 abort(404, 'File not found.');
             }
