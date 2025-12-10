@@ -71,47 +71,40 @@ class EndorsementController extends Controller
     public function mentorView(Request $request): Response
     {
         $user = $request->user();
-        
+
         if (!$user->isMentor() && !$user->is_superuser) {
             abort(403, 'Access denied. Mentor privileges required.');
         }
 
+        // --- Build strict allowed positions -----------------------
         if ($user->is_superuser || $user->is_admin) {
-            $courses = Course::all();
+            $allowedPositions = null;
         } else {
-            $courses = $user->mentorCourses;
+            $allowedPositions = $user->mentorCourses
+                ->map(fn(Course $course) => $course->airport_icao . '_' . $course->position)
+                ->unique()
+                ->values();
         }
 
-        $allowedCourseIds = $user->is_superuser || $user->is_admin
-            ? null
-            : $user->mentorCourses->pluck('id')->values();
-
+        // --- Load Tier1 endorsements ------------------------------
         $allTier1 = $this->vatEudService->getTier1Endorsements();
 
         $endorsementIds = collect($allTier1)->pluck('id')->toArray();
         $vatsimIds = collect($allTier1)->pluck('user_cid')->unique()->toArray();
 
         $activities = EndorsementActivity::whereIn('endorsement_id', $endorsementIds)
-            ->when($allowedCourseIds, function ($query) use ($allowedCourseIds) {
-                $query->whereIn('course_id', $allowedCourseIds);
-            })
             ->get()
             ->keyBy('endorsement_id');
-
 
         $users = User::whereIn('vatsim_id', $vatsimIds)
             ->get()
             ->keyBy('vatsim_id');
 
-        $allEndorsements = collect($allTier1)
+        // --- Map & strictly filter --------------------------------
+        $endorsements = collect($allTier1)
             ->map(function ($endorsement) use ($activities, $users) {
                 $activity = $activities->get($endorsement['id']);
-
                 if (!$activity) {
-                    Log::info('No activity record found for endorsement', [
-                        'endorsement_id' => $endorsement['id'],
-                        'position' => $endorsement['position']
-                    ]);
                     return null;
                 }
 
@@ -122,28 +115,36 @@ class EndorsementController extends Controller
                     'endorsementId' => $endorsement['id'],
                     'position' => $endorsement['position'],
                     'vatsimId' => $endorsement['user_cid'],
-                    'userName' => $user ? $user->name : 'Unknown',
+                    'userName' => $user?->name ?? 'Unknown',
                     'activity' => $activity->activity_minutes,
                     'activityHours' => $activity->activity_hours,
                     'status' => $activity->status,
                     'progress' => $activity->progress,
                     'removalDate' => $activity->removal_date?->format('Y-m-d'),
-                    'removalDays' => $activity->removal_date ? $activity->removal_date->diffInDays(now(), false) : -1,
+                    'removalDays' => $activity->removal_date
+                        ? $activity->removal_date->diffInDays(now(), false)
+                        : -1,
                 ];
             })
             ->filter()
-            ->values()
-            ->toArray();
+            ->filter(function ($endorsement) use ($allowedPositions, $user) {
+                if ($user->is_superuser || $user->is_admin) {
+                    return true;
+                }
 
-        $endorsementsByPosition = collect($allEndorsements)
+                return $allowedPositions->contains($endorsement['position']);
+            })
+            ->values();
+
+        $endorsementsByPosition = $endorsements
             ->groupBy('position')
-            ->map(function ($endorsements, $position) {
+            ->map(function ($items, $position) {
                 return [
                     'position' => $position,
                     'position_name' => $this->getPositionFullName($position),
                     'airport_icao' => explode('_', $position)[0],
                     'position_type' => $this->getPositionType($position),
-                    'endorsements' => $endorsements->toArray(),
+                    'endorsements' => $items->values(),
                 ];
             })
             ->values();
@@ -156,73 +157,57 @@ class EndorsementController extends Controller
     public function removeTier1(Request $request, int $endorsementId)
     {
         $user = $request->user();
-        
+
         if (!$user->isMentor() && !$user->is_superuser) {
             return back()->with('error', 'Access denied');
         }
 
-        try {
-            $endorsement = EndorsementActivity::where('endorsement_id', $endorsementId)->first();
-            
-            if (!$endorsement) {
-                return back()->with('error', 'Endorsement not found');
-            }
+        $endorsement = EndorsementActivity::where('endorsement_id', $endorsementId)->first();
 
-            if (!$user->is_superuser && !$user->is_admin) {
-                $hasCourse = $user->mentorCourses()
-                    ->where('id', $endorsement->course_id)
-                    ->exists();
-
-                if (!$hasCourse) {
-                    return back()->with('error', 'You do not have permission to manage this endorsement');
-                }
-            }
-
-            if ($endorsement->removal_date) {
-                return back()->with('error', 'Endorsement already marked for removal');
-            }
-
-            $minRequiredMinutes = config('services.vateud.min_activity_minutes', 180);
-            if ($endorsement->activity_minutes >= $minRequiredMinutes) {
-                return back()->with('error', 'Endorsement has sufficient activity and cannot be marked for removal');
-            }
-
-            if (!$endorsement->course_id) {
-                Log::warning('Endorsement missing course_id', [
-                    'endorsement_id' => $endorsement->endorsement_id,
-                ]);
-
-                return back()->with('error', 'Endorsement is not linked to a course');
-            }
-
-            $endorsement->removal_date = Carbon::now()->addDays(
-                config('services.vateud.removal_warning_days', 31)
-            );
-            $endorsement->removal_notified = false;
-            $endorsement->last_updated = Carbon::createFromTimestamp(1);
-            $endorsement->save();
-
-            $trainee = User::where('vatsim_id', $endorsement->vatsim_id)->first();
-            if ($trainee) {
-                ActivityLogger::endorsementRemoved(
-                    $endorsement->position,
-                    $trainee,
-                    $user,
-                    'Marked for removal due to low activity'
-                );
-            }
-
-            return back()->with('success', "Successfully marked {$endorsement->position} for removal");
-
-        } catch (\Exception $e) {
-            Log::error('Error marking endorsement for removal', [
-                'endorsement_id' => $endorsementId,
-                'user_id' => $user->id,
-                'error' => $e->getMessage()
-            ]);
-
-            return back()->with('error', 'An error occurred while marking the endorsement for removal');
+        if (!$endorsement) {
+            return back()->with('error', 'Endorsement not found');
         }
+
+        // --- STRICT position permission check ---------------------
+        if (!$user->is_superuser && !$user->is_admin) {
+            $allowedPositions = $user->mentorCourses
+                ->map(fn(Course $course) => $course->airport_icao . '_' . $course->position)
+                ->unique();
+
+            if (!$allowedPositions->contains($endorsement->position)) {
+                return back()->with('error', 'You do not have permission to manage this endorsement');
+            }
+        }
+
+        if ($endorsement->removal_date) {
+            return back()->with('error', 'Endorsement already marked for removal');
+        }
+
+        $minRequiredMinutes = config('services.vateud.min_activity_minutes', 180);
+
+        if ($endorsement->activity_minutes >= $minRequiredMinutes) {
+            return back()->with('error', 'Endorsement has sufficient activity and cannot be marked for removal');
+        }
+
+        $endorsement->removal_date = Carbon::now()->addDays(
+            config('services.vateud.removal_warning_days', 31)
+        );
+        $endorsement->removal_notified = false;
+        $endorsement->last_updated = Carbon::createFromTimestamp(1);
+        $endorsement->save();
+
+        $trainee = User::where('vatsim_id', $endorsement->vatsim_id)->first();
+
+        if ($trainee) {
+            ActivityLogger::endorsementRemoved(
+                $endorsement->position,
+                $trainee,
+                $user,
+                'Marked for removal due to low activity'
+            );
+        }
+
+        return back()->with('success', "Successfully marked {$endorsement->position} for removal");
     }
 
     public function requestTier2(Request $request, int $tier2Id)
