@@ -4,6 +4,7 @@ import { Clock } from "lucide-react";
 import { Endorsement } from "@/types";
 
 export default function SoloEndorsementsTable({ endorsements }: { endorsements: Endorsement[] }) {
+    console.log(endorsements);
   return (
       <div className="rounded-md border">
           <Table>
@@ -25,21 +26,23 @@ export default function SoloEndorsementsTable({ endorsements }: { endorsements: 
                                   </div>
                                   <div>
                                       <div className="font-medium">{endorsement.position}</div>
-                                      <div className="text-sm text-muted-foreground">{endorsement.fullName}</div>
                                   </div>
                               </div>
                           </TableCell>
                           <TableCell>
                               <div>
                                   <div className="font-medium">{endorsement.mentor}</div>
-                                  <div className="text-sm text-muted-foreground">ID: 1234567</div>
                               </div>
                           </TableCell>
                           <TableCell>
-                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                  <Clock className="h-4 w-4" />
-                                  {new Date(endorsement.expiresAt!).toLocaleDateString("de")}
-                              </div>
+                              {endorsement.expiresAt ? (
+                                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                      <Clock className="h-4 w-4" />
+                                      {new Date(endorsement.expiresAt).toLocaleDateString('de')}
+                                  </div>
+                              ) : (
+                                  <span className="text-muted-foreground">—</span>
+                              )}
                           </TableCell>
                           <TableCell>{getStatusBadge(endorsement.status)}</TableCell>
                       </TableRow>

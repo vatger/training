@@ -376,13 +376,23 @@ class EndorsementController extends Controller
         $result = [];
 
         foreach ($soloEndorsements as $solo) {
+            $expiresAt = null;
+
+            if (!empty($solo['expiry'])) {
+                try {
+                    $expiresAt = Carbon::parse($solo['expiry'])->toDateString(); // Y-m-d
+                } catch (\Exception) {
+                    $expiresAt = null;
+                }
+            }
+
             $result[] = [
                 'position' => $solo['position'],
                 'fullName' => $this->getPositionFullName($solo['position']),
                 'type' => $this->getPositionType($solo['position']),
                 'status' => 'active',
                 'mentor' => $this->getMentorName($solo['instructor_cid'] ?? null),
-                'expiresAt' => isset($solo['expires_at']) ? Carbon::parse($solo['expires_at'])->format('Y-m-d') : null,
+                'expiresAt' => $expiresAt,
             ];
         }
 
@@ -411,7 +421,8 @@ class EndorsementController extends Controller
             'EDDB_TWR' => 'Berlin Tower',
             'EDDB_GNDDEL' => 'Berlin Ground/Delivery',
             'EDWW_CTR' => 'Bremen Big',
-            'EDGG_KTG_CTR' => 'Kitzingen',
+            'EDWW_W_CTR' => 'Bremen West',
+            'EDGG_KTG_CTR' => 'Kitzingen (KTG)',
             'EDXX_AFIS' => 'AFIS Tower',
         ];
 

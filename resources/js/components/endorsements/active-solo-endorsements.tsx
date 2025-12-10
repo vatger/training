@@ -34,7 +34,6 @@ export default function ActiveSoloEndorsements({ endorsements }: { endorsements:
                                 </div>
                                 <div>
                                     <div className="font-medium">{endorsement.position}</div>
-                                    <div className="text-sm text-muted-foreground">{endorsement.fullName}</div>
                                 </div>
                             </div>
                             <div className="text-right">
