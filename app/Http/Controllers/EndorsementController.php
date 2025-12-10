@@ -108,6 +108,9 @@ class EndorsementController extends Controller
                     return null;
                 }
 
+                $createdAt = Carbon::parse($endorsement['created_at']);
+                $eligibleForRemoval = $createdAt->lte(now()->subMonths(6));
+
                 $user = $users->get($endorsement['user_cid']);
 
                 return [
@@ -124,9 +127,12 @@ class EndorsementController extends Controller
                     'removalDays' => $activity->removal_date
                         ? $activity->removal_date->diffInDays(now(), false)
                         : -1,
+                    'eligibleForRemoval' => $eligibleForRemoval,
+                    'endorsedAt' => $createdAt->format('Y-m-d'),
                 ];
             })
             ->filter()
+            ->filter(fn($endorsement) => $endorsement['eligibleForRemoval'])
             ->filter(function ($endorsement) use ($allowedPositions, $user) {
                 if ($user->is_superuser || $user->is_admin) {
                     return true;
@@ -168,7 +174,6 @@ class EndorsementController extends Controller
             return back()->with('error', 'Endorsement not found');
         }
 
-        // --- STRICT position permission check ---------------------
         if (!$user->is_superuser && !$user->is_admin) {
             $allowedPositions = $user->mentorCourses
                 ->map(fn(Course $course) => $course->airport_icao . '_' . $course->position)
@@ -181,6 +186,18 @@ class EndorsementController extends Controller
 
         if ($endorsement->removal_date) {
             return back()->with('error', 'Endorsement already marked for removal');
+        }
+
+        $endorsementCreatedAt = Carbon::parse(
+            collect($this->vatEudService->getTier1Endorsements())
+                ->firstWhere('id', $endorsementId)['created_at'] ?? null
+        );
+
+        if (!$endorsementCreatedAt || $endorsementCreatedAt->gt(now()->subMonths(6))) {
+            return back()->with(
+                'error',
+                'Endorsement must be at least 6 months old before it can be removed'
+            );
         }
 
         $minRequiredMinutes = config('services.vateud.min_activity_minutes', 180);
