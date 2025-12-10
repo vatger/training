@@ -356,15 +356,16 @@ export function TraineeDataTable({ trainees, course, onRemarkClick, onClaimClick
             header: 'Progress',
             cell: ({ row }) => {
                 const trainee = row.original;
+                console.log(trainee.progress);
                 return (
                     <div className="space-y-1">
                         {trainee.progress.length > 0 ? (
                             <div className="flex items-center gap-1">
-                                {trainee.progress.slice(0, 5).map((passed, idx) => (
+                                {trainee.progress.slice(trainee.progress.length - 5, trainee.progress.length).map((passed, idx) => (
                                     <div
                                         key={idx}
                                         className={`h-2 w-2 rounded-full ${passed ? 'bg-green-500' : 'bg-red-500'}`}
-                                        title={`Session ${idx + 1}: ${passed ? 'Passed' : 'Failed'}`}
+                                        title={`Session was ${passed ? 'Passed' : 'Failed'}`}
                                     />
                                 ))}
                                 {trainee.progress.length > 5 && (
