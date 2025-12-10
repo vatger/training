@@ -177,6 +177,11 @@ class SyncWaitingListActivity extends Command
                 ->pluck('logon')
                 ->toArray();
 
+            Log::info('S1 Tower stations for FIR', [
+                'fir' => $fir,
+                'stations' => $stations
+            ]);
+
             $totalMinutes = 0;
             foreach ($connections as $session) {
                 $callsign = $session['callsign'] ?? '';
@@ -184,10 +189,21 @@ class SyncWaitingListActivity extends Command
                 foreach ($stations as $station) {
                     if ($this->equalStr($callsign, $station)) {
                         $totalMinutes += floatval($session['minutes_online'] ?? 0);
+                        Log::info('Matched session', [
+                            'callsign' => $callsign,
+                            'station' => $station,
+                            'minutes' => $session['minutes_online']
+                        ]);
                         break;
                     }
                 }
             }
+
+            Log::info('Total S1 tower minutes calculated', [
+                'fir' => $fir,
+                'total_minutes' => $totalMinutes,
+                'total_hours' => $totalMinutes / 60
+            ]);
 
             return $totalMinutes / 60;
 
