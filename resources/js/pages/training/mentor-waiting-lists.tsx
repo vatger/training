@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { router } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import { Clock, Play, Search, Users, X, Eye, MessageSquare } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -276,9 +276,21 @@ export default function MentorWaitingLists({ courses, config }: PageProps) {
                                                                 <Card key={entry.id}>
                                                                     <CardContent className="space-y-3 p-4">
                                                                         <div className="flex items-start justify-between">
-                                                                            <div>
-                                                                                <div className="font-medium">{entry.name}</div>
-                                                                                <div className="text-sm text-muted-foreground">{entry.vatsim_id}</div>
+                                                                            <div className="flex flex-col">
+                                                                                <Link
+                                                                                    href={`/users/${entry.vatsim_id}`}
+                                                                                    className="font-medium hover:underline"
+                                                                                >
+                                                                                    {entry.name}
+                                                                                </Link>
+                                                                                <a
+                                                                                    href={`https://stats.vatsim.net/stats/${entry.vatsim_id}`}
+                                                                                    target="_blank"
+                                                                                    rel="noopener noreferrer"
+                                                                                    className="text-sm text-muted-foreground hover:underline"
+                                                                                >
+                                                                                    {entry.vatsim_id}
+                                                                                </a>
                                                                                 <Badge variant="secondary">#{index + 1}</Badge>
                                                                             </div>
                                                                             {selectedCourse.type === 'RTG' && (
@@ -404,9 +416,21 @@ export default function MentorWaitingLists({ courses, config }: PageProps) {
                                                                     <TableRow key={entry.id}>
                                                                         <TableCell className="pl-3 font-medium">{index + 1}</TableCell>
                                                                         <TableCell>
-                                                                            <div>
-                                                                                <div className="font-medium">{entry.name}</div>
-                                                                                <div className="text-sm text-muted-foreground">{entry.vatsim_id}</div>
+                                                                            <div className="flex flex-col">
+                                                                                <Link
+                                                                                    href={`/users/${entry.vatsim_id}`}
+                                                                                    className="font-medium hover:underline"
+                                                                                >
+                                                                                    {entry.name}
+                                                                                </Link>
+                                                                                <a
+                                                                                    href={`https://stats.vatsim.net/stats/${entry.vatsim_id}`}
+                                                                                    target="_blank"
+                                                                                    rel="noopener noreferrer"
+                                                                                    className="text-sm text-muted-foreground hover:underline"
+                                                                                >
+                                                                                    {entry.vatsim_id}
+                                                                                </a>
                                                                             </div>
                                                                         </TableCell>
                                                                         {selectedCourse.type === 'RTG' && (

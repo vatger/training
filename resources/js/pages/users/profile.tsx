@@ -7,7 +7,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { BreadcrumbItem } from '@/types';
-import { dashboard } from '@/routes';
 import {
     User,
     BookOpen,
@@ -165,7 +164,7 @@ export default function UserProfilePage({ userData }: { userData: UserData }) {
     const breadcrumbs: BreadcrumbItem[] = [
         {
             title: 'Dashboard',
-            href: dashboard().url,
+            href: '/dashboard',
         },
         {
             title: 'Find User',

@@ -12,7 +12,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import AppLayout from '@/layouts/app-layout';
 import { cn } from '@/lib/utils';
 import { BreadcrumbItem } from '@/types';
-import { Head, router } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { AlertCircle, AlertTriangle, Clock, Eye, Search, X } from 'lucide-react';
 import { useMemo, useState, useCallback } from 'react';
 import { toast } from 'sonner';
@@ -270,7 +270,7 @@ export default function ManageEndorsements({ endorsementGroups: initialGroups }:
                                             <div className="min-w-0 flex-1">
                                                 <CardTitle className="mb-2 text-xl leading-tight font-bold">{group.position_name}</CardTitle>
                                             </div>
-                                            <div className="flex-shrink-0">
+                                            <div className="shrink-0">
                                                 <Badge variant="secondary">{group.position_type}</Badge>
                                             </div>
                                         </div>
@@ -284,7 +284,7 @@ export default function ManageEndorsements({ endorsementGroups: initialGroups }:
 
                                         {stats.lowActivity > 0 && (
                                             <div className="flex items-center gap-2 rounded-lg border border-yellow-200 bg-yellow-50 p-3 dark:border-yellow-800 dark:bg-yellow-950/20">
-                                                <AlertTriangle className="h-4 w-4 flex-shrink-0 text-yellow-600" />
+                                                <AlertTriangle className="h-4 w-4 shrink-0 text-yellow-600" />
                                                 <div className="flex-1 text-sm text-yellow-800 dark:text-yellow-200">
                                                     {stats.lowActivity} low activity
                                                 </div>
@@ -293,7 +293,7 @@ export default function ManageEndorsements({ endorsementGroups: initialGroups }:
 
                                         {stats.inRemoval > 0 && (
                                             <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-950/20">
-                                                <AlertCircle className="h-4 w-4 flex-shrink-0 text-red-600" />
+                                                <AlertCircle className="h-4 w-4 shrink-0 text-red-600" />
                                                 <div className="flex-1 text-sm text-red-800 dark:text-red-200">{stats.inRemoval} in removal</div>
                                             </div>
                                         )}
@@ -320,9 +320,10 @@ export default function ManageEndorsements({ endorsementGroups: initialGroups }:
                         </CardContent>
                     </Card>
                 )}
-            </div>
-
-            {/* Position Details Modal */}
+            </div>;
+            {
+                /* Position Details Modal */
+            }
             <Dialog open={isGroupDialogOpen} onOpenChange={setIsGroupDialogOpen}>
                 <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-[90vw] lg:max-w-[1000px]">
                     <DialogHeader>
@@ -369,9 +370,18 @@ export default function ManageEndorsements({ endorsementGroups: initialGroups }:
                                         return (
                                             <TableRow key={endorsement.id} className={cn(state === 'in-removal' && 'bg-red-50 dark:bg-red-950/20')}>
                                                 <TableCell>
-                                                    <div>
-                                                        <div className="font-medium">{endorsement.userName}</div>
-                                                        <div className="text-sm text-muted-foreground">VATSIM {endorsement.vatsimId}</div>
+                                                    <div className="flex flex-col">
+                                                        <Link href={`/users/${endorsement.vatsimId}`} className="font-medium hover:underline">
+                                                            {endorsement.userName}
+                                                        </Link>
+                                                        <a
+                                                            href={`https://stats.vatsim.net/stats/${endorsement.vatsimId}?range=6months`}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="text-sm text-muted-foreground hover:underline"
+                                                        >
+                                                            {endorsement.vatsimId}
+                                                        </a>
                                                     </div>
                                                 </TableCell>
                                                 <TableCell>
@@ -459,9 +469,8 @@ export default function ManageEndorsements({ endorsementGroups: initialGroups }:
                         </div>
                     )}
                 </DialogContent>
-            </Dialog>
-
-            {/* Removal Confirmation Dialog */}
+            </Dialog>;
+            ;{/* Removal Confirmation Dialog */}
             <Dialog open={isRemovalDialogOpen} onOpenChange={setIsRemovalDialogOpen}>
                 <DialogContent>
                     <DialogHeader>
