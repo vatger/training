@@ -89,6 +89,12 @@ RUN rm -f bootstrap/cache/*.php
 # Copy built assets from frontend stage
 COPY --from=frontend /app/public/build ./public/build
 
+# Create storage directories and copy CPT templates
+RUN mkdir -p storage/app/public/cpt-templates && \
+    if [ -d resources/cpt-templates ]; then \
+        cp -r resources/cpt-templates/* storage/app/public/cpt-templates/ 2>/dev/null || true; \
+    fi
+
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
