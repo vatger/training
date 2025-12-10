@@ -113,7 +113,7 @@ class UserSearchController extends Controller
                     'name' => $course->name,
                     'type' => $course->type,
                     'position' => $course->position,
-                    'is_mentor' => $isMentor,
+                    'is_mentor' => $isMentor || $user->is_superuser || $user->is_admin,
                     'logs' => [],
                 ];
 

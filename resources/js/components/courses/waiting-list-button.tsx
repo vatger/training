@@ -13,7 +13,7 @@ interface WaitingListButtonProps {
     variant?: 'default' | 'compact';
     className?: string;
     size?: 'sm' | 'default' | 'lg';
-    userHasActiveRtgCourse?: boolean; // NEW: Indicates if user already has an active RTG course
+    userHasActiveRtgCourse?: boolean;
 }
 
 export default function WaitingListButton({
@@ -34,11 +34,10 @@ export default function WaitingListButton({
         setIsLoading(true);
         setLoadingAction('joining');
 
-        // Optimistic update - immediately show joined state
         const optimisticUpdates: Partial<Course> = {
             is_on_waiting_list: true,
-            waiting_list_position: 1, // Placeholder position
-            waiting_list_activity: 0, // Placeholder activity to avoid showing "nullh"
+            waiting_list_position: undefined,
+            waiting_list_activity: undefined,
         };
 
         onCourseUpdate?.(course.id, optimisticUpdates);
@@ -52,27 +51,20 @@ export default function WaitingListButton({
                         preserveState: true,
                         preserveScroll: true,
                         onSuccess: (page) => {
-                            console.log('Inertia success response:', page);
-
-                            // Check multiple possible locations for the response
                             const flashData = page.props.flash || {};
                             const response = flashData.flash || flashData;
 
-                            console.log('Flash data:', flashData);
-                            console.log('Response data:', response);
+                            const position = response?.position;
+                            const activity = response?.activity;
 
-                            // If we get here, the request was successful
-                            // Let's assume success and update with server data if available
                             const serverUpdates: Partial<Course> = {
                                 is_on_waiting_list: true,
-                                waiting_list_position: response?.position || 1,
-                                waiting_list_activity: response?.activity ?? 0, // Use server activity or fallback to 0
+                                waiting_list_position: position,
+                                waiting_list_activity: activity,
                             };
 
                             onCourseUpdate?.(course.id, serverUpdates);
 
-                            // Show success message
-                            const position = response?.position;
                             toast.success(`Successfully joined waiting list!`, {
                                 description: position ? `Your position: #${position}` : undefined,
                             });
@@ -80,9 +72,6 @@ export default function WaitingListButton({
                             resolve();
                         },
                         onError: (errors) => {
-                            console.log('Inertia error response:', errors);
-
-                            // Revert optimistic update on error
                             onCourseUpdate?.(course.id, {
                                 is_on_waiting_list: false,
                                 waiting_list_position: undefined,
@@ -101,7 +90,6 @@ export default function WaitingListButton({
             console.error('Error joining waiting list:', error);
             toast.error('Connection error');
 
-            // Revert optimistic update on error
             onCourseUpdate?.(course.id, {
                 is_on_waiting_list: false,
                 waiting_list_position: undefined,
@@ -120,11 +108,9 @@ export default function WaitingListButton({
         setIsLoading(true);
         setLoadingAction('leaving');
 
-        // Store original state for revert
         const originalPosition = course.waiting_list_position;
         const originalActivity = course.waiting_list_activity;
 
-        // Optimistic update - immediately show left state
         const optimisticUpdates: Partial<Course> = {
             is_on_waiting_list: false,
             waiting_list_position: undefined,
@@ -146,10 +132,8 @@ export default function WaitingListButton({
                             const response = flashData.flash || flashData;
 
                             if (response.success !== false) {
-                                // Confirm the update (already optimistically applied)
                                 toast.success('Successfully left waiting list!');
                             } else {
-                                // Revert optimistic update on failure
                                 onCourseUpdate?.(course.id, {
                                     is_on_waiting_list: true,
                                     waiting_list_position: originalPosition,
@@ -161,7 +145,6 @@ export default function WaitingListButton({
                             resolve();
                         },
                         onError: (errors) => {
-                            // Revert optimistic update on error
                             onCourseUpdate?.(course.id, {
                                 is_on_waiting_list: true,
                                 waiting_list_position: originalPosition,
@@ -186,16 +169,6 @@ export default function WaitingListButton({
     };
 
     const handleButtonClick = () => {
-        console.log('Button clicked, course state:', {
-            is_on_waiting_list: course.is_on_waiting_list,
-            can_join: course.can_join,
-            isLoading,
-            loadingAction,
-            userHasActiveRtgCourse,
-            courseType: course.type,
-        });
-
-        // Check if this is a rating course and user already has an active one
         if (course.type === 'RTG' && userHasActiveRtgCourse && !course.is_on_waiting_list) {
             toast.error('You can only join one rating course at a time');
             return;
@@ -235,11 +208,9 @@ export default function WaitingListButton({
         );
     };
 
-    // Check if button should be disabled due to rating course restriction
     const isDisabledDueToRtgRestriction = course.type === 'RTG' && userHasActiveRtgCourse && !course.is_on_waiting_list;
     const isButtonDisabled = isLoading || (!course.can_join && !course.is_on_waiting_list) || isDisabledDueToRtgRestriction;
 
-    // Determine the error message for tooltip
     const getTooltipError = () => {
         if (isDisabledDueToRtgRestriction) {
             return 'You can only join one rating course at a time';
@@ -259,7 +230,6 @@ export default function WaitingListButton({
         </Button>
     );
 
-    // If the course can't be joined for any reason, wrap with tooltip
     if (isButtonDisabled && !course.is_on_waiting_list) {
         return (
             <>
@@ -277,7 +247,6 @@ export default function WaitingListButton({
                     </Tooltip>
                 </TooltipProvider>
 
-                {/* Leave Confirmation Dialog */}
                 <Dialog open={showLeaveConfirmation} onOpenChange={setShowLeaveConfirmation}>
                     <DialogContent>
                         <DialogHeader>
@@ -309,7 +278,6 @@ export default function WaitingListButton({
         <>
             <div className={variant === 'compact' ? '' : 'w-full'}>{button}</div>
 
-            {/* Leave Confirmation Dialog */}
             <Dialog open={showLeaveConfirmation} onOpenChange={setShowLeaveConfirmation}>
                 <DialogContent>
                     <DialogHeader>

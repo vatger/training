@@ -37,12 +37,10 @@ export default function SortableCoursesTable({ courses: initialCourses, onCourse
     const [sortField, setSortField] = useState<SortField>('name');
     const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
 
-    // Update local state when props change
     useEffect(() => {
         setCourses(initialCourses);
     }, [initialCourses]);
 
-    // Handle course updates from the button component
     const handleCourseUpdate = (courseId: number, updates: Partial<Course>) => {
         setCourses((prev) => prev.map((c) => (c.id === courseId ? { ...c, ...updates } : c)));
         onCourseUpdate?.(courseId, updates);
@@ -179,9 +177,13 @@ export default function SortableCoursesTable({ courses: initialCourses, onCourse
                                             <Clock className="h-4 w-4" />
                                             <div>
                                                 <div className="text-sm font-medium">Position #{course.waiting_list_position}</div>
-                                                {course.waiting_list_activity !== undefined && course.waiting_list_activity !== null && (
-                                                    <div className="text-xs text-muted-foreground">{course.waiting_list_activity}h activity</div>
-                                                )}
+                                                {course.type === 'RTG' &&
+                                                    course.waiting_list_activity !== undefined &&
+                                                    course.waiting_list_activity !== null && (
+                                                        <div className="text-xs text-muted-foreground">
+                                                            {course.waiting_list_activity.toFixed(2)}h activity
+                                                        </div>
+                                                    )}
                                             </div>
                                         </div>
                                     ) : (

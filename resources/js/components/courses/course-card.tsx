@@ -64,7 +64,8 @@ export default function CourseCard({ course: initialCourse, onCourseUpdate, user
                                 <Clock className="h-4 w-4" />
                                 <span>
                                     Queue Position #{course.waiting_list_position}
-                                    {course.waiting_list_activity !== undefined &&
+                                    {course.type === 'RTG' &&
+                                        course.waiting_list_activity !== undefined &&
                                         course.waiting_list_activity !== null &&
                                         ` • ${course.waiting_list_activity.toFixed(2)}h activity`}
                                 </span>
