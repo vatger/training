@@ -212,7 +212,7 @@ class RemoveEndorsements extends Command
         );
 
         $response = \Http::withHeaders($headers)
-            ->post("https://hp.vatsim-germany.org/api/user/{$endorsement->vatsim_id}/send_notification", $data);
+            ->post("http://hp.vatsim-germany.org/api/user/{$endorsement->vatsim_id}/send_notification", $data);
 
         if (!$response->successful()) {
             throw new \Exception("Failed to send notification: " . $response->body());
