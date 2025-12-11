@@ -40,7 +40,7 @@ return [
 
     'vatger' => [
         'api_key' => env('VATGER_API_KEY'),
-        'api_url' => env('VATGER_API_URL', 'https://vatsim-germany.org/api'),
+        'api_url' => env('VATGER_API_URL'),
 
         'oauth_client_id' => env('VATGER_OAUTH_CLIENT_ID'),
         'oauth_client_secret' => env('VATGER_OAUTH_CLIENT_SECRET'),
