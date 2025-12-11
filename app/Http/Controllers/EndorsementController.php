@@ -145,12 +145,19 @@ class EndorsementController extends Controller
                 ];
             })
             ->filter()
-            ->filter(fn($endorsement) => $endorsement['eligibleForRemoval'])
+            ->filter(function ($endorsement) {
+                $hasEnoughActivity = $endorsement['activityHours'] >= 3;
+
+                if ($hasEnoughActivity) {
+                    return true;
+                }
+
+                return $endorsement['eligibleForRemoval'];
+            })
             ->filter(function ($endorsement) use ($allowedPositions, $user) {
                 if ($user->is_superuser || $user->is_admin) {
                     return true;
                 }
-
                 return $allowedPositions->contains($endorsement['position']);
             })
             ->values();
