@@ -204,7 +204,7 @@ class CheckRosterStatus extends Command
                 'Authorization' => "Token {$apiKey}",
                 'Accept' => 'application/json',
             ])->timeout(10)
-                ->get("https://vatsim-germany.org/api/user/{$vatsimId}/");
+                ->get("http://hp.vatsim-germany.org/api/user/{$vatsimId}/");
 
             if (!$response->successful()) {
                 Log::warning('Failed S1 rating fetch', [
@@ -263,7 +263,7 @@ class CheckRosterStatus extends Command
         try {
             $response = Http::withHeaders([
                 'Authorization' => "Token {$apiKey}",
-            ])->post("https://vatsim-germany.org/api/user/{$vatsimId}/send_notification", $data);
+            ])->post("http://hp.vatsim-germany.org/api/user/{$vatsimId}/send_notification", $data);
 
             if (!$response->successful()) {
                 Log::warning('Failed to send removal notification', [
