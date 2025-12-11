@@ -210,6 +210,7 @@ class CourseController extends Controller
             }
 
             $isGerSubdivision = $user->subdivision === 'GER';
+            $isVisitor = !$isGerSubdivision && $isOnRoster;
 
             if ($isGerSubdivision && $isOnRoster) {
                 if ($course->type === 'RST')
@@ -218,6 +219,11 @@ class CourseController extends Controller
                     return false;
             } elseif ($isGerSubdivision && !$isOnRoster) {
                 if ($course->type !== 'RST')
+                    return false;
+            } elseif ($isVisitor) {
+                if ($course->type === 'RST')
+                    return false;
+                if ($course->type === 'GST')
                     return false;
             } else {
                 if ($course->type !== 'GST')

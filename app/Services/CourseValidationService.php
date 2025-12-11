@@ -34,6 +34,7 @@ class CourseValidationService
         }
 
         $isGerSubdivision = $user->subdivision === 'GER';
+        $isVisitor = !$isGerSubdivision && $isOnRoster;
 
         if ($isGerSubdivision && $isOnRoster) {
             if ($course->type === 'RST') {
@@ -45,6 +46,13 @@ class CourseValidationService
         } elseif ($isGerSubdivision && !$isOnRoster) {
             if ($course->type !== 'RST') {
                 return [false, 'You must complete roster reentry before joining other courses.'];
+            }
+        } elseif ($isVisitor) {
+            if ($course->type === 'RST') {
+                return [false, 'You are already on the roster and cannot join roster reentry courses.'];
+            }
+            if ($course->type === 'GST') {
+                return [false, 'You are already accepted as a visitor and cannot join visitor courses.'];
             }
         } else {
             if ($course->type !== 'GST') {
