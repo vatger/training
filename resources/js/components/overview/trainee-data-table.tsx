@@ -442,10 +442,10 @@ export function TraineeDataTable({ trainees, course, onRemarkClick, onClaimClick
                         size="sm"
                         className={
                             trainee.soloStatus.remaining < 10
-                                ? 'border-red-200 bg-red-50 text-red-700 hover:bg-red-100'
+                                ? 'border-red-200 bg-red-50 text-red-700 hover:bg-red-100 dark:border-red-800 dark:bg-red-950 dark:text-red-300 dark:hover:bg-red-900'
                                 : trainee.soloStatus.remaining < 20
-                                  ? 'border-yellow-200 bg-yellow-50 text-yellow-700 hover:bg-yellow-100'
-                                  : 'border border-green-200 bg-green-200 text-green-700 shadow-xs hover:bg-green-100 hover:text-green-700'
+                                  ? 'border-yellow-200 bg-yellow-50 text-yellow-700 hover:bg-yellow-100 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-300 dark:hover:bg-yellow-900'
+                                  : 'border-green-200 bg-green-50 text-green-700 hover:bg-green-100 dark:border-green-800 dark:bg-green-950 dark:text-green-300 dark:hover:bg-green-900'
                         }
                     >
                         <Clock className="mr-1 h-3 w-3" />

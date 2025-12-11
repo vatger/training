@@ -147,7 +147,7 @@ export default function SortableCoursesTable({ courses: initialCourses, onCourse
                             >
                                 <TableCell className="pl-4 font-medium">
                                     <div>
-                                        <div className="font-semibold">{course.name}</div>
+                                        <div className="font-semibold">{course.trainee_display_name}</div>
                                     </div>
                                 </TableCell>
 

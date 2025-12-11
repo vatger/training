@@ -1,13 +1,16 @@
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
 import { Trainee } from '@/types/mentor';
 import { router } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
-import { Loader2, AlertCircle, Clock, Calendar, Info, Trash, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
+import { Loader2, AlertCircle, Clock, Calendar as CalendarIcon, Info, Trash, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
 import axios from 'axios';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 interface SoloModalProps {
     trainee: Trainee | null;
@@ -33,7 +36,7 @@ interface RequirementsStatus {
 
 export function SoloModal({ trainee, courseId, isOpen, onClose }: SoloModalProps) {
     const [mode, setMode] = useState<'none' | 'add' | 'extend' | 'remove'>('none');
-    const [expiryDate, setExpiryDate] = useState('');
+    const [expiryDate, setExpiryDate] = useState<Date | undefined>();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [requirements, setRequirements] = useState<RequirementsStatus | null>(null);
@@ -45,7 +48,7 @@ export function SoloModal({ trainee, courseId, isOpen, onClose }: SoloModalProps
         if (isOpen && trainee) {
             const defaultDate = new Date();
             defaultDate.setDate(defaultDate.getDate() + 29);
-            setExpiryDate(defaultDate.toISOString().split('T')[0]);
+            setExpiryDate(defaultDate);
 
             setMode('none');
             setError(null);
@@ -117,27 +120,26 @@ export function SoloModal({ trainee, courseId, isOpen, onClose }: SoloModalProps
     const handleClose = () => {
         setMode('none');
         setError(null);
-        setExpiryDate('');
+        setExpiryDate(undefined);
         setRequirements(null);
         setRequirementsError(null);
         onClose();
     };
 
-    const validateExpiryDate = (date: string): boolean => {
-        const selectedDate = new Date(date);
+    const validateExpiryDate = (date: Date): boolean => {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
         const maxDate = new Date();
-        maxDate.setDate(maxDate.getDate() + 31);
+        maxDate.setDate(maxDate.getDate() + 29);
 
-        if (selectedDate < today) {
-            setError('Expiry date cannot be in the past');
+        if (date > maxDate) {
+            setError('Solo endorsement cannot exceed 30 days from today');
             return false;
         }
 
-        if (selectedDate > maxDate) {
-            setError('Solo endorsement cannot exceed 31 days from today');
+        if (date < today) {
+            setError('Expiry date cannot be in the past');
             return false;
         }
 
@@ -157,7 +159,7 @@ export function SoloModal({ trainee, courseId, isOpen, onClose }: SoloModalProps
             {
                 trainee_id: trainee.id,
                 course_id: courseId,
-                expiry_date: expiryDate,
+                expiry_date: format(expiryDate, 'yyyy-MM-dd'),
             },
             {
                 onSuccess: () => {
@@ -187,7 +189,7 @@ export function SoloModal({ trainee, courseId, isOpen, onClose }: SoloModalProps
             {
                 trainee_id: trainee.id,
                 course_id: courseId,
-                expiry_date: expiryDate,
+                expiry_date: format(expiryDate, 'yyyy-MM-dd'),
             },
             {
                 onSuccess: () => {
@@ -440,7 +442,7 @@ export function SoloModal({ trainee, courseId, isOpen, onClose }: SoloModalProps
                                     className="w-full"
                                     disabled={isLoadingRequirements || (requirements !== null && !canProceed && !requirementsError)}
                                 >
-                                    <Calendar className="mr-2 h-4 w-4" />
+                                    <CalendarIcon className="mr-2 h-4 w-4" />
                                     {isLoadingRequirements ? 'Loading...' : 'Add Solo Endorsement'}
                                 </Button>
                             ) : (
@@ -469,17 +471,35 @@ export function SoloModal({ trainee, courseId, isOpen, onClose }: SoloModalProps
 
                             <div className="space-y-2">
                                 <Label htmlFor="expiry-date">{mode === 'add' ? 'Expiry Date' : 'New Expiry Date'}</Label>
-                                <Input
-                                    id="expiry-date"
-                                    type="date"
-                                    value={expiryDate}
-                                    onChange={(e) => {
-                                        setExpiryDate(e.target.value);
-                                        setError(null);
-                                    }}
-                                    min={new Date().toISOString().split('T')[0]}
-                                    max={new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
-                                />
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            variant="outline"
+                                            className={cn('w-full justify-start text-left font-normal', !expiryDate && 'text-muted-foreground')}
+                                        >
+                                            <CalendarIcon className="mr-2 h-4 w-4" />
+                                            {expiryDate ? format(expiryDate, 'PPP') : <span>Pick a date</span>}
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0">
+                                        <Calendar
+                                            mode="single"
+                                            selected={expiryDate}
+                                            onSelect={(date) => {
+                                                setExpiryDate(date);
+                                                setError(null);
+                                            }}
+                                            disabled={(date) => {
+                                                const today = new Date();
+                                                today.setHours(0, 0, 0, 0);
+                                                const maxDate = new Date();
+                                                maxDate.setDate(maxDate.getDate() + 29);
+                                                return date < today || date > maxDate;
+                                            }}
+                                            initialFocus
+                                        />
+                                    </PopoverContent>
+                                </Popover>
                                 <p className="text-xs text-muted-foreground">
                                     {mode === 'add'
                                         ? 'Select when this solo endorsement will expire (maximum 30 days from today)'

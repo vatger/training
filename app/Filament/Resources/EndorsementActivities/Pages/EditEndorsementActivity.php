@@ -3,15 +3,20 @@
 namespace App\Filament\Resources\EndorsementActivities\Pages;
 
 use App\Filament\Resources\EndorsementActivities\EndorsementActivityResource;
-use App\Filament\Resources\EndorsementActivities\Schemas\EndorsementActivityInfolist;
-use Filament\Actions\EditAction;
+use App\Filament\Resources\EndorsementActivities\Schemas\EndorsementActivityForm;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\Action;
-use Filament\Resources\Pages\ViewRecord;
+use Filament\Resources\Pages\EditRecord;
 use Filament\Schemas\Schema;
 
-class ViewEndorsementActivity extends ViewRecord
+class EditEndorsementActivity extends EditRecord
 {
     protected static string $resource = EndorsementActivityResource::class;
+
+    public function form(Schema $schema): Schema
+    {
+        return EndorsementActivityForm::configure($schema);
+    }
 
     protected function getHeaderActions(): array
     {
@@ -28,20 +33,15 @@ class ViewEndorsementActivity extends ViewRecord
                         'removal_date' => null,
                         'removal_notified' => false,
                     ]);
-
+                    
                     \Filament\Notifications\Notification::make()
                         ->success()
                         ->title('Removal process stopped successfully.')
                         ->send();
                 })
-                ->visible(fn() => $this->record->removal_date !== null),
-
-            EditAction::make(),
+                ->visible(fn () => $this->record->removal_date !== null),
+            
+            DeleteAction::make(),
         ];
-    }
-
-    public function infolist(Schema $schema): Schema
-    {
-        return EndorsementActivityInfolist::configure($schema);
     }
 }

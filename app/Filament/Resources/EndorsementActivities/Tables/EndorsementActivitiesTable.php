@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\EndorsementActivities\Tables;
 
 use Filament\Actions\ViewAction;
+use Filament\Actions\EditAction;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -126,6 +127,7 @@ class EndorsementActivitiesTable
             ])
             ->recordActions([
                 ViewAction::make(),
+                EditAction::make(),
             ])
             ->defaultSort('activity_minutes', 'desc')
             ->defaultPaginationPageOption(50)
