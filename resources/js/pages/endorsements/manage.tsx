@@ -320,10 +320,8 @@ export default function ManageEndorsements({ endorsementGroups: initialGroups }:
                         </CardContent>
                     </Card>
                 )}
-            </div>;
-            {
-                /* Position Details Modal */
-            }
+            </div>
+            {/* Position Details Modal */}
             <Dialog open={isGroupDialogOpen} onOpenChange={setIsGroupDialogOpen}>
                 <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-[90vw] lg:max-w-[1000px]">
                     <DialogHeader>
@@ -469,8 +467,8 @@ export default function ManageEndorsements({ endorsementGroups: initialGroups }:
                         </div>
                     )}
                 </DialogContent>
-            </Dialog>;
-            ;{/* Removal Confirmation Dialog */}
+            </Dialog>
+            {/* Removal Confirmation Dialog */}
             <Dialog open={isRemovalDialogOpen} onOpenChange={setIsRemovalDialogOpen}>
                 <DialogContent>
                     <DialogHeader>
