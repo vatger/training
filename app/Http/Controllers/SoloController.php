@@ -9,7 +9,9 @@ use App\Services\MoodleService;
 use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 use Carbon\Carbon;
+use Inertia\Inertia;
 
 class SoloController extends Controller
 {
@@ -238,12 +240,86 @@ class SoloController extends Controller
         }
     }
 
+    protected function returnWithRefreshedCourse($courseId, $user)
+    {
+        // Clear all solo-related caches immediately
+        Cache::forget('vateud:solo_endorsements');
+        Cache::forget('vateud_solos');
+
+        // Force refresh of solo data
+        $this->vatEudService->getSoloEndorsements();
+
+        if ($user->is_superuser || $user->is_admin) {
+            $courses = \App\Models\Course::select(['id', 'name', 'position', 'type', 'solo_station'])
+                ->withCount('activeTrainees')
+                ->get();
+        } else {
+            $courses = $user->mentorCourses()
+                ->select(['courses.id', 'courses.name', 'courses.position', 'courses.type', 'courses.solo_station'])
+                ->withCount('activeTrainees')
+                ->get();
+        }
+
+        $ctrCourses = $courses->filter(fn($c) => $c->position === 'CTR');
+        $nonCtrCourses = $courses->filter(fn($c) => $c->position !== 'CTR');
+
+        $positionOrder = ['GND' => 1, 'TWR' => 2, 'APP' => 3];
+        $nonCtrCourses = $nonCtrCourses
+            ->sortBy(function ($course) use ($positionOrder) {
+                return $positionOrder[$course->position] ?? 999;
+            })
+            ->sortBy('name');
+
+        $ctrCourses = $ctrCourses->sortBy('name');
+        $courses = $nonCtrCourses->concat($ctrCourses)->values();
+
+        $coursesMetadata = $courses->map(function ($course) use ($courseId, $user) {
+            if ($course->id === $courseId) {
+                try {
+                    $fullCourse = \App\Models\Course::find($courseId);
+                    if ($fullCourse) {
+                        $courseData = app(\App\Http\Controllers\MentorOverviewController::class)
+                            ->loadCourseData($fullCourse, $user);
+                        $courseData['loaded'] = true;
+                        return $courseData;
+                    }
+                } catch (\Exception $e) {
+                    \Log::error('Failed to load course', ['course_id' => $courseId, 'error' => $e->getMessage()]);
+                }
+            }
+
+            return [
+                'id' => $course->id,
+                'name' => $course->name,
+                'position' => $course->position,
+                'type' => $course->type,
+                'soloStation' => $course->solo_station,
+                'activeTrainees' => $course->active_trainees_count,
+                'trainees' => [],
+                'loaded' => false,
+            ];
+        });
+
+        $totalActiveTrainees = $courses->sum(fn($c) => $c->active_trainees_count);
+
+        return Inertia::render('training/mentor-overview', [
+            'courses' => $coursesMetadata->values(),
+            'initialCourseId' => $courseId,
+            'statistics' => [
+                'activeTrainees' => $totalActiveTrainees,
+                'claimedTrainees' => 0,
+                'trainingSessions' => 0,
+                'waitingList' => 0,
+            ],
+        ]);
+    }
+
     public function addSolo(Request $request)
     {
         $user = $request->user();
 
         if (!$user->isMentor() && !$user->is_superuser) {
-            return response()->json(['error' => 'Access denied'], 403);
+            return back()->withErrors(['error' => 'Access denied']);
         }
 
         $request->validate([
@@ -256,41 +332,39 @@ class SoloController extends Controller
         $course = Course::findOrFail($request->course_id);
 
         if (!$user->is_superuser && !$user->is_admin && !$user->mentorCourses()->where('courses.id', $course->id)->exists()) {
-            return response()->json(['error' => 'You cannot manage this course'], 403);
+            return back()->withErrors(['error' => 'You cannot manage this course']);
         }
 
         if ($course->type !== 'RTG') {
-            return response()->json(['error' => 'Solo endorsements can only be granted for rating courses'], 403);
+            return back()->withErrors(['error' => 'Solo endorsements can only be granted for rating courses']);
         }
 
         if (empty($course->solo_station)) {
-            return response()->json(['error' => 'This course does not have a solo station configured'], 403);
+            return back()->withErrors(['error' => 'This course does not have a solo station configured']);
         }
 
         $moodleStatus = $this->checkMoodleCompletion($trainee, $course);
         if (!$moodleStatus['completed']) {
-            return response()->json(['error' => 'Trainee has not completed all required Moodle courses'], 403);
+            return back()->withErrors(['error' => 'Trainee has not completed all required Moodle courses']);
         }
 
         $coreTheoryStatus = $this->checkCoreTheoryStatus($trainee, $course);
         if (!in_array($coreTheoryStatus['status'], ['passed', 'not_required'])) {
-            return response()->json(['error' => 'Trainee has not passed the required core theory test'], 403);
+            return back()->withErrors(['error' => 'Trainee has not passed the required core theory test']);
         }
 
         $expiryDate = Carbon::parse($request->expiry_date);
         $maxDate = Carbon::now()->addDays(31);
 
         if ($expiryDate->greaterThan($maxDate)) {
-            return response()->json(['error' => 'Solo endorsement cannot exceed 31 days'], 403);
+            return back()->withErrors(['error' => 'Solo endorsement cannot exceed 31 days']);
         }
 
         $soloDays = $expiryDate->diffInDays(Carbon::now()) + 1;
         $remainingDays = 90 - $trainee->solo_days_used;
 
         if ($remainingDays < $soloDays) {
-            return response()->json([
-                'error' => "Trainee has only {$remainingDays} solo days remaining (needs {$soloDays} days)"
-            ], 403);
+            return back()->withErrors(['error' => "Trainee has only {$remainingDays} solo days remaining (needs {$soloDays} days)"]);
         }
 
         $existingSolos = $this->vatEudService->getSoloEndorsements();
@@ -300,7 +374,7 @@ class SoloController extends Controller
         });
 
         if ($hasSolo) {
-            return response()->json(['error' => 'Trainee already has a solo endorsement for this position'], 403);
+            return back()->withErrors(['error' => 'Trainee already has a solo endorsement for this position']);
         }
 
         try {
@@ -316,21 +390,15 @@ class SoloController extends Controller
 
             if ($result['success']) {
                 $trainee->increment('solo_days_used', $soloDays);
-                $newRemaining = 90 - $trainee->solo_days_used;
-
+                
                 $this->vatEudService->refreshEndorsementCache();
                 ActivityLogger::soloGranted($course->solo_station, $trainee, $user, $formattedExpiry);
 
-                return response()->json([
-                    'success' => true,
-                    'message' => "Successfully granted solo endorsement for {$course->solo_station} to {$trainee->name} ({$soloDays} days, {$newRemaining} remaining)"
-                ]);
+                return $this->returnWithRefreshedCourse($course->id, $user);
             } else {
-                return response()->json([
-                    'success' => false,
-                    'error' => $result['message'] ?? 'Failed to grant solo endorsement'
-                ], 500);
+                return back()->withErrors(['error' => $result['message'] ?? 'Failed to grant solo endorsement']);
             }
+
         } catch (\Exception $e) {
             Log::error('Error granting solo endorsement', [
                 'mentor_id' => $user->id,
@@ -340,10 +408,7 @@ class SoloController extends Controller
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'error' => 'An error occurred while granting the solo endorsement'
-            ], 500);
+            return back()->withErrors(['error' => 'An error occurred while granting the solo endorsement']);
         }
     }
 
@@ -352,7 +417,7 @@ class SoloController extends Controller
         $user = $request->user();
 
         if (!$user->isMentor() && !$user->is_superuser) {
-            return response()->json(['error' => 'Access denied'], 403);
+            return back()->withErrors(['error' => 'Access denied']);
         }
 
         $request->validate([
@@ -365,14 +430,14 @@ class SoloController extends Controller
         $course = Course::findOrFail($request->course_id);
 
         if (!$user->is_superuser && !$user->is_admin && !$user->mentorCourses()->where('courses.id', $course->id)->exists()) {
-            return response()->json(['error' => 'You cannot manage this course'], 403);
+            return back()->withErrors(['error' => 'You cannot manage this course']);
         }
 
         $expiryDate = Carbon::parse($request->expiry_date);
         $maxDate = Carbon::now()->addDays(31);
 
         if ($expiryDate->greaterThan($maxDate)) {
-            return response()->json(['error' => 'Solo endorsement cannot exceed 31 days'], 403);
+            return back()->withErrors(['error' => 'Solo endorsement cannot exceed 31 days']);
         }
 
         try {
@@ -383,7 +448,7 @@ class SoloController extends Controller
             });
 
             if (!$solo) {
-                return response()->json(['error' => 'No solo endorsement found for this trainee and position'], 404);
+                return back()->withErrors(['error' => 'No solo endorsement found for this trainee and position']);
             }
 
             $currentExpiry = Carbon::parse($solo['expiry']);
@@ -391,9 +456,7 @@ class SoloController extends Controller
             $remainingDays = 90 - $trainee->solo_days_used;
 
             if ($newSoloDays > 0 && $remainingDays < $newSoloDays) {
-                return response()->json([
-                    'error' => "Trainee has only {$remainingDays} solo days remaining (needs {$newSoloDays} additional days)"
-                ], 403);
+                return back()->withErrors(['error' => "Trainee has only {$remainingDays} solo days remaining (needs {$newSoloDays} additional days)"]);
             }
 
             $this->vatEudService->removeSoloEndorsement($solo['id']);
@@ -412,21 +475,15 @@ class SoloController extends Controller
                 if ($newSoloDays > 0) {
                     $trainee->increment('solo_days_used', $newSoloDays);
                 }
-                $newRemaining = 90 - $trainee->solo_days_used;
-
+                
                 $this->vatEudService->refreshEndorsementCache();
                 ActivityLogger::soloExtended($course->solo_station, $trainee, $user, $formattedExpiry);
 
-                return response()->json([
-                    'success' => true,
-                    'message' => "Successfully extended solo endorsement for {$trainee->name} ({$newRemaining} days remaining)"
-                ]);
+                return $this->returnWithRefreshedCourse($course->id, $user);
             } else {
-                return response()->json([
-                    'success' => false,
-                    'error' => $result['message'] ?? 'Failed to extend solo endorsement'
-                ], 500);
+                return back()->withErrors(['error' => $result['message'] ?? 'Failed to extend solo endorsement']);
             }
+
         } catch (\Exception $e) {
             Log::error('Error extending solo endorsement', [
                 'mentor_id' => $user->id,
@@ -435,10 +492,7 @@ class SoloController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'error' => 'An error occurred while extending the solo endorsement'
-            ], 500);
+            return back()->withErrors(['error' => 'An error occurred while extending the solo endorsement']);
         }
     }
 
@@ -447,7 +501,7 @@ class SoloController extends Controller
         $user = $request->user();
 
         if (!$user->isMentor() && !$user->is_superuser) {
-            return response()->json(['error' => 'Access denied'], 403);
+            return back()->withErrors(['error' => 'Access denied']);
         }
 
         $request->validate([
@@ -459,7 +513,7 @@ class SoloController extends Controller
         $course = Course::findOrFail($request->course_id);
 
         if (!$user->is_superuser && !$user->is_admin && !$user->mentorCourses()->where('courses.id', $course->id)->exists()) {
-            return response()->json(['error' => 'You cannot manage this course'], 403);
+            return back()->withErrors(['error' => 'You cannot manage this course']);
         }
 
         try {
@@ -470,7 +524,7 @@ class SoloController extends Controller
             });
 
             if (!$solo) {
-                return response()->json(['error' => 'No solo endorsement found for this trainee and position'], 404);
+                return back()->withErrors(['error' => 'No solo endorsement found for this trainee and position']);
             }
 
             $success = $this->vatEudService->removeSoloEndorsement($solo['id']);
@@ -479,16 +533,11 @@ class SoloController extends Controller
                 $this->vatEudService->refreshEndorsementCache();
                 ActivityLogger::soloRemoved($course->solo_station, $trainee, $user);
 
-                return response()->json([
-                    'success' => true,
-                    'message' => "Successfully removed solo endorsement for {$trainee->name}"
-                ]);
+                return $this->returnWithRefreshedCourse($course->id, $user);
             } else {
-                return response()->json([
-                    'success' => false,
-                    'error' => 'Failed to remove solo endorsement'
-                ], 500);
+                return back()->withErrors(['error' => 'Failed to remove solo endorsement']);
             }
+
         } catch (\Exception $e) {
             Log::error('Error removing solo endorsement', [
                 'mentor_id' => $user->id,
@@ -497,10 +546,7 @@ class SoloController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'error' => 'An error occurred while removing the solo endorsement'
-            ], 500);
+            return back()->withErrors(['error' => 'An error occurred while removing the solo endorsement']);
         }
     }
 }
