@@ -146,7 +146,7 @@ export function SoloModal({ trainee, courseId, isOpen, onClose }: SoloModalProps
         return true;
     };
 
-    const handleAddSolo = () => {
+    const handleAddSolo = async () => {
         if (!trainee || !courseId || !expiryDate) return;
 
         if (!validateExpiryDate(expiryDate)) return;
@@ -154,29 +154,28 @@ export function SoloModal({ trainee, courseId, isOpen, onClose }: SoloModalProps
         setIsSubmitting(true);
         setError(null);
 
-        router.post(
-            route('overview.add-solo'),
-            {
+        try {
+            const response = await axios.post(route('overview.add-solo'), {
                 trainee_id: trainee.id,
                 course_id: courseId,
                 expiry_date: format(expiryDate, 'yyyy-MM-dd'),
-            },
-            {
-                onSuccess: () => {
-                    handleClose();
-                },
-                onError: (errors) => {
-                    const errorMessage = Object.values(errors).flat()[0];
-                    setError(typeof errorMessage === 'string' ? errorMessage : 'Failed to add solo');
-                },
-                onFinish: () => {
-                    setIsSubmitting(false);
-                },
-            },
-        );
+            });
+
+            if (response.data.success) {
+                router.reload({ only: ['courses'] });
+                handleClose();
+            } else {
+                setError(response.data.error || 'Failed to add solo');
+            }
+        } catch (err: any) {
+            const errorMessage = err.response?.data?.error || err.message || 'Failed to add solo';
+            setError(errorMessage);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
-    const handleExtendSolo = () => {
+    const handleExtendSolo = async () => {
         if (!trainee || !courseId || !expiryDate || !trainee.soloStatus) return;
 
         if (!validateExpiryDate(expiryDate)) return;
@@ -184,53 +183,51 @@ export function SoloModal({ trainee, courseId, isOpen, onClose }: SoloModalProps
         setIsSubmitting(true);
         setError(null);
 
-        router.post(
-            route('overview.extend-solo'),
-            {
+        try {
+            const response = await axios.post(route('overview.extend-solo'), {
                 trainee_id: trainee.id,
                 course_id: courseId,
                 expiry_date: format(expiryDate, 'yyyy-MM-dd'),
-            },
-            {
-                onSuccess: () => {
-                    handleClose();
-                },
-                onError: (errors) => {
-                    const errorMessage = Object.values(errors).flat()[0];
-                    setError(typeof errorMessage === 'string' ? errorMessage : 'Failed to extend solo');
-                },
-                onFinish: () => {
-                    setIsSubmitting(false);
-                },
-            },
-        );
+            });
+
+            if (response.data.success) {
+                router.reload({ only: ['courses'] });
+                handleClose();
+            } else {
+                setError(response.data.error || 'Failed to extend solo');
+            }
+        } catch (err: any) {
+            const errorMessage = err.response?.data?.error || err.message || 'Failed to extend solo';
+            setError(errorMessage);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
-    const handleRemoveSolo = () => {
+    const handleRemoveSolo = async () => {
         if (!trainee || !courseId) return;
 
         setIsSubmitting(true);
         setError(null);
 
-        router.post(
-            route('overview.remove-solo'),
-            {
+        try {
+            const response = await axios.post(route('overview.remove-solo'), {
                 trainee_id: trainee.id,
                 course_id: courseId,
-            },
-            {
-                onSuccess: () => {
-                    handleClose();
-                },
-                onError: (errors) => {
-                    const errorMessage = Object.values(errors).flat()[0];
-                    setError(typeof errorMessage === 'string' ? errorMessage : 'Failed to remove solo');
-                },
-                onFinish: () => {
-                    setIsSubmitting(false);
-                },
-            },
-        );
+            });
+
+            if (response.data.success) {
+                router.reload({ only: ['courses'] });
+                handleClose();
+            } else {
+                setError(response.data.error || 'Failed to remove solo');
+            }
+        } catch (err: any) {
+            const errorMessage = err.response?.data?.error || err.message || 'Failed to remove solo';
+            setError(errorMessage);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const renderCoreTheoryStatus = () => {

@@ -426,6 +426,8 @@ class VatEudService
         Cache::forget('vateud:tier2_endorsements');
         Cache::forget('vateud:solo_endorsements');
 
+        $this->getSoloEndorsements();
+
         Log::info('Endorsement cache cleared');
     }
 
