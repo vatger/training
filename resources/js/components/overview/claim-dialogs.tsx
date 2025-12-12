@@ -58,16 +58,10 @@ export function ClaimConfirmDialog({ trainee, courseId, isOpen, onClose }: Claim
                             <>
                                 <span className="font-medium">{trainee.name}</span> is currently claimed by{' '}
                                 <span className="font-medium">{trainee.claimedBy}</span>.
-                                <br />
-                                <br />
-                                By claiming this trainee, you will take over responsibility for their training.
                             </>
                         ) : (
                             <>
                                 Are you sure you want to claim <span className="font-medium">{trainee?.name}</span>?
-                                <br />
-                                <br />
-                                You will become the responsible mentor for this trainee.
                             </>
                         )}
                     </DialogDescription>
