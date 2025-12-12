@@ -32,14 +32,13 @@ class TraineeOrderController extends Controller
         }
 
         try {
-            DB::transaction(function () use ($courseId, $traineeIds, $user) {
+            DB::transaction(function () use ($courseId, $traineeIds) {
                 foreach ($traineeIds as $index => $traineeId) {
                     DB::table('course_trainees')
                         ->where('course_id', $courseId)
                         ->where('user_id', $traineeId)
                         ->update([
                             'custom_order' => $index + 1,
-                            'custom_order_mentor_id' => $user->id,
                             'updated_at' => now(),
                         ]);
                 }
@@ -86,10 +85,8 @@ class TraineeOrderController extends Controller
         try {
             DB::table('course_trainees')
                 ->where('course_id', $courseId)
-                ->where('custom_order_mentor_id', $user->id)
                 ->update([
                     'custom_order' => null,
-                    'custom_order_mentor_id' => null,
                     'updated_at' => now(),
                 ]);
 

@@ -261,7 +261,6 @@ class User extends Authenticatable implements FilamentUser
                 'remark_author_id',
                 'remark_updated_at',
                 'custom_order',
-                'custom_order_mentor_id'
             ])
             ->withTimestamps();
     }

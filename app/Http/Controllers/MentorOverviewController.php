@@ -214,16 +214,16 @@ class MentorOverviewController extends Controller
         $tier1ByVatsimId = $allTier1->groupBy('user_cid');
 
         $courseWithTrainees = \App\Models\Course::with([
-            'activeTrainees' => function ($query) use ($user) {
+            'activeTrainees' => function ($query) {
                 $query->orderByRaw("
                 CASE 
-                    WHEN course_trainees.custom_order_mentor_id = ? AND course_trainees.custom_order IS NOT NULL 
+                    WHEN course_trainees.custom_order IS NOT NULL 
                     THEN course_trainees.custom_order 
                     ELSE 999999 
                 END ASC,
                 users.first_name ASC,
                 users.last_name ASC
-            ", [$user->id]);
+            ");
             },
         ])->find($course->id);
 
@@ -408,7 +408,6 @@ class MentorOverviewController extends Controller
                 }
             }
 
-            // Fallback to solo_station check if no endorsement groups found
             if (!$endorsementStatus && !empty($course->solo_station)) {
                 $endorsement = $traineeEndorsements->first(fn($e) => $e['position'] === $course->solo_station);
             if ($endorsement) {

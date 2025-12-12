@@ -147,7 +147,6 @@ class Course extends Model
                 'remark_author_id',
                 'remark_updated_at',
                 'custom_order',
-                'custom_order_mentor_id'
             ])
             ->whereNull('course_trainees.completed_at')
             ->withTimestamps();
@@ -164,7 +163,6 @@ class Course extends Model
                 'remark_author_id',
                 'remark_updated_at',
                 'custom_order',
-                'custom_order_mentor_id'
             ])
             ->withTimestamps();
     }
@@ -180,7 +178,6 @@ class Course extends Model
                 'remark_author_id',
                 'remark_updated_at',
                 'custom_order',
-                'custom_order_mentor_id'
             ])
             ->whereNotNull('course_trainees.completed_at')
             ->withTimestamps();
