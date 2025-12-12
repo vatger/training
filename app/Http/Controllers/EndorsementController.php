@@ -98,12 +98,10 @@ class EndorsementController extends Controller
                 ->values();
         }
         
-
-        // --- Load Tier1 endorsements ------------------------------
         $allTier1 = $this->vatEudService->getTier1Endorsements();
 
-        $endorsementIds = collect(value: $allTier1)->pluck('id')->toArray();
-        $vatsimIds = collect(value: $allTier1)->pluck('user_cid')->unique()->toArray();
+        $endorsementIds = collect($allTier1)->pluck('id')->toArray();
+        $vatsimIds = collect($allTier1)->pluck('user_cid')->unique()->toArray();
 
         $activities = EndorsementActivity::whereIn('endorsement_id', $endorsementIds)
             ->get()
@@ -113,16 +111,24 @@ class EndorsementController extends Controller
             ->get()
             ->keyBy('vatsim_id');
 
-        // --- Map & strictly filter --------------------------------
         $endorsements = collect($allTier1)
             ->map(function ($endorsement) use ($activities, $users) {
+
                 $activity = $activities->get($endorsement['id']);
                 if (!$activity) {
                     return null;
                 }
 
                 $createdAt = Carbon::parse($endorsement['created_at']);
-                $eligibleForRemoval = $createdAt->lte(now()->subMonths(6));
+
+                $olderThanSixMonths = $createdAt->lte(now()->subMonths(6));
+                $hasGoodActivity = $activity->activity_hours >= 3;
+
+                $shouldBeVisible = $hasGoodActivity || $olderThanSixMonths;
+
+                if (!$shouldBeVisible) {
+                    return null;
+                }
 
                 $user = $users->get($endorsement['user_cid']);
 
@@ -140,20 +146,11 @@ class EndorsementController extends Controller
                     'removalDays' => $activity->removal_date
                         ? $activity->removal_date->diffInDays(now(), false)
                         : -1,
-                    'eligibleForRemoval' => $eligibleForRemoval,
+                    'eligibleForRemoval' => $olderThanSixMonths,
                     'endorsedAt' => $createdAt->format('Y-m-d'),
                 ];
             })
             ->filter()
-            ->filter(function ($endorsement) {
-                $hasEnoughActivity = $endorsement['activityHours'] >= 3;
-
-                if ($hasEnoughActivity) {
-                    return true;
-                }
-
-                return $endorsement['eligibleForRemoval'];
-            })
             ->filter(function ($endorsement) use ($allowedPositions, $user) {
                 if ($user->is_superuser || $user->is_admin) {
                     return true;
@@ -179,6 +176,7 @@ class EndorsementController extends Controller
             'endorsementGroups' => $endorsementsByPosition,
         ]);
     }
+
 
     public function removeTier1(Request $request, int $endorsementId)
     {
