@@ -710,7 +710,7 @@ class CptController extends Controller
             if ($uploadResult['success'] && $passed) {
                 $upgradeResult = $this->vatEudService->requestUpgrade(
                     $cpt->trainee->vatsim_id,
-                    $user->vatsim_id,
+                    config('services.vateud.atd_lead_cid', 1441619),
                     $cpt->trainee->rating + 1
                 );
 
