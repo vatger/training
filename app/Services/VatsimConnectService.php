@@ -84,7 +84,7 @@ class VatsimConnectService
 
         $profile = $response->json();
 
-        Log::info('VATGER OAuth response', ['response' => $profile]);
+        /* Log::info('VATGER OAuth response', ['response' => $profile]); */
 
         if (!isset($profile['id'])) {
             throw new \Exception('Could not extract user ID from response');

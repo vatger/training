@@ -31,10 +31,10 @@ class VatEudService
             $cacheKey = 'vateud:tier1_endorsements';
             
             return Cache::remember($cacheKey, now()->addMinutes(10), function () {
-                Log::info('Fetching Tier 1 endorsements from VatEUD API', [
+                /* Log::info('Fetching Tier 1 endorsements from VatEUD API', [
                     'url' => "{$this->baseUrl}/facility/endorsements/tier-1",
                     'headers' => array_keys($this->headers),
-                ]);
+                ]); */
 
                 $response = Http::withHeaders($this->headers)
                     ->timeout(10)
@@ -65,10 +65,10 @@ class VatEudService
                     return [];
                 }
 
-                Log::info('Processed Tier 1 endorsements', [
+                /* Log::info('Processed Tier 1 endorsements', [
                     'count' => count($endorsements),
                     'sample' => array_slice($endorsements, 0, 2),
-                ]);
+                ]); */
 
                 return $this->sortEndorsements($endorsements);
             });

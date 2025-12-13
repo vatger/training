@@ -73,19 +73,19 @@ class VatsimOAuthController extends Controller
             try {
                 // Get access token from VATSIM Connect
                 $tokenData = $this->vatsimConnect->getAccessToken($code, $state);
-                Log::info('Access token obtained successfully');
+                /* Log::info('Access token obtained successfully'); */
 
                 // Get user profile from VATSIM Connect
                 $profile = $this->vatsimConnect->getUserProfile($tokenData['access_token']);
-                Log::info('User profile obtained', ['vatsim_id' => $profile['id']]);
+                /* Log::info('User profile obtained', ['vatsim_id' => $profile['id']]); */
 
                 // Create or update user
                 $user = $this->createOrUpdateUser($profile);
-                Log::info('User created/updated', ['user_id' => $user->id]);
+                /* Log::info('User created/updated', ['user_id' => $user->id]); */
 
                 // Assign roles
                 $this->assignRoles($user, $profile['teams'] ?? []);
-                Log::info('Roles assigned');
+                /* Log::info('Roles assigned'); */
 
                 // Log the user in
                 Auth::login($user, true); // true for remember me

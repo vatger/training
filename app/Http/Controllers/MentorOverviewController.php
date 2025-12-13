@@ -76,12 +76,12 @@ class MentorOverviewController extends Controller
                         return $meta;
                     });
 
-                    \Log::info('Loaded initial course data', [
+                    /* \Log::info('Loaded initial course data', [
                         'course_id' => $loadedCourseData['id'],
                         'course_name' => $loadedCourseData['name'],
                         'trainee_count' => count($loadedCourseData['trainees']),
                         'loaded_flag' => $loadedCourseData['loaded'],
-                    ]);
+                    ]); */
                 }
             } catch (\Exception $e) {
                 \Log::error('Failed to load initial course data', [

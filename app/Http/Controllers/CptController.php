@@ -663,27 +663,67 @@ class CptController extends Controller
         if ($cpt->log_uploaded && $cpt->logs->count() > 0) {
             $latestLog = $cpt->logs->sortByDesc('created_at')->first();
 
-            $filePath = storage_path('app/' . $latestLog->log_file);
-            if (!file_exists($filePath)) {
-                $filePath = storage_path('app/public/' . $latestLog->log_file);
+            $filePath = null;
+            if (Storage::disk('private')->exists($latestLog->log_file)) {
+                $filePath = Storage::disk('private')->path($latestLog->log_file);
+            } elseif (Storage::disk('public')->exists($latestLog->log_file)) {
+                $filePath = Storage::disk('public')->path($latestLog->log_file);
             }
 
-            if (file_exists($filePath) && $cpt->examiner) {
-                $uploadResult = $this->vatEudService->uploadCptLog(
+            if (!$filePath) {
+                \Log::error('CPT grading: Log file not found', [
+                    'cpt_id' => $cpt->id,
+                    'log_id' => $latestLog->id,
+                    'log_file' => $latestLog->log_file,
+                ]);
+                return back()->withErrors(['error' => 'Log file not found. Cannot grade CPT.']);
+            }
+
+            if (!$cpt->examiner) {
+                \Log::error('CPT grading: No examiner assigned', [
+                    'cpt_id' => $cpt->id,
+                ]);
+                return back()->withErrors(['error' => 'No examiner assigned to this CPT.']);
+            }
+
+            $uploadResult = $this->vatEudService->uploadCptLog(
+                $cpt->trainee->vatsim_id,
+                $cpt->examiner->vatsim_id,
+                $cpt->course->solo_station,
+                'See log',
+                $passed,
+                $filePath
+            );
+
+            if (!$uploadResult['success']) {
+                \Log::error('CPT grading: VatEud upload failed', [
+                    'cpt_id' => $cpt->id,
+                    'result' => $uploadResult,
+                ]);
+            } else {
+                \Log::info('CPT grading: VatEud upload successful', [
+                    'cpt_id' => $cpt->id,
+                    'passed' => $passed,
+                ]);
+            }
+
+            if ($uploadResult['success'] && $passed) {
+                $upgradeResult = $this->vatEudService->requestUpgrade(
                     $cpt->trainee->vatsim_id,
-                    $cpt->examiner->vatsim_id,
-                    $cpt->course->solo_station,
-                    'See log',
-                    $passed,
-                    $filePath
+                    $user->vatsim_id,
+                    $cpt->trainee->rating + 1
                 );
 
-                if ($uploadResult['success'] && $passed) {
-                    $this->vatEudService->requestUpgrade(
-                        $cpt->trainee->vatsim_id,
-                        $user->vatsim_id,
-                        $cpt->trainee->rating + 1
-                    );
+                if (!$upgradeResult['success']) {
+                    \Log::error('CPT grading: VatEud upgrade request failed', [
+                        'cpt_id' => $cpt->id,
+                        'result' => $upgradeResult,
+                    ]);
+                } else {
+                    \Log::info('CPT grading: VatEud upgrade requested', [
+                        'cpt_id' => $cpt->id,
+                        'trainee_id' => $cpt->trainee->vatsim_id,
+                    ]);
                 }
             }
         }
