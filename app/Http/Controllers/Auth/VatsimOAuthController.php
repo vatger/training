@@ -131,10 +131,10 @@ class VatsimOAuthController extends Controller
             try {
                 $lastRatingChange = Carbon::createFromFormat('Y-m-d H:i:s', $profile['last_rating_change_at']);
             } catch (\Exception $e) {
-                $lastRatingChange = Carbon::createFromTimestamp(0);
+                $lastRatingChange = null;
             }
         } else {
-            $lastRatingChange = Carbon::createFromTimestamp(0);
+            $lastRatingChange = null;
         }
 
         return User::updateOrCreate(
