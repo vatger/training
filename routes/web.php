@@ -13,6 +13,7 @@ use App\Http\Controllers\SoloController;
 use App\Http\Controllers\TrainingLogController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\CptController;
+use App\Http\Controllers\UserSettingsController;
 
 Route::get('/', function () {
     return redirect("/dashboard");
@@ -21,14 +22,17 @@ Route::get('/', function () {
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
+    // Settings routes
+    Route::prefix('settings')->name('settings.')->group(function () {
+        Route::get('/', [UserSettingsController::class, 'index'])->name('index');
+        Route::post('/', [UserSettingsController::class, 'update'])->name('update');
+    });
 
     // Endorsement routes
     Route::prefix('endorsements')->name('endorsements.')->group(function () {
-        // Trainee endorsement view (main route)
         Route::get('/my-endorsements', [EndorsementController::class, 'traineeView'])
             ->name('trainee');
 
-        // Mentor/Management routes
         Route::middleware('mentor')->group(function () {
             Route::get('/manage', [EndorsementController::class, 'mentorView'])
                 ->name('manage');
@@ -37,35 +41,29 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 ->name('tier1.remove');
         });
 
-        // Tier 2 endorsement requests
         Route::post('/tier2/{tier2Id}/request', [EndorsementController::class, 'requestTier2'])
             ->name('tier2.request');
     });
 
-    // Add this route for compatibility with the sidebar
     Route::get('endorsements/my-endorsements', [EndorsementController::class, 'traineeView'])
         ->name('endorsements');
 
-    // Course routes for trainees
     Route::prefix('courses')->name('courses.')->group(function () {
         Route::get('/', [CourseController::class, 'index'])->name('index');
         Route::post('/{course}/waiting-list', [CourseController::class, 'toggleWaitingList'])->name('toggle-waiting-list');
     });
 
-    // Waiting list management for mentors
     Route::prefix('waiting-lists')->name('waiting-lists.')->middleware('mentor')->group(function () {
         Route::get('/manage', [WaitingListController::class, 'mentorView'])->name('manage');
         Route::post('/{entry}/start-training', [WaitingListController::class, 'startTraining'])->name('start-training');
         Route::post('/update-remarks', [WaitingListController::class, 'updateRemarks'])->name('update-remarks');
     });
 
-    // Familiarisation routes
     Route::prefix('familiarisations')->name('familiarisations.')->group(function () {
         Route::get('/', [FamiliarisationController::class, 'index'])->name('index');
         Route::get('/my-familiarisations', [FamiliarisationController::class, 'userFamiliarisations'])->name('user');
     });
 
-    // Mentor Overview
     Route::middleware('mentor')->group(function () {
 
         Route::post('users/search', [UserSearchController::class, 'search'])->name('users.search');
@@ -136,39 +134,31 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::prefix('training-logs')->name('training-logs.')->group(function () {
 
-        // List all logs (filtered by permission)
         Route::get('/', [TrainingLogController::class, 'index'])
             ->name('index');
 
-        // Create new log (authorization handled in controller)
         Route::get('/create/{traineeId}/{courseId}', [TrainingLogController::class, 'create'])
             ->name('create');
 
         Route::get('/view/{traineeId}/{courseId}', [TrainingLogController::class, 'viewTraineeLogs'])
             ->name('view');
 
-        // Store new log (authorization handled in controller)
         Route::post('/', [TrainingLogController::class, 'store'])
             ->name('store');
 
-        // View specific log
         Route::get('/{id}', [TrainingLogController::class, 'show'])
             ->name('show');
 
-        // Edit log
         Route::get('/{id}/edit', [TrainingLogController::class, 'edit'])
             ->name('edit');
 
-        // Update log
         Route::put('/{id}', [TrainingLogController::class, 'update'])
             ->name('update');
 
-        // Delete log
         Route::delete('/{id}', [TrainingLogController::class, 'destroy'])
             ->name('destroy');
     });
 
-    // Get logs for a specific trainee
     Route::get('api/training-logs/trainee/{traineeId}', [TrainingLogController::class, 'getTraineeLogs'])
         ->name('api.training-logs.trainee');
 

@@ -4,7 +4,7 @@ import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
 import { logout } from '@/routes';
 import { type User } from '@/types';
 import { Link, router } from '@inertiajs/react';
-import { LogOut } from 'lucide-react';
+import { LogOut, Settings } from 'lucide-react';
 
 interface UserMenuContentProps {
     user: User;
@@ -25,6 +25,13 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
                     <UserInfo user={user} showEmail={true} />
                 </div>
             </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+                <Link href={route('settings.index')} className="block w-full">
+                    <Settings className="mr-2" />
+                    Settings
+                </Link>
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
                 <Link className="block w-full" href={logout()} as="button" onClick={handleLogout} data-test="logout-button">

@@ -308,7 +308,7 @@ export default function CreateEditTrainingLog({
     // Debug: Log initial data in edit mode to verify loading
     useEffect(() => {
         if (isEditing && log) {
-            console.log('Edit mode - Loading log data:', {
+            /* console.log('Edit mode - Loading log data:', {
                 logId: log.id,
                 sessionType: log.type,
                 evaluationsStructure: log.evaluations
@@ -326,7 +326,7 @@ export default function CreateEditTrainingLog({
                     coordination: data.coordination,
                     tag_management: data.tag_management,
                 },
-            });
+            }); */
         }
     }, [isEditing, log]);
 
@@ -352,7 +352,7 @@ export default function CreateEditTrainingLog({
             try {
                 const parsedDraft = JSON.parse(savedDraft);
                 setData(parsedDraft);
-                console.log(`${isEditing ? 'Edit' : 'Create'} mode - Loaded draft from localStorage`);
+                /* console.log(`${isEditing ? 'Edit' : 'Create'} mode - Loaded draft from localStorage`); */
             } catch (error) {
                 console.error('Failed to load draft:', error);
             }

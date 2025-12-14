@@ -194,6 +194,7 @@ class CheckRosterStatus extends Command
     {
         try {
             $apiKey = config('services.vatger.api_key');
+            $apiBaseUrl = config('services.vatger.api_url');
 
             if (!$apiKey) {
                 Log::warning('VATGER API key missing');
@@ -204,7 +205,7 @@ class CheckRosterStatus extends Command
                 'Authorization' => "Token {$apiKey}",
                 'Accept' => 'application/json',
             ])->timeout(10)
-                ->get("http://hp.vatsim-germany.org/api/user/{$vatsimId}/");
+                ->get("{$apiBaseUrl}/user/{$vatsimId}/");
 
             if (!$response->successful()) {
                 Log::warning('Failed S1 rating fetch', [
@@ -241,6 +242,7 @@ class CheckRosterStatus extends Command
     protected function sendRemovalWarning(int $vatsimId): void
     {   
         $apiKey = config('services.vatger.api_key');
+        $apiBaseUrl = config('services.vatger.api_url');
         
         if (!$apiKey) {
             Log::warning('VATGER API key not configured, skipping removal notification');
@@ -263,7 +265,7 @@ class CheckRosterStatus extends Command
         try {
             $response = Http::withHeaders([
                 'Authorization' => "Token {$apiKey}",
-            ])->post("http://hp.vatsim-germany.org/api/user/{$vatsimId}/send_notification", $data);
+            ])->post("{$apiBaseUrl}/user/{$vatsimId}/send_notification", $data);
 
             if (!$response->successful()) {
                 Log::warning('Failed to send removal notification', [

@@ -356,7 +356,6 @@ export function TraineeDataTable({ trainees, course, onRemarkClick, onClaimClick
             header: 'Progress',
             cell: ({ row }) => {
                 const trainee = row.original;
-                console.log(trainee.progress);
                 return (
                     <div className="space-y-1">
                         {trainee.progress.length > 0 ? (

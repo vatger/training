@@ -18,9 +18,6 @@ class WaitingListService
         $this->validationService = $validationService;
     }
 
-    /**
-     * Add user to waiting list
-     */
     public function joinWaitingList(Course $course, User $user): array
     {
         [$canJoin, $reason] = $this->validationService->canUserJoinCourse($course, $user);
@@ -29,7 +26,6 @@ class WaitingListService
             return [false, $reason];
         }
 
-        // Check if already on waiting list
         if (
             WaitingListEntry::where('user_id', $user->id)
                 ->where('course_id', $course->id)
@@ -38,7 +34,6 @@ class WaitingListService
             return [false, 'You are already on the waiting list for this course.'];
         }
 
-        // Check for multiple RTG courses
         if (
             $course->type === 'RTG' &&
             WaitingListEntry::whereHas('course', function ($q) {
@@ -50,12 +45,20 @@ class WaitingListService
 
         try {
             DB::transaction(function () use ($course, $user, &$createdEntry) {
+                $settings = \App\Models\UserSetting::where('user_id', $user->id)->first();
+                $remarks = '';
+
+                if ($settings && $settings->english_only) {
+                    $remarks = 'EN';
+                }
+
                 $createdEntry = WaitingListEntry::create([
                     'user_id' => $user->id,
                     'course_id' => $course->id,
                     'date_added' => now(),
                     'activity' => 0,
                     'hours_updated' => Carbon::createFromDate(2000, 1, 1),
+                    'remarks' => $remarks,
                 ]);
             });
 
@@ -75,9 +78,6 @@ class WaitingListService
         }
     }
 
-    /**
-     * Remove user from waiting list
-     */
     public function leaveWaitingList(Course $course, User $user): array
     {
         try {
@@ -105,9 +105,6 @@ class WaitingListService
         }
     }
 
-    /**
-     * Start training for a user (move from waiting list to active training)
-     */
     public function startTraining(WaitingListEntry $entry, User $mentor): array
     {
         $minActivity = config('services.training.display_activity', 8);
@@ -125,8 +122,8 @@ class WaitingListService
                 $this->enrollInMoodleCourses($entry->user, $entry->course->moodle_course_ids);
             });
 
-            // Notify user
             $apiKey = config('services.vatger.api_key');
+            $apiBaseUrl = config('services.vatger.api_url');
 
             if (!$apiKey) {
                 Log::warning('VATGER API key not configured, skipping notification');
@@ -152,7 +149,7 @@ class WaitingListService
             ];
 
             $response = \Http::withHeaders($headers)
-                ->post("http://hp.vatsim-germany.org/api/user/{$entry->user->vatsim_id}/send_notification", $data);
+                ->post($apiBaseUrl + "/user/{$entry->user->vatsim_id}/send_notification", $data);
 
             if (!$response->successful()) {
                 throw new \Exception("Failed to send notification: " . $response->body());
@@ -177,9 +174,6 @@ class WaitingListService
         }
     }
 
-    /**
-     * Update remarks for a waiting list entry
-     */
     public function updateRemarks(WaitingListEntry $entry, string $remarks, User $mentor): array
     {
         try {
@@ -204,9 +198,6 @@ class WaitingListService
         }
     }
 
-    /**
-     * Enroll user in Moodle courses
-     */
     protected function enrollInMoodleCourses(User $user, array $courseIds): void
     {
         if (empty($courseIds)) {
@@ -214,6 +205,8 @@ class WaitingListService
         }
 
         $apiKey = config('services.vatger.api_key');
+        $apiBaseUrl = config('services.vatger.api_url');
+
         if (!$apiKey) {
             Log::warning('VATGER API key not configured, skipping Moodle enrollment');
             return;
@@ -223,7 +216,7 @@ class WaitingListService
             try {
                 \Http::withHeaders([
                     'Authorization' => "Token {$apiKey}",
-                ])->get("http://hp.vatsim-germany.org/api/moodle/course/{$courseId}/user/{$user->vatsim_id}/enrol");
+                ])->get("{$apiBaseUrl}/moodle/course/{$courseId}/user/{$user->vatsim_id}/enrol");
             } catch (\Exception $e) {
                 Log::warning('Failed to enroll user in Moodle course', [
                     'user_id' => $user->id,

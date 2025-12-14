@@ -34,21 +34,21 @@ export function useMentorStorage(courses: MentorCourse[]) {
                     if (parsedState.selectedCourseId) {
                         const savedCourse = courses.find((c) => c.id === parsedState.selectedCourseId);
                         if (savedCourse) {
-                            console.log(
+                            /*  console.log(
                                 'Restoring saved course:',
                                 savedCourse.id,
                                 'loaded:',
                                 savedCourse.loaded,
                                 'trainees:',
                                 savedCourse.trainees?.length || 0,
-                            );
+                            ); */
                             setSelectedCourse(savedCourse);
                         }
                     } else {
                         // FIX: If no saved course, select the first one that has loaded=true from backend
                         const loadedCourse = courses.find((c) => c.loaded === true);
                         if (loadedCourse) {
-                            console.log('No saved course, using loaded course:', loadedCourse.id, 'trainees:', loadedCourse.trainees?.length || 0);
+                            /* console.log('No saved course, using loaded course:', loadedCourse.id, 'trainees:', loadedCourse.trainees?.length || 0); */
                             setSelectedCourse(loadedCourse);
                         }
                     }
@@ -56,7 +56,7 @@ export function useMentorStorage(courses: MentorCourse[]) {
                     // FIX: If no saved state at all, try to use the initially loaded course from backend
                     const loadedCourse = courses.find((c) => c.loaded === true);
                     if (loadedCourse) {
-                        console.log('No saved state, using loaded course:', loadedCourse.id, 'trainees:', loadedCourse.trainees?.length || 0);
+                        /* console.log('No saved state, using loaded course:', loadedCourse.id, 'trainees:', loadedCourse.trainees?.length || 0); */
                         setSelectedCourse(loadedCourse);
                     }
                 }
@@ -67,7 +67,7 @@ export function useMentorStorage(courses: MentorCourse[]) {
                 // FIX: Even on error, try to use loaded course
                 const loadedCourse = courses.find((c) => c.loaded === true);
                 if (loadedCourse) {
-                    console.log('Error loading state, using loaded course:', loadedCourse.id);
+                    console.error('Error loading state, using loaded course:', loadedCourse.id);
                     setSelectedCourse(loadedCourse);
                 }
             }
@@ -90,14 +90,14 @@ export function useMentorStorage(courses: MentorCourse[]) {
                 updatedCourse.loaded !== selectedCourse.loaded || (updatedCourse.trainees?.length || 0) !== (selectedCourse.trainees?.length || 0);
 
             if (hasNewData) {
-                console.log(
+                /* console.log(
                     'Course data updated:',
                     updatedCourse.id,
                     'loaded:',
                     updatedCourse.loaded,
                     'trainees:',
                     updatedCourse.trainees?.length || 0,
-                );
+                ); */
                 setSelectedCourse(updatedCourse);
             }
         }

@@ -172,6 +172,7 @@ class RemoveEndorsements extends Command
     protected function sendNotification(EndorsementActivity $endorsement): void
     {
         $apiKey = config('services.vatger.api_key');
+        $apiBaseUrl = config('services.vatger.api_url');
         
         if (!$apiKey) {
             Log::warning('VATGER API key not configured, skipping notification');
@@ -212,7 +213,7 @@ class RemoveEndorsements extends Command
         );
 
         $response = \Http::withHeaders($headers)
-            ->post("http://hp.vatsim-germany.org/api/user/{$endorsement->vatsim_id}/send_notification", $data);
+            ->post("{$apiBaseUrl}/user/{$endorsement->vatsim_id}/send_notification", $data);
 
         if (!$response->successful()) {
             throw new \Exception("Failed to send notification: " . $response->body());

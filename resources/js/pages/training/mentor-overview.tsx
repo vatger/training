@@ -35,13 +35,7 @@ export default function MentorOverview({ courses: initialCourses, statistics, in
     const [isClaimDialogOpen, setIsClaimDialogOpen] = useState(false);
     const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
 
-    // Update courses state when initialCourses changes
     useEffect(() => {
-        console.log('Initial courses received:', {
-            count: initialCourses.length,
-            loadedCourses: initialCourses.filter((c) => c.loaded).map((c) => ({ id: c.id, name: c.name, trainees: c.trainees?.length || 0 })),
-            initialCourseId,
-        });
         setCourses(initialCourses);
     }, [initialCourses]);
 
@@ -54,7 +48,6 @@ export default function MentorOverview({ courses: initialCourses, statistics, in
 
     const loadCourseData = async (courseId: number) => {
         if (loadingCourses.has(courseId)) {
-            console.log('Already loading course:', courseId);
             return;
         }
 
@@ -64,14 +57,14 @@ export default function MentorOverview({ courses: initialCourses, statistics, in
             return;
         }
 
-        console.log('Loading course data:', courseId);
+        /* console.log('Loading course data:', courseId); */
         setLoadingCourses((prev) => new Set(prev).add(courseId));
 
         try {
             const response = await axios.get(route('overview.course.trainees', { courseId }));
             const courseData = response.data;
 
-            console.log('Course data loaded:', courseData.id, 'trainees:', courseData.trainees?.length || 0);
+            /* console.log('Course data loaded:', courseData.id, 'trainees:', courseData.trainees?.length || 0); */
 
             setCourses((prevCourses) => {
                 const updated = prevCourses.map((c) => (c.id === courseId ? { ...courseData, loaded: true } : c));
@@ -107,23 +100,23 @@ export default function MentorOverview({ courses: initialCourses, statistics, in
                     newSelectedCourse = filteredCourses[0];
                 }
 
-                console.log(
+                /* console.log(
                     'Selecting course:',
                     newSelectedCourse.id,
                     'loaded:',
                     newSelectedCourse.loaded,
                     'trainees:',
                     newSelectedCourse.trainees?.length || 0,
-                );
+                ); */
 
                 setSelectedCourse(newSelectedCourse);
 
                 if (!newSelectedCourse.loaded) {
-                    console.log('Course not loaded, fetching data for:', newSelectedCourse.id);
+                    /* console.log('Course not loaded, fetching data for:', newSelectedCourse.id); */
                     loadCourseData(newSelectedCourse.id);
                 }
             } else if (selectedCourse && !selectedCourse.loaded) {
-                console.log('Selected course not loaded, fetching data for:', selectedCourse.id);
+                /* console.log('Selected course not loaded, fetching data for:', selectedCourse.id); */
                 loadCourseData(selectedCourse.id);
             }
         } else {
@@ -132,7 +125,7 @@ export default function MentorOverview({ courses: initialCourses, statistics, in
     }, [activeCategory, filteredCourses.length, isInitialized, initialCourseId]);
 
     const handleCourseSelect = async (course: MentorCourse) => {
-        console.log('Course selected:', course.id, 'loaded:', course.loaded, 'trainees:', course.trainees?.length || 0);
+        /* console.log('Course selected:', course.id, 'loaded:', course.loaded, 'trainees:', course.trainees?.length || 0); */
         setSelectedCourse(course);
         if (!course.loaded) {
             await loadCourseData(course.id);

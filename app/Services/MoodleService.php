@@ -9,13 +9,14 @@ use Illuminate\Support\Facades\Log;
 class MoodleService
 {
     protected $apiKey;
-    protected $baseUrl = 'http://hp.vatsim-germany.org/api/moodle';
     protected $cacheTtl;
+    protected $apiBaseUrl;
 
     public function __construct()
     {
         $this->apiKey = config('services.vatger.api_key');
         $this->cacheTtl = config('services.moodle.cache_ttl', 600);
+        $this->apiBaseUrl = config('services.vatger.api_url');
     }
 
     public function userExists(int $vatsimId): bool
@@ -29,7 +30,7 @@ class MoodleService
                 ])
                     ->timeout(3)
                     ->retry(2, 500)
-                ->get("{$this->baseUrl}/user/{$vatsimId}");
+                    ->get("{$this->apiBaseUrl}/moodle/user/{$vatsimId}");
 
                 if ($response->successful()) {
                     $data = $response->json();
@@ -63,7 +64,7 @@ class MoodleService
                 ])
                     ->timeout(5)
                     ->retry(2, 500)
-                ->get("{$this->baseUrl}/course/{$courseId}/user/{$vatsimId}/completion");
+                    ->get("{$this->apiBaseUrl}/moodle/course/{$courseId}/user/{$vatsimId}/completion");
 
                 if ($response->successful()) {
                     $data = $response->json();
@@ -98,7 +99,7 @@ class MoodleService
                     'Authorization' => "Token {$this->apiKey}",
                 ])
                     ->timeout(5)
-                ->get("{$this->baseUrl}/course/{$courseId}");
+                    ->get("{$this->apiBaseUrl}/moodle/course/{$courseId}");
 
                 if ($response->successful()) {
                     $data = $response->json();
@@ -153,7 +154,7 @@ class MoodleService
                 'Authorization' => "Token {$this->apiKey}",
             ])
                 ->timeout(10)
-                ->get("{$this->baseUrl}/course/{$courseId}/user/{$vatsimId}/enrol");
+                ->get("{$this->apiBaseUrl}/moodle/course/{$courseId}/user/{$vatsimId}/enrol");
 
             if ($response->successful()) {
                 Cache::forget("moodle:completion:{$vatsimId}:{$courseId}");

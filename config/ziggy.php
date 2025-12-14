@@ -102,6 +102,9 @@ return [
         'cpt.join-examiner',
         'cpt.leave-examiner',
         'cpt.join-local',
-        'cpt.leave-local'
+        'cpt.leave-local',
+
+        'settings.index',
+        'settings.update'
     ],
 ];

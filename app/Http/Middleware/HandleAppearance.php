@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\View;
+use App\Models\UserSetting;
 use Symfony\Component\HttpFoundation\Response;
 
 class HandleAppearance
@@ -16,7 +17,20 @@ class HandleAppearance
      */
     public function handle(Request $request, Closure $next): Response
     {
-        View::share('appearance', $request->cookie('appearance') ?? 'system');
+        $theme = 'system';
+
+        // Check if user is authenticated and has settings
+        if ($request->user()) {
+            $settings = UserSetting::where('user_id', $request->user()->id)->first();
+            if ($settings) {
+                $theme = $settings->theme;
+            }
+        } else {
+            // Fall back to cookie for non-authenticated users
+            $theme = $request->cookie('appearance') ?? 'system';
+        }
+
+        View::share('theme', $theme);
 
         return $next($request);
     }
