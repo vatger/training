@@ -257,13 +257,20 @@ export default function UserProfilePage({ userData }: { userData: UserData }) {
                                     </div>
                                 </div>
                             )}
-                            {user.solo_days_used > 0 && (
+                            {user.solo_days_used !== 0 && (
                                 <div className="flex items-center gap-3 rounded-lg border p-3">
                                     <Plane className="h-5 w-5 text-muted-foreground" />
                                     <div className="w-full">
                                         <p className="text-sm font-medium">Solo Days</p>
                                         <div className="mt-1 flex items-center gap-2">
-                                            <p className="text-xs text-muted-foreground">{user.solo_days_used} / 90 used</p>
+                                            <p
+                                                className={cn(
+                                                    'text-xs text-muted-foreground',
+                                                    user.solo_days_used < 0 && 'font-semibold text-red-600 dark:text-red-400',
+                                                )}
+                                            >
+                                                {user.solo_days_used} / 90 used
+                                            </p>
                                         </div>
                                     </div>
                                 </div>

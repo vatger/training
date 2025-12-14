@@ -40,11 +40,11 @@ class VatEudService
                     ->timeout(10)
                     ->get("{$this->baseUrl}/facility/endorsements/tier-1");
 
-                Log::info('VatEUD Tier 1 API response', [
+                /* Log::info('VatEUD Tier 1 API response', [
                     'status' => $response->status(),
                     'successful' => $response->successful(),
                     'body_preview' => substr($response->body(), 0, 500),
-                ]);
+                ]); */
 
                 if (!$response->successful()) {
                     Log::error('Failed to fetch Tier 1 endorsements', [

@@ -30,6 +30,7 @@ class User extends Authenticatable implements FilamentUser
         'is_superuser',
         'is_admin',
         'password',
+        'solo_days_used',
     ];
 
     /**
