@@ -75,6 +75,11 @@ class UserForm
                             ->label('Last Rating Change')
                             ->displayFormat('Y-m-d H:i')
                             ->seconds(false),
+
+                        Forms\Components\TextInput::make('solo_days_used')
+                            ->label('Used Solo Days')
+                            ->integer()
+                            ->suffix('days')
                     ])->columns(2),
 
                 Section::make('Permissions')
