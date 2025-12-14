@@ -53,8 +53,7 @@ class CptController extends Controller
 
     private function notifyAvailableCpt(Cpt $cpt)
     {
-
-        $notifyUsers = collect();
+                $notifyUsers = collect();
 
         if (!$cpt->examiner_id) {
             $possibleExaminers = Examiner::with('user')
@@ -80,7 +79,7 @@ class CptController extends Controller
                 $this->vatgerApi->sendNotification(
                     $user->vatsim_id,
                     'Available CPT',
-                    "A new CPT is available: {$cpt->course->solo_station} on {$cpt->date->format('d.m.Y at H:i')}lcl.",
+                    "A new CPT is available: {$cpt->course->solo_station} on {$cpt->date->format('d.m.Y')} at {$cpt->date->format('H:i')}lcl",
                     'Training Centre',
                     route('cpt.index')
                 );
