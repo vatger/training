@@ -58,6 +58,21 @@ class CourseValidationService
             if ($course->type !== 'GST') {
                 return [false, 'As a visitor, you can only join visitor courses (GST).'];
             }
+
+            $hasActiveGst = $user->activeRatingCourses()
+                ->where('type', 'GST')
+                ->wherePivot('completed_at', null)
+                ->exists();
+
+            $hasGstWaitingList = WaitingListEntry::where('user_id', $user->id)
+                ->whereHas('course', function ($q) {
+                    $q->where('type', 'GST');
+                })
+                ->exists();
+
+            if ($hasActiveGst || $hasGstWaitingList) {
+                return [false, 'You can only join one visitor course at a time.'];
+            }
         }
 
         if (
