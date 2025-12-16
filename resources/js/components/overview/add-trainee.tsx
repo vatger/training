@@ -38,6 +38,12 @@ export function AddTrainee({ courseId, variant = 'inline', onSuccess }: AddTrain
     const [error, setError] = useState<string | null>(null);
     const [showModal, setShowModal] = useState(false);
 
+    //Suppress non-digits and limit to 7 digits
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const digits = e.target.value.replace(/\D/g, "");
+        setVatsimId(digits.slice(0, 7));
+    }
+
     const handleSearch = async () => {
         if (!vatsimId || vatsimId.length < 6) {
             setError('Please enter a valid VATSIM ID (at least 6 digits)');
@@ -140,10 +146,10 @@ export function AddTrainee({ courseId, variant = 'inline', onSuccess }: AddTrain
                                 <div className="flex gap-2">
                                     <Input
                                         id="vatsim-id-modal"
-                                        type="number"
+                                        type="text"
                                         placeholder="1234567"
                                         value={vatsimId}
-                                        onChange={(e) => setVatsimId(e.target.value)}
+                                        onChange={handleChange}
                                         onKeyPress={handleKeyPress}
                                         disabled={isSearching || !!foundUser}
                                     />
@@ -229,10 +235,10 @@ export function AddTrainee({ courseId, variant = 'inline', onSuccess }: AddTrain
             <div className="flex items-center gap-2">
                 <div className="flex-1">
                     <Input
-                        type="number"
+                        type="text"
                         placeholder="VATSIM ID"
                         value={vatsimId}
-                        onChange={(e) => setVatsimId(e.target.value)}
+                        onChange={handleChange}
                         onKeyPress={handleKeyPress}
                         disabled={isSearching || !!foundUser}
                         className="w-full"
