@@ -95,7 +95,9 @@ class UserSearchController extends Controller
             abort(403, 'Only mentors can view user profiles.');
         }
 
-        if ($currentUser->isSuperuser() || $currentUser->is_admin) {
+        $isPrivilegedUser = $currentUser->isSuperuser() || $currentUser->is_admin;
+
+        if ($isPrivilegedUser) {
             $mentorCourseIds = \App\Models\Course::pluck('id')->toArray();
         } else {
             $mentorCourseIds = $currentUser->mentorCourses()->pluck('courses.id')->toArray();
@@ -103,17 +105,16 @@ class UserSearchController extends Controller
 
         $activeCourses = $user->activeCourses()
             ->with(['mentorGroup'])
-            ->whereIn('courses.id', $mentorCourseIds)
             ->get()
-            ->map(function ($course) use ($mentorCourseIds, $user) {
-                $isMentor = in_array($course->id, $mentorCourseIds);
+            ->map(function ($course) use ($mentorCourseIds, $user, $isPrivilegedUser) {
+                $isMentor = $isPrivilegedUser || in_array($course->id, $mentorCourseIds);
 
                 $courseData = [
                     'id' => $course->id,
                     'name' => $course->name,
                     'type' => $course->type,
                     'position' => $course->position,
-                    'is_mentor' => $isMentor || $user->is_superuser || $user->is_admin,
+                    'is_mentor' => $isMentor,
                     'logs' => [],
                 ];
 
@@ -169,7 +170,6 @@ class UserSearchController extends Controller
                 ->join('courses', 'course_trainees.course_id', '=', 'courses.id')
                 ->where('course_trainees.user_id', $user->id)
                 ->whereNotNull('course_trainees.completed_at')
-                ->whereIn('courses.id', $mentorCourseIds)
                 ->select([
                     'courses.id',
                     'courses.name',
@@ -200,16 +200,11 @@ class UserSearchController extends Controller
                 ->groupBy('course_id');
 
             foreach ($completedData as $courseData) {
-                $logs = $logsGrouped->get($courseData->id, collect())->take(10);
+                $isMentor = $isPrivilegedUser || in_array($courseData->id, $mentorCourseIds);
 
-                $completedCourses->push([
-                    'id' => $courseData->id,
-                    'name' => $courseData->name,
-                    'type' => $courseData->type,
-                    'position' => $courseData->position,
-                    'completed_at' => \Carbon\Carbon::parse($courseData->completed_at)->format('Y-m-d'),
-                    'total_sessions' => $logsGrouped->get($courseData->id, collect())->count(),
-                    'logs' => $logs->map(function ($log) {
+                $logs = [];
+                if ($isMentor) {
+                    $logs = $logsGrouped->get($courseData->id, collect())->map(function ($log) {
                         return [
                             'id' => $log->id,
                             'session_date' => $log->session_date->format('Y-m-d'),
@@ -221,7 +216,18 @@ class UserSearchController extends Controller
                             'session_duration' => $log->session_duration ?? null,
                             'next_step' => $log->next_step ?? null,
                         ];
-                    })->toArray(),
+                    })->toArray();
+                }
+
+                $completedCourses->push([
+                    'id' => $courseData->id,
+                    'name' => $courseData->name,
+                    'type' => $courseData->type,
+                    'position' => $courseData->position,
+                    'completed_at' => \Carbon\Carbon::parse($courseData->completed_at)->format('Y-m-d'),
+                    'is_mentor' => $isMentor,
+                    'total_sessions' => $logsGrouped->get($courseData->id, collect())->count(),
+                    'logs' => $logs,
                 ]);
             }
         } catch (\Exception $e) {
@@ -255,7 +261,6 @@ class UserSearchController extends Controller
                     'removal_notified' => $activity->removal_notified,
                 ];
             });
-
 
         $familiarisations = $user->familiarisations()
             ->with('sector:id,name,fir')
