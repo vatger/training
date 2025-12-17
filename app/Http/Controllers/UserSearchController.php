@@ -96,7 +96,7 @@ class UserSearchController extends Controller
         }
 
         $isPrivilegedUser = $currentUser->isSuperuser() || $currentUser->is_admin;
-
+        
         if ($isPrivilegedUser) {
             $mentorCourseIds = \App\Models\Course::pluck('id')->toArray();
         } else {
@@ -164,6 +164,7 @@ class UserSearchController extends Controller
             });
 
         $completedCourses = collect();
+        $removedCourses = collect();
 
         try {
             $completedData = DB::table('course_trainees')
@@ -175,7 +176,8 @@ class UserSearchController extends Controller
                     'courses.name',
                     'courses.type',
                     'courses.position',
-                    'course_trainees.completed_at'
+                    'course_trainees.completed_at',
+                    'course_trainees.status'
                 ])
                 ->get();
 
@@ -201,7 +203,7 @@ class UserSearchController extends Controller
 
             foreach ($completedData as $courseData) {
                 $isMentor = $isPrivilegedUser || in_array($courseData->id, $mentorCourseIds);
-
+                
                 $logs = [];
                 if ($isMentor) {
                     $logs = $logsGrouped->get($courseData->id, collect())->map(function ($log) {
@@ -219,7 +221,7 @@ class UserSearchController extends Controller
                     })->toArray();
                 }
 
-                $completedCourses->push([
+                $courseArray = [
                     'id' => $courseData->id,
                     'name' => $courseData->name,
                     'type' => $courseData->type,
@@ -228,7 +230,14 @@ class UserSearchController extends Controller
                     'is_mentor' => $isMentor,
                     'total_sessions' => $logsGrouped->get($courseData->id, collect())->count(),
                     'logs' => $logs,
-                ]);
+                    'status' => $courseData->status ?? 'completed',
+                ];
+
+                if (($courseData->status ?? 'completed') === 'removed') {
+                    $removedCourses->push($courseArray);
+                } else {
+                    $completedCourses->push($courseArray);
+                }
             }
         } catch (\Exception $e) {
             \Log::error('Error fetching completed courses', [
@@ -236,6 +245,7 @@ class UserSearchController extends Controller
                 'error' => $e->getMessage()
             ]);
             $completedCourses = collect();
+            $removedCourses = collect();
         }
         
         $endorsements = $user->endorsementActivities()
@@ -327,6 +337,7 @@ class UserSearchController extends Controller
             ],
             'active_courses' => $activeCourses->values()->toArray(),
             'completed_courses' => $completedCourses->toArray(),
+            'removed_courses' => $removedCourses->toArray(),
             'endorsements' => $endorsements,
             'moodle_courses' => $moodleCourses,
             'familiarisations' => $familiarisations,

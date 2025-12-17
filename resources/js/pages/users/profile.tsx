@@ -22,10 +22,12 @@ import {
     XCircle,
     Eye,
     Plane,
+    UserX,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Link } from '@inertiajs/react';
 import { getPositionIcon, getTypeColor } from '@/lib/course-utils';
+import { useState } from 'react';
 
 interface UserProfile {
     vatsim_id: number;
@@ -50,6 +52,7 @@ interface Course {
     logs?: TrainingLog[];
     completed_at?: string | null;
     total_sessions?: number;
+    status?: string;
 }
 
 interface TrainingLog {
@@ -89,6 +92,7 @@ interface UserData {
     user: UserProfile;
     active_courses: Course[];
     completed_courses: Course[];
+    removed_courses: Course[];
     endorsements: Endorsement[];
     moodle_courses: MoodleCourse[];
     familiarisations: Record<string, Familiarisation[]>;
@@ -158,8 +162,146 @@ const getStatusBadge = (status: string) => {
     }
 };
 
+const CourseAccordionItem = ({ course, keyPrefix }: { course: Course; keyPrefix: string }) => {
+    const hasLogs = course.is_mentor && course.logs && course.logs.length > 0;
+
+    return (
+        <AccordionItem key={course.id} value={`${keyPrefix}-${course.id}`} className="border-none">
+            <Card className="py-0">
+                <CardHeader>
+                    <AccordionTrigger className="hover:no-underline [&[data-state=open]>div>svg]:rotate-180">
+                        <div className="flex w-full items-start justify-between pr-4">
+                            <div className="flex items-center gap-3">
+                                {getPositionIcon(course.position)}
+                                <div className="text-left">
+                                    <CardTitle className="text-base">{course.name}</CardTitle>
+                                    <CardDescription className="mt-1 flex flex-wrap gap-2">
+                                        <Badge variant="outline">{course.position}</Badge>
+                                        <Badge className={getTypeColor(course.type)}>{course.type}</Badge>
+                                        {hasLogs && (
+                                            <Badge variant="secondary" className="text-xs">
+                                                {course.logs?.length} log{course.logs?.length !== 1 ? 's' : ''}
+                                            </Badge>
+                                        )}
+                                        {course.completed_at && (
+                                            <Badge variant="outline" className="text-xs">
+                                                {new Date(course.completed_at).toLocaleDateString('de')}
+                                            </Badge>
+                                        )}
+                                    </CardDescription>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                {!course.is_mentor && (
+                                    <Badge variant="secondary" className="text-xs">
+                                        View Only
+                                    </Badge>
+                                )}
+                            </div>
+                        </div>
+                    </AccordionTrigger>
+                </CardHeader>
+                <AccordionContent>
+                    <CardContent className="pt-0">
+                        {course.is_mentor ? (
+                            hasLogs ? (
+                                <div className="space-y-3">
+                                    <div className="flex items-center justify-between border-t pt-4">
+                                        <h4 className="text-sm font-semibold">Training History</h4>
+                                    </div>
+                                    <div className="relative space-y-6 pl-8 before:absolute before:top-0 before:bottom-0 before:left-4 before:w-0.5 before:bg-border">
+                                        {course.logs?.map((log) => (
+                                            <div key={log.id} className="relative">
+                                                <div
+                                                    className={cn(
+                                                        'absolute -left-[23px] mt-1.5 h-4 w-4 rounded-full border-2 border-background',
+                                                        log.result ? 'bg-green-500' : 'bg-red-500',
+                                                    )}
+                                                />
+
+                                                <div className="rounded-lg border bg-card p-4 shadow-sm transition-shadow hover:shadow-md">
+                                                    <div className="mb-3 flex items-start justify-between">
+                                                        <div className="flex-1">
+                                                            <div className="mb-2 flex flex-wrap items-center gap-2">
+                                                                <Badge variant="outline" className={getSessionTypeColor(log.type)}>
+                                                                    {log.type_display}
+                                                                </Badge>
+                                                                <Badge
+                                                                    variant={log.result ? 'default' : 'destructive'}
+                                                                    className="flex items-center gap-1"
+                                                                >
+                                                                    {log.result ? (
+                                                                        <>
+                                                                            <CheckCircle className="h-3 w-3" />
+                                                                            Passed
+                                                                        </>
+                                                                    ) : (
+                                                                        <>
+                                                                            <XCircle className="h-3 w-3" />
+                                                                            Not Passed
+                                                                        </>
+                                                                    )}
+                                                                </Badge>
+                                                            </div>
+                                                            <h4 className="font-semibold">{log.position}</h4>
+                                                            <div className="mt-2 flex items-center gap-4 text-sm text-muted-foreground">
+                                                                <span className="flex items-center gap-1">
+                                                                    <Calendar className="h-3 w-3" />
+                                                                    {new Date(log.session_date).toLocaleDateString('de')}
+                                                                </span>
+                                                                {log.session_duration && (
+                                                                    <span className="flex items-center gap-1">
+                                                                        <Clock className="h-3 w-3" />
+                                                                        {log.session_duration} min
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                        <Link href={route('training-logs.show', log.id)}>
+                                                            <Button size="sm" variant="ghost">
+                                                                <Eye className="h-4 w-4" />
+                                                            </Button>
+                                                        </Link>
+                                                    </div>
+
+                                                    {log.next_step && (
+                                                        <div className="mt-3 rounded-md bg-muted/50 p-3">
+                                                            <p className="mb-1 text-sm font-medium text-muted-foreground">Next Step:</p>
+                                                            <p className="text-sm">{log.next_step}</p>
+                                                        </div>
+                                                    )}
+
+                                                    <div className="mt-3 text-xs text-muted-foreground">Mentor: {log.mentor_name}</div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            ) : (
+                                <Alert className="border-t">
+                                    <AlertCircle className="h-4 w-4" />
+                                    <AlertDescription>No training logs yet for this course</AlertDescription>
+                                </Alert>
+                            )
+                        ) : (
+                            <Alert className="border-t">
+                                <AlertCircle className="h-4 w-4" />
+                                <AlertDescription>Training logs are only visible to mentors of this course</AlertDescription>
+                            </Alert>
+                        )}
+                    </CardContent>
+                </AccordionContent>
+            </Card>
+        </AccordionItem>
+    );
+};
+
 export default function UserProfilePage({ userData }: { userData: UserData }) {
-    const { user, active_courses, completed_courses, endorsements, moodle_courses, familiarisations } = userData;
+    const { user, active_courses, completed_courses, removed_courses, endorsements, moodle_courses, familiarisations } = userData;
+    const [showRemovedCourses, setShowRemovedCourses] = useState(false);
+
+    const hasFamiliarisations = Object.keys(familiarisations).length > 0;
+    const totalTabs = hasFamiliarisations ? 5 : 4;
 
     const breadcrumbs: BreadcrumbItem[] = [
         {
@@ -280,7 +422,7 @@ export default function UserProfilePage({ userData }: { userData: UserData }) {
                 </Card>
 
                 <Tabs defaultValue="active-courses" className="w-full">
-                    <TabsList className="grid w-full grid-cols-5">
+                    <TabsList className={cn('grid w-full', totalTabs === 5 ? 'grid-cols-5' : 'grid-cols-4')}>
                         <TabsTrigger value="active-courses">
                             <BookOpen className="mr-2 h-4 w-4" />
                             Active ({active_courses.length})
@@ -297,153 +439,19 @@ export default function UserProfilePage({ userData }: { userData: UserData }) {
                             <GraduationCap className="mr-2 h-4 w-4" />
                             Moodle ({moodle_courses.length})
                         </TabsTrigger>
-                        <TabsTrigger value="familiarisations">
-                            <Map className="mr-2 h-4 w-4" />
-                            Familiarisations
-                        </TabsTrigger>
+                        {hasFamiliarisations && (
+                            <TabsTrigger value="familiarisations">
+                                <Map className="mr-2 h-4 w-4" />
+                                Familiarisations
+                            </TabsTrigger>
+                        )}
                     </TabsList>
                     <TabsContent value="active-courses" className="mt-4 space-y-4">
                         {active_courses.length > 0 ? (
                             <Accordion type="multiple" className="w-full space-y-4">
-                                {active_courses.map((course) => {
-                                    const hasLogs = course.is_mentor && course.logs && course.logs.length > 0;
-
-                                    return (
-                                        <AccordionItem key={course.id} value={`course-${course.id}`} className="border-none">
-                                            <Card className="py-0">
-                                                <CardHeader>
-                                                    <AccordionTrigger className="hover:no-underline [&[data-state=open]>div>svg]:rotate-180">
-                                                        <div className="flex w-full items-start justify-between pr-4">
-                                                            <div className="flex items-center gap-3">
-                                                                {getPositionIcon(course.position)}
-                                                                <div className="text-left">
-                                                                    <CardTitle className="text-base">{course.name}</CardTitle>
-                                                                    <CardDescription className="mt-1 flex flex-wrap gap-2">
-                                                                        <Badge variant="outline">{course.position}</Badge>
-                                                                        <Badge className={getTypeColor(course.type)}>{course.type}</Badge>
-                                                                        {hasLogs && (
-                                                                            <Badge variant="secondary" className="text-xs">
-                                                                                {course.logs?.length} log{course.logs?.length !== 1 ? 's' : ''}
-                                                                            </Badge>
-                                                                        )}
-                                                                    </CardDescription>
-                                                                </div>
-                                                            </div>
-                                                            <div className="flex items-center gap-2">
-                                                                {!course.is_mentor && (
-                                                                    <Badge variant="secondary" className="text-xs">
-                                                                        View Only
-                                                                    </Badge>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                    </AccordionTrigger>
-                                                </CardHeader>
-                                                <AccordionContent>
-                                                    <CardContent className="pt-0">
-                                                        {course.is_mentor ? (
-                                                            hasLogs ? (
-                                                                <div className="space-y-3">
-                                                                    <div className="flex items-center justify-between border-t pt-4">
-                                                                        <h4 className="text-sm font-semibold">Training History</h4>
-                                                                    </div>
-                                                                    <div className="relative space-y-6 pl-8 before:absolute before:top-0 before:bottom-0 before:left-4 before:w-0.5 before:bg-border">
-                                                                        {course.logs?.map((log) => (
-                                                                            <div key={log.id} className="relative">
-                                                                                <div
-                                                                                    className={cn(
-                                                                                        'absolute -left-[23px] mt-1.5 h-4 w-4 rounded-full border-2 border-background',
-                                                                                        log.result ? 'bg-green-500' : 'bg-red-500',
-                                                                                    )}
-                                                                                />
-
-                                                                                <div className="rounded-lg border bg-card p-4 shadow-sm transition-shadow hover:shadow-md">
-                                                                                    <div className="mb-3 flex items-start justify-between">
-                                                                                        <div className="flex-1">
-                                                                                            <div className="mb-2 flex flex-wrap items-center gap-2">
-                                                                                                <Badge
-                                                                                                    variant="outline"
-                                                                                                    className={getSessionTypeColor(log.type)}
-                                                                                                >
-                                                                                                    {log.type_display}
-                                                                                                </Badge>
-                                                                                                <Badge
-                                                                                                    variant={log.result ? 'default' : 'destructive'}
-                                                                                                    className="flex items-center gap-1"
-                                                                                                >
-                                                                                                    {log.result ? (
-                                                                                                        <>
-                                                                                                            <CheckCircle className="h-3 w-3" />
-                                                                                                            Passed
-                                                                                                        </>
-                                                                                                    ) : (
-                                                                                                        <>
-                                                                                                            <XCircle className="h-3 w-3" />
-                                                                                                            Not Passed
-                                                                                                        </>
-                                                                                                    )}
-                                                                                                </Badge>
-                                                                                            </div>
-                                                                                            <h4 className="font-semibold">{log.position}</h4>
-                                                                                            <div className="mt-2 flex items-center gap-4 text-sm text-muted-foreground">
-                                                                                                <span className="flex items-center gap-1">
-                                                                                                    <Calendar className="h-3 w-3" />
-                                                                                                    {new Date(log.session_date).toLocaleDateString(
-                                                                                                        'de',
-                                                                                                    )}
-                                                                                                </span>
-                                                                                                {log.session_duration && (
-                                                                                                    <span className="flex items-center gap-1">
-                                                                                                        <Clock className="h-3 w-3" />
-                                                                                                        {log.session_duration} min
-                                                                                                    </span>
-                                                                                                )}
-                                                                                            </div>
-                                                                                        </div>
-                                                                                        <Link href={route('training-logs.show', log.id)}>
-                                                                                            <Button size="sm" variant="ghost">
-                                                                                                <Eye className="h-4 w-4" />
-                                                                                            </Button>
-                                                                                        </Link>
-                                                                                    </div>
-
-                                                                                    {log.next_step && (
-                                                                                        <div className="mt-3 rounded-md bg-muted/50 p-3">
-                                                                                            <p className="mb-1 text-sm font-medium text-muted-foreground">
-                                                                                                Next Step:
-                                                                                            </p>
-                                                                                            <p className="text-sm">{log.next_step}</p>
-                                                                                        </div>
-                                                                                    )}
-
-                                                                                    <div className="mt-3 text-xs text-muted-foreground">
-                                                                                        Mentor: {log.mentor_name}
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
-                                                                        ))}
-                                                                    </div>
-                                                                </div>
-                                                            ) : (
-                                                                <Alert className="border-t">
-                                                                    <AlertCircle className="h-4 w-4" />
-                                                                    <AlertDescription>No training logs yet for this course</AlertDescription>
-                                                                </Alert>
-                                                            )
-                                                        ) : (
-                                                            <Alert className="border-t">
-                                                                <AlertCircle className="h-4 w-4" />
-                                                                <AlertDescription>
-                                                                    Training logs are only visible to mentors of this course
-                                                                </AlertDescription>
-                                                            </Alert>
-                                                        )}
-                                                    </CardContent>
-                                                </AccordionContent>
-                                            </Card>
-                                        </AccordionItem>
-                                    );
-                                })}
+                                {active_courses.map((course) => (
+                                    <CourseAccordionItem key={course.id} course={course} keyPrefix="course" />
+                                ))}
                             </Accordion>
                         ) : (
                             <Card>
@@ -456,148 +464,41 @@ export default function UserProfilePage({ userData }: { userData: UserData }) {
                         )}
                     </TabsContent>
                     <TabsContent value="completed-courses" className="mt-4 space-y-4">
-                        {completed_courses.length > 0 ? (
-                            <Accordion type="multiple" className="w-full space-y-4">
-                                {completed_courses.map((course) => {
-                                    const hasLogs = course.total_sessions && course.total_sessions > 0;
-
-                                    return (
-                                        <AccordionItem key={course.id} value={`completed-course-${course.id}`} className="border-none">
-                                            <Card className="py-0">
-                                                <CardHeader>
-                                                    <AccordionTrigger className="hover:no-underline [&[data-state=open]>div>svg]:rotate-180">
-                                                        <div className="flex w-full items-start justify-between pr-4">
-                                                            <div className="flex items-center gap-3">
-                                                                {getPositionIcon(course.position)}
-                                                                <div className="text-left">
-                                                                    <CardTitle className="text-base">{course.name}</CardTitle>
-                                                                    <CardDescription className="mt-1 flex flex-wrap gap-2">
-                                                                        <Badge variant="outline">{course.position}</Badge>
-                                                                        <Badge className={getTypeColor(course.type)}>{course.type}</Badge>
-                                                                        {hasLogs && (
-                                                                            <Badge variant="secondary" className="text-xs">
-                                                                                {course.logs?.length} log{course.logs?.length !== 1 ? 's' : ''}
-                                                                            </Badge>
-                                                                        )}
-                                                                    </CardDescription>
-                                                                </div>
-                                                            </div>
-                                                            <div className="flex items-center gap-2">
-                                                                {!course.is_mentor && (
-                                                                    <Badge variant="secondary" className="text-xs">
-                                                                        View Only
-                                                                    </Badge>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                    </AccordionTrigger>
-                                                </CardHeader>
-                                                <AccordionContent>
-                                                    <CardContent className="pt-0">
-                                                        {course.is_mentor ? (
-                                                            hasLogs ? (
-                                                                <div className="space-y-3">
-                                                                    <div className="flex items-center justify-between border-t pt-4">
-                                                                        <h4 className="text-sm font-semibold">Training History</h4>
-                                                                    </div>
-                                                                    <div className="relative space-y-6 pl-8 before:absolute before:top-0 before:bottom-0 before:left-4 before:w-0.5 before:bg-border">
-                                                                        {course.logs?.map((log) => (
-                                                                            <div key={log.id} className="relative">
-                                                                                <div
-                                                                                    className={cn(
-                                                                                        'absolute -left-[23px] mt-1.5 h-4 w-4 rounded-full border-2 border-background',
-                                                                                        log.result ? 'bg-green-500' : 'bg-red-500',
-                                                                                    )}
-                                                                                />
-
-                                                                                <div className="rounded-lg border bg-card p-4 shadow-sm transition-shadow hover:shadow-md">
-                                                                                    <div className="mb-3 flex items-start justify-between">
-                                                                                        <div className="flex-1">
-                                                                                            <div className="mb-2 flex flex-wrap items-center gap-2">
-                                                                                                <Badge
-                                                                                                    variant="outline"
-                                                                                                    className={getSessionTypeColor(log.type)}
-                                                                                                >
-                                                                                                    {log.type_display}
-                                                                                                </Badge>
-                                                                                                <Badge
-                                                                                                    variant={log.result ? 'default' : 'destructive'}
-                                                                                                    className="flex items-center gap-1"
-                                                                                                >
-                                                                                                    {log.result ? (
-                                                                                                        <>
-                                                                                                            <CheckCircle className="h-3 w-3" />
-                                                                                                            Passed
-                                                                                                        </>
-                                                                                                    ) : (
-                                                                                                        <>
-                                                                                                            <XCircle className="h-3 w-3" />
-                                                                                                            Not Passed
-                                                                                                        </>
-                                                                                                    )}
-                                                                                                </Badge>
-                                                                                            </div>
-                                                                                            <h4 className="font-semibold">{log.position}</h4>
-                                                                                            <div className="mt-2 flex items-center gap-4 text-sm text-muted-foreground">
-                                                                                                <span className="flex items-center gap-1">
-                                                                                                    <Calendar className="h-3 w-3" />
-                                                                                                    {new Date(log.session_date).toLocaleDateString(
-                                                                                                        'de',
-                                                                                                    )}
-                                                                                                </span>
-                                                                                                {log.session_duration && (
-                                                                                                    <span className="flex items-center gap-1">
-                                                                                                        <Clock className="h-3 w-3" />
-                                                                                                        {log.session_duration} min
-                                                                                                    </span>
-                                                                                                )}
-                                                                                            </div>
-                                                                                        </div>
-                                                                                        <Link href={route('training-logs.show', log.id)}>
-                                                                                            <Button size="sm" variant="ghost">
-                                                                                                <Eye className="h-4 w-4" />
-                                                                                            </Button>
-                                                                                        </Link>
-                                                                                    </div>
-
-                                                                                    {log.next_step && (
-                                                                                        <div className="mt-3 rounded-md bg-muted/50 p-3">
-                                                                                            <p className="mb-1 text-sm font-medium text-muted-foreground">
-                                                                                                Next Step:
-                                                                                            </p>
-                                                                                            <p className="text-sm">{log.next_step}</p>
-                                                                                        </div>
-                                                                                    )}
-
-                                                                                    <div className="mt-3 text-xs text-muted-foreground">
-                                                                                        Mentor: {log.mentor_name}
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
-                                                                        ))}
-                                                                    </div>
-                                                                </div>
-                                                            ) : (
-                                                                <Alert className="border-t">
-                                                                    <AlertCircle className="h-4 w-4" />
-                                                                    <AlertDescription>No training logs yet for this course</AlertDescription>
-                                                                </Alert>
-                                                            )
-                                                        ) : (
-                                                            <Alert className="border-t">
-                                                                <AlertCircle className="h-4 w-4" />
-                                                                <AlertDescription>
-                                                                    Training logs are only visible to mentors of this course
-                                                                </AlertDescription>
-                                                            </Alert>
-                                                        )}
-                                                    </CardContent>
-                                                </AccordionContent>
-                                            </Card>
-                                        </AccordionItem>
-                                    );
-                                })}
-                            </Accordion>
+                        {completed_courses.length > 0 || removed_courses.length > 0 ? (
+                            <>
+                                {removed_courses.length > 0 && (
+                                    <div className="flex items-center justify-between rounded-lg border bg-card p-4">
+                                        <div className="flex items-center gap-3">
+                                            <UserX className="h-5 w-5 text-muted-foreground" />
+                                            <div>
+                                                <p className="text-sm font-medium">Removed Courses</p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {removed_courses.length} course{removed_courses.length !== 1 ? 's' : ''} removed from training
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <Button
+                                            variant={showRemovedCourses ? 'default' : 'outline'}
+                                            size="sm"
+                                            onClick={() => setShowRemovedCourses(!showRemovedCourses)}
+                                        >
+                                            {showRemovedCourses ? 'Hide' : 'Show'} Removed
+                                        </Button>
+                                    </div>
+                                )}
+                                <Accordion type="multiple" className="w-full space-y-4">
+                                    {completed_courses.map((course) => (
+                                        <CourseAccordionItem key={course.id} course={course} keyPrefix="completed-course" />
+                                    ))}
+                                    {showRemovedCourses &&
+                                        removed_courses.map((course) => (
+                                            <div key={course.id} className="relative">
+                                                <div className="absolute top-0 bottom-0 -left-3 w-1 rounded-full bg-red-500/20" />
+                                                <CourseAccordionItem course={course} keyPrefix="removed-course" />
+                                            </div>
+                                        ))}
+                                </Accordion>
+                            </>
                         ) : (
                             <Card>
                                 <CardContent className="flex flex-col items-center justify-center py-12">
@@ -713,7 +614,7 @@ export default function UserProfilePage({ userData }: { userData: UserData }) {
                         )}
                     </TabsContent>
                     <TabsContent value="familiarisations" className="mt-4 space-y-4">
-                        {Object.keys(familiarisations).length > 0 ? (
+                        {hasFamiliarisations ? (
                             <div className="space-y-4">
                                 {Object.entries(familiarisations).map(([fir, fams]) => (
                                     <Card key={fir}>
@@ -736,15 +637,7 @@ export default function UserProfilePage({ userData }: { userData: UserData }) {
                                     </Card>
                                 ))}
                             </div>
-                        ) : (
-                            <Card>
-                                <CardContent className="flex flex-col items-center justify-center py-12">
-                                    <Map className="mb-4 h-12 w-12 text-muted-foreground" />
-                                    <h3 className="mb-2 text-lg font-semibold">No Familiarisations</h3>
-                                    <p className="text-sm text-muted-foreground">This user hasn't completed any sector familiarisations</p>
-                                </CardContent>
-                            </Card>
-                        )}
+                        ) : null}
                     </TabsContent>
                 </Tabs>
             </div>
