@@ -352,18 +352,27 @@ export default function MentorWaitingLists({ courses, config }: PageProps) {
                                                                                             </TooltipContent>
                                                                                         )}
                                                                                 </Tooltip>
+                                                                                <Tooltip>
+                                                                                    <TooltipTrigger asChild>
+                                                                                        <div>
+                                                                                            <Button
+                                                                                                size="sm"
+                                                                                                variant="outline"
+                                                                                                onClick={() => {
+                                                                                                    setSelectedEntry(entry);
+                                                                                                    setRemarks(entry.remarks || '');
+                                                                                                    setIsRemarksDialogOpen(true);
+                                                                                                }}
+                                                                                            >
+                                                                                                <MessageSquare className="h-4 w-4" />
+                                                                                            </Button>
+                                                                                        </div>
+                                                                                    </TooltipTrigger>
+                                                                                    <TooltipContent side="top">
+                                                                                        <p>Edit remarks</p>
+                                                                                    </TooltipContent>
+                                                                                </Tooltip>
                                                                             </TooltipProvider>
-                                                                            <Button
-                                                                                size="sm"
-                                                                                variant="outline"
-                                                                                onClick={() => {
-                                                                                    setSelectedEntry(entry);
-                                                                                    setRemarks(entry.remarks || '');
-                                                                                    setIsRemarksDialogOpen(true);
-                                                                                }}
-                                                                            >
-                                                                                <MessageSquare className="h-4 w-4" />
-                                                                            </Button>
                                                                         </div>
                                                                     </CardContent>
                                                                 </Card>
@@ -498,18 +507,30 @@ export default function MentorWaitingLists({ courses, config }: PageProps) {
                                                                                                 </TooltipContent>
                                                                                             )}
                                                                                     </Tooltip>
+                                                                                    <Tooltip>
+                                                                                        <TooltipTrigger asChild>
+                                                                                            <div>
+                                                                                                <Button
+                                                                                                    size="sm"
+                                                                                                    variant="outline"
+                                                                                                    onClick={() => {
+                                                                                                        setSelectedEntry(entry);
+                                                                                                        setRemarks(entry.remarks || '');
+                                                                                                        setIsRemarksDialogOpen(true);
+                                                                                                    }}
+                                                                                                >
+                                                                                                    <MessageSquare className="h-4 w-4" />
+                                                                                                </Button>
+                                                                                            </div>
+                                                                                        </TooltipTrigger>
+                                                                                        <TooltipContent side="top">
+                                                                                            <p>
+                                                                                                Trainee needs at least {config.display_activity}h of
+                                                                                                activity to start a rating course
+                                                                                            </p>
+                                                                                        </TooltipContent>
+                                                                                    </Tooltip>
                                                                                 </TooltipProvider>
-                                                                                <Button
-                                                                                    size="sm"
-                                                                                    variant="outline"
-                                                                                    onClick={() => {
-                                                                                        setSelectedEntry(entry);
-                                                                                        setRemarks(entry.remarks || '');
-                                                                                        setIsRemarksDialogOpen(true);
-                                                                                    }}
-                                                                                >
-                                                                                    <MessageSquare className="h-4 w-4" />
-                                                                                </Button>
                                                                             </div>
                                                                         </TableCell>
                                                                     </TableRow>
