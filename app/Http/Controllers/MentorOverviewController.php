@@ -575,7 +575,15 @@ class MentorOverviewController extends Controller
         }
 
         try {
-            $course->activeTrainees()->detach($trainee->id);
+            DB::table('course_trainees')
+                ->where('course_id', $course->id)
+                ->where('user_id', $trainee->id)
+                ->update([
+                    'completed_at' => now(),
+                    'status' => 'removed',
+                    'claimed_by_mentor_id' => null,
+                    'claimed_at' => null,
+                ]);
 
             ActivityLogger::traineeRemoved($course, $trainee, $user);
 
@@ -898,6 +906,7 @@ class MentorOverviewController extends Controller
                     ->where('user_id', $trainee->id)
                     ->update([
                         'completed_at' => null,
+                        'status' => 'active',
                         'claimed_by_mentor_id' => $user->id,
                         'claimed_at' => now(),
                         'updated_at' => now(),
@@ -1088,6 +1097,7 @@ class MentorOverviewController extends Controller
                     ->where('user_id', $trainee->id)
                     ->update([
                         'completed_at' => now(),
+                        'status' => 'completed',
                     ]);
 
                 $endorsementGroups = DB::table('course_endorsement_groups')
@@ -1209,6 +1219,7 @@ class MentorOverviewController extends Controller
                 ->where('user_id', $trainee->id)
                 ->update([
                     'completed_at' => null,
+                    'status' => 'active',
                     'claimed_by_mentor_id' => $user->id,
                     'claimed_at' => now(),
                 ]);

@@ -54,4 +54,5 @@ export type Endorsement = {
     mentor?: string;
     removalDate?: string;
     lastUpdated?: string;
+    moodleCourseId?: number;
 };
