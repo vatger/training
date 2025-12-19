@@ -524,10 +524,7 @@ export default function MentorWaitingLists({ courses, config }: PageProps) {
                                                                                             </div>
                                                                                         </TooltipTrigger>
                                                                                         <TooltipContent side="top">
-                                                                                            <p>
-                                                                                                Trainee needs at least {config.display_activity}h of
-                                                                                                activity to start a rating course
-                                                                                            </p>
+                                                                                            <p>Edit remarks</p>
                                                                                         </TooltipContent>
                                                                                     </Tooltip>
                                                                                 </TooltipProvider>
