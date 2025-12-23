@@ -328,12 +328,12 @@ class VatEudService
         }
 
         try {
-            Log::info('Creating solo endorsement', [
+            /* Log::info('Creating solo endorsement', [
                 'user_cid' => $userCid,
                 'position' => $position,
                 'expire_at' => $expireAt,
                 'instructor_cid' => $instructorCid,
-            ]);
+            ]); */
 
             $response = Http::withHeaders($this->headers)
                 ->timeout(10)
@@ -347,10 +347,10 @@ class VatEudService
             if ($response->successful()) {
                 Cache::forget('vateud:solo_endorsements');
 
-                Log::info('Solo endorsement created successfully', [
+                /* Log::info('Solo endorsement created successfully', [
                     'user_cid' => $userCid,
                     'position' => $position,
-                ]);
+                ]); */
 
                 return ['success' => true];
             }
@@ -400,7 +400,7 @@ class VatEudService
             if ($response->successful()) {
                 Cache::forget('vateud:solo_endorsements');
 
-                Log::info('Solo endorsement removed successfully', ['solo_id' => $soloId]);
+                /* Log::info('Solo endorsement removed successfully', ['solo_id' => $soloId]); */
                 return true;
             }
 
@@ -428,7 +428,7 @@ class VatEudService
 
         $this->getSoloEndorsements();
 
-        Log::info('Endorsement cache cleared');
+        /* Log::info('Endorsement cache cleared'); */
     }
 
     protected function sortEndorsements(array $endorsements): array
@@ -599,11 +599,11 @@ class VatEudService
         }
 
         try {
-            Log::info('Assigning core theory test', [
+            /* Log::info('Assigning core theory test', [
                 'vatsim_id' => $vatsimId,
                 'exam_id' => $examId,
                 'instructor_id' => $instructorId,
-            ]);
+            ]); */
 
             $response = Http::withHeaders($this->headers)
                 ->timeout(10)

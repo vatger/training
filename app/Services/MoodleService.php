@@ -79,11 +79,6 @@ class MoodleService
 
                 return false;
             } catch (\Exception $e) {
-                Log::error('Error checking Moodle course completion', [
-                    'vatsim_id' => $vatsimId,
-                    'course_id' => $courseId,
-                    'error' => $e->getMessage()
-                ]);
                 return false;
             }
         });

@@ -89,11 +89,11 @@ class VatsimActivityService
             $apiUrl = "http://stats.vatsim-germany.org/api/atc/{$vatsimId}/sessions/?start_date={$start}";
             
             try {
-                Log::debug('Fetching VATSIM activity from vatsim-germany.org', [
+                /* Log::debug('Fetching VATSIM activity from vatsim-germany.org', [
                     'vatsim_id' => $vatsimId,
                     'url' => $apiUrl,
                     'start_date' => $start
-                ]);
+                ]); */
 
                 $response = Http::timeout(15) // Increased timeout
                     ->retry(2, 1000) // Retry twice with 1 second delay
@@ -117,10 +117,10 @@ class VatsimActivityService
                     return [];
                 }
 
-                Log::debug('VATSIM activity fetched successfully from vatsim-germany.org', [
+                /* Log::debug('VATSIM activity fetched successfully from vatsim-germany.org', [
                     'vatsim_id' => $vatsimId,
                     'connections_count' => count($data)
-                ]);
+                ]); */
 
                 return $data;
                 
@@ -167,12 +167,12 @@ class VatsimActivityService
                         $lastActivityDate = $connectionDate;
                     }
 
-                    Log::debug('CTR match found', [
+                    /* Log::debug('CTR match found', [
                         'position' => $position,
                         'callsign' => $callsign,
                         'minutes' => $minutes,
                         'date' => $connectionDate?->format('Y-m-d')
-                    ]);
+                    ]); */
                 }
             }
         } else {
@@ -213,22 +213,22 @@ class VatsimActivityService
                         $lastActivityDate = $connectionDate;
                     }
 
-                    Log::debug('Connection counted', [
+                    /* Log::debug('Connection counted', [
                         'position' => $position,
                         'callsign' => $callsign,
                         'minutes' => $minutes,
                         'matched_by' => $matchesCtr ? 'CTR' : 'APT',
                         'date' => $connectionDate?->format('Y-m-d'),
-                    ]);
+                    ]); */
                 }
             }
         }
-        
-        Log::debug('Activity calculation complete', [
+
+        /* Log::debug('Activity calculation complete', [
             'position' => $position,
             'final_minutes' => $activityMinutes,
             'last_activity_date' => $lastActivityDate?->format('Y-m-d')
-        ]);
+        ]); */
 
         return [
             'minutes' => $activityMinutes,

@@ -212,13 +212,6 @@ class TrainingLogController extends Controller
                 $user->id
             );
 
-            Log::info('Training log created', [
-                'log_id' => $log->id,
-                'mentor_id' => $user->id,
-                'trainee_id' => $validated['trainee_id'],
-                'course_id' => $validated['course_id'],
-            ]);
-
             return redirect()
                 ->route('training-logs.show', $log->id)
                 ->with('success', 'Training log created successfully.');
@@ -396,11 +389,6 @@ class TrainingLogController extends Controller
                 ],
                 $user->id
             );
-
-            Log::info('Training log updated', [
-                'log_id' => $log->id,
-                'mentor_id' => $user->id,
-            ]);
 
             return redirect()
                 ->route('training-logs.show', $log->id)
