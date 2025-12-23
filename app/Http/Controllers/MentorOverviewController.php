@@ -307,7 +307,7 @@ class MentorOverviewController extends Controller
         $trainee = \App\Models\User::findOrFail($traineeId);
         $course = \App\Models\Course::findOrFail($courseId);
 
-        if ($course->type !== 'EDMT' || empty($course->moodle_course_ids)) {
+        if (empty($course->moodle_course_ids)) {
             return response()->json([
                 'success' => true,
                 'status' => null,

@@ -236,7 +236,7 @@ export function TraineeDataTable({ trainees, course, onRemarkClick, onClaimClick
         const visibility: VisibilityState = {
             solo: course.type === 'RTG' && course.position !== 'GND',
             endorsement: course.type === 'RTG' && course.position === 'GND',
-            moodleStatus: course.type === 'GST' || course.type === 'EDMT',
+            moodleStatus: course.type === 'GST' || course.type === 'EDMT' || course.type === 'RST',
         };
         setColumnVisibility(visibility);
     }, [course]);

@@ -63,7 +63,6 @@ interface Statistics {
 interface CptTemplate {
     name: string;
     filename: string;
-    description: string;
 }
 
 interface PageProps {
@@ -114,7 +113,6 @@ function CptTemplatesModal({ templates }: { templates: CptTemplate[] }) {
                                         </div>
                                         <div>
                                             <h4 className="font-medium">{template.name}</h4>
-                                            <p className="text-sm text-muted-foreground">{template.description}</p>
                                         </div>
                                     </div>
                                     <Button size="sm" onClick={() => handleDownload(template.filename)}>

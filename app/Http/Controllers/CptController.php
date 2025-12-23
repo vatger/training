@@ -223,7 +223,6 @@ class CptController extends Controller
             $templates[] = [
                 'name' => $name,
                 'filename' => $filename,
-                'description' => $position ? "CPT Log Template for {$position}" : 'CPT Log Template',
             ];
         }
 

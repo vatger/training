@@ -36,7 +36,6 @@ class CourseController extends Controller
     public function index(Request $request): Response
     {
         $user = $request->user();
-
         $moodleSignedUp = $this->moodleService->userExists($user->vatsim_id);
 
         try {
@@ -52,7 +51,10 @@ class CourseController extends Controller
                 $filteredCourses = $this->filterCoursesForUser($courses, $user);
             }
 
+            $filteredCourseIds = $filteredCourses->pluck('id');
+
             $waitingListEntries = WaitingListEntry::where('user_id', $user->id)
+                ->whereIn('course_id', $filteredCourseIds)
                 ->pluck('activity', 'course_id');
 
             $waitingListPositions = \DB::table('waiting_list_entries as wle1')
@@ -68,12 +70,14 @@ class CourseController extends Controller
             $userHasActiveRtgCourse = \Cache::remember(
                 "user_{$user->id}_active_rtg_course",
                 now()->addMinutes(5),
-                fn() => $user->activeRatingCourses()
+                function () use ($user) {
+                    return $user->activeRatingCourses()
                     ->wherePivot('completed_at', null)
                     ->exists() ||
-                $user->waitingListEntries()->whereHas('course', function ($q) {
-                    $q->where('type', 'RTG');
-                })->exists()
+                        $user->waitingListEntries()->whereHas('course', function ($q) {
+                            $q->where('type', 'RTG');
+                        })->exists();
+                }
             );
 
             $formattedCourses = $filteredCourses->map(function ($course) use ($user, $waitingListEntries, $waitingListPositions) {
