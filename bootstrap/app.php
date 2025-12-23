@@ -31,36 +31,22 @@ return Application::configure(basePath: dirname(__DIR__))
         //
     })
     ->withSchedule(function ($schedule) {
-        // Daily at 3 AM: Update endorsement activities (0 3 * * *)
-        $schedule->command('endorsements:sync-activities', ['--force'])
+        $schedule->command('endorsements:sync-activities')
             ->dailyAt('03:00')
-            ->withoutOverlapping()
+            ->withoutOverlapping(120)
             ->runInBackground();
 
-        // Daily at 4 AM: Process endorsement removals (0 4 * * *)
-        $schedule->command('endorsements:remove', ['--notify'])
+        $schedule->command('waitinglists:sync-activities')
             ->dailyAt('04:00')
-            ->withoutOverlapping()
+            ->withoutOverlapping(60)
             ->runInBackground();
 
-        // Daily at 5 AM: Update waiting list activities (0 5 * * *)
-        $schedule->command('waitinglist:sync-activity', ['--force'])
-            ->dailyAt('05:00')
-            ->withoutOverlapping()
-            ->runInBackground();
+        $schedule->command('endorsements:remove')
+            ->dailyAt('08:00')
+            ->withoutOverlapping();
 
-        // Every hour: Check roster status (0 * * * *)
         $schedule->command('roster:check')
-            ->hourly()
-            ->withoutOverlapping()
-            ->runInBackground();
-
-        /*
-        // Daily at midnight: Clean waiting lists (0 0 * * *)
-        $schedule->command('waitinglist:clean')
-            ->dailyAt('00:00')
-            ->withoutOverlapping()
-            ->runInBackground();
-        */
+            ->dailyAt('02:00')
+            ->withoutOverlapping(120);
     })
     ->create();
