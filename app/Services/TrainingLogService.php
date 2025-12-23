@@ -99,7 +99,6 @@ class TrainingLogService
         return $logs->groupBy('position')
             ->map(fn($group) => $group->count())
             ->sortDesc()
-            ->take(10)
             ->toArray();
     }
 
@@ -324,7 +323,7 @@ class TrainingLogService
             'average_rating' => round($logs->avg(fn($log) => $log->average_rating), 2),
             'pass_rate' => round(($logs->where('result', true)->count() / $logs->count()) * 100, 1),
             'sessions_by_type' => $this->getSessionsByType($logs),
-            'recent_activity' => $logs->sortByDesc('session_date')->take(10)->map(function ($log) {
+            'recent_activity' => $logs->sortByDesc('session_date')->map(function ($log) {
                 return [
                     'trainee_name' => $log->trainee->name,
                     'session_date' => $log->session_date->format('Y-m-d'),
@@ -364,7 +363,7 @@ class TrainingLogService
                 ->sortDesc()
                 ->toArray(),
             'sessions_by_type' => $this->getSessionsByType($logs),
-            'recent_sessions' => $logs->sortByDesc('session_date')->take(10)->map(function ($log) {
+            'recent_sessions' => $logs->sortByDesc('session_date')->map(function ($log) {
                 return [
                     'trainee_name' => $log->trainee->name,
                     'course_name' => $log->course->name ?? 'N/A',

@@ -245,7 +245,6 @@ class MentorOverviewController extends Controller
                 ->orderBy('session_date', 'desc')
                 ->get()
                 ->groupBy('trainee_id')
-                ->map(fn($logs) => $logs->take(10))
                 ->mapWithKeys(fn($logs, $traineeId) => [$traineeId . '_' . $course->id => $logs]);
         }
 

@@ -360,7 +360,7 @@ export function TraineeDataTable({ trainees, course, onRemarkClick, onClaimClick
                     <div className="space-y-1">
                         {trainee.progress.length > 0 ? (
                             <div className="flex items-center gap-1">
-                                {trainee.progress.slice(trainee.progress.length - 5, trainee.progress.length).map((passed, idx) => (
+                                {trainee.progress.slice(-5).map((passed, idx) => (
                                     <div
                                         key={idx}
                                         className={`h-2 w-2 rounded-full ${passed ? 'bg-green-500' : 'bg-red-500'}`}
