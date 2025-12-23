@@ -475,7 +475,10 @@ export function TraineeDataTable({ trainees, course, onRemarkClick, onClaimClick
                 const endorsementStatus = trainee.endorsementStatus;
         
                 return endorsementStatus ? (
-                    <Badge variant="outline" className="border-green-200 bg-green-50 text-green-700">
+                    <Badge
+                        variant="outline"
+                        className="border-green-200 bg-green-50 text-green-700 dark:border-green-700 dark:bg-green-900 dark:text-green-300"
+                    >
                         <Award className="mr-1 h-3 w-3" />
                         {endorsementStatus}
                     </Badge>

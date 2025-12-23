@@ -57,14 +57,20 @@ export function getStatusBadge(status: string) {
             );
         case 'completed':
             return (
-                <Badge variant="outline" className="border-blue-200 bg-blue-50 text-blue-700">
+                <Badge
+                    variant="outline"
+                    className="border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-700 dark:bg-blue-900 dark:text-blue-300"
+                >
                     <CheckCircle className="mr-1 h-3 w-3" />
                     Moodle Completed
                 </Badge>
             );
         case 'available':
             return (
-                <Badge variant="outline" className="border-blue-200 bg-blue-50 text-blue-700">
+                <Badge
+                    variant="outline"
+                    className="border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-700 dark:bg-blue-900 dark:text-blue-300"
+                >
                     Available
                 </Badge>
             );
