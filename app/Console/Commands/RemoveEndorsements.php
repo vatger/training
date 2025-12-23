@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Log;
 
 class RemoveEndorsements extends Command
 {
-    protected $signature = 'endorsements:remove {--notify : Also process notification sending}';
+    protected $signature = 'endorsements:remove';
     protected $description = 'Remove endorsements that have passed their removal date and send pending notifications';
 
     protected VatEudService $vatEudService;
@@ -27,12 +27,8 @@ class RemoveEndorsements extends Command
         $this->info('Starting endorsement removal process...');
 
         try {
-            // Step 1: Send notifications for endorsements marked for removal (if --notify flag)
-            if ($this->option('notify')) {
-                $this->sendRemovalNotifications();
-            }
+            $this->sendRemovalNotifications();
 
-            // Step 2: Process actual removals
             $this->processRemovals();
 
             $this->info('Endorsement removal process completed successfully.');

@@ -11,8 +11,7 @@ use Illuminate\Support\Facades\Log;
 
 class SyncEndorsementActivities extends Command
 {
-    protected $signature = 'endorsements:sync-activities 
-                            {--batch-size=50 : Size of batches when processing}';
+    protected $signature = 'endorsements:sync-activities';
 
     protected $description = 'Sync endorsement activities from VATSIM and VatEUD for all endorsements';
 
@@ -107,7 +106,6 @@ class SyncEndorsementActivities extends Command
 
     protected function updateAllActivities(): void
     {
-        $batchSize = (int) $this->option('batch-size');
         $totalCount = EndorsementActivity::count();
 
         if ($totalCount === 0) {
@@ -115,21 +113,17 @@ class SyncEndorsementActivities extends Command
             return;
         }
 
-        $this->info("Updating activity for {$totalCount} endorsement(s) in batches of {$batchSize}...");
+        $this->info("Updating activity for {$totalCount} endorsement(s)...");
 
         $bar = $this->output->createProgressBar($totalCount);
         $bar->start();
         
         $processedCount = 0;
 
-        EndorsementActivity::chunk($batchSize, function ($endorsements) use (&$processedCount, &$bar) {
-            foreach ($endorsements as $endorsementActivity) {
-                $this->updateEndorsementActivity($endorsementActivity);
-                $processedCount++;
-                $bar->advance();
-            }
-
-            sleep(1);
+        EndorsementActivity::each(function ($endorsementActivity) use (&$processedCount, &$bar) {
+            $this->updateEndorsementActivity($endorsementActivity);
+            $processedCount++;
+            $bar->advance();
         });
 
         $bar->finish();

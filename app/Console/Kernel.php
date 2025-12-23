@@ -18,35 +18,26 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule): void
     {
         // === ENDORSEMENT ACTIVITY TRACKING ===
-        // Daily check of all endorsements at 3 AM
-        $schedule->command('endorsements:sync-activities --batch-size=50')
+        $schedule->command('endorsements:sync-activities')
             ->dailyAt('03:00')
-            ->withoutOverlapping(120) // 2-hour timeout
+            ->withoutOverlapping(120)
             ->runInBackground();
 
         // === WAITING LIST ACTIVITY ===
-        // Daily check of all waiting list entries at 4 AM
-        $schedule->command('waitinglist:sync-activity --batch-size=50')
+        $schedule->command('waitinglists:sync-activities')
             ->dailyAt('04:00')
-            ->withoutOverlapping(60) // 1-hour timeout
+            ->withoutOverlapping(60)
             ->runInBackground();
 
         // === ENDORSEMENT REMOVALS ===
-        // Send removal notifications at 9 AM
-        $schedule->command('endorsements:remove --notify')
+        $schedule->command('endorsements:remove')
             ->dailyAt('08:00')
             ->withoutOverlapping();
 
-        // Process actual removals at 10 PM (gives people all day to respond)
-        $schedule->command('endorsements:remove')
-            ->dailyAt('23:59')
-            ->withoutOverlapping();
-
         // === ROSTER STATUS CHECKS ===
-        // Check roster status once daily at 2 AM
-        $schedule->command('roster:check --batch-size=50')
+        $schedule->command('roster:check')
             ->dailyAt('02:00')
-            ->withoutOverlapping(120); // 2-hour timeout
+            ->withoutOverlapping(120);
     }
 
     protected function commands(): void

@@ -10,8 +10,7 @@ use Illuminate\Support\Facades\Log;
 
 class SyncWaitingListActivity extends Command
 {
-    protected $signature = 'waitinglist:sync-activity 
-                            {--batch-size=50 : Size of batches when processing}';
+    protected $signature = 'waitinglists:sync-activities';
 
     protected $description = 'Sync waiting list activity from VATSIM for all entries';
 
@@ -44,8 +43,6 @@ class SyncWaitingListActivity extends Command
 
     protected function updateAllActivities(): void
     {
-        $batchSize = (int) $this->option('batch-size');
-
         $totalCount = WaitingListEntry::whereHas('course', function ($query) {
             $query->where('type', 'RTG');
         })->count();
@@ -66,14 +63,10 @@ class SyncWaitingListActivity extends Command
             $query->where('type', 'RTG');
         })
         ->orderBy('hours_updated', 'asc')
-            ->chunk($batchSize, function ($entries) use (&$processedCount, &$bar) {
-            foreach ($entries as $entry) {
+            ->each(function ($entry) use (&$processedCount, &$bar) {
                 $this->updateEntryActivity($entry);
                 $processedCount++;
-                    $bar->advance();
-            }
-
-                sleep(1);
+                $bar->advance();
         });
 
         $bar->finish();
