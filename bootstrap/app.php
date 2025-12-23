@@ -42,7 +42,7 @@ return Application::configure(basePath: dirname(__DIR__))
             ->runInBackground();
 
         $schedule->command('endorsements:remove')
-            ->dailyAt('08:00')
+            ->dailyAt('05:00')
             ->withoutOverlapping();
 
         $schedule->command('roster:check')
