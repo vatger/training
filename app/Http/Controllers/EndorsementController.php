@@ -11,6 +11,7 @@ use App\Services\VatsimActivityService;
 use App\Services\ActivityLogger;
 use App\Services\MoodleService;
 use Illuminate\Http\Request;
+use Illuminate\Log\Logger;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
@@ -195,12 +196,27 @@ class EndorsementController extends Controller
         $endorsement = EndorsementActivity::where('endorsement_id', $endorsementId)->first();
 
         if (!$endorsement) {
+            Log::error('Error removing Tier 1 endorsement', [
+                'tier1_id' => $endorsementId,
+                'user_id' => $user->id,
+                'error' => 'Endorsement not found'
+            ]);
             return back()->with('error', 'Endorsement not found');
+
         }
 
         if (!$user->is_superuser && !$user->is_admin) {
             $allowedPositions = $user->mentorCourses
-                ->map(fn(Course $course) => $course->airport_icao . '_' . $course->position)
+                ->flatMap(function (Course $course) {
+                    $airport = $course->airport_icao;
+                    $position = $course->position;
+
+                    if ($position === 'GND') {
+                        return ["{$airport}_GNDDEL"];
+                    }
+
+                    return ["{$airport}_{$position}"];
+                })
                 ->unique();
 
             if (!$allowedPositions->contains($endorsement->position)) {
