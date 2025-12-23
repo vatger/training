@@ -6,7 +6,8 @@ RUN apk add --no-cache nodejs npm \
     icu-dev \
     libzip-dev \
     zip \
-    curl
+    curl \
+    git
 
 # Install PHP extensions
 RUN docker-php-ext-install intl zip
@@ -50,6 +51,7 @@ RUN apt-get update && \
     libpq-dev \
     libicu-dev \
     curl \
+    git \
     && docker-php-ext-install intl zip pdo_mysql pdo_pgsql \
     && rm -rf /var/lib/apt/lists/*
 
@@ -74,16 +76,16 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 # Copy composer files first
 COPY composer.json composer.lock ./
 
-# Install project dependencies (no scripts to avoid errors before all files are copied)
+# Install project dependencies
 RUN composer install --optimize-autoloader --no-dev --no-scripts
 
 # Copy the application code
 COPY . .
 
-# Run composer scripts now that all files are present
+# Run composer scripts
 RUN composer dump-autoload --optimize --no-dev
 
-# Remove any cached bootstrap files that might have been copied
+# Remove any cached bootstrap files
 RUN rm -f bootstrap/cache/*.php
 
 # Copy built assets from frontend stage
