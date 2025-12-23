@@ -1,3 +1,5 @@
+[![Docker Image Generation](https://github.com/vatger/training/actions/workflows/deploy.yml/badge.svg?branch=main)](https://github.com/vatger/training/actions/workflows/deploy.yml)
+
 # Training Centre
 
 Application to manage the training, trainees and endorsements for the ATD.
