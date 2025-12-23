@@ -9,9 +9,11 @@ use App\Models\Course;
 use App\Services\VatEudService;
 use App\Services\VatsimActivityService;
 use App\Services\ActivityLogger;
+use App\Services\MoodleService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 use Inertia\Response;
 use Carbon\Carbon;
@@ -20,11 +22,16 @@ class EndorsementController extends Controller
 {
     protected VatEudService $vatEudService;
     protected VatsimActivityService $activityService;
+    protected MoodleService $moodleService;
 
-    public function __construct(VatEudService $vatEudService, VatsimActivityService $activityService)
-    {
+    public function __construct(
+        VatEudService $vatEudService,
+        VatsimActivityService $activityService,
+        MoodleService $moodleService
+    ) {
         $this->vatEudService = $vatEudService;
         $this->activityService = $activityService;
+        $this->moodleService = $moodleService;
     }
 
     public function traineeView(Request $request): Response
@@ -177,7 +184,6 @@ class EndorsementController extends Controller
         ]);
     }
 
-
     public function removeTier1(Request $request, int $endorsementId)
     {
         $user = $request->user();
@@ -250,7 +256,7 @@ class EndorsementController extends Controller
         $user = $request->user();
         
         if (!$user->isVatsimUser()) {
-            return response()->json(['error' => 'VATSIM account required'], 403);
+            return back()->with('error', 'VATSIM account required');
         }
 
         try {
@@ -262,7 +268,18 @@ class EndorsementController extends Controller
                 ->first();
 
             if ($existingTier2) {
-                return response()->json(['error' => 'You already have this endorsement'], 400);
+                return back()->with('error', 'You already have this endorsement');
+            }
+
+            if ($tier2Endorsement->moodle_course_id) {
+                $moodleCompleted = $this->moodleService->getCourseCompletion(
+                    $user->vatsim_id,
+                    $tier2Endorsement->moodle_course_id
+                );
+
+                if (!$moodleCompleted) {
+                    return back()->with('error', 'You must complete the Moodle course before requesting this endorsement');
+                }
             }
             
             $success = $this->vatEudService->createTier2Endorsement(
@@ -272,8 +289,10 @@ class EndorsementController extends Controller
             );
 
             if (!$success) {
-                return response()->json(['error' => 'Failed to create endorsement'], 500);
+                return back()->with('error', 'Failed to create endorsement');
             }
+
+            Cache::forget('vateud:tier2_endorsements');
 
             ActivityLogger::endorsementGranted(
                 $tier2Endorsement->position,
@@ -282,10 +301,7 @@ class EndorsementController extends Controller
                 'tier2'
             );
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Tier 2 endorsement created successfully'
-            ]);
+            return redirect()->route('endorsements')->with('success', 'Tier 2 endorsement granted successfully');
 
         } catch (\Exception $e) {
             Log::error('Error requesting Tier 2 endorsement', [
@@ -294,7 +310,7 @@ class EndorsementController extends Controller
                 'error' => $e->getMessage()
             ]);
 
-            return response()->json(['error' => 'Internal server error'], 500);
+            return back()->with('error', 'An error occurred while requesting the endorsement');
         }
     }
 
@@ -354,15 +370,26 @@ class EndorsementController extends Controller
         $result = [];
 
         foreach ($availableTier2 as $endorsement) {
+            $hasEndorsement = in_array($endorsement->position, $tier2Endorsements);
+            $moodleCompleted = false;
+
+            if (!$hasEndorsement && $endorsement->moodle_course_id) {
+                $moodleCompleted = $this->moodleService->getCourseCompletion(
+                    $vatsimId,
+                    $endorsement->moodle_course_id
+                );
+            }
+
             $result[] = [
                 'id' => $endorsement->id,
                 'position' => $endorsement->position,
                 'name' => $endorsement->name,
                 'fullName' => $endorsement->name,
                 'type' => $this->getPositionType($endorsement->position),
-                'status' => in_array($endorsement->position, $tier2Endorsements) ? 'active' : 'available',
+                'status' => $hasEndorsement ? 'active' : ($moodleCompleted ? 'completed' : 'available'),
                 'moodleCourseId' => $endorsement->moodle_course_id,
-                'hasEndorsement' => in_array($endorsement->position, $tier2Endorsements),
+                'hasEndorsement' => $hasEndorsement,
+                'moodleCompleted' => $moodleCompleted,
             ];
         }
 
@@ -381,7 +408,7 @@ class EndorsementController extends Controller
 
             if (!empty($solo['expiry'])) {
                 try {
-                    $expiresAt = Carbon::parse($solo['expiry'])->toDateString(); // Y-m-d
+                    $expiresAt = Carbon::parse($solo['expiry'])->toDateString();
                 } catch (\Exception) {
                     $expiresAt = null;
                 }

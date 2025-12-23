@@ -39,15 +39,16 @@ export interface User {
     email_verified_at: string | null;
     created_at: string;
     updated_at: string;
-    [key: string]: unknown; // This allows for additional properties...
+    [key: string]: unknown;
 }
 
 export type Endorsement = {
+    id?: number;
     position: string;
     fullName: string;
     activity?: number;
     requiredActivity?: number;
-    status: 'active' | 'removal' | 'warning';
+    status: 'active' | 'removal' | 'warning' | 'completed' | 'available';
     lastActivity?: string;
     type: 'GNDDEL' | 'TWR' | 'APP' | 'CTR';
     expiresAt?: string;
@@ -55,4 +56,6 @@ export type Endorsement = {
     removalDate?: string;
     lastUpdated?: string;
     moodleCourseId?: number;
+    hasEndorsement?: boolean;
+    moodleCompleted?: boolean;
 };

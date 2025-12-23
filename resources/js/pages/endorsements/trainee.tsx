@@ -55,6 +55,13 @@ export function getStatusBadge(status: string) {
                     In Removal
                 </Badge>
             );
+        case 'completed':
+            return (
+                <Badge variant="outline" className="border-blue-200 bg-blue-50 text-blue-700">
+                    <CheckCircle className="mr-1 h-3 w-3" />
+                    Moodle Completed
+                </Badge>
+            );
         case 'available':
             return (
                 <Badge variant="outline" className="border-blue-200 bg-blue-50 text-blue-700">
