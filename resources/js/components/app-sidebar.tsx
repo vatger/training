@@ -110,7 +110,7 @@ const adminSection = {
 
 const footerNavItems: NavItem[] = [
     {
-        title: 'GPDR',
+        title: 'GDPR',
         href: 'https://vatsim-germany.org/policies/gdpr',
         icon: Folder,
     },
