@@ -31,6 +31,14 @@ return Application::configure(basePath: dirname(__DIR__))
         //
     })
     ->withSchedule(function ($schedule) {
+        $schedule->command('endorsements:remove')
+            ->dailyAt('01:00')
+            ->withoutOverlapping();
+
+        $schedule->command('roster:check')
+            ->dailyAt('02:00')
+            ->withoutOverlapping(120);
+
         $schedule->command('endorsements:sync-activities')
             ->dailyAt('03:00')
             ->withoutOverlapping(120)
@@ -41,12 +49,8 @@ return Application::configure(basePath: dirname(__DIR__))
             ->withoutOverlapping(60)
             ->runInBackground();
 
-        $schedule->command('endorsements:remove')
-            ->dailyAt('01:00')
+        $schedule->command('solo:sync-days')
+            ->dailyAt('05:00')
             ->withoutOverlapping();
-
-        $schedule->command('roster:check')
-            ->dailyAt('02:00')
-            ->withoutOverlapping(120);
     })
     ->create();

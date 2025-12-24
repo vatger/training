@@ -358,13 +358,6 @@ class SoloController extends Controller
             return back()->withErrors(['error' => 'Solo endorsement cannot exceed 31 days']);
         }
 
-        $soloDays = $expiryDate->diffInDays(Carbon::now()) + 1;
-        $remainingDays = 90 - $trainee->solo_days_used;
-
-        if ($remainingDays < $soloDays) {
-            return back()->withErrors(['error' => "Trainee has only {$remainingDays} solo days remaining (needs {$soloDays} days)"]);
-        }
-
         $existingSolos = $this->vatEudService->getSoloEndorsements();
         $hasSolo = collect($existingSolos)->first(function ($solo) use ($trainee, $course) {
             return $solo['user_cid'] == $trainee->vatsim_id &&
@@ -387,8 +380,6 @@ class SoloController extends Controller
             );
 
             if ($result['success']) {
-                $trainee->increment('solo_days_used', $soloDays);
-                
                 $this->vatEudService->refreshEndorsementCache();
                 ActivityLogger::soloGranted($course->solo_station, $trainee, $user, $formattedExpiry);
 
@@ -449,14 +440,6 @@ class SoloController extends Controller
                 return back()->withErrors(['error' => 'No solo endorsement found for this trainee and position']);
             }
 
-            $currentExpiry = Carbon::parse($solo['expiry']);
-            $newSoloDays = $currentExpiry->diffInDays($expiryDate, false);
-            $remainingDays = 90 - $trainee->solo_days_used;
-
-            if ($newSoloDays > 0 && $remainingDays < $newSoloDays) {
-                return back()->withErrors(['error' => "Trainee has only {$remainingDays} solo days remaining (needs {$newSoloDays} additional days)"]);
-            }
-
             $this->vatEudService->removeSoloEndorsement($solo['id']);
 
             $expiryDateTime = $expiryDate->setTime(23, 59, 0);
@@ -470,10 +453,6 @@ class SoloController extends Controller
             );
 
             if ($result['success']) {
-                if ($newSoloDays != 0) {
-                    $trainee->increment('solo_days_used', $newSoloDays);
-                }
-                
                 $this->vatEudService->refreshEndorsementCache();
                 ActivityLogger::soloExtended($course->solo_station, $trainee, $user, $formattedExpiry);
 
@@ -524,17 +503,9 @@ class SoloController extends Controller
             if (!$solo) {
                 return back()->withErrors(['error' => 'No solo endorsement found for this trainee and position']);
             }
-
-            $currentExpiry = Carbon::parse($solo['expiry']);
-            $remainingDays = Carbon::now()->diffInDays($currentExpiry, false);
-
             $success = $this->vatEudService->removeSoloEndorsement($solo['id']);
 
             if ($success) {
-                if ($remainingDays > 0) {
-                    $trainee->decrement('solo_days_used', $remainingDays);
-                }
-
                 $this->vatEudService->refreshEndorsementCache();
                 ActivityLogger::soloRemoved($course->solo_station, $trainee, $user);
 
