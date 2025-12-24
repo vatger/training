@@ -33,7 +33,7 @@ import AppLogo from './app-logo';
 
 const navSections = [
     {
-        label: 'Platform',
+        label: 'General',
         items: [
             {
                 title: 'Dashboard',

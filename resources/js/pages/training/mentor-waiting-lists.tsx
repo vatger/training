@@ -262,7 +262,7 @@ export default function MentorWaitingLists({ courses, config }: PageProps) {
                                                 </Button>
                                             </DrawerTrigger>
 
-                                            <DrawerContent className="max-h-[85vh]">
+                                            <DrawerContent className="max-h-[85vh]" onOpenAutoFocus={(e) => e.preventDefault()}>
                                                 <DrawerHeader>
                                                     <DrawerTitle className="flex items-center gap-2">{course.name}</DrawerTitle>
                                                     <DrawerDescription>
@@ -352,18 +352,27 @@ export default function MentorWaitingLists({ courses, config }: PageProps) {
                                                                                             </TooltipContent>
                                                                                         )}
                                                                                 </Tooltip>
+                                                                                <Tooltip>
+                                                                                    <TooltipTrigger asChild>
+                                                                                        <div>
+                                                                                            <Button
+                                                                                                size="sm"
+                                                                                                variant="outline"
+                                                                                                onClick={() => {
+                                                                                                    setSelectedEntry(entry);
+                                                                                                    setRemarks(entry.remarks || '');
+                                                                                                    setIsRemarksDialogOpen(true);
+                                                                                                }}
+                                                                                            >
+                                                                                                <MessageSquare className="h-4 w-4" />
+                                                                                            </Button>
+                                                                                        </div>
+                                                                                    </TooltipTrigger>
+                                                                                    <TooltipContent side="top">
+                                                                                        <p>Edit remarks</p>
+                                                                                    </TooltipContent>
+                                                                                </Tooltip>
                                                                             </TooltipProvider>
-                                                                            <Button
-                                                                                size="sm"
-                                                                                variant="outline"
-                                                                                onClick={() => {
-                                                                                    setSelectedEntry(entry);
-                                                                                    setRemarks(entry.remarks || '');
-                                                                                    setIsRemarksDialogOpen(true);
-                                                                                }}
-                                                                            >
-                                                                                <MessageSquare className="h-4 w-4" />
-                                                                            </Button>
                                                                         </div>
                                                                     </CardContent>
                                                                 </Card>
@@ -391,7 +400,7 @@ export default function MentorWaitingLists({ courses, config }: PageProps) {
                                                 </Button>
                                             </DialogTrigger>
 
-                                            <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-[90vw] lg:max-w-[1000px]">
+                                            <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-[90vw] lg:max-w-[1000px]" onOpenAutoFocus={(e) => e.preventDefault()}>
                                                 <DialogHeader>
                                                     <DialogTitle className="flex items-center gap-2">{course.name}</DialogTitle>
                                                     <DialogDescription>
@@ -498,18 +507,27 @@ export default function MentorWaitingLists({ courses, config }: PageProps) {
                                                                                                 </TooltipContent>
                                                                                             )}
                                                                                     </Tooltip>
+                                                                                    <Tooltip>
+                                                                                        <TooltipTrigger asChild>
+                                                                                            <div>
+                                                                                                <Button
+                                                                                                    size="sm"
+                                                                                                    variant="outline"
+                                                                                                    onClick={() => {
+                                                                                                        setSelectedEntry(entry);
+                                                                                                        setRemarks(entry.remarks || '');
+                                                                                                        setIsRemarksDialogOpen(true);
+                                                                                                    }}
+                                                                                                >
+                                                                                                    <MessageSquare className="h-4 w-4" />
+                                                                                                </Button>
+                                                                                            </div>
+                                                                                        </TooltipTrigger>
+                                                                                        <TooltipContent side="top">
+                                                                                            <p>Edit remarks</p>
+                                                                                        </TooltipContent>
+                                                                                    </Tooltip>
                                                                                 </TooltipProvider>
-                                                                                <Button
-                                                                                    size="sm"
-                                                                                    variant="outline"
-                                                                                    onClick={() => {
-                                                                                        setSelectedEntry(entry);
-                                                                                        setRemarks(entry.remarks || '');
-                                                                                        setIsRemarksDialogOpen(true);
-                                                                                    }}
-                                                                                >
-                                                                                    <MessageSquare className="h-4 w-4" />
-                                                                                </Button>
                                                                             </div>
                                                                         </TableCell>
                                                                     </TableRow>
