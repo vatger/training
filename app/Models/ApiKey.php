@@ -32,7 +32,7 @@ class ApiKey extends Model
 
     public static function generateKey(): string
     {
-        return 'atd_' . Str::random(60);
+        return 'tc_' . Str::random(60);
     }
 
     public function hasPermission(string $permission): bool
@@ -63,7 +63,7 @@ class ApiKey extends Model
 
     public function getMaskedKeyAttribute(): string
     {
-        return 'atd_' . str_repeat('*', 60);
+        return 'tc_' . str_repeat('*', 60);
     }
 
     protected static function booted()

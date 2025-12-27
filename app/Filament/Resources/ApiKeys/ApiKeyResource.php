@@ -5,8 +5,9 @@ namespace App\Filament\Resources\ApiKeys;
 use App\Filament\Resources\ApiKeys\Pages\CreateApiKey;
 use App\Filament\Resources\ApiKeys\Pages\EditApiKey;
 use App\Filament\Resources\ApiKeys\Pages\ListApiKeys;
+use App\Filament\Resources\ApiKeys\Pages\ViewApiKey;
 use App\Filament\Resources\ApiKeys\Schemas\ApiKeyForm;
-use App\Filament\Resources\Apikeys\Tables\ApiKeysTable;
+use App\Filament\Resources\ApiKeys\Tables\ApiKeysTable;
 use App\Models\ApiKey;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -43,7 +44,13 @@ class ApiKeyResource extends Resource
             'index' => ListApiKeys::route('/'),
             'create' => CreateApiKey::route('/create'),
             'edit' => EditApiKey::route('/{record}/edit'),
+            'view-key' => ViewApiKey::route('/{record}/view-key'),
         ];
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return 'API Keys';
     }
 
     public static function getNavigationGroup(): ?string

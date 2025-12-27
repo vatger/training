@@ -4,7 +4,6 @@ namespace App\Filament\Resources\ApiKeys\Pages;
 
 use App\Filament\Resources\ApiKeys\ApiKeyResource;
 use App\Models\ApiKey;
-use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateApiKey extends CreateRecord
@@ -13,20 +12,15 @@ class CreateApiKey extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        $data['key'] = ApiKey::generateKey();
+        $plainKey = ApiKey::generateKey();
+        session(['created_api_key' => $plainKey]);
+        $data['key'] = $plainKey;
         
         return $data;
     }
 
-    protected function afterCreate(): void
+    protected function getRedirectUrl(): string
     {
-        $plainKey = $this->record->plainKey;
-
-        Notification::make()
-            ->success()
-            ->title('API Key Created')
-            ->body("**Save this key now - it won't be shown again:**\n\n`{$plainKey}`")
-            ->persistent()
-            ->send();
+        return $this->getResource()::getUrl('view-key', ['record' => $this->record]);
     }
 }
