@@ -54,6 +54,9 @@ enum ActivityAction: string
 
     case ROSTER_REMOVED = 'roster.removed';
 
+    case GDPR_DELETION = 'gdpr.deletion';
+    case API_USER_RETRIEVAL = 'api.user.retrieval';
+
     case CREATED = 'created';
     case UPDATED = 'updated';
     case DELETED = 'deleted';
@@ -111,6 +114,8 @@ enum ActivityAction: string
 
             self::ROSTER_REMOVED => 'Removed from Roster',
 
+            self::GDPR_DELETION => 'GDPR User Deletion',
+
             self::CREATED => 'Created',
             self::UPDATED => 'Updated',
             self::DELETED => 'Deleted',
@@ -145,6 +150,7 @@ enum ActivityAction: string
             self::CPT_FAILED,
             self::CPT_DELETED,
             self::ROSTER_REMOVED,
+            self::GDPR_DELETION,
             self::DELETED => 'danger',
             
             self::SOLO_EXTENDED,
