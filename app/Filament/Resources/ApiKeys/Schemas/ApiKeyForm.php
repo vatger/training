@@ -21,10 +21,10 @@ class ApiKeyForm
                     ->options([
                         'gdpr.delete' => 'GDPR Delete Users',
                         'users.read' => 'Read User Data',
-                        'users.update' => 'Update Users',
-                        'courses.read' => 'Read Courses',
-                        'training-logs.read' => 'Read Training Logs',
-                        'endorsements.read' => 'Read Endorsements',
+                        'familiarisations.read' => 'Read Familiarisations',
+                        'tier1.read' => 'Read Tier 1 Endorsements',
+                        'solos.read' => 'Read Solo Endorsements',
+                        'cpts.read' => 'Read CPTs',
                     ])
                     ->columns(2)
                     ->required()
