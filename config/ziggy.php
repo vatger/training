@@ -105,6 +105,8 @@ return [
         'cpt.leave-local',
 
         'settings.index',
-        'settings.update'
+        'settings.update',
+
+        's1.training'
     ],
 ];

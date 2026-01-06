@@ -44,7 +44,7 @@ class S1WaitingListService
         [$canJoin, $reason] = $this->canJoinWaitingList($user, $module);
 
         if (!$canJoin) {
-            return [false, $reason];
+            return [false, $reason, null];
         }
 
         try {
@@ -52,6 +52,25 @@ class S1WaitingListService
                 $confirmationDays = config('s1.waiting_list_confirmation_days', 30);
                 $expiryDays = config('s1.waiting_list_expiry_days', 90);
 
+                // Check if an inactive waiting list entry already exists
+                $existingWaitingList = S1WaitingList::where('user_id', $user->id)
+                    ->where('module_id', $module->id)
+                    ->where('is_active', false)
+                    ->first();
+
+                if ($existingWaitingList) {
+                    // Reactivate the existing entry with new timestamps
+                    $existingWaitingList->update([
+                        'joined_at' => now(),
+                        'last_confirmed_at' => now(),
+                        'confirmation_due_at' => now()->addDays($confirmationDays),
+                        'expires_at' => now()->addDays($expiryDays),
+                        'is_active' => true,
+                    ]);
+                    return $existingWaitingList;
+                }
+
+                // Create new entry if none exists
                 return S1WaitingList::create([
                     'user_id' => $user->id,
                     'module_id' => $module->id,
@@ -69,7 +88,7 @@ class S1WaitingListService
                 'position' => $waitingList->position_in_queue,
             ]);
 
-            return [true, 'Successfully joined waiting list'];
+            return [true, 'Successfully joined waiting list', $waitingList];
         } catch (\Exception $e) {
             Log::error('Failed to join S1 waiting list', [
                 'user_id' => $user->id,
@@ -77,7 +96,7 @@ class S1WaitingListService
                 'error' => $e->getMessage(),
             ]);
 
-            return [false, 'Failed to join waiting list. Please try again.'];
+            return [false, 'Failed to join waiting list. Please try again.', null];
         }
     }
 
@@ -122,18 +141,18 @@ class S1WaitingListService
                 'user_id' => $waitingList->user_id,
             ]);
 
-            return [true, 'Waiting list position confirmed'];
+            return [true, 'Waiting list position confirmed', $waitingList];
         } catch (\Exception $e) {
             Log::error('Failed to confirm S1 waiting list', [
                 'waiting_list_id' => $waitingList->id,
                 'error' => $e->getMessage(),
             ]);
 
-            return [false, 'Failed to confirm waiting list. Please try again.'];
+            return [false, 'Failed to confirm waiting list. Please try again.', null];
         }
     }
 
-    public function deactivateExpiredWaitingLists(): int
+    public function deactivateExpiredWaitingLists(): array
     {
         $expired = S1WaitingList::expired()->get();
 
@@ -147,7 +166,7 @@ class S1WaitingListService
             ]);
         }
 
-        return $expired->count();
+        return [true, 'Expired waiting lists deactivated', $expired->count()];
     }
 
     protected function isUserBanned(User $user): bool

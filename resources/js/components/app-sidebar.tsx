@@ -55,6 +55,11 @@ const navSections = [
                 href: route('endorsements'),
                 icon: CircleCheck,
             },
+            {
+                title: 'S1 Training',
+                href: route('s1.training'),
+                icon: BookOpenIcon,
+            },
         ] as NavItem[],
     },
 ];

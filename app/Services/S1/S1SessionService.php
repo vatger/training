@@ -73,6 +73,17 @@ class S1SessionService
             return [false, 'You are already signed up for this session'];
         }
 
+        $existingSignup = S1SessionSignup::where('user_id', $user->id)
+            ->whereHas('session', function ($query) use ($session) {
+                $query->where('module_id', $session->module_id)
+                    ->where('scheduled_at', '>', now());
+            })
+            ->first();
+
+        if ($existingSignup) {
+            return [false, 'You can only sign up for one session per module at a time. Please cancel your existing signup first.'];
+        }
+
         try {
             S1SessionSignup::create([
                 'session_id' => $session->id,
@@ -109,7 +120,7 @@ class S1SessionService
         }
 
         if ($signup->was_selected) {
-            return [false, 'Cannot cancel - you have been selected for this session'];
+            return [false, 'Cannot cancel - you have been selected for this session. Please contact a mentor.'];
         }
 
         try {
@@ -146,7 +157,7 @@ class S1SessionService
     public function selectParticipants(S1Session $session): array
     {
         if (!$session->signups_locked) {
-            return [false, 'Signups must be locked before selecting participants'];
+            return [false, 'Signups must be locked before selecting participants', null];
         }
 
         try {
