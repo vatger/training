@@ -6,7 +6,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class S1SessionAttendance extends Model
+class S1Attendance extends Model
 {
     protected $table = 's1_session_attendances';
 

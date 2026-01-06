@@ -3,7 +3,7 @@
 namespace App\Services\S1;
 
 use App\Models\S1\S1Session;
-use App\Models\S1\S1SessionAttendance;
+use App\Models\S1\S1Attendance;
 use App\Models\S1\S1SessionSignup;
 use App\Models\S1\S1ModuleCompletion;
 use App\Models\S1\S1WaitingList;
@@ -32,7 +32,7 @@ class S1AttendanceService
                 ->where('user_id', $user->id)
                 ->first();
 
-            $attendance = S1SessionAttendance::updateOrCreate(
+            $attendance = S1Attendance::updateOrCreate(
                 [
                     'session_id' => $session->id,
                     'user_id' => $user->id,
@@ -138,7 +138,7 @@ class S1AttendanceService
         }
     }
 
-    protected function handleAttendanceConsequences(S1SessionAttendance $attendance, S1Session $session): void
+    protected function handleAttendanceConsequences(S1Attendance $attendance, S1Session $session): void
     {
         if ($attendance->shouldCompleteModule()) {
             S1ModuleCompletion::firstOrCreate(
@@ -163,7 +163,7 @@ class S1AttendanceService
 
     public function getSessionAttendances(S1Session $session): \Illuminate\Support\Collection
     {
-        return S1SessionAttendance::where('session_id', $session->id)
+        return S1Attendance::where('session_id', $session->id)
             ->with(['user', 'markedByMentor'])
             ->orderBy('marked_at', 'desc')
             ->get();
@@ -171,7 +171,7 @@ class S1AttendanceService
 
     public function getUserAttendanceHistory(User $user): \Illuminate\Support\Collection
     {
-        return S1SessionAttendance::where('user_id', $user->id)
+        return S1Attendance::where('user_id', $user->id)
             ->with(['session.module', 'markedByMentor'])
             ->orderBy('marked_at', 'desc')
             ->get();

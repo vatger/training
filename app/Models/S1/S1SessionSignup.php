@@ -5,11 +5,10 @@ namespace App\Models\S1;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class S1SessionSignup extends Model
 {
-    protected $table = 's1_session_signups';
-
     protected $fillable = [
         'session_id',
         'user_id',
@@ -42,27 +41,8 @@ class S1SessionSignup extends Model
         return $this->belongsTo(S1WaitingList::class, 'waiting_list_id');
     }
 
-    public function markAsSelected(): void
+    public function attendance(): HasOne
     {
-        $this->update([
-            'was_selected' => true,
-            'selected_at' => now(),
-        ]);
-    }
-
-    public function scopeSelected($query)
-    {
-        return $query->where('was_selected', true);
-    }
-
-    public function scopeUnselected($query)
-    {
-        return $query->where('was_selected', false);
-    }
-
-    public function scopeNeedingNotification($query)
-    {
-        return $query->where('was_selected', true)
-            ->where('notification_sent', false);
+        return $this->hasOne(S1Attendance::class, 'signup_id');
     }
 }

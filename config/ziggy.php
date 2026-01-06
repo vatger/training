@@ -107,6 +107,7 @@ return [
         'settings.index',
         'settings.update',
 
-        's1.training'
+        's1.training',
+        's1.mentor.index'
     ],
 ];

@@ -280,7 +280,7 @@ class S1TrainingController extends Controller
                             'description' => sprintf(
                                 'You\'ve signed up for a %s session on %s. You\'ll be notified once participants are selected (typically 48 hours before the session).',
                                 $module['name'],
-                                $userSession['scheduled_at']
+                                \Carbon\Carbon::parse($userSession['scheduled_at'])->format('d.m.Y \a\t H:i')
                             ),
                         ];
                     }
