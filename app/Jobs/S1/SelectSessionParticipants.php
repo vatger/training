@@ -17,11 +17,6 @@ class SelectSessionParticipants implements ShouldQueue
 
     protected $session;
 
-    /**
-     * Create a new job instance.
-     * If $session is provided, only process that session.
-     * Otherwise, process all locked sessions without selections.
-     */
     public function __construct(?S1Session $session = null)
     {
         $this->session = $session;
@@ -30,10 +25,8 @@ class SelectSessionParticipants implements ShouldQueue
     public function handle(S1SessionService $sessionService): void
     {
         if ($this->session) {
-            // Process single session (called from LockSessionSignups)
             $this->selectForSession($this->session, $sessionService);
         } else {
-            // Process all locked sessions without selections (called from schedule)
             $lockedSessions = S1Session::where('signups_locked', true)
                 ->whereDoesntHave('signups', function ($query) {
                     $query->where('was_selected', true);
@@ -63,8 +56,18 @@ class SelectSessionParticipants implements ShouldQueue
                     'rejected_count' => $data['rejected'],
                 ]);
 
+                // CLEANUP: Delete non-selected signups
+                $deleted = $session->signups()
+                    ->where('was_selected', false)
+                    ->delete();
+
+                Log::info('Cleaned up non-selected signups', [
+                    'session_id' => $session->id,
+                    'deleted_count' => $deleted,
+                ]);
+
                 // TODO: Send notifications to selected users
-                // TODO: Send notifications to rejected users
+                // TODO: Send notifications to rejected users (before deletion!)
             } else {
                 Log::warning('Failed to select session participants', [
                     'session_id' => $session->id,

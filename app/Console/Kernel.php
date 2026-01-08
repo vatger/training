@@ -13,6 +13,8 @@ class Kernel extends ConsoleKernel
         Commands\SyncUserEndorsements::class,
         Commands\SyncWaitingListActivity::class,
         Commands\CheckRosterStatus::class,
+        Commands\ProcessSessionLocking::class,
+        Commands\ProcessParticipantSelection::class,
     ];
 
     protected function schedule(Schedule $schedule): void
