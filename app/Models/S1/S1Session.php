@@ -64,7 +64,7 @@ class S1Session extends Model
 
     public function attendances(): HasMany
     {
-        return $this->hasMany(S1SessionAttendance::class, 'session_id');
+        return $this->hasMany(S1Attendance::class, 'session_id');
     }
 
     public function shouldLockSignups(): bool

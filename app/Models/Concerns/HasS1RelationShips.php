@@ -6,7 +6,7 @@ use App\Models\S1\S1ModuleCompletion;
 use App\Models\S1\S1WaitingList;
 use App\Models\S1\S1Session;
 use App\Models\S1\S1SessionSignup;
-use App\Models\S1\S1SessionAttendance;
+use App\Models\S1\S1Attendance;
 use App\Models\S1\S1UserBan;
 use App\Models\S1\S1TraineeComment;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -45,7 +45,7 @@ trait HasS1Relationships
 
     public function s1Attendances(): HasMany
     {
-        return $this->hasMany(S1SessionAttendance::class, 'user_id');
+        return $this->hasMany(S1Attendance::class, 'user_id');
     }
 
     public function s1Bans(): HasMany

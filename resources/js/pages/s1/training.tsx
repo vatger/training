@@ -16,7 +16,7 @@ import { Progress } from '@/components/ui/progress';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { Head, router, useForm, usePage } from '@inertiajs/react';
-import { AlertCircle, Calendar, CheckCircle2, Clock, ExternalLink, Users } from 'lucide-react';
+import { AlertCircle, Calendar, CheckCircle2, Clock, ExternalLink, Users, AlertTriangle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -45,16 +45,19 @@ interface SessionInfo {
     user_waiting_position?: number;
 }
 
+interface Quiz {
+    id: number;
+    name: string;
+    completed: boolean;
+    url?: string;
+}
+
 interface QuizCompletion {
     completed: number;
     total: number;
     percentage: number;
-    quizzes: Array<{
-        id: number;
-        completed: boolean;
-        name: string;
-        url?: string;
-    }>;
+    quizzes: Quiz[];
+    is_enrolled: boolean;
 }
 
 interface ModuleProgress {
@@ -113,6 +116,24 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: route('s1.training'),
     },
 ];
+
+const formatZuluTime = (isoString: string): string => {
+    const date = new Date(isoString);
+    const year = date.getUTCFullYear();
+    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(date.getUTCDate()).padStart(2, '0');
+    const hours = String(date.getUTCHours()).padStart(2, '0');
+    const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+    return `${day}.${month}.${year} ${hours}:${minutes}Z`;
+};
+
+const formatDateOnly = (dateString: string): string => {
+    const date = new Date(dateString);
+    const year = date.getUTCFullYear();
+    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(date.getUTCDate()).padStart(2, '0');
+    return `${day}.${month}.${year}`;
+};
 
 export default function S1Training({ isVatsimUser, currentStep, progress }: Props) {
     const { flash } = usePage<{ flash: { success?: string; error?: string } }>().props;
@@ -296,6 +317,22 @@ export default function S1Training({ isVatsimUser, currentStep, progress }: Prop
                             </div>
                         </CardHeader>
                         <CardContent className="space-y-4">
+                            {currentStep.type === 'module2_not_enrolled' && (
+                                <Alert variant="destructive">
+                                    <AlertTriangle className="h-4 w-4" />
+                                    <AlertTitle>Enrollment Required</AlertTitle>
+                                    <AlertDescription>
+                                        <p className="mb-2">You are not enrolled in the Module 2 Moodle courses.</p>
+                                        <p className="font-semibold">Please contact your Module 1 mentor to get enrolled in:</p>
+                                        <ul className="mt-2 list-inside list-disc space-y-1">
+                                            {currentStep.module?.quiz_completion?.quizzes.map((quiz) => (
+                                                <li key={quiz.id}>{quiz.name}</li>
+                                            ))}
+                                        </ul>
+                                    </AlertDescription>
+                                </Alert>
+                            )}
+
                             {currentStep.type === 'complete_quizzes' && currentStep.progress !== undefined && (
                                 <div>
                                     <Progress value={currentStep.progress} className="h-2" />
@@ -310,7 +347,7 @@ export default function S1Training({ isVatsimUser, currentStep, progress }: Prop
                                     <AlertDescription>
                                         <div className="mt-2 space-y-1">
                                             <p>
-                                                <strong>Date:</strong> {new Date(currentStep.session.scheduled_at).toLocaleString('de')}
+                                                <strong>Date:</strong> {formatZuluTime(currentStep.session.scheduled_at)}
                                             </p>
                                             <p>
                                                 <strong>Mentor:</strong> {currentStep.session.mentor_name}
@@ -338,7 +375,7 @@ export default function S1Training({ isVatsimUser, currentStep, progress }: Prop
                                     <AlertTitle className="text-green-600">Session Confirmed</AlertTitle>
                                     <AlertDescription>
                                         <p className="mt-2 text-green-700 dark:text-green-300">
-                                            <strong>Date:</strong> {new Date(currentStep.session.scheduled_at).toLocaleString('de')}
+                                            <strong>Date:</strong> {formatZuluTime(currentStep.session.scheduled_at)}
                                         </p>
                                         <p className="text-green-700 dark:text-green-300">
                                             <strong>Mentor:</strong> {currentStep.session.mentor_name}
@@ -352,7 +389,7 @@ export default function S1Training({ isVatsimUser, currentStep, progress }: Prop
                                     <Clock className="h-4 w-4" />
                                     <AlertTitle>Selection Pending</AlertTitle>
                                     <AlertDescription>
-                                        <p className="mt-2">Session: {new Date(currentStep.session.scheduled_at).toLocaleString('de')}</p>
+                                        <p className="mt-2">Session: {formatZuluTime(currentStep.session.scheduled_at)}</p>
                                         <p className="mt-1 text-sm text-muted-foreground">
                                             Participants will be selected based on waiting list position approximately 48 hours before the session.
                                         </p>
@@ -383,7 +420,7 @@ export default function S1Training({ isVatsimUser, currentStep, progress }: Prop
                                         {currentStep.needs_confirmation && currentStep.confirmation_data && (
                                             <div className="mt-3">
                                                 <p className="mb-2 font-medium text-yellow-600 dark:text-yellow-400">
-                                                    ⚠️ Confirmation required by {currentStep.module.waiting_list.confirmation_due_at}
+                                                    ⚠️ Confirmation required by {formatDateOnly(currentStep.module.waiting_list.confirmation_due_at!)}
                                                 </p>
                                                 <Button
                                                     variant="default"
@@ -398,7 +435,7 @@ export default function S1Training({ isVatsimUser, currentStep, progress }: Prop
                                 </Alert>
                             )}
 
-                            {currentStep.action && (
+                            {currentStep.action && currentStep.type !== 'module2_not_enrolled' && (
                                 <Button
                                     onClick={handleAction}
                                     size="lg"
@@ -420,7 +457,7 @@ export default function S1Training({ isVatsimUser, currentStep, progress }: Prop
                                             {currentStep.module.available_sessions.slice(1).map((session) => (
                                                 <div key={session.id} className="flex items-center justify-between rounded-lg bg-muted p-3">
                                                     <div className="flex-1">
-                                                        <p className="font-medium">{new Date(session.scheduled_at).toLocaleString('de')}</p>
+                                                        <p className="font-medium">{formatZuluTime(session.scheduled_at)}</p>
                                                         <p className="text-sm text-muted-foreground">
                                                             {session.mentor_name} • {session.language}
                                                         </p>
@@ -460,7 +497,7 @@ export default function S1Training({ isVatsimUser, currentStep, progress }: Prop
                                                 <CardTitle>{module.name}</CardTitle>
                                                 {module.completed_at && (
                                                     <p className="mt-1 text-sm text-muted-foreground">
-                                                        Completed on {new Date(module.completed_at).toLocaleDateString('de')}
+                                                        Completed on {formatDateOnly(module.completed_at)}
                                                     </p>
                                                 )}
                                             </div>
@@ -478,58 +515,76 @@ export default function S1Training({ isVatsimUser, currentStep, progress }: Prop
 
                                 {module.status === 'waiting' && (
                                     <CardContent className="space-y-4">
-                                        {/* Module 2: Show Moodle quiz completion (NO waiting list) */}
                                         {module.quiz_completion && (
                                             <div>
-                                                <div className="mb-3 flex items-center justify-between">
-                                                    <span className="text-sm font-medium">Moodle Course Progress</span>
-                                                    <span className="text-sm text-muted-foreground">
-                                                        {module.quiz_completion.completed} / {module.quiz_completion.total} completed
-                                                    </span>
-                                                </div>
-                                                <Progress value={module.quiz_completion.percentage} className="mb-4 h-2" />
-
-                                                <div className="space-y-2">
-                                                    {module.quiz_completion.quizzes.map((quiz, index) => (
-                                                        <div
-                                                            key={quiz.id}
-                                                            className="flex items-center justify-between rounded-lg border bg-card p-3"
-                                                        >
-                                                            <div className="flex items-center gap-3">
-                                                                {quiz.completed ? (
-                                                                    <CheckCircle2 className="h-5 w-5 shrink-0 text-green-600" />
-                                                                ) : (
-                                                                    <div className="h-5 w-5 shrink-0 rounded-full border-2 border-muted-foreground" />
-                                                                )}
-                                                                <span className="text-sm">{quiz.name || `Course ${index + 1}`}</span>
-                                                            </div>
-                                                            {quiz.url && !quiz.completed && (
-                                                                <Button variant="outline" size="sm" onClick={() => window.open(quiz.url, '_blank')}>
-                                                                    Open Course
-                                                                    <ExternalLink className="ml-2 h-3 w-3" />
-                                                                </Button>
-                                                            )}
-                                                            {quiz.completed && (
-                                                                <Badge variant="default" className="bg-green-600">
-                                                                    Completed
-                                                                </Badge>
-                                                            )}
+                                                {!module.quiz_completion.is_enrolled ? (
+                                                    <Alert variant="destructive">
+                                                        <AlertTriangle className="h-4 w-4" />
+                                                        <AlertTitle>Not Enrolled in Module 2</AlertTitle>
+                                                        <AlertDescription>
+                                                            <p className="mb-2">You need to be enrolled in the Moodle courses to continue.</p>
+                                                            <p className="font-semibold">Please contact your Module 1 mentor to get enrolled in:</p>
+                                                            <ul className="mt-2 list-inside list-disc space-y-1">
+                                                                {module.quiz_completion.quizzes.map((quiz) => (
+                                                                    <li key={quiz.id}>{quiz.name}</li>
+                                                                ))}
+                                                            </ul>
+                                                        </AlertDescription>
+                                                    </Alert>
+                                                ) : (
+                                                    <>
+                                                        <div className="mb-3 flex items-center justify-between">
+                                                            <span className="text-sm font-medium">Moodle Course Progress</span>
+                                                            <span className="text-sm text-muted-foreground">
+                                                                {module.quiz_completion.completed} / {module.quiz_completion.total} completed
+                                                            </span>
                                                         </div>
-                                                    ))}
-                                                </div>
+                                                        <Progress value={module.quiz_completion.percentage} className="mb-4 h-2" />
+
+                                                        <div className="space-y-2">
+                                                            {module.quiz_completion.quizzes.map((quiz) => (
+                                                                <div
+                                                                    key={quiz.id}
+                                                                    className="flex items-center justify-between rounded-lg border bg-card p-3"
+                                                                >
+                                                                    <div className="flex items-center gap-3">
+                                                                        {quiz.completed ? (
+                                                                            <CheckCircle2 className="h-5 w-5 shrink-0 text-green-600" />
+                                                                        ) : (
+                                                                            <div className="h-5 w-5 shrink-0 rounded-full border-2 border-muted-foreground" />
+                                                                        )}
+                                                                        <span className="text-sm font-medium">{quiz.name}</span>
+                                                                    </div>
+                                                                    {quiz.url && !quiz.completed && (
+                                                                        <Button
+                                                                            variant="outline"
+                                                                            size="sm"
+                                                                            onClick={() => window.open(quiz.url, '_blank')}
+                                                                        >
+                                                                            Open Course
+                                                                            <ExternalLink className="ml-2 h-3 w-3" />
+                                                                        </Button>
+                                                                    )}
+                                                                    {quiz.completed && (
+                                                                        <Badge variant="default" className="bg-green-600">
+                                                                            Completed
+                                                                        </Badge>
+                                                                    )}
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </>
+                                                )}
                                             </div>
                                         )}
 
-                                        {/* Modules 1, 3, 4: Show waiting list and sessions (NOT Module 2) */}
-                                        {module.waiting_list && (
+                                        {module.waiting_list && module.sequence_order !== 2 && (
                                             <div className="flex justify-between space-y-3">
                                                 <div className="text-sm">
                                                     <p className="-mt-2 text-muted-foreground">
                                                         Waiting list position: #{module.waiting_list.position} of {module.waiting_list.total_waiting}
                                                     </p>
-                                                    <p className="text-muted-foreground">
-                                                        Joined: {new Date(module.waiting_list.joined_at).toLocaleDateString('de')}
-                                                    </p>
+                                                    <p className="text-muted-foreground">Joined: {formatDateOnly(module.waiting_list.joined_at)}</p>
                                                 </div>
                                                 {!module.has_any_signup && (
                                                     <Button
@@ -553,17 +608,11 @@ export default function S1Training({ isVatsimUser, currentStep, progress }: Prop
                                                     {module.available_sessions.map((session) => (
                                                         <Card key={session.id} className="overflow-hidden py-0">
                                                             <CardContent className="p-4">
-                                                                {/* Session Header */}
                                                                 <div className="mb-3 flex items-start justify-between gap-4">
                                                                     <div className="flex-1 space-y-1">
                                                                         <div className="flex items-center gap-2">
                                                                             <Calendar className="h-4 w-4 text-muted-foreground" />
-                                                                            <p className="font-semibold">
-                                                                                {new Date(session.scheduled_at).toLocaleString('de', {
-                                                                                    dateStyle: 'full',
-                                                                                    timeStyle: 'short',
-                                                                                })}
-                                                                            </p>
+                                                                            <p className="font-semibold">{formatZuluTime(session.scheduled_at)}</p>
                                                                         </div>
                                                                         <div className="flex items-center gap-2">
                                                                             <Users className="h-4 w-4 text-muted-foreground" />
@@ -617,7 +666,6 @@ export default function S1Training({ isVatsimUser, currentStep, progress }: Prop
                                                                     </div>
                                                                 </div>
 
-                                                                {/* Session Notes */}
                                                                 {session.notes && (
                                                                     <Alert className="mb-3">
                                                                         <AlertTitle className="text-sm">Session Notes</AlertTitle>
@@ -625,7 +673,6 @@ export default function S1Training({ isVatsimUser, currentStep, progress }: Prop
                                                                     </Alert>
                                                                 )}
 
-                                                                {/* Status Information */}
                                                                 {session.signups_locked && (
                                                                     <Alert className="mb-3">
                                                                         <Clock className="h-4 w-4" />
@@ -649,9 +696,7 @@ export default function S1Training({ isVatsimUser, currentStep, progress }: Prop
                                                                     </Alert>
                                                                 )}
 
-                                                                {/* Action Buttons */}
                                                                 <div className="flex gap-2">
-                                                                    {/* User not signed up, signups open */}
                                                                     {!module.has_any_signup && !session.user_signed_up && !session.signups_locked && (
                                                                         <Button
                                                                             onClick={() => handleSessionSignup(session.id)}
@@ -663,7 +708,6 @@ export default function S1Training({ isVatsimUser, currentStep, progress }: Prop
                                                                         </Button>
                                                                     )}
 
-                                                                    {/* User signed up, not selected, signups not locked yet */}
                                                                     {module.has_any_signup &&
                                                                         session.user_signed_up &&
                                                                         !session.user_selected &&
@@ -678,7 +722,6 @@ export default function S1Training({ isVatsimUser, currentStep, progress }: Prop
                                                                             </Button>
                                                                         )}
 
-                                                                    {/* User selected - no action available */}
                                                                     {session.user_selected && (
                                                                         <div className="w-full rounded-md bg-green-50 p-2 text-center text-sm font-medium text-green-700 dark:bg-green-950 dark:text-green-300">
                                                                             You're confirmed for this session

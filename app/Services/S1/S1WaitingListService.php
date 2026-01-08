@@ -19,6 +19,10 @@ class S1WaitingListService
             return [false, 'VATSIM account required'];
         }
 
+        if ($module->sequence_order === 2) {
+            return [false, 'Module 2 does not have a waiting list. It starts automatically after Module 1 completion.'];
+        }
+
         if ($this->isUserBanned($user)) {
             return [false, 'You are currently banned from joining waiting lists'];
         }
@@ -52,14 +56,12 @@ class S1WaitingListService
                 $confirmationDays = config('s1.waiting_list_confirmation_days', 30);
                 $expiryDays = config('s1.waiting_list_expiry_days', 90);
 
-                // Check if an inactive waiting list entry already exists
                 $existingWaitingList = S1WaitingList::where('user_id', $user->id)
                     ->where('module_id', $module->id)
                     ->where('is_active', false)
                     ->first();
 
                 if ($existingWaitingList) {
-                    // Reactivate the existing entry with new timestamps
                     $existingWaitingList->update([
                         'joined_at' => now(),
                         'last_confirmed_at' => now(),
@@ -70,7 +72,6 @@ class S1WaitingListService
                     return $existingWaitingList;
                 }
 
-                // Create new entry if none exists
                 return S1WaitingList::create([
                     'user_id' => $user->id,
                     'module_id' => $module->id,

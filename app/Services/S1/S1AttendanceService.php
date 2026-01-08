@@ -152,6 +152,10 @@ class S1AttendanceService
                     'was_reset' => false,
                 ]
             );
+
+            S1WaitingList::where('user_id', $attendance->user_id)
+                ->where('module_id', $session->module_id)
+                ->update(['is_active' => false]);
         }
 
         if ($attendance->shouldLoseWaitingListPosition()) {

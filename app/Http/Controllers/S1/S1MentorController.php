@@ -8,8 +8,10 @@ use App\Models\S1\S1Session;
 use App\Models\S1\S1Attendance;
 use App\Models\S1\S1SessionSignup;
 use App\Models\S1\S1WaitingList;
+use App\Models\S1\S1ModuleCompletion;
 use App\Services\S1\S1AttendanceService;
 use App\Services\S1\S1SessionService;
+use App\Services\MoodleService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -19,13 +21,16 @@ class S1MentorController extends Controller
 {
     protected $sessionService;
     protected $attendanceService;
+    protected $moodleService;
 
     public function __construct(
         S1SessionService $sessionService,
-        S1AttendanceService $attendanceService
+        S1AttendanceService $attendanceService,
+        MoodleService $moodleService
     ) {
         $this->sessionService = $sessionService;
         $this->attendanceService = $attendanceService;
+        $this->moodleService = $moodleService;
     }
 
     public function index(): Response
@@ -35,8 +40,15 @@ class S1MentorController extends Controller
         $modules = S1Module::orderBy('sequence_order')->get();
 
         $upcomingSessions = S1Session::with(['module', 'mentor', 'signups.user', 'signups.waitingList'])
-            ->where('scheduled_at', '>', now())
             ->where('mentor_id', $user->id)
+            ->where(function ($query) {
+                $query->where('scheduled_at', '>', now())
+                    ->orWhere(function ($q) {
+                        $q->where('scheduled_at', '<=', now())
+                            ->where('scheduled_at', '>', now()->subHours(24))
+                            ->where('attendance_completed', false);
+                    });
+            })
             ->orderBy('scheduled_at')
             ->get()
             ->map(function ($session) {
@@ -44,20 +56,22 @@ class S1MentorController extends Controller
                     'id' => $session->id,
                     'module_name' => $session->module->name,
                     'module_id' => $session->module_id,
-                    'scheduled_at' => $session->scheduled_at,
+                    'scheduled_at' => $session->scheduled_at->toIso8601String(),
                     'max_trainees' => $session->max_trainees,
                     'language' => $session->language,
                     'signups_open' => $session->signups_open,
                     'signups_locked' => $session->signups_locked,
+                    'signups_lock_at' => $session->signups_lock_at?->toIso8601String(),
                     'attendance_completed' => $session->attendance_completed,
                     'total_signups' => $session->signups->count(),
                     'selected_count' => $session->signups->where('was_selected', true)->count(),
+                    'notes' => $session->notes,
+                    'is_past' => $session->scheduled_at <= now(),
                     'participants' => $session->signups()
                         ->where('was_selected', true)
                         ->with(['user'])
                         ->get()
                         ->map(function ($signup) {
-                            // Query attendance using session_id and user_id
                             $attendance = S1Attendance::where('session_id', $signup->session_id)
                                 ->where('user_id', $signup->user_id)
                                 ->first();
@@ -71,27 +85,41 @@ class S1MentorController extends Controller
                                 'attendance' => $attendance ? [
                                     'id' => $attendance->id,
                                     'status' => $attendance->status,
-                                    'remarks' => $attendance->notes,
+                                    'notes' => $attendance->notes,
                                 ] : null,
                             ];
                         }),
                 ];
             });
 
-        $pastSessions = S1Session::with(['module', 'signups'])
+        $pastSessions = S1Session::with(['module', 'signups', 'attendances.user'])
             ->where('mentor_id', $user->id)
             ->where('scheduled_at', '<=', now())
             ->orderBy('scheduled_at', 'desc')
-            ->limit(10)
+            ->limit(20)
             ->get()
             ->map(function ($session) {
                 return [
                     'id' => $session->id,
                     'module_name' => $session->module->name,
-                    'scheduled_at' => $session->scheduled_at,
+                    'scheduled_at' => $session->scheduled_at->toIso8601String(),
                     'max_trainees' => $session->max_trainees,
+                    'language' => $session->language,
                     'attendance_completed' => $session->attendance_completed,
+                    'notes' => $session->notes,
                     'participants_count' => $session->signups()->where('was_selected', true)->count(),
+                    'participants' => $session->attendances->map(function ($attendance) {
+                        return [
+                            'id' => $attendance->id,
+                            'user_id' => $attendance->user_id,
+                            'user_name' => $attendance->user->name,
+                            'user_vatsim_id' => $attendance->user->vatsim_id,
+                            'status' => $attendance->status,
+                            'notes' => $attendance->notes,
+                            'marked_at' => $attendance->marked_at?->toIso8601String(),
+                            'spontaneous' => $attendance->spontaneous,
+                        ];
+                    }),
                 ];
             });
 
@@ -100,6 +128,7 @@ class S1MentorController extends Controller
                 ->orderBy('joined_at')
                 ->with('user');
         }])
+            ->where('sequence_order', '!=', 2)
             ->orderBy('sequence_order')
             ->get()
             ->map(function ($module) {
@@ -115,20 +144,143 @@ class S1MentorController extends Controller
                             'user_name' => $wl->user->name,
                             'user_vatsim_id' => $wl->user->vatsim_id,
                             'position' => $index + 1,
-                            'joined_at' => $wl->joined_at,
-                            'last_confirmed_at' => $wl->last_confirmed_at,
+                            'joined_at' => $wl->joined_at->toIso8601String(),
+                            'last_confirmed_at' => $wl->last_confirmed_at?->toIso8601String(),
                             'needs_confirmation' => $wl->confirmation_due_at?->isPast(),
                         ];
                     }),
                 ];
             });
 
+        $module2 = S1Module::where('sequence_order', 2)->first();
+        $module2Users = [];
+
+        if ($module2) {
+            $completedModule1 = S1ModuleCompletion::where('module_id', S1Module::where('sequence_order', 1)->value('id'))
+                ->pluck('user_id');
+
+            $completedModule2 = S1ModuleCompletion::where('module_id', $module2->id)
+                ->pluck('user_id');
+
+            $activeModule2UserIds = $completedModule1->diff($completedModule2);
+
+            $module2Users = \App\Models\User::whereIn('id', $activeModule2UserIds)
+                ->get()
+                ->map(function ($user) use ($module2) {
+                    $quizCompletion = $this->getUserModule2DetailedProgress($user, $module2);
+
+                    return [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'vatsim_id' => $user->vatsim_id,
+                        'quiz_completion' => $quizCompletion,
+                    ];
+                });
+        }
+
         return Inertia::render('s1/mentor', [
             'modules' => $modules,
             'upcomingSessions' => $upcomingSessions,
             'pastSessions' => $pastSessions,
             'waitingLists' => $waitingLists,
+            'module2Users' => $module2Users,
         ]);
+    }
+
+    public function showModule2Progress(Request $request)
+    {
+        $module = S1Module::where('sequence_order', 2)->firstOrFail();
+
+        $query = S1WaitingList::where('module_id', $module->id)
+            ->where('is_active', true)
+            ->with('user');
+
+        // Search functionality
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->whereHas('user', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('vatsim_id', 'like', "%{$search}%");
+            });
+        }
+
+        $users = $query->orderBy('joined_at', 'asc')->paginate(20);
+
+        $usersWithProgress = $users->map(function ($waitingList) use ($module) {
+            $user = $waitingList->user;
+            $progress = $this->getUserModule2DetailedProgress($user, $module);
+
+            return [
+                'id' => $user->id,
+                'name' => $user->name,
+                'vatsim_id' => $user->vatsim_id,
+                'joined_at' => $waitingList->joined_at->format('d.m.Y'),
+                'progress' => $progress,
+            ];
+        });
+
+        return Inertia::render('s1/mentor/module2-progress', [
+            'users' => $usersWithProgress,
+            'pagination' => [
+                'current_page' => $users->currentPage(),
+                'last_page' => $users->lastPage(),
+                'per_page' => $users->perPage(),
+                'total' => $users->total(),
+            ],
+            'search' => $request->search ?? '',
+        ]);
+    }
+
+    protected function getUserModule2DetailedProgress($user, $module)
+    {
+        if (!$module->moodle_quiz_ids || !is_array($module->moodle_quiz_ids)) {
+            return null;
+        }
+
+        $quizIds = $module->moodle_quiz_ids;
+        $courseNames = [
+            'Basics of controlling',
+            'ATD Delivery',
+            'ATD Ground',
+            'ATD Tower',
+        ];
+
+        $quizzes = [];
+        $completed = 0;
+        $total = count($quizIds);
+
+        foreach ($quizIds as $index => $quizId) {
+            try {
+                $isCompleted = $this->moodleService->getActivityCompletion(
+                    $user->vatsim_id,
+                    $quizId
+                );
+
+                if ($isCompleted) {
+                    $completed++;
+                }
+
+                $quizzes[] = [
+                    'id' => $quizId,
+                    'name' => $courseNames[$index] ?? "Course " . ($index + 1),
+                    'completed' => $isCompleted,
+                ];
+            } catch (\Exception $e) {
+                $quizzes[] = [
+                    'id' => $quizId,
+                    'name' => $courseNames[$index] ?? "Course " . ($index + 1),
+                    'completed' => false,
+                    'error' => true,
+                ];
+            }
+        }
+
+        return [
+            'completed' => $completed,
+            'total' => $total,
+            'percentage' => $total > 0 ? round(($completed / $total) * 100) : 0,
+            'quizzes' => $quizzes,
+        ];
     }
 
     public function createSession(Request $request): RedirectResponse
@@ -140,6 +292,11 @@ class S1MentorController extends Controller
             'language' => 'required|in:DE,EN',
             'notes' => 'nullable|string|max:1000',
         ]);
+
+        $moduleSequence = S1Module::where('id', $validated['module_id'])->value('sequence_order');
+        if ($moduleSequence == 2) {
+            return redirect()->back()->with('error', 'Cannot create sessions for Module 2 as it uses Moodle courses only.');
+        }
 
         $user = auth()->user();
 
@@ -172,6 +329,21 @@ class S1MentorController extends Controller
             'attendances.*.remarks' => 'nullable|string|max:1000',
         ]);
 
+        $selectedSignups = S1SessionSignup::where('session_id', $session->id)
+            ->where('was_selected', true)
+            ->pluck('id');
+
+        $providedSignupIds = collect($validated['attendances'])->pluck('signup_id');
+
+        if ($selectedSignups->count() !== $providedSignupIds->count()) {
+            return redirect()->back()->with('error', 'Attendance must be recorded for all participants.');
+        }
+
+        $missingSignups = $selectedSignups->diff($providedSignupIds);
+        if ($missingSignups->isNotEmpty()) {
+            return redirect()->back()->with('error', 'Attendance must be recorded for all participants.');
+        }
+
         try {
             foreach ($validated['attendances'] as $attendanceData) {
                 $signup = S1SessionSignup::findOrFail($attendanceData['signup_id']);
@@ -180,14 +352,13 @@ class S1MentorController extends Controller
                     return redirect()->back()->with('error', 'Invalid signup for this session.');
                 }
 
-                // Use markAttendance from the service
                 [$success, $message] = $this->attendanceService->markAttendance(
                     $session,
                     $signup->user,
                     $attendanceData['status'],
                     $attendanceData['remarks'] ?? null,
                     auth()->id(),
-                    false // not spontaneous
+                    false
                 );
 
                 if (!$success) {
@@ -216,7 +387,6 @@ class S1MentorController extends Controller
             'remarks' => 'nullable|string|max:1000',
         ]);
 
-        // Use markAttendance which handles updateOrCreate
         [$success, $message] = $this->attendanceService->markAttendance(
             $session,
             $attendance->user,
@@ -231,18 +401,6 @@ class S1MentorController extends Controller
         }
 
         return redirect()->back()->with('success', 'Attendance updated successfully.');
-    }
-
-    public function toggleSessionSignups(Request $request, S1Session $session): RedirectResponse
-    {
-        if ($session->mentor_id !== auth()->id()) {
-            return redirect()->back()->with('error', 'You are not authorized to modify this session.');
-        }
-
-        $session->update(['signups_open' => !$session->signups_open]);
-
-        $status = $session->signups_open ? 'opened' : 'closed';
-        return redirect()->back()->with('success', "Session signups have been {$status}.");
     }
 
     public function deleteSession(Request $request, S1Session $session): RedirectResponse

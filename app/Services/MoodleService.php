@@ -84,6 +84,42 @@ class MoodleService
         });
     }
 
+    public function getActivityCompletion(int $vatsimId, int $activityId): bool
+    {
+        $cacheKey = "moodle:activity_completion:{$vatsimId}:{$activityId}";
+
+        return Cache::remember($cacheKey, now()->addSeconds($this->cacheTtl), function () use ($vatsimId, $activityId) {
+            try {
+                $response = Http::withHeaders([
+                    'Authorization' => "Token {$this->apiKey}",
+                ])
+                    ->timeout(5)
+                    ->retry(2, 500)
+                    ->get("{$this->apiBaseUrl}/moodle/activity/{$activityId}/user/{$vatsimId}/completion");
+
+                if ($response->successful()) {
+                    $data = $response->json();
+                    return $data['isoverallcomplete'] ?? false;
+                }
+
+                Log::warning('Moodle activity completion check failed', [
+                    'vatsim_id' => $vatsimId,
+                    'activity_id' => $activityId,
+                    'status' => $response->status()
+                ]);
+
+                return false;
+            } catch (\Exception $e) {
+                Log::error('Error checking Moodle activity completion', [
+                    'vatsim_id' => $vatsimId,
+                    'activity_id' => $activityId,
+                    'error' => $e->getMessage()
+                ]);
+                return false;
+            }
+        });
+    }
+
     public function getCourseName(int $courseId): ?string
     {
         $cacheKey = "moodle:course_name:{$courseId}";

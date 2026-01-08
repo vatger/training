@@ -8,7 +8,6 @@ use App\Models\S1\S1WaitingList;
 use App\Models\S1\S1ModuleCompletion;
 use App\Models\S1\S1Session;
 use App\Models\S1\S1SessionSignup;
-use App\Models\S1\S1SessionAttendance;
 use App\Services\MoodleService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -107,7 +106,6 @@ class S1TrainingController extends Controller
                     'confirmation_due_at' => $waitingList->confirmation_due_at?->format('Y-m-d'),
                 ];
 
-                // Check if user has a selected session for this module
                 $hasSelectedSession = S1SessionSignup::where('user_id', $user->id)
                     ->where('was_selected', true)
                     ->whereHas('session', function($q) use ($module) {
@@ -116,7 +114,6 @@ class S1TrainingController extends Controller
                     })
                     ->exists();
 
-                // Check if user has ANY signup (selected or not) for this module
                 $hasAnySignup = S1SessionSignup::where('user_id', $user->id)
                     ->whereHas('session', function($q) use ($module) {
                         $q->where('module_id', $module->id)
@@ -124,10 +121,7 @@ class S1TrainingController extends Controller
                     })
                     ->exists();
 
-                // If user has ANY signup (selected or just signed up), only show THEIR session
-                // Otherwise show all open sessions
                 if ($hasAnySignup) {
-                    // Only show the session(s) they're signed up for
                     $availableSessions = S1Session::where('module_id', $module->id)
                         ->where('scheduled_at', '>', now())
                         ->whereHas('signups', function($q) use ($user) {
@@ -137,7 +131,6 @@ class S1TrainingController extends Controller
                         ->orderBy('scheduled_at')
                         ->get();
                 } else {
-                    // Show all open sessions (user hasn't signed up for any)
                     $availableSessions = S1Session::where('module_id', $module->id)
                         ->where('scheduled_at', '>', now())
                         ->where('signups_open', true)
@@ -174,39 +167,95 @@ class S1TrainingController extends Controller
                 });
             }
 
-            if ($module->name === 'Module 2' && $module->moodle_quiz_ids) {
-                $quizIds = $module->moodle_quiz_ids;
-                $completed = [];
-                $total = count($quizIds);
+            // Module 2 special handling
+            if ($module->sequence_order === 2) {
+                $module1 = S1Module::where('sequence_order', 1)->first();
+                $hasCompletedModule1 = false;
 
-                foreach ($quizIds as $quizId) {
-                    $isCompleted = $this->moodleService->getCourseCompletion(
-                        $user->vatsim_id,
-                        $quizId
-                    );
-                    if ($isCompleted) {
-                        $completed[] = $quizId;
-                    }
+                if ($module1) {
+                    $hasCompletedModule1 = S1ModuleCompletion::where('user_id', $user->id)
+                        ->where('module_id', $module1->id)
+                        ->exists();
                 }
 
-                $moduleData['quiz_completion'] = [
-                    'completed' => count($completed),
-                    'total' => $total,
-                    'percentage' => $total > 0 ? round((count($completed) / $total) * 100) : 0,
-                    'quizzes' => array_map(function($quizId) use ($completed) {
-                        return [
-                            'id' => $quizId,
-                            'completed' => in_array($quizId, $completed),
-                        ];
-                    }, $quizIds),
-                ];
+                if ($hasCompletedModule1 && !$completion) {
+                    $moduleData['status'] = 'waiting';
+                }
+
+                if ($module->moodle_quiz_ids && is_array($module->moodle_quiz_ids)) {
+                    $quizIds = $module->moodle_quiz_ids;
+
+                    $courseNames = [
+                        'Basics of controlling',
+                        'ATD Delivery',
+                        'ATD Ground',
+                        'ATD Tower',
+                    ];
+
+                    $completed = [];
+                    $total = count($quizIds);
+                    $isEnrolled = true;
+                    $quizzes = [];
+
+                    foreach ($quizIds as $index => $quizId) {
+                        try {
+                            $isCompleted = $this->moodleService->getActivityCompletion(
+                                $user->vatsim_id,
+                                $quizId
+                            );
+
+                            if ($isCompleted) {
+                                $completed[] = $quizId;
+                            }
+
+                            $quizzes[] = [
+                                'id' => $quizId,
+                                'name' => $courseNames[$index] ?? "Course " . ($index + 1),
+                                'completed' => $isCompleted,
+                                'url' => 'https://moodle.vatsim-germany.org/mod/quiz/view.php?id=' . $quizId,
+                            ];
+                        } catch (\Exception $e) {
+                            \Log::warning('Failed to check Moodle activity completion', [
+                                'user_id' => $user->id,
+                                'vatsim_id' => $user->vatsim_id,
+                                'quiz_id' => $quizId,
+                                'error' => $e->getMessage(),
+                            ]);
+                            $isEnrolled = false;
+                            break;
+                        }
+                    }
+
+                    $moduleData['quiz_completion'] = [
+                        'completed' => count($completed),
+                        'total' => $total,
+                        'percentage' => $total > 0 ? round((count($completed) / $total) * 100) : 0,
+                        'quizzes' => $quizzes,
+                        'is_enrolled' => $isEnrolled,
+                    ];
+                }
+
+                $progress['modules'][] = $moduleData;
+                continue;
             }
 
             $progress['modules'][] = $moduleData;
         }
 
+        // Calculate overall progress including Module 2 quiz completions
         $completedModules = count(array_filter($progress['modules'], fn($m) => $m['status'] === 'completed'));
-        $progress['overallPercentage'] = round(($completedModules / count($modules)) * 100);
+
+        // Add fractional progress for Module 2 quizzes
+        $module2Progress = 0;
+        foreach ($progress['modules'] as $module) {
+            if ($module['sequence_order'] === 2 && $module['quiz_completion'] && $module['quiz_completion']['total'] > 0) {
+                $module2Progress = $module['quiz_completion']['completed'] / $module['quiz_completion']['total'];
+                break;
+            }
+        }
+
+        $totalProgress = $completedModules + $module2Progress;
+        $progress['overallPercentage'] = round(($totalProgress / count($modules)) * 100);
 
         $allModulesCompleted = $completedModules === count($modules);
         if ($allModulesCompleted) {
@@ -224,24 +273,32 @@ class S1TrainingController extends Controller
                     'type' => 'join_waiting_list',
                     'module' => $module,
                     'title' => 'Join Module 1 Waiting List',
-                    'description' => 'You need to join the Module 1 waiting list to begin your S1 training journey. Once you join, you\'ll receive notifications about upcoming training sessions.',
+                    'description' => 'You need to join the Module 1 waiting list to begin your S1 training journey.',
                     'action' => 'Join Waiting List',
                     'action_type' => 'post',
-                    'action_data' => [
-                        'module_id' => $module['id'],
-                    ],
+                    'action_data' => ['module_id' => $module['id']],
                 ];
             }
 
             if ($module['status'] === 'waiting') {
-                if ($module['name'] === 'Module 2') {
-                    if ($module['quiz_completion'] && $module['quiz_completion']['completed'] < $module['quiz_completion']['total']) {
+                if ($module['sequence_order'] === 2 && $module['quiz_completion']) {
+                    if (!$module['quiz_completion']['is_enrolled']) {
+                        return [
+                            'type' => 'module2_not_enrolled',
+                            'module' => $module,
+                            'title' => 'Module 2 - Enrollment Required',
+                            'description' => 'Contact your Module 1 mentor to get enrolled.',
+                            'action' => null,
+                        ];
+                    }
+
+                    if ($module['quiz_completion']['completed'] < $module['quiz_completion']['total']) {
                         return [
                             'type' => 'complete_quizzes',
                             'module' => $module,
-                            'title' => 'Complete Module 2 Quizzes',
+                            'title' => 'Complete Module 2 Courses',
                             'description' => sprintf(
-                                'Complete all %d quizzes on the Moodle platform to finish Module 2. You have completed %d out of %d quizzes.',
+                                'Complete all %d courses. You have %d out of %d done.',
                                 $module['quiz_completion']['total'],
                                 $module['quiz_completion']['completed'],
                                 $module['quiz_completion']['total']
@@ -263,11 +320,7 @@ class S1TrainingController extends Controller
                             'module' => $module,
                             'session' => $userSession,
                             'title' => sprintf('%s Session Confirmed', $module['name']),
-                            'description' => sprintf(
-                                'Your spot in the %s session on %s is confirmed. Make sure you\'re prepared and available at the scheduled time.',
-                                $module['name'],
-                                $userSession['scheduled_at']
-                            ),
+                            'description' => sprintf('Session on %s', $userSession['scheduled_at']),
                         ];
                     }
 
@@ -277,11 +330,7 @@ class S1TrainingController extends Controller
                             'module' => $module,
                             'session' => $userSession,
                             'title' => 'Waiting for Session Selection',
-                            'description' => sprintf(
-                                'You\'ve signed up for a %s session on %s. You\'ll be notified once participants are selected (typically 48 hours before the session).',
-                                $module['name'],
-                                \Carbon\Carbon::parse($userSession['scheduled_at'])->format('d.m.Y \a\t H:i')
-                            ),
+                            'description' => sprintf('Session on %s', $userSession['scheduled_at']),
                         ];
                     }
 
@@ -292,16 +341,10 @@ class S1TrainingController extends Controller
                             'module' => $module,
                             'session' => $nextSession,
                             'title' => sprintf('%s Session Available', $module['name']),
-                            'description' => sprintf(
-                                'A training session is available on %s. Sign up now to reserve your spot. Note: Only the top %d people on the waiting list will be selected.',
-                                $nextSession['scheduled_at'],
-                                $nextSession['max_trainees']
-                            ),
+                            'description' => sprintf('Session on %s', $nextSession['scheduled_at']),
                             'action' => 'Sign Up for Session',
                             'action_type' => 'post',
-                            'action_data' => [
-                                'session_id' => $nextSession['id'],
-                            ],
+                            'action_data' => ['session_id' => $nextSession['id']],
                             'waiting_position' => $module['waiting_list']['position'],
                         ];
                     }
@@ -311,21 +354,12 @@ class S1TrainingController extends Controller
                     'type' => 'on_waiting_list',
                     'module' => $module,
                     'title' => sprintf('On %s Waiting List', $module['name']),
-                    'description' => sprintf(
-                        'You\'re currently position #%d of %d on the %s waiting list. You\'ll be notified when training sessions become available.',
-                        $module['waiting_list']['position'],
-                        $module['waiting_list']['total_waiting'],
-                        $module['name']
-                    ),
+                    'description' => sprintf('Position #%d of %d', $module['waiting_list']['position'], $module['waiting_list']['total_waiting']),
                     'needs_confirmation' => $module['waiting_list']['needs_confirmation'],
-                    'confirmation_data' => $module['waiting_list']['needs_confirmation'] ? [
-                        'waiting_list_id' => $module['waiting_list']['id'],
-                    ] : null,
+                    'confirmation_data' => $module['waiting_list']['needs_confirmation'] ? ['waiting_list_id' => $module['waiting_list']['id']] : null,
                     'action' => 'Leave Waiting List',
                     'action_type' => 'post',
-                    'action_data' => [
-                        'module_id' => $module['id'],
-                    ],
+                    'action_data' => ['module_id' => $module['id']],
                     'action_variant' => 'destructive',
                 ];
             }
@@ -340,15 +374,10 @@ class S1TrainingController extends Controller
                     'type' => 'join_waiting_list',
                     'module' => $module,
                     'title' => sprintf('Join %s Waiting List', $module['name']),
-                    'description' => sprintf(
-                        'You\'ve completed the previous module! Join the %s waiting list to continue your training.',
-                        $module['name']
-                    ),
+                    'description' => 'Previous module completed! Join the waiting list to continue.',
                     'action' => 'Join Waiting List',
                     'action_type' => 'post',
-                    'action_data' => [
-                        'module_id' => $module['id'],
-                    ],
+                    'action_data' => ['module_id' => $module['id']],
                 ];
             }
         }
@@ -357,7 +386,7 @@ class S1TrainingController extends Controller
             return [
                 'type' => 'request_upgrade',
                 'title' => 'Request S1 Rating',
-                'description' => 'Congratulations! You\'ve completed all training modules. You can now request your S1 rating upgrade.',
+                'description' => 'All modules completed!',
                 'action' => 'Request Rating Upgrade',
                 'action_type' => 'post',
                 'action_data' => [],

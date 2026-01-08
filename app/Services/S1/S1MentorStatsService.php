@@ -3,7 +3,7 @@
 namespace App\Services\S1;
 
 use App\Models\S1\S1Session;
-use App\Models\S1\S1SessionAttendance;
+use App\Models\S1\S1Attendance;
 use App\Models\S1\S1ModuleCompletion;
 use App\Models\User;
 use Carbon\Carbon;
@@ -76,14 +76,14 @@ class S1MentorStatsService
 
     protected function getTotalTrainees($sessions): int
     {
-        return S1SessionAttendance::whereIn('session_id', $sessions->pluck('id'))
+        return S1Attendance::whereIn('session_id', $sessions->pluck('id'))
             ->distinct('user_id')
             ->count();
     }
 
     protected function getPassedTrainees($sessions): int
     {
-        return S1SessionAttendance::whereIn('session_id', $sessions->pluck('id'))
+        return S1Attendance::whereIn('session_id', $sessions->pluck('id'))
             ->where('status', 'passed')
             ->distinct('user_id')
             ->count();
@@ -91,7 +91,7 @@ class S1MentorStatsService
 
     protected function getFailedTrainees($sessions): int
     {
-        return S1SessionAttendance::whereIn('session_id', $sessions->pluck('id'))
+        return S1Attendance::whereIn('session_id', $sessions->pluck('id'))
             ->where('status', 'failed')
             ->distinct('user_id')
             ->count();
@@ -99,7 +99,7 @@ class S1MentorStatsService
 
     protected function getAttendanceRate($sessions): float
     {
-        $totalExpected = S1SessionAttendance::whereIn('session_id', $sessions->pluck('id'))
+        $totalExpected = S1Attendance::whereIn('session_id', $sessions->pluck('id'))
             ->whereIn('status', ['attended', 'absent', 'excused', 'passed', 'failed'])
             ->count();
 
@@ -107,7 +107,7 @@ class S1MentorStatsService
             return 0;
         }
 
-        $attended = S1SessionAttendance::whereIn('session_id', $sessions->pluck('id'))
+        $attended = S1Attendance::whereIn('session_id', $sessions->pluck('id'))
             ->whereIn('status', ['attended', 'passed'])
             ->count();
 
