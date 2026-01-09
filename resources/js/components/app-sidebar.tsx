@@ -18,6 +18,7 @@ import { Link, usePage } from '@inertiajs/react';
 import {
     BookOpen,
     BookOpenIcon,
+    Calendar1,
     CheckCircle,
     CircleCheck,
     ClipboardList,
@@ -42,7 +43,10 @@ const navSections = [
             },
         ] as NavItem[],
     },
-    {
+];
+
+const trainingSection = (isOBS: unknown) => {
+    return {
         label: 'Training',
         items: [
             {
@@ -55,34 +59,49 @@ const navSections = [
                 href: route('endorsements'),
                 icon: CircleCheck,
             },
-            {
-                title: 'S1 Training',
-                href: route('s1.training'),
-                icon: BookOpenIcon,
-            },
+            ...(isOBS === true
+                ? [
+                      {
+                          title: 'S1 Training',
+                          href: route('s1.training'),
+                          icon: BookOpenIcon,
+                      },
+                  ]
+                : []),
         ] as NavItem[],
-    },
-];
+    };
+};
 
-const mentorSection = {
-    label: 'Mentoring',
-    items: [
-        {
-            title: 'Overview',
-            href: route('overview.index'),
-            icon: Users,
-        },
-        {
-            title: 'Waiting Lists',
-            href: route('waiting-lists.manage'),
-            icon: ClipboardList,
-        },
-        {
-            title: 'Endorsement Management',
-            href: route('endorsements.manage'),
-            icon: CheckCircle,
-        },
-    ] as NavItem[],
+const mentorSection = (isS1Mentor: unknown) => {
+    return {
+        label: 'Mentoring',
+        items: [
+            {
+                title: 'Overview',
+                href: route('overview.index'),
+                icon: Users,
+            },
+            {
+                title: 'Waiting Lists',
+                href: route('waiting-lists.manage'),
+                icon: ClipboardList,
+            },
+            {
+                title: 'Endorsement Management',
+                href: route('endorsements.manage'),
+                icon: CheckCircle,
+            },
+            ...(isS1Mentor
+                ? [
+                      {
+                          title: 'S1 Overview',
+                          href: route('s1.mentor.index'),
+                          icon: Calendar1,
+                      },
+                  ]
+                : []),
+        ] as NavItem[],
+    };
 };
 
 const atdSection = {
@@ -174,9 +193,11 @@ function NavSection({ section }: { section: (typeof navSections)[0] }) {
 export function AppSidebar() {
     const { auth } = usePage<SharedData>().props;
     const isMentor = auth.user?.is_mentor || auth.user?.is_superuser || auth.user?.is_admin;
+    const isS1Mentor = auth.user?.is_s1_mentor || auth.user?.is_superuser || auth.user?.is_admin;
     const isSuperuser = auth.user?.is_superuser || auth.user?.is_admin;
     const isLeadingMentor = auth.user?.is_leading_mentor;
     const [searchModalOpen, setSearchModalOpen] = useState(false);
+    const isOBS = auth.user?.rating === 0 || auth.user?.rating === 1 || auth.user?.is_admin; // No superuser check, only admin users can see
 
     return (
         <>
@@ -194,13 +215,17 @@ export function AppSidebar() {
                 </SidebarHeader>
 
                 <SidebarContent>
-                    {navSections.map((section) => (
-                        <NavSection key={section.label} section={section} />
-                    ))}
+                    {navSections
+                        .filter((section) => section.label !== 'Training')
+                        .map((section) => (
+                            <NavSection key={section.label} section={section} />
+                        ))}
+
+                    <NavSection section={trainingSection(isOBS)} />
 
                     {isMentor === true && (
                         <>
-                            <NavSection section={mentorSection} />
+                            <NavSection section={mentorSection(isS1Mentor)} />
                             <SidebarGroup className="px-2 py-0">
                                 <SidebarMenu>
                                     <SidebarMenuItem>

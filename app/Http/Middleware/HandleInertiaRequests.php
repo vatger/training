@@ -65,6 +65,7 @@ class HandleInertiaRequests extends Middleware
                     'is_vatsim_user' => $request->user()->isVatsimUser(),
                     'roles' => $request->user()->isVatsimUser() ? $request->user()->roles->pluck('name') : [],
                     'is_mentor' => $request->user()->isVatsimUser() ? $request->user()->isMentor() : false,
+                    'is_s1_mentor' => $request->user()->isVatsimUser() ? $request->user()->isS1Mentor() : false,
                     'is_leadership' => $request->user()->isVatsimUser() ? $request->user()->isLeadership() : false,
                     'is_leading_mentor' => $request->user()->isVatsimUser() ? $request->user()->isLeadingMentor() : false,
                 ] : null,

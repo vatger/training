@@ -70,6 +70,11 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasAnyRole(['EDGG Mentor', 'EDMM Mentor', 'EDWW Mentor', 'ATD Leitung', 'VATGER Leitung']);
     }
 
+    public function isS1Mentor(): bool
+    {
+        return $this->hasAnyRole(['S1 Mentor', 'ATD Leitung', 'VATGER Leitung']);
+    }
+
     public function isSuperuser(): bool
     {
         return $this->is_superuser === true || $this->is_admin === true;
