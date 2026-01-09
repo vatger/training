@@ -170,7 +170,7 @@ class S1TrainingController extends Controller
 
                     return [
                         'id' => $session->id,
-                        'scheduled_at' => $session->scheduled_at->format('Y-m-d H:i'),
+                        'scheduled_at' => $session->scheduled_at->copy()->setTimezone('UTC')->toIso8601String(),
                         'mentor_name' => $session->mentor->name,
                         'language' => $session->language,
                         'max_trainees' => $session->max_trainees,
@@ -335,7 +335,7 @@ class S1TrainingController extends Controller
                             'module' => $module,
                             'session' => $userSession,
                             'title' => sprintf('%s Session Confirmed', $module['name']),
-                            'description' => sprintf('Session on %s', $userSession['scheduled_at']),
+                            'description' => sprintf('Session on %s', $this->formatSessionDate($userSession['scheduled_at'])),
                         ];
                     }
 
@@ -345,7 +345,7 @@ class S1TrainingController extends Controller
                             'module' => $module,
                             'session' => $userSession,
                             'title' => 'Waiting for Session Selection',
-                            'description' => sprintf('Session on %s', $userSession['scheduled_at']),
+                            'description' => sprintf('Session on %s', $this->formatSessionDate($userSession['scheduled_at'])),
                         ];
                     }
 
@@ -356,7 +356,7 @@ class S1TrainingController extends Controller
                             'module' => $module,
                             'session' => $nextSession,
                             'title' => sprintf('%s Session Available', $module['name']),
-                            'description' => sprintf('Session on %s', $nextSession['scheduled_at']),
+                            'description' => sprintf('Session on %s', $this->formatSessionDate($nextSession['scheduled_at'])),
                             'action' => 'Sign Up for Session',
                             'action_type' => 'post',
                             'action_data' => ['session_id' => $nextSession['id']],
@@ -418,5 +418,15 @@ class S1TrainingController extends Controller
     protected function canUserUpgrade($user): bool
     {
         return false;
+    }
+
+    protected function formatSessionDate(string $isoDate): string
+    {
+        try {
+            $date = \Carbon\Carbon::parse($isoDate)->setTimezone('UTC');
+            return $date->format('d.m.Y') . ' at ' . $date->format('H:i') . 'Z';
+        } catch (\Exception $e) {
+            return $isoDate;
+        }
     }
 }

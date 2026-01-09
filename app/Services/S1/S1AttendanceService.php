@@ -7,12 +7,21 @@ use App\Models\S1\S1Attendance;
 use App\Models\S1\S1SessionSignup;
 use App\Models\S1\S1ModuleCompletion;
 use App\Models\S1\S1WaitingList;
+use App\Models\S1\S1Module;
 use App\Models\User;
+use App\Services\MoodleService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class S1AttendanceService
 {
+    protected MoodleService $moodleService;
+
+    public function __construct(MoodleService $moodleService)
+    {
+        $this->moodleService = $moodleService;
+    }
+
     public function markAttendance(
         S1Session $session,
         User $user,
@@ -141,7 +150,7 @@ class S1AttendanceService
     protected function handleAttendanceConsequences(S1Attendance $attendance, S1Session $session): void
     {
         if ($attendance->shouldCompleteModule()) {
-            S1ModuleCompletion::firstOrCreate(
+            $moduleCompletion = S1ModuleCompletion::firstOrCreate(
                 [
                     'user_id' => $attendance->user_id,
                     'module_id' => $session->module_id,
@@ -156,12 +165,59 @@ class S1AttendanceService
             S1WaitingList::where('user_id', $attendance->user_id)
                 ->where('module_id', $session->module_id)
                 ->update(['is_active' => false]);
+
+            // Auto-enroll in next module's Moodle courses if Module 1 was just completed
+            $module = S1Module::find($session->module_id);
+            if ($module && $module->sequence_order === 1) {
+                $this->enrollUserInModule2Courses($attendance->user_id);
+            }
         }
 
         if ($attendance->shouldLoseWaitingListPosition()) {
             S1WaitingList::where('user_id', $attendance->user_id)
                 ->where('module_id', $session->module_id)
                 ->update(['is_active' => false]);
+        }
+    }
+
+    protected function enrollUserInModule2Courses(int $userId): void
+    {
+        try {
+            $user = User::find($userId);
+            if (!$user || !$user->vatsim_id) {
+                Log::warning('Cannot enroll user in Module 2: User not found or missing VATSIM ID', [
+                    'user_id' => $userId,
+                ]);
+                return;
+            }
+
+            $module2 = S1Module::where('sequence_order', 2)->first();
+            if (!$module2) {
+                Log::warning('Module 2 not found');
+                return;
+            }
+
+            if (!$module2->moodle_course_ids || !is_array($module2->moodle_course_ids)) {
+                Log::warning('Module 2 has no Moodle course IDs configured');
+                return;
+            }
+
+            // Enroll user in all Module 2 Moodle courses
+            foreach ($module2->moodle_course_ids as $courseId) {
+                $this->moodleService->enrollUser($user->vatsim_id, $courseId);
+            }
+
+            Log::info('User enrolled in Module 2 Moodle courses', [
+                'user_id' => $userId,
+                'vatsim_id' => $user->vatsim_id,
+                'course_ids' => $module2->moodle_course_ids,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Failed to enroll user in Module 2 Moodle courses', [
+                'user_id' => $userId,
+                'error' => $e->getMessage(),
+            ]);
         }
     }
 

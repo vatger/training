@@ -56,7 +56,7 @@ class S1MentorController extends Controller
                     'id' => $session->id,
                     'module_name' => $session->module->name,
                     'module_id' => $session->module_id,
-                    'scheduled_at' => $session->scheduled_at->toIso8601String(),
+                    'scheduled_at' => $session->scheduled_at->setTimezone('UTC')->toIso8601String(),
                     'max_trainees' => $session->max_trainees,
                     'language' => $session->language,
                     'signups_open' => $session->signups_open,
@@ -102,7 +102,7 @@ class S1MentorController extends Controller
                 return [
                     'id' => $session->id,
                     'module_name' => $session->module->name,
-                    'scheduled_at' => $session->scheduled_at->toIso8601String(),
+                    'scheduled_at' => $session->scheduled_at->setTimezone('UTC')->toIso8601String(),
                     'max_trainees' => $session->max_trainees,
                     'language' => $session->language,
                     'attendance_completed' => $session->attendance_completed,
@@ -214,7 +214,7 @@ class S1MentorController extends Controller
                 'id' => $user->id,
                 'name' => $user->name,
                 'vatsim_id' => $user->vatsim_id,
-                'joined_at' => $waitingList->joined_at->format('d.m.Y'),
+                'joined_at' => $waitingList->joined_at->setTimezone('UTC')->format('d.m.Y'),
                 'progress' => $progress,
             ];
         });

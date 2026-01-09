@@ -663,7 +663,7 @@ export default function S1Training({ isVatsimUser, currentStep, progress }: Prop
                                                                             size="sm"
                                                                             onClick={() => window.open(quiz.url, '_blank')}
                                                                         >
-                                                                            Open Course
+                                                                            Open Quiz
                                                                             <ExternalLink className="ml-2 h-3 w-3" />
                                                                         </Button>
                                                                     )}
