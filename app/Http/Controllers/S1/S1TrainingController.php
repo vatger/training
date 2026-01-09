@@ -250,6 +250,18 @@ class S1TrainingController extends Controller
                         'quizzes' => $quizzes,
                         'is_enrolled' => $isEnrolled,
                     ];
+
+                    if (count($completed) === $total && $total > 0 && !$completion) {
+                        S1ModuleCompletion::create([
+                            'user_id' => $user->id,
+                            'module_id' => $module->id,
+                            'completed_at' => now(),
+                            'completed_by_mentor_id' => null,
+                            'was_reset' => false,
+                        ]);
+                        $moduleData['status'] = 'completed';
+                        $moduleData['completed_at'] = now()->format('Y-m-d');
+                    }
                 }
 
                 $progress['modules'][] = $moduleData;
@@ -360,40 +372,41 @@ class S1TrainingController extends Controller
                             'action' => 'Sign Up for Session',
                             'action_type' => 'post',
                             'action_data' => ['session_id' => $nextSession['id']],
-                            'waiting_position' => $module['waiting_list']['position'],
+                            'waiting_position' => $module['waiting_list']['position'] ?? null,
                         ];
                     }
                 }
 
-                return [
-                    'type' => 'on_waiting_list',
-                    'module' => $module,
-                    'title' => sprintf('On %s Waiting List', $module['name']),
-                    'description' => sprintf('Position #%d of %d', $module['waiting_list']['position'], $module['waiting_list']['total_waiting']),
-                    'needs_confirmation' => $module['waiting_list']['needs_confirmation'],
-                    'confirmation_data' => $module['waiting_list']['needs_confirmation'] ? ['waiting_list_id' => $module['waiting_list']['id']] : null,
-                    'action' => 'Leave Waiting List',
-                    'action_type' => 'post',
-                    'action_data' => ['module_id' => $module['id']],
-                    'action_variant' => 'destructive',
-                ];
+                if ($module['waiting_list']) {
+                    return [
+                        'type' => 'on_waiting_list',
+                        'module' => $module,
+                        'title' => sprintf('On %s Waiting List', $module['name']),
+                        'description' => sprintf('Position #%d of %d', $module['waiting_list']['position'], $module['waiting_list']['total_waiting']),
+                        'needs_confirmation' => $module['waiting_list']['needs_confirmation'],
+                        'confirmation_data' => $module['waiting_list']['needs_confirmation'] ? ['waiting_list_id' => $module['waiting_list']['id']] : null,
+                        'action' => 'Leave Waiting List',
+                        'action_type' => 'post',
+                        'action_data' => ['module_id' => $module['id']],
+                        'action_variant' => 'destructive',
+                    ];
+                }
             }
 
             if ($module['status'] === 'locked' && $module['sequence_order'] > 1) {
                 $previousModule = collect($progress['modules'])->firstWhere('sequence_order', $module['sequence_order'] - 1);
-                if ($previousModule && $previousModule['status'] !== 'completed') {
-                    continue;
-                }
 
-                return [
-                    'type' => 'join_waiting_list',
-                    'module' => $module,
-                    'title' => sprintf('Join %s Waiting List', $module['name']),
-                    'description' => 'Previous module completed! Join the waiting list to continue.',
-                    'action' => 'Join Waiting List',
-                    'action_type' => 'post',
-                    'action_data' => ['module_id' => $module['id']],
-                ];
+                if ($previousModule && $previousModule['status'] === 'completed') {
+                    return [
+                        'type' => 'join_waiting_list',
+                        'module' => $module,
+                        'title' => sprintf('Join %s Waiting List', $module['name']),
+                        'description' => 'Previous module completed! Join the waiting list to continue.',
+                        'action' => 'Join Waiting List',
+                        'action_type' => 'post',
+                        'action_data' => ['module_id' => $module['id']],
+                    ];
+                }
             }
         }
 
