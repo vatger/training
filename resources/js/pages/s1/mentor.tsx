@@ -456,7 +456,7 @@ export default function S1Mentor({ modules, upcomingSessions, pastSessions, wait
                                                     placeholder="Optional remarks..."
                                                     value={attendanceData[participant.id]?.remarks || ''}
                                                     onChange={(e) => updateAttendanceRemarks(participant.id, e.target.value)}
-                                                    className="min-w-[200px]"
+                                                    className="min-w-50"
                                                 />
                                             </TableCell>
                                         </TableRow>
