@@ -62,6 +62,27 @@ class S1TrainingController extends Controller
             'canUpgrade' => false,
         ];
 
+        $isActivelyOnModule2 = false;
+        foreach ($modules as $module) {
+            if ($module->sequence_order === 2) {
+                $module1 = S1Module::where('sequence_order', 1)->first();
+                $hasCompletedModule1 = false;
+
+                if ($module1) {
+                    $hasCompletedModule1 = S1ModuleCompletion::where('user_id', $user->id)
+                        ->where('module_id', $module1->id)
+                        ->exists();
+                }
+
+                $hasCompletedModule2 = S1ModuleCompletion::where('user_id', $user->id)
+                    ->where('module_id', $module->id)
+                    ->exists();
+
+                $isActivelyOnModule2 = $hasCompletedModule1 && !$hasCompletedModule2;
+                break;
+            }
+        }
+
         foreach ($modules as $module) {
             $completion = S1ModuleCompletion::where('user_id', $user->id)
                 ->where('module_id', $module->id)
@@ -121,24 +142,18 @@ class S1TrainingController extends Controller
                     })
                     ->exists();
 
-                if ($hasAnySignup) {
-                    $availableSessions = S1Session::where('module_id', $module->id)
-                        ->where('scheduled_at', '>', now())
-                        ->whereHas('signups', function($q) use ($user) {
-                            $q->where('user_id', $user->id);
-                        })
-                        ->with(['mentor'])
-                        ->orderBy('scheduled_at')
-                        ->get();
-                } else {
-                    $availableSessions = S1Session::where('module_id', $module->id)
-                        ->where('scheduled_at', '>', now())
-                        ->where('signups_open', true)
-                        ->where('signups_locked', false)
-                        ->with(['mentor'])
-                        ->orderBy('scheduled_at')
-                        ->get();
-                }
+                // Always show all available sessions, but mark which ones the user is signed up for
+                $availableSessions = S1Session::where('module_id', $module->id)
+                    ->where('scheduled_at', '>', now())
+                    ->where(function ($q) use ($user) {
+                        $q->where('signups_open', true)
+                            ->orWhereHas('signups', function ($sq) use ($user) {
+                                $sq->where('user_id', $user->id);
+                            });
+                    })
+                    ->with(['mentor'])
+                    ->orderBy('scheduled_at')
+                    ->get();
 
                 $moduleData['has_selected_session'] = $hasSelectedSession;
                 $moduleData['has_any_signup'] = $hasAnySignup;
@@ -161,14 +176,16 @@ class S1TrainingController extends Controller
                         'max_trainees' => $session->max_trainees,
                         'total_signups' => $totalSignups,
                         'available_spots' => max(0, $session->max_trainees - $selectedCount),
+                        'signups_locked' => $session->signups_locked,
+                        'notes' => $session->notes,
                         'user_signed_up' => $signup !== null,
                         'user_selected' => $signup?->was_selected ?? false,
                     ];
                 });
             }
 
-            // Module 2 special handling
-            if ($module->sequence_order === 2) {
+            // Only check Module 2 Moodle completion if user is actively on Module 2
+            if ($module->sequence_order === 2 && $isActivelyOnModule2) {
                 $module1 = S1Module::where('sequence_order', 1)->first();
                 $hasCompletedModule1 = false;
 
@@ -242,10 +259,8 @@ class S1TrainingController extends Controller
             $progress['modules'][] = $moduleData;
         }
 
-        // Calculate overall progress including Module 2 quiz completions
         $completedModules = count(array_filter($progress['modules'], fn($m) => $m['status'] === 'completed'));
 
-        // Add fractional progress for Module 2 quizzes
         $module2Progress = 0;
         foreach ($progress['modules'] as $module) {
             if ($module['sequence_order'] === 2 && $module['quiz_completion'] && $module['quiz_completion']['total'] > 0) {

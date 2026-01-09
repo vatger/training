@@ -1,3 +1,4 @@
+// Part 1 of training.tsx - imports and interfaces
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
     AlertDialog,
@@ -16,7 +17,7 @@ import { Progress } from '@/components/ui/progress';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { Head, router, useForm, usePage } from '@inertiajs/react';
-import { AlertCircle, Calendar, CheckCircle2, Clock, ExternalLink, Users, AlertTriangle } from 'lucide-react';
+import { AlertCircle, AlertTriangle, Calendar, CheckCircle2, Clock, ExternalLink, Users, XCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -133,6 +134,144 @@ const formatDateOnly = (dateString: string): string => {
     const month = String(date.getUTCMonth() + 1).padStart(2, '0');
     const day = String(date.getUTCDate()).padStart(2, '0');
     return `${day}.${month}.${year}`;
+};
+
+// Component to render full session details
+const SessionDetailsCard = ({
+    session,
+    onSignup,
+    onCancel,
+    showActions = true,
+}: {
+    session: SessionInfo;
+    onSignup?: () => void;
+    onCancel?: () => void;
+    showActions?: boolean;
+}) => {
+    const sessionDate = new Date(session.scheduled_at);
+    const isPastSession = sessionDate < new Date();
+    const showNotSelectedMessage = session.user_signed_up && !session.user_selected && session.signups_locked && !isPastSession;
+
+    return (
+        <Card className="overflow-hidden py-0">
+            <CardContent className="p-4">
+                <div className="mb-3 flex items-start justify-between gap-4">
+                    <div className="flex-1 space-y-2">
+                        <div className="flex items-center gap-2">
+                            <Calendar className="h-4 w-4 text-muted-foreground" />
+                            <p className="font-semibold">{formatZuluTime(session.scheduled_at)}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Users className="h-4 w-4 text-muted-foreground" />
+                            <p className="text-sm text-muted-foreground">
+                                Mentor: {session.mentor_name} • {session.language}
+                            </p>
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                            {session.signups_locked ? (
+                                <span>
+                                    Selected: {session.max_trainees - session.available_spots} / {session.max_trainees}
+                                </span>
+                            ) : (
+                                <span>
+                                    Signups: {session.total_signups} • Spots: {session.available_spots} / {session.max_trainees}
+                                </span>
+                            )}
+                        </div>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                        {session.user_signed_up && (
+                            <>
+                                {session.user_selected ? (
+                                    <Badge variant="default" className="bg-green-600">
+                                        <CheckCircle2 className="mr-1 h-3 w-3" />
+                                        Selected
+                                    </Badge>
+                                ) : session.signups_locked && !isPastSession ? (
+                                    <Badge variant="destructive">
+                                        <XCircle className="mr-1 h-3 w-3" />
+                                        Not Selected
+                                    </Badge>
+                                ) : session.signups_locked && isPastSession ? (
+                                    <Badge variant="outline">Session Passed</Badge>
+                                ) : (
+                                    <Badge variant="secondary">
+                                        <Clock className="mr-1 h-3 w-3" />
+                                        Pending
+                                    </Badge>
+                                )}
+                                {session.user_waiting_position && (
+                                    <Badge variant="outline" className="text-xs">
+                                        Position #{session.user_waiting_position}
+                                    </Badge>
+                                )}
+                            </>
+                        )}
+                        {!session.user_signed_up && session.signups_locked && <Badge variant="outline">Signups Closed</Badge>}
+                        {!session.user_signed_up && !session.signups_locked && <Badge variant="outline">{session.available_spots} spots left</Badge>}
+                    </div>
+                </div>
+
+                {session.notes && (
+                    <Alert className="mb-3">
+                        <AlertTitle className="text-sm">Session Notes</AlertTitle>
+                        <AlertDescription className="text-sm">{session.notes}</AlertDescription>
+                    </Alert>
+                )}
+
+                {showNotSelectedMessage && (
+                    <Alert className="mb-3" variant="destructive">
+                        <XCircle className="h-4 w-4" />
+                        <AlertDescription className="text-sm">
+                            <span className="text-red-600 dark:text-red-400">
+                                Unfortunately, you were not selected for this session. You can sign up for another available session below.
+                            </span>
+                        </AlertDescription>
+                    </Alert>
+                )}
+
+                {session.signups_locked && session.user_selected && (
+                    <Alert className="mb-3">
+                        <CheckCircle2 className="h-4 w-4" />
+                        <AlertDescription className="text-sm">
+                            <span className="text-green-600 dark:text-green-400">You have been selected for this session. Please be on time!</span>
+                        </AlertDescription>
+                    </Alert>
+                )}
+
+                {session.signups_locked && !session.user_signed_up && (
+                    <Alert className="mb-3">
+                        <Clock className="h-4 w-4" />
+                        <AlertDescription className="text-sm">
+                            <span>Signups are closed. Selection based on waiting list position.</span>
+                        </AlertDescription>
+                    </Alert>
+                )}
+
+                {showActions && (
+                    <div className="flex gap-2">
+                        {!session.user_signed_up && !session.signups_locked && onSignup && (
+                            <Button onClick={onSignup} variant="default" size="sm" className="w-full">
+                                Sign Up for This Session
+                            </Button>
+                        )}
+
+                        {session.user_signed_up && !session.user_selected && !session.signups_locked && onCancel && (
+                            <Button onClick={onCancel} variant="outline" size="sm" className="w-full">
+                                Cancel Signup
+                            </Button>
+                        )}
+
+                        {session.user_selected && (
+                            <div className="w-full rounded-md bg-green-50 p-2 text-center text-sm font-medium text-green-700 dark:bg-green-950 dark:text-green-300">
+                                You're confirmed for this session
+                            </div>
+                        )}
+                    </div>
+                )}
+            </CardContent>
+        </Card>
+    );
 };
 
 export default function S1Training({ isVatsimUser, currentStep, progress }: Props) {
@@ -341,68 +480,15 @@ export default function S1Training({ isVatsimUser, currentStep, progress }: Prop
                             )}
 
                             {currentStep.type === 'signup_available' && currentStep.session && (
-                                <Alert>
-                                    <Calendar className="h-4 w-4" />
-                                    <AlertTitle>Session Details</AlertTitle>
-                                    <AlertDescription>
-                                        <div className="mt-2 space-y-1">
-                                            <p>
-                                                <strong>Date:</strong> {formatZuluTime(currentStep.session.scheduled_at)}
-                                            </p>
-                                            <p>
-                                                <strong>Mentor:</strong> {currentStep.session.mentor_name}
-                                            </p>
-                                            <p>
-                                                <strong>Language:</strong> {currentStep.session.language}
-                                            </p>
-                                            <p>
-                                                <strong>Available Spots:</strong> {currentStep.session.available_spots} /{' '}
-                                                {currentStep.session.max_trainees}
-                                            </p>
-                                            {currentStep.waiting_position && (
-                                                <p className="mt-2 text-sm text-muted-foreground">
-                                                    Your waiting list position: #{currentStep.waiting_position}
-                                                </p>
-                                            )}
-                                        </div>
-                                    </AlertDescription>
-                                </Alert>
+                                <SessionDetailsCard session={currentStep.session} onSignup={() => handleSessionSignup(currentStep.session!.id)} />
                             )}
 
                             {currentStep.type === 'confirmed_session' && currentStep.session && (
-                                <Alert className="border-green-500 bg-green-50 dark:bg-green-950">
-                                    <CheckCircle2 className="h-4 w-4 text-green-600" />
-                                    <AlertTitle className="text-green-600">Session Confirmed</AlertTitle>
-                                    <AlertDescription>
-                                        <p className="mt-2 text-green-700 dark:text-green-300">
-                                            <strong>Date:</strong> {formatZuluTime(currentStep.session.scheduled_at)}
-                                        </p>
-                                        <p className="text-green-700 dark:text-green-300">
-                                            <strong>Mentor:</strong> {currentStep.session.mentor_name}
-                                        </p>
-                                    </AlertDescription>
-                                </Alert>
+                                <SessionDetailsCard session={currentStep.session} showActions={false} />
                             )}
 
                             {currentStep.type === 'pending_selection' && currentStep.session && (
-                                <Alert>
-                                    <Clock className="h-4 w-4" />
-                                    <AlertTitle>Selection Pending</AlertTitle>
-                                    <AlertDescription>
-                                        <p className="mt-2">Session: {formatZuluTime(currentStep.session.scheduled_at)}</p>
-                                        <p className="mt-1 text-sm text-muted-foreground">
-                                            Participants will be selected based on waiting list position approximately 48 hours before the session.
-                                        </p>
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => handleCancelSignup(currentStep.session!.id)}
-                                            className="mt-3"
-                                        >
-                                            Cancel Signup
-                                        </Button>
-                                    </AlertDescription>
-                                </Alert>
+                                <SessionDetailsCard session={currentStep.session} onCancel={() => handleCancelSignup(currentStep.session!.id)} />
                             )}
 
                             {currentStep.type === 'on_waiting_list' && currentStep.module?.waiting_list && (
@@ -435,18 +521,22 @@ export default function S1Training({ isVatsimUser, currentStep, progress }: Prop
                                 </Alert>
                             )}
 
-                            {currentStep.action && currentStep.type !== 'module2_not_enrolled' && (
-                                <Button
-                                    onClick={handleAction}
-                                    size="lg"
-                                    className="w-full sm:w-auto"
-                                    variant={currentStep.action_variant === 'destructive' ? 'destructive' : 'default'}
-                                    disabled={joinWaitingListForm.processing}
-                                >
-                                    {joinWaitingListForm.processing ? 'Processing...' : currentStep.action}
-                                    {currentStep.action.includes('Moodle') && <ExternalLink className="ml-2 h-4 w-4" />}
-                                </Button>
-                            )}
+                            {currentStep.action &&
+                                currentStep.type !== 'module2_not_enrolled' &&
+                                currentStep.type !== 'signup_available' &&
+                                currentStep.type !== 'confirmed_session' &&
+                                currentStep.type !== 'pending_selection' && (
+                                    <Button
+                                        onClick={handleAction}
+                                        size="lg"
+                                        className="w-full sm:w-auto"
+                                        variant={currentStep.action_variant === 'destructive' ? 'destructive' : 'default'}
+                                        disabled={joinWaitingListForm.processing}
+                                    >
+                                        {joinWaitingListForm.processing ? 'Processing...' : currentStep.action}
+                                        {currentStep.action.includes('Moodle') && <ExternalLink className="ml-2 h-4 w-4" />}
+                                    </Button>
+                                )}
 
                             {currentStep.type === 'signup_available' &&
                                 currentStep.module?.available_sessions &&
@@ -454,22 +544,34 @@ export default function S1Training({ isVatsimUser, currentStep, progress }: Prop
                                     <div className="mt-4">
                                         <h4 className="mb-3 text-sm font-medium">Or choose from other available sessions:</h4>
                                         <div className="space-y-2">
-                                            {currentStep.module.available_sessions.slice(1).map((session) => (
-                                                <div key={session.id} className="flex items-center justify-between rounded-lg bg-muted p-3">
-                                                    <div className="flex-1">
-                                                        <p className="font-medium">{formatZuluTime(session.scheduled_at)}</p>
-                                                        <p className="text-sm text-muted-foreground">
-                                                            {session.mentor_name} • {session.language}
-                                                        </p>
-                                                        <p className="mt-1 text-xs text-muted-foreground">
-                                                            {session.available_spots} spots available
-                                                        </p>
-                                                    </div>
-                                                    <Button onClick={() => handleSessionSignup(session.id)} variant="outline" size="sm">
-                                                        Sign Up
-                                                    </Button>
-                                                </div>
-                                            ))}
+                                            {currentStep.module.available_sessions.slice(1).map((session) => {
+                                                const sessionDate = new Date(session.scheduled_at);
+                                                const isPastSession = sessionDate < new Date();
+                                                const canSignup = !session.user_signed_up && !session.signups_locked && !isPastSession;
+
+                                                return (
+                                                    <SessionDetailsCard
+                                                        key={session.id}
+                                                        session={session}
+                                                        onSignup={canSignup ? () => handleSessionSignup(session.id) : undefined}
+                                                    />
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                )}
+
+                            {(currentStep.type === 'pending_selection' || currentStep.type === 'confirmed_session') &&
+                                currentStep.module?.available_sessions &&
+                                currentStep.module.available_sessions.length > 1 && (
+                                    <div className="mt-4">
+                                        <h4 className="mb-3 text-sm font-medium">Other Available Sessions:</h4>
+                                        <div className="space-y-2">
+                                            {currentStep.module.available_sessions
+                                                .filter((s) => s.id !== currentStep.session?.id)
+                                                .map((session) => (
+                                                    <SessionDetailsCard key={session.id} session={session} showActions={false} />
+                                                ))}
                                         </div>
                                     </div>
                                 )}
@@ -602,135 +704,32 @@ export default function S1Training({ isVatsimUser, currentStep, progress }: Prop
                                         {module.available_sessions && module.available_sessions.length > 0 && (
                                             <div>
                                                 <h4 className="mb-2 text-sm font-medium">
-                                                    {module.has_any_signup ? 'Your Session' : 'Available Sessions'}
+                                                    {module.has_any_signup ? 'Sessions' : 'Available Sessions'}
                                                 </h4>
                                                 <div className="space-y-2">
-                                                    {module.available_sessions.map((session) => (
-                                                        <Card key={session.id} className="overflow-hidden py-0">
-                                                            <CardContent className="p-4">
-                                                                <div className="mb-3 flex items-start justify-between gap-4">
-                                                                    <div className="flex-1 space-y-1">
-                                                                        <div className="flex items-center gap-2">
-                                                                            <Calendar className="h-4 w-4 text-muted-foreground" />
-                                                                            <p className="font-semibold">{formatZuluTime(session.scheduled_at)}</p>
-                                                                        </div>
-                                                                        <div className="flex items-center gap-2">
-                                                                            <Users className="h-4 w-4 text-muted-foreground" />
-                                                                            <p className="text-sm text-muted-foreground">
-                                                                                Mentor: {session.mentor_name} • {session.language}
-                                                                            </p>
-                                                                        </div>
-                                                                        <div className="text-sm text-muted-foreground">
-                                                                            {session.signups_locked ? (
-                                                                                <span>
-                                                                                    Selected: {session.max_trainees - session.available_spots} /{' '}
-                                                                                    {session.max_trainees}
-                                                                                </span>
-                                                                            ) : (
-                                                                                <span>
-                                                                                    Signups: {session.total_signups} • Spots:{' '}
-                                                                                    {session.available_spots} / {session.max_trainees}
-                                                                                </span>
-                                                                            )}
-                                                                        </div>
-                                                                    </div>
-                                                                    <div className="flex flex-col gap-2">
-                                                                        {session.user_signed_up && (
-                                                                            <>
-                                                                                {session.user_selected ? (
-                                                                                    <Badge variant="default" className="bg-green-600">
-                                                                                        <CheckCircle2 className="mr-1 h-3 w-3" />
-                                                                                        Selected
-                                                                                    </Badge>
-                                                                                ) : session.signups_locked ? (
-                                                                                    <Badge variant="secondary">
-                                                                                        <Clock className="mr-1 h-3 w-3" />
-                                                                                        Selection Pending
-                                                                                    </Badge>
-                                                                                ) : (
-                                                                                    <Badge variant="secondary">Signed Up</Badge>
-                                                                                )}
-                                                                                {session.user_waiting_position && (
-                                                                                    <Badge variant="outline" className="text-xs">
-                                                                                        Position #{session.user_waiting_position}
-                                                                                    </Badge>
-                                                                                )}
-                                                                            </>
-                                                                        )}
-                                                                        {!session.user_signed_up && session.signups_locked && (
-                                                                            <Badge variant="outline">Signups Closed</Badge>
-                                                                        )}
-                                                                        {!session.user_signed_up && !session.signups_locked && (
-                                                                            <Badge variant="outline">{session.available_spots} spots left</Badge>
-                                                                        )}
-                                                                    </div>
-                                                                </div>
+                                                    {module.available_sessions.map((session) => {
+                                                        const sessionDate = new Date(session.scheduled_at);
+                                                        const isPastSession = sessionDate < new Date();
+                                                        const canSignup =
+                                                            !module.has_selected_session &&
+                                                            !session.user_signed_up &&
+                                                            !session.signups_locked &&
+                                                            !isPastSession;
 
-                                                                {session.notes && (
-                                                                    <Alert className="mb-3">
-                                                                        <AlertTitle className="text-sm">Session Notes</AlertTitle>
-                                                                        <AlertDescription className="text-sm">{session.notes}</AlertDescription>
-                                                                    </Alert>
-                                                                )}
-
-                                                                {session.signups_locked && (
-                                                                    <Alert className="mb-3">
-                                                                        <Clock className="h-4 w-4" />
-                                                                        <AlertDescription className="text-sm">
-                                                                            {session.user_signed_up ? (
-                                                                                session.user_selected ? (
-                                                                                    <span className="text-green-600 dark:text-green-400">
-                                                                                        You have been selected for this session. Please be on time!
-                                                                                    </span>
-                                                                                ) : (
-                                                                                    <span>
-                                                                                        Selection in progress. Participants will be notified shortly.
-                                                                                    </span>
-                                                                                )
-                                                                            ) : (
-                                                                                <span>
-                                                                                    Signups are closed. Selection based on waiting list position.
-                                                                                </span>
-                                                                            )}
-                                                                        </AlertDescription>
-                                                                    </Alert>
-                                                                )}
-
-                                                                <div className="flex gap-2">
-                                                                    {!module.has_any_signup && !session.user_signed_up && !session.signups_locked && (
-                                                                        <Button
-                                                                            onClick={() => handleSessionSignup(session.id)}
-                                                                            variant="default"
-                                                                            size="sm"
-                                                                            className="w-full"
-                                                                        >
-                                                                            Sign Up for This Session
-                                                                        </Button>
-                                                                    )}
-
-                                                                    {module.has_any_signup &&
-                                                                        session.user_signed_up &&
-                                                                        !session.user_selected &&
-                                                                        !session.signups_locked && (
-                                                                            <Button
-                                                                                onClick={() => handleCancelSignup(session.id)}
-                                                                                variant="outline"
-                                                                                size="sm"
-                                                                                className="w-full"
-                                                                            >
-                                                                                Cancel Signup
-                                                                            </Button>
-                                                                        )}
-
-                                                                    {session.user_selected && (
-                                                                        <div className="w-full rounded-md bg-green-50 p-2 text-center text-sm font-medium text-green-700 dark:bg-green-950 dark:text-green-300">
-                                                                            You're confirmed for this session
-                                                                        </div>
-                                                                    )}
-                                                                </div>
-                                                            </CardContent>
-                                                        </Card>
-                                                    ))}
+                                                        return (
+                                                            <SessionDetailsCard
+                                                                key={session.id}
+                                                                session={session}
+                                                                onSignup={canSignup ? () => handleSessionSignup(session.id) : undefined}
+                                                                onCancel={
+                                                                    session.user_signed_up && !session.user_selected && !session.signups_locked
+                                                                        ? () => handleCancelSignup(session.id)
+                                                                        : undefined
+                                                                }
+                                                                showActions={true}
+                                                            />
+                                                        );
+                                                    })}
                                                 </div>
                                             </div>
                                         )}

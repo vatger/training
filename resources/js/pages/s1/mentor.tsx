@@ -374,7 +374,7 @@ export default function S1Mentor({ modules, upcomingSessions, pastSessions, wait
                 </DialogContent>
             </Dialog>
 
-            {/* Attendance Dialog */}
+            {/* Attendance Dialog - Made wider */}
             <Dialog
                 open={attendanceDialogOpen}
                 onOpenChange={(open) => {
@@ -385,7 +385,7 @@ export default function S1Mentor({ modules, upcomingSessions, pastSessions, wait
                     }
                 }}
             >
-                <DialogContent className="max-h-[90vh] max-w-5xl overflow-hidden">
+                <DialogContent className="max-h-[90vh] max-w-[90vw] overflow-hidden lg:max-w-6xl">
                     <DialogHeader>
                         <DialogTitle>Record Attendance</DialogTitle>
                         <DialogDescription>
@@ -414,15 +414,15 @@ export default function S1Mentor({ modules, upcomingSessions, pastSessions, wait
                             </AlertDescription>
                         </Alert>
 
-                        <div className="overflow-x-auto">
+                        <div>
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead className="min-w-37.5">Student</TableHead>
-                                        <TableHead className="min-w-25">VATSIM ID</TableHead>
-                                        <TableHead className="min-w-20">Position</TableHead>
-                                        <TableHead className="min-w-40">Status *</TableHead>
-                                        <TableHead className="min-w-50">Remarks</TableHead>
+                                        <TableHead>Student</TableHead>
+                                        <TableHead>VATSIM ID</TableHead>
+                                        <TableHead>Position</TableHead>
+                                        <TableHead>Status *</TableHead>
+                                        <TableHead>Remarks</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -456,7 +456,7 @@ export default function S1Mentor({ modules, upcomingSessions, pastSessions, wait
                                                     placeholder="Optional remarks..."
                                                     value={attendanceData[participant.id]?.remarks || ''}
                                                     onChange={(e) => updateAttendanceRemarks(participant.id, e.target.value)}
-                                                    className="min-w-45"
+                                                    className="min-w-[200px]"
                                                 />
                                             </TableCell>
                                         </TableRow>
@@ -480,7 +480,7 @@ export default function S1Mentor({ modules, upcomingSessions, pastSessions, wait
 
             {/* Past Session Details Dialog */}
             <Dialog open={pastSessionDialogOpen} onOpenChange={setPastSessionDialogOpen}>
-                <DialogContent className="max-h-[80vh] max-w-4xl overflow-y-auto">
+                <DialogContent className="max-h-[80vh] max-w-[90vw] overflow-y-auto lg:max-w-6xl">
                     <DialogHeader>
                         <DialogTitle>Session Details</DialogTitle>
                         <DialogDescription>
@@ -737,15 +737,17 @@ export default function S1Mentor({ modules, upcomingSessions, pastSessions, wait
                                                     )}
 
                                                     <div className="flex gap-2">
-                                                        {!session.attendance_completed && session.selected_count > 0 && (
-                                                            <Button onClick={() => openAttendanceDialog(session)} variant="default" size="sm">
-                                                                <ListChecks className="mr-2 h-4 w-4" />
-                                                                {session.participants?.some((p) => p.attendance)
-                                                                    ? 'Update Attendance'
-                                                                    : 'Record Attendance'}
-                                                            </Button>
-                                                        )}
-                                                        {!session.attendance_completed && (
+                                                        {!session.attendance_completed &&
+                                                            ((session.participants && session.participants.length > 0) ||
+                                                                (session.is_past && session.selected_count > 0)) && (
+                                                                <Button onClick={() => openAttendanceDialog(session)} variant="default" size="sm">
+                                                                    <ListChecks className="mr-2 h-4 w-4" />
+                                                                    {session.participants?.some((p) => p.attendance)
+                                                                        ? 'Update Attendance'
+                                                                        : 'Record Attendance'}
+                                                                </Button>
+                                                            )}
+                                                        {!session.attendance_completed && !session.is_past && (
                                                             <Button
                                                                 onClick={() => deleteSession(session.id)}
                                                                 variant="outline"
@@ -778,7 +780,7 @@ export default function S1Mentor({ modules, upcomingSessions, pastSessions, wait
                                     <div className="space-y-3">
                                         {module2Users.map((user) => (
                                             <Card key={user.id}>
-                                                <CardContent className="flex items-center justify-between p-4">
+                                                <CardContent className="flex items-center justify-between py-0">
                                                     <div className="flex items-center gap-4">
                                                         <GraduationCap className="h-8 w-8 text-muted-foreground" />
                                                         <div>
