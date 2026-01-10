@@ -9,6 +9,7 @@ use App\Models\S1\S1ModuleCompletion;
 use App\Models\S1\S1Session;
 use App\Models\S1\S1SessionSignup;
 use App\Services\MoodleService;
+use App\Services\S1\S1ActivityService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -16,10 +17,12 @@ use Inertia\Response;
 class S1TrainingController extends Controller
 {
     protected MoodleService $moodleService;
+    protected S1ActivityService $activityService;
 
-    public function __construct(MoodleService $moodleService)
+    public function __construct(MoodleService $moodleService, S1ActivityService $activityService)
     {
         $this->moodleService = $moodleService;
+        $this->activityService = $activityService;
     }
 
     public function index(Request $request): Response
@@ -32,6 +35,7 @@ class S1TrainingController extends Controller
                 'currentStep' => null,
                 'progress' => null,
                 'modules' => [],
+                'activityWarnings' => [],
             ]);
         }
 
@@ -39,6 +43,7 @@ class S1TrainingController extends Controller
         
         $userProgress = $this->getUserProgress($user, $modules);
         $currentStep = $this->determineCurrentStep($user, $userProgress);
+        $activityWarnings = $this->activityService->getUserActivityStatus($user);
         
         return Inertia::render('s1/training', [
             'isVatsimUser' => true,
@@ -49,6 +54,7 @@ class S1TrainingController extends Controller
                 'name' => $m->name,
                 'sequence_order' => $m->sequence_order,
             ]),
+            'activityWarnings' => $activityWarnings,
         ]);
     }
 
@@ -125,6 +131,12 @@ class S1TrainingController extends Controller
                     'expires_at' => $waitingList->expires_at?->format('Y-m-d'),
                     'needs_confirmation' => $needsConfirmation,
                     'confirmation_due_at' => $waitingList->confirmation_due_at?->format('Y-m-d'),
+                    'is_approaching_expiry' => $waitingList->isApproachingExpiry(),
+                    'is_approaching_confirmation' => $waitingList->isApproachingConfirmationDeadline(),
+                    'days_until_expiry' => $waitingList->expires_at ?
+                        now()->diffInDays($waitingList->expires_at, false) : null,
+                    'days_until_confirmation' => $waitingList->confirmation_due_at ?
+                        now()->diffInDays($waitingList->confirmation_due_at, false) : null,
                 ];
 
                 $hasSelectedSession = S1SessionSignup::where('user_id', $user->id)
@@ -142,7 +154,6 @@ class S1TrainingController extends Controller
                     })
                     ->exists();
 
-                // Always show all available sessions, but mark which ones the user is signed up for
                 $availableSessions = S1Session::where('module_id', $module->id)
                     ->where('scheduled_at', '>', now())
                     ->where(function ($q) use ($user) {
@@ -184,7 +195,6 @@ class S1TrainingController extends Controller
                 });
             }
 
-            // Only check Module 2 Moodle completion if user is actively on Module 2
             if ($module->sequence_order === 2 && $isActivelyOnModule2) {
                 $module1 = S1Module::where('sequence_order', 1)->first();
                 $hasCompletedModule1 = false;

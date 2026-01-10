@@ -44,6 +44,8 @@ return new class extends Migration
             $table->timestamp('confirmation_due_at')->nullable();
             $table->timestamp('expires_at')->nullable();
             $table->boolean('is_active')->default(true);
+            $table->timestamp('activity_warning_sent_at')->nullable()->after('confirmation_due_at');
+            $table->integer('confirmation_reminders_sent')->default(0)->after('activity_warning_sent_at');
             $table->timestamps();
 
             $table->unique(['user_id', 'module_id']);
