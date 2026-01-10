@@ -424,6 +424,255 @@ namespace App\Models{
 	class RosterEntry extends \Eloquent {}
 }
 
+namespace App\Models\S1{
+/**
+ * @property int $id
+ * @property int $session_id
+ * @property int $user_id
+ * @property int|null $signup_id
+ * @property string $status
+ * @property string|null $notes
+ * @property int|null $marked_by_mentor_id
+ * @property \Illuminate\Support\Carbon|null $marked_at
+ * @property bool $spontaneous
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\User|null $markedByMentor
+ * @property-read \App\Models\S1\S1Session $session
+ * @property-read \App\Models\S1\S1SessionSignup|null $signup
+ * @property-read \App\Models\User $user
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1Attendance byStatus(string $status)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1Attendance newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1Attendance newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1Attendance query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1Attendance whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1Attendance whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1Attendance whereMarkedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1Attendance whereMarkedByMentorId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1Attendance whereNotes($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1Attendance whereSessionId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1Attendance whereSignupId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1Attendance whereSpontaneous($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1Attendance whereStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1Attendance whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1Attendance whereUserId($value)
+ */
+	class S1Attendance extends \Eloquent {}
+}
+
+namespace App\Models\S1{
+/**
+ * @property int $id
+ * @property string $name
+ * @property int $sequence_order
+ * @property string|null $description
+ * @property array<array-key, mixed>|null $moodle_course_ids
+ * @property array<array-key, mixed>|null $moodle_quiz_ids
+ * @property bool $is_active
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\S1\S1WaitingList> $activeWaitingLists
+ * @property-read int|null $active_waiting_lists_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\S1\S1ModuleCompletion> $completions
+ * @property-read int|null $completions_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\S1\S1Session> $sessions
+ * @property-read int|null $sessions_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\S1\S1WaitingList> $waitingLists
+ * @property-read int|null $waiting_lists_count
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1Module active()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1Module newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1Module newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1Module ordered()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1Module query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1Module whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1Module whereDescription($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1Module whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1Module whereIsActive($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1Module whereMoodleCourseIds($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1Module whereMoodleQuizIds($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1Module whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1Module whereSequenceOrder($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1Module whereUpdatedAt($value)
+ */
+	class S1Module extends \Eloquent {}
+}
+
+namespace App\Models\S1{
+/**
+ * @property int $id
+ * @property int $user_id
+ * @property int $module_id
+ * @property \Illuminate\Support\Carbon $completed_at
+ * @property int|null $completed_by_mentor_id
+ * @property bool $was_reset
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\User|null $completedByMentor
+ * @property-read \App\Models\S1\S1Module $module
+ * @property-read \App\Models\User $user
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1ModuleCompletion newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1ModuleCompletion newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1ModuleCompletion query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1ModuleCompletion whereCompletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1ModuleCompletion whereCompletedByMentorId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1ModuleCompletion whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1ModuleCompletion whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1ModuleCompletion whereModuleId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1ModuleCompletion whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1ModuleCompletion whereUserId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1ModuleCompletion whereWasReset($value)
+ */
+	class S1ModuleCompletion extends \Eloquent {}
+}
+
+namespace App\Models\S1{
+/**
+ * @property int $id
+ * @property int $module_id
+ * @property int $mentor_id
+ * @property \Illuminate\Support\Carbon $scheduled_at
+ * @property int $max_trainees
+ * @property string $language
+ * @property bool $signups_open
+ * @property bool $signups_locked
+ * @property \Illuminate\Support\Carbon|null $signups_lock_at
+ * @property bool $attendance_completed
+ * @property string|null $notes
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\S1\S1Attendance> $attendances
+ * @property-read int|null $attendances_count
+ * @property-read int $available_spots
+ * @property-read int $total_signups
+ * @property-read \App\Models\User $mentor
+ * @property-read \App\Models\S1\S1Module $module
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\S1\S1SessionSignup> $selectedSignups
+ * @property-read int|null $selected_signups_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\S1\S1SessionSignup> $signups
+ * @property-read int|null $signups_count
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1Session needingLock()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1Session newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1Session newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1Session query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1Session unlocked()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1Session upcoming()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1Session whereAttendanceCompleted($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1Session whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1Session whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1Session whereLanguage($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1Session whereMaxTrainees($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1Session whereMentorId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1Session whereModuleId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1Session whereNotes($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1Session whereScheduledAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1Session whereSignupsLockAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1Session whereSignupsLocked($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1Session whereSignupsOpen($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1Session whereUpdatedAt($value)
+ */
+	class S1Session extends \Eloquent {}
+}
+
+namespace App\Models\S1{
+/**
+ * @property int $id
+ * @property int $session_id
+ * @property int $user_id
+ * @property int|null $waiting_list_id
+ * @property \Illuminate\Support\Carbon $signed_up_at
+ * @property bool $was_selected
+ * @property \Illuminate\Support\Carbon|null $selected_at
+ * @property bool $notification_sent
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\S1\S1Attendance|null $attendance
+ * @property-read \App\Models\S1\S1Session $session
+ * @property-read \App\Models\User $user
+ * @property-read \App\Models\S1\S1WaitingList|null $waitingList
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1SessionSignup newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1SessionSignup newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1SessionSignup query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1SessionSignup whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1SessionSignup whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1SessionSignup whereNotificationSent($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1SessionSignup whereSelectedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1SessionSignup whereSessionId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1SessionSignup whereSignedUpAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1SessionSignup whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1SessionSignup whereUserId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1SessionSignup whereWaitingListId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1SessionSignup whereWasSelected($value)
+ */
+	class S1SessionSignup extends \Eloquent {}
+}
+
+namespace App\Models\S1{
+/**
+ * @property int $id
+ * @property int $user_id
+ * @property string $reason
+ * @property \Illuminate\Support\Carbon $banned_at
+ * @property \Illuminate\Support\Carbon|null $expires_at
+ * @property int $banned_by_mentor_id
+ * @property bool $is_active
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\User $bannedByMentor
+ * @property-read \App\Models\User $user
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1UserBan active()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1UserBan newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1UserBan newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1UserBan query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1UserBan whereBannedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1UserBan whereBannedByMentorId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1UserBan whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1UserBan whereExpiresAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1UserBan whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1UserBan whereIsActive($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1UserBan whereReason($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1UserBan whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1UserBan whereUserId($value)
+ */
+	class S1UserBan extends \Eloquent {}
+}
+
+namespace App\Models\S1{
+/**
+ * @property int $id
+ * @property int $user_id
+ * @property int $module_id
+ * @property \Illuminate\Support\Carbon $joined_at
+ * @property \Illuminate\Support\Carbon|null $last_confirmed_at
+ * @property \Illuminate\Support\Carbon|null $confirmation_due_at
+ * @property \Illuminate\Support\Carbon|null $expires_at
+ * @property bool $is_active
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read int $position_in_queue
+ * @property-read \App\Models\S1\S1Module $module
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\S1\S1SessionSignup> $signups
+ * @property-read int|null $signups_count
+ * @property-read \App\Models\User $user
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1WaitingList active()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1WaitingList expired()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1WaitingList needingConfirmation()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1WaitingList newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1WaitingList newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1WaitingList query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1WaitingList whereConfirmationDueAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1WaitingList whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1WaitingList whereExpiresAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1WaitingList whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1WaitingList whereIsActive($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1WaitingList whereJoinedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1WaitingList whereLastConfirmedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1WaitingList whereModuleId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1WaitingList whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|S1WaitingList whereUserId($value)
+ */
+	class S1WaitingList extends \Eloquent {}
+}
+
 namespace App\Models{
 /**
  * @property int $id

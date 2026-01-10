@@ -45,20 +45,24 @@ const navSections = [
     },
 ];
 
-const trainingSection = (isOBS: unknown) => {
+const trainingSection = (isOBS: unknown, isAdmin: unknown) => {
     return {
         label: 'Training',
         items: [
-            {
-                title: 'Courses',
-                href: route('courses.index'),
-                icon: BookOpenIcon,
-            },
-            {
-                title: 'Endorsements',
-                href: route('endorsements'),
-                icon: CircleCheck,
-            },
+            ...(isOBS === false || isAdmin === true
+                ? [
+                      {
+                          title: 'Courses',
+                          href: route('courses.index'),
+                          icon: BookOpenIcon,
+                      },
+                      {
+                          title: 'Endorsements',
+                          href: route('endorsements'),
+                          icon: CircleCheck,
+                      },
+                  ]
+                : []),
             ...(isOBS === true
                 ? [
                       {
@@ -195,6 +199,7 @@ export function AppSidebar() {
     const isMentor = auth.user?.is_mentor || auth.user?.is_superuser || auth.user?.is_admin;
     const isS1Mentor = auth.user?.is_s1_mentor || auth.user?.is_superuser || auth.user?.is_admin;
     const isSuperuser = auth.user?.is_superuser || auth.user?.is_admin;
+    const isAdmin = auth.user?.is_admin;
     const isLeadingMentor = auth.user?.is_leading_mentor;
     const [searchModalOpen, setSearchModalOpen] = useState(false);
     const isOBS = auth.user?.rating === 0 || auth.user?.rating === 1 || auth.user?.is_admin; // No superuser check, only admin users can see
@@ -221,7 +226,7 @@ export function AppSidebar() {
                             <NavSection key={section.label} section={section} />
                         ))}
 
-                    <NavSection section={trainingSection(isOBS)} />
+                    <NavSection section={trainingSection(isOBS, isAdmin)} />
 
                     {isMentor === true && (
                         <>
