@@ -3,12 +3,14 @@
 namespace App\Models\S1;
 
 use App\Models\User;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class S1SessionSignup extends Model
 {
+    use HasFactory;
     protected $fillable = [
         'session_id',
         'user_id',

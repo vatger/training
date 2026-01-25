@@ -2,11 +2,13 @@
 
 namespace App\Models\S1;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class S1Module extends Model
 {
+    use HasFactory;
     protected $table = 's1_modules';
 
     protected $fillable = [

@@ -75,7 +75,7 @@ class S1ActivityService
             }
         }
 
-        $daysSinceLastActivity = now()->diffInDays($lastActivity);
+        $daysSinceLastActivity = Carbon::now()->diffInDays($lastActivity, true);
         $isInactive = $daysSinceLastActivity > S1WaitingList::MODULE_2_MAX_INACTIVITY_DAYS;
         $needsWarning = $daysSinceLastActivity > (S1WaitingList::MODULE_2_MAX_INACTIVITY_DAYS - S1WaitingList::WARNING_DAYS_BEFORE_EXPIRY);
 
@@ -130,7 +130,7 @@ class S1ActivityService
             return [true, 'Already signed up', ['status' => 'signed_up']];
         }
 
-        $daysSinceCompletion = now()->diffInDays($moduleCompletion->completed_at);
+        $daysSinceCompletion = now()->diffInDays($moduleCompletion->completed_at, true);
         $deadlinePassed = $daysSinceCompletion > S1WaitingList::NEXT_MODULE_SIGNUP_DEADLINE_DAYS;
         $needsWarning = $daysSinceCompletion > (S1WaitingList::NEXT_MODULE_SIGNUP_DEADLINE_DAYS - S1WaitingList::WARNING_DAYS_BEFORE_EXPIRY);
 
@@ -201,7 +201,8 @@ class S1ActivityService
             } elseif ($waitingList->isApproachingConfirmationDeadline()) {
                 $status['warning'] = 'confirmation_approaching';
                 $status['action_required'] = true;
-                $status['days_remaining'] = $waitingList->confirmation_due_at->diffInDays(now());
+                $status['days_remaining'] = $waitingList->confirmation_due_at->diffInDays(now(), true);
+                $status['days_remaining'] = ceil($status['days_remaining']);
             }
 
             if ($waitingList->isExpired()) {
@@ -210,7 +211,8 @@ class S1ActivityService
             } elseif ($waitingList->isApproachingExpiry()) {
                 $status['warning'] = 'expiry_approaching';
                 $status['action_required'] = true;
-                $status['days_remaining'] = $waitingList->expires_at->diffInDays(now());
+                $status['days_remaining'] = $waitingList->expires_at->diffInDays(now(), true);
+                $status['days_remaining'] = ceil($status['days_remaining']);
             }
 
             if (isset($status['warning'])) {

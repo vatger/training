@@ -3,6 +3,7 @@
 namespace App\Models\S1;
 
 use App\Models\User;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -10,13 +11,14 @@ use Carbon\Carbon;
 
 class S1WaitingList extends Model
 {
+    use HasFactory;
     protected $table = 's1_waiting_lists';
 
     const CONFIRMATION_DAYS = 30;
     const EXPIRY_DAYS = 63;
     const WARNING_DAYS_BEFORE_EXPIRY = 7;
     const MODULE_2_MAX_INACTIVITY_DAYS = 40;
-    const NEXT_MODULE_SIGNUP_DEADLINE_DAYS = 40;
+    const NEXT_MODULE_SIGNUP_DEADLINE_DAYS = 31;
 
     protected $fillable = [
         'user_id',

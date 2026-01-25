@@ -3,6 +3,7 @@
 namespace App\Models\S1;
 
 use App\Models\User;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -10,6 +11,7 @@ use Carbon\Carbon;
 
 class S1Session extends Model
 {
+    use HasFactory;
     protected $table = 's1_sessions';
 
     protected $fillable = [

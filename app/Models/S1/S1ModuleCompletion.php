@@ -3,11 +3,13 @@
 namespace App\Models\S1;
 
 use App\Models\User;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class S1ModuleCompletion extends Model
 {
+    use HasFactory;
     protected $table = 's1_module_completions';
 
     protected $fillable = [
