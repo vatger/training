@@ -14,11 +14,10 @@ class S1WaitingList extends Model
     use HasFactory;
     protected $table = 's1_waiting_lists';
 
-    const CONFIRMATION_DAYS = 30;
-    const EXPIRY_DAYS = 63;
-    const WARNING_DAYS_BEFORE_EXPIRY = 7;
-    const MODULE_2_MAX_INACTIVITY_DAYS = 40;
-    const NEXT_MODULE_SIGNUP_DEADLINE_DAYS = 31;
+    const INACTIVITY_DAYS = 31;                             // Days without page visit = inactive
+    const WARNING_DAYS_BEFORE_EXPIRY = 7;                   // Warning 7 days before removal
+    const MODULE_2_MAX_INACTIVITY_DAYS = 31;                // Days without Module 2 quiz activity
+    const NEXT_MODULE_SIGNUP_DEADLINE_DAYS = 31;            // Days to join next module
 
     protected $fillable = [
         'user_id',
@@ -75,44 +74,41 @@ class S1WaitingList extends Model
 
     public function isExpired(): bool
     {
-        if (!$this->expires_at) {
+        if (!$this->last_confirmed_at) {
             return false;
         }
 
-        return $this->expires_at->isPast();
+        $daysSinceLastVisit = now()->diffInDays($this->last_confirmed_at, false);
+        return $daysSinceLastVisit > self::INACTIVITY_DAYS;
     }
 
     public function isApproachingExpiry(): bool
     {
-        if (!$this->expires_at) {
+        if (!$this->last_confirmed_at) {
             return false;
         }
 
-        $daysUntilExpiry = now()->diffInDays($this->expires_at, false);
+        $daysSinceLastVisit = now()->diffInDays($this->last_confirmed_at, false);
+        $daysUntilExpiry = self::INACTIVITY_DAYS - $daysSinceLastVisit;
+
         return $daysUntilExpiry <= self::WARNING_DAYS_BEFORE_EXPIRY && $daysUntilExpiry > 0;
     }
 
     public function isApproachingConfirmationDeadline(): bool
     {
-        if (!$this->confirmation_due_at) {
-            return false;
-        }
-
-        $daysUntilConfirmation = now()->diffInDays($this->confirmation_due_at, false);
-        return $daysUntilConfirmation <= self::WARNING_DAYS_BEFORE_EXPIRY && $daysUntilConfirmation > 0;
+        return $this->isApproachingExpiry();
     }
 
     public function needsActivityWarning(): bool
     {
-        return ($this->isApproachingExpiry() || $this->isApproachingConfirmationDeadline())
-            && !$this->activity_warning_sent_at;
+        return $this->isApproachingExpiry() && !$this->activity_warning_sent_at;
     }
 
     public function confirm(): void
     {
         $this->update([
             'last_confirmed_at' => now(),
-            'confirmation_due_at' => now()->addDays(self::CONFIRMATION_DAYS),
+            'confirmation_due_at' => now()->addDays(self::INACTIVITY_DAYS),
             'activity_warning_sent_at' => null,
             'confirmation_reminders_sent' => 0,
         ]);
@@ -123,8 +119,8 @@ class S1WaitingList extends Model
         $this->update([
             'is_active' => true,
             'last_confirmed_at' => now(),
-            'confirmation_due_at' => now()->addDays(self::CONFIRMATION_DAYS),
-            'expires_at' => now()->addDays(self::EXPIRY_DAYS)->startOfMonth(),
+            'confirmation_due_at' => now()->addDays(self::INACTIVITY_DAYS),
+            'expires_at' => null, // Clear old expiry
             'activity_warning_sent_at' => null,
             'confirmation_reminders_sent' => 0,
         ]);
@@ -146,34 +142,22 @@ class S1WaitingList extends Model
     public function scopeNeedingConfirmation($query)
     {
         return $query->where('is_active', true)
-            ->whereNotNull('confirmation_due_at')
-            ->where('confirmation_due_at', '<=', now());
+            ->where('last_confirmed_at', '<=', now()->subDays(self::INACTIVITY_DAYS));
     }
 
     public function scopeExpired($query)
     {
         return $query->where('is_active', true)
-            ->whereNotNull('expires_at')
-            ->where('expires_at', '<=', now());
+            ->where('last_confirmed_at', '<=', now()->subDays(self::INACTIVITY_DAYS));
     }
 
     public function scopeNeedingWarning($query)
     {
-        $warningDate = now()->addDays(self::WARNING_DAYS_BEFORE_EXPIRY);
+        $warningThreshold = now()->subDays(self::INACTIVITY_DAYS - self::WARNING_DAYS_BEFORE_EXPIRY);
 
         return $query->where('is_active', true)
-            ->where(function ($q) use ($warningDate) {
-                $q->where(function ($sq) use ($warningDate) {
-                    $sq->whereNotNull('expires_at')
-                        ->where('expires_at', '<=', $warningDate)
-                        ->where('expires_at', '>', now());
-                })
-                    ->orWhere(function ($sq) use ($warningDate) {
-                        $sq->whereNotNull('confirmation_due_at')
-                            ->where('confirmation_due_at', '<=', $warningDate)
-                            ->where('confirmation_due_at', '>', now());
-                    });
-            })
+            ->where('last_confirmed_at', '<=', $warningThreshold)
+            ->where('last_confirmed_at', '>', now()->subDays(self::INACTIVITY_DAYS))
             ->whereNull('activity_warning_sent_at');
     }
 }

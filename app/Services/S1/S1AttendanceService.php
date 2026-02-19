@@ -166,7 +166,6 @@ class S1AttendanceService
                 ->where('module_id', $session->module_id)
                 ->update(['is_active' => false]);
 
-            // Auto-enroll in next module's Moodle courses if Module 1 was just completed
             $module = S1Module::find($session->module_id);
             if ($module && $module->sequence_order === 1) {
                 $this->enrollUserInModule2Courses($attendance->user_id);
@@ -202,7 +201,6 @@ class S1AttendanceService
                 return;
             }
 
-            // Enroll user in all Module 2 Moodle courses
             foreach ($module2->moodle_course_ids as $courseId) {
                 $this->moodleService->enrollUser($user->vatsim_id, $courseId);
             }
@@ -215,6 +213,50 @@ class S1AttendanceService
 
         } catch (\Exception $e) {
             Log::error('Failed to enroll user in Module 2 Moodle courses', [
+                'user_id' => $userId,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * Unenroll user from Module 2 Moodle courses
+     * Called when user is removed from Module 2 for inactivity
+     */
+    public function unenrollUserFromModule2Courses(int $userId): void
+    {
+        try {
+            $user = User::find($userId);
+            if (!$user || !$user->vatsim_id) {
+                Log::warning('Cannot unenroll user from Module 2: User not found or missing VATSIM ID', [
+                    'user_id' => $userId,
+                ]);
+                return;
+            }
+
+            $module2 = S1Module::where('sequence_order', 2)->first();
+            if (!$module2) {
+                Log::warning('Module 2 not found');
+                return;
+            }
+
+            if (!$module2->moodle_course_ids || !is_array($module2->moodle_course_ids)) {
+                Log::warning('Module 2 has no Moodle course IDs configured');
+                return;
+            }
+
+            foreach ($module2->moodle_course_ids as $courseId) {
+                $this->moodleService->unenrollUser($user->vatsim_id, $courseId);
+            }
+
+            Log::info('User unenrolled from Module 2 Moodle courses due to inactivity', [
+                'user_id' => $userId,
+                'vatsim_id' => $user->vatsim_id,
+                'course_ids' => $module2->moodle_course_ids,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Failed to unenroll user from Module 2 Moodle courses', [
                 'user_id' => $userId,
                 'error' => $e->getMessage(),
             ]);

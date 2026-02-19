@@ -13,10 +13,12 @@ use Illuminate\Support\Facades\Log;
 class S1ActivityService
 {
     protected MoodleService $moodleService;
+    protected S1AttendanceService $attendanceService;
 
-    public function __construct(MoodleService $moodleService)
+    public function __construct(MoodleService $moodleService, S1AttendanceService $attendanceService)
     {
         $this->moodleService = $moodleService;
+        $this->attendanceService = $attendanceService;
     }
 
     public function checkModule2Activity(User $user): array
@@ -100,7 +102,6 @@ class S1ActivityService
             return [false, 'Modules not found', null];
         }
 
-        // Module 2 is special - it's Moodle-based and doesn't have a waiting list
         if ($nextModule->sequence_order === 2) {
             return [false, 'Module 2 does not have a waiting list', null];
         }
@@ -151,6 +152,14 @@ class S1ActivityService
         return $this->checkNextModuleSignupDeadline($user, 2);
     }
 
+    /**
+     * Mark user as inactive on Module 2
+     * This means:
+     * 1. Set Module 2 waiting list to inactive (if exists)
+     * 2. Unenroll from Module 2 Moodle courses
+     * 3. User stays in system but loses Module 2 access
+     * 4. User would need mentor intervention to restart Module 2
+     */
     public function markModule2Inactive(User $user, string $reason): bool
     {
         try {
@@ -159,18 +168,55 @@ class S1ActivityService
                 return false;
             }
 
+            // Deactivate Module 2 waiting list (though Module 2 doesn't really use waiting lists)
             S1WaitingList::where('user_id', $user->id)
                 ->where('module_id', $module2->id)
                 ->update(['is_active' => false]);
 
-            Log::info('User marked inactive on Module 2', [
+            // IMPORTANT: Unenroll from Module 2 Moodle courses
+            $this->attendanceService->unenrollUserFromModule2Courses($user->id);
+
+            Log::info('User marked inactive on Module 2 and unenrolled from Moodle', [
                 'user_id' => $user->id,
                 'reason' => $reason,
+                'action' => 'Unenrolled from all Module 2 Moodle courses',
             ]);
 
             return true;
         } catch (\Exception $e) {
             Log::error('Failed to mark Module 2 inactive', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage(),
+            ]);
+            return false;
+        }
+    }
+
+    /**
+     * Mark user as completely inactive from S1 training
+     * This means:
+     * 1. All waiting list entries set to inactive
+     * 2. User loses their place in ALL waiting lists
+     * 3. User would need to restart from Module 1 or get mentor intervention
+     * 4. This is the "removed from training pipeline" scenario
+     */
+    public function markUserCompletelyInactive(User $user, string $reason): bool
+    {
+        try {
+            // Deactivate ALL waiting lists
+            S1WaitingList::where('user_id', $user->id)
+                ->where('is_active', true)
+                ->update(['is_active' => false]);
+
+            Log::info('User completely removed from S1 training pipeline', [
+                'user_id' => $user->id,
+                'reason' => $reason,
+                'action' => 'All waiting lists deactivated - user must restart or contact mentor',
+            ]);
+
+            return true;
+        } catch (\Exception $e) {
+            Log::error('Failed to mark user completely inactive', [
                 'user_id' => $user->id,
                 'error' => $e->getMessage(),
             ]);
@@ -194,25 +240,17 @@ class S1ActivityService
                 'type' => 'waiting_list',
             ];
 
-            if ($waitingList->needsConfirmation()) {
-                $status['warning'] = 'confirmation_overdue';
-                $status['action_required'] = true;
-                $status['days_overdue'] = now()->diffInDays($waitingList->confirmation_due_at);
-            } elseif ($waitingList->isApproachingConfirmationDeadline()) {
-                $status['warning'] = 'confirmation_approaching';
-                $status['action_required'] = true;
-                $status['days_remaining'] = $waitingList->confirmation_due_at->diffInDays(now(), true);
-                $status['days_remaining'] = ceil($status['days_remaining']);
-            }
-
+            // Check for 31-day inactivity
             if ($waitingList->isExpired()) {
                 $status['warning'] = 'expired';
                 $status['action_required'] = true;
+                $status['message'] = 'No page visit in 31+ days - will be removed';
             } elseif ($waitingList->isApproachingExpiry()) {
                 $status['warning'] = 'expiry_approaching';
                 $status['action_required'] = true;
-                $status['days_remaining'] = $waitingList->expires_at->diffInDays(now(), true);
-                $status['days_remaining'] = ceil($status['days_remaining']);
+                $daysSinceLastVisit = now()->diffInDays($waitingList->last_confirmed_at, false);
+                $status['days_remaining'] = S1WaitingList::INACTIVITY_DAYS - $daysSinceLastVisit;
+                $status['message'] = "Visit the training page within {$status['days_remaining']} days to stay active";
             }
 
             if (isset($status['warning'])) {
@@ -230,14 +268,14 @@ class S1ActivityService
                 'action_required' => true,
                 'days_since_last_activity' => $module2Status['days_since_last_activity'],
                 'days_remaining' => max(0, S1WaitingList::MODULE_2_MAX_INACTIVITY_DAYS - $module2Status['days_since_last_activity']),
+                'message' => 'Complete a Moodle quiz within ' . max(0, S1WaitingList::MODULE_2_MAX_INACTIVITY_DAYS - $module2Status['days_since_last_activity']) . ' days',
             ];
         }
 
-        // Check all module transitions (1->3, 2->3, 3->4)
         $moduleTransitions = [
-            1 => 3,  // Module 1 -> Module 3 (skip Module 2 as it's automatic)
-            2 => 3,  // Module 2 -> Module 3
-            3 => 4,  // Module 3 -> Module 4
+            1 => 3,
+            2 => 3,
+            3 => 4,
         ];
 
         foreach ($moduleTransitions as $completedSeq => $nextSeq) {
@@ -255,6 +293,7 @@ class S1ActivityService
                         'completed_module_sequence' => $completedSeq,
                         'next_module_sequence' => $nextSeq,
                         'days_remaining' => $signupStatus['days_remaining'],
+                        'message' => "Join {$nextModule->name} waiting list within {$signupStatus['days_remaining']} days",
                     ];
                 }
             }

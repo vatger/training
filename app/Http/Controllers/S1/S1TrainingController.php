@@ -39,6 +39,8 @@ class S1TrainingController extends Controller
             ]);
         }
 
+        $this->autoConfirmWaitingLists($user);
+
         $modules = S1Module::active()->ordered()->get();
         
         $userProgress = $this->getUserProgress($user, $modules);
@@ -56,6 +58,20 @@ class S1TrainingController extends Controller
             ]),
             'activityWarnings' => $activityWarnings,
         ]);
+    }
+
+    protected function autoConfirmWaitingLists(\App\Models\User $user): void
+    {
+        S1WaitingList::where('user_id', $user->id)
+            ->where('is_active', true)
+            ->each(function ($waitingList) {
+                $waitingList->update([
+                    'last_confirmed_at' => now(),
+                    'confirmation_due_at' => now()->addDays(S1WaitingList::INACTIVITY_DAYS),
+                    'activity_warning_sent_at' => null,
+                    'confirmation_reminders_sent' => 0,
+                ]);
+            });
     }
 
     protected function getUserProgress($user, $modules)
