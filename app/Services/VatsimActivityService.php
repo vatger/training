@@ -18,15 +18,28 @@ class VatsimActivityService
     protected $ctrTopdown = [
         'EDDB' => ['EDWW_F', 'EDWW_B', 'EDWW_K', 'EDWW_M', 'EDWW_C'],
         'EDDH' => ['EDWW_H', 'EDWW_A', 'EDWW_W', 'EDWW_C'],
-        'EDDF' => ['EDGG_CA', 'EDGG_R', 'EDGG_D', 'EDGG_SA', 'EDGG_GCS'],
-        'EDDK' => ['EDGG_N', 'EDGG_KL'],
-        'EDDL' => ['EDGG_N', 'EDGG_KL'],
+        'EDDF' => ['EDGG_R', 'EDGG_D', 'EDGG_C', 'EDGG_S', 'EDGG_CA'],
+        'EDDK' => ['EDGG_N', 'EDGG_NH'],
+        'EDDL' => ['EDGG_N', 'EDGG_NH'],
         'EDDM' => ['EDMM_N', 'EDMM_Z', 'EDMM_R'],
     ];
 
-    /**
-     * Get activity data for a specific endorsement - UPDATED to return both minutes and last activity date
-     */
+    // Legacy sectors active before the EDGG restructure (March 2026).
+    // Counted alongside current sectors until the transition period ends.
+    protected $legacyCtrTopdown = [
+        'EDDF' => ['EDGG_G', 'EDGG_R', 'EDGG_D', 'EDGG_B', 'EDGG_K'],
+        'EDDK' => ['EDGG_P'],
+        'EDDL' => ['EDGG_P'],
+    ];
+
+    // Combined APP sectors introduced in the EDGG restructure.
+    protected $appTopdown = [
+        'EDDK' => ['EDGG_KL'],
+        'EDDL' => ['EDGG_KL'],
+    ];
+
+    protected $transitionEndDate = '2026-08-03';
+
     public function getEndorsementActivity(array $endorsement): array
     {
         $vatsimId = $endorsement['user_cid'];
@@ -38,10 +51,7 @@ class VatsimActivityService
         while ($attempt < $maxRetries) {
             try {
                 $connections = $this->getVatsimConnections($vatsimId);
-                $result = $this->calculateActivity($endorsement, $connections);
-
-                return $result;
-                
+                return $this->calculateActivity($endorsement, $connections);
             } catch (\Exception $e) {
                 $attempt++;
                 
@@ -54,7 +64,6 @@ class VatsimActivityService
                 ]);
                 
                 if ($attempt < $maxRetries) {
-                    // Wait 15 seconds before retry (matching Python behavior)
                     Log::info('Waiting 15 seconds before retry...');
                     sleep(15);
                 } else {
@@ -77,9 +86,6 @@ class VatsimActivityService
         ];
     }
 
-    /**
-     * Get VATSIM connections for a user in the last 180 days
-     */
     protected function getVatsimConnections(int $vatsimId): array
     {
         $cacheKey = "vatsim_activity:{$vatsimId}";
@@ -89,14 +95,8 @@ class VatsimActivityService
             $apiUrl = "http://stats.vatsim-germany.org/api/atc/{$vatsimId}/sessions/?start_date={$start}";
             
             try {
-                /* Log::debug('Fetching VATSIM activity from vatsim-germany.org', [
-                    'vatsim_id' => $vatsimId,
-                    'url' => $apiUrl,
-                    'start_date' => $start
-                ]); */
-
-                $response = Http::timeout(15) // Increased timeout
-                    ->retry(2, 1000) // Retry twice with 1 second delay
+                $response = Http::timeout(15)
+                    ->retry(2, 1000)
                     ->get($apiUrl);
                 
                 if (!$response->successful()) {
@@ -117,11 +117,6 @@ class VatsimActivityService
                     return [];
                 }
 
-                /* Log::debug('VATSIM activity fetched successfully from vatsim-germany.org', [
-                    'vatsim_id' => $vatsimId,
-                    'connections_count' => count($data)
-                ]); */
-
                 return $data;
                 
             } catch (\Exception $e) {
@@ -135,22 +130,14 @@ class VatsimActivityService
         });
     }
 
-    /**
-     * Calculate activity based on endorsement and connections
-     */
     protected function calculateActivity(array $endorsement, array $connections): array
     {
         $activityMinutes = 0;
         $position = $endorsement['position'];
         $lastActivityDate = null;
-
-        /* Log::debug('Starting activity calculation', [
-            'position' => $position,
-            'connections_count' => count($connections)
-        ]); */
+        $inTransition = Carbon::now()->lessThan(Carbon::parse($this->transitionEndDate));
         
         if (str_ends_with($position, '_CTR')) {
-            // CTR position logic
             $ctrlPrefix = substr($position, 0, 6);
             
             foreach ($connections as $connection) {
@@ -161,28 +148,21 @@ class VatsimActivityService
                     $minutes = floatval($connection['minutes_online'] ?? 0);
                     $activityMinutes += $minutes;
 
-                    // Update last activity date
                     $connectionDate = $this->parseConnectionDate($connection);
                     if ($connectionDate && ($lastActivityDate === null || $connectionDate->greaterThan($lastActivityDate))) {
                         $lastActivityDate = $connectionDate;
                     }
-
-                    /* Log::debug('CTR match found', [
-                        'position' => $position,
-                        'callsign' => $callsign,
-                        'minutes' => $minutes,
-                        'date' => $connectionDate?->format('Y-m-d')
-                    ]); */
                 }
             }
         } else {
-            // Airport position logic
             $parts = explode('_', $position);
             if (count($parts) >= 2) {
                 $airport = $parts[0];
                 $station = end($parts);
 
                 $ctrStations = $this->ctrTopdown[$airport] ?? [];
+                $legacyCtrStations = $inTransition ? ($this->legacyCtrTopdown[$airport] ?? []) : [];
+                $appStations = $this->appTopdown[$airport] ?? [];
 
                 $ctrAllowedStations = ['APP', 'TWR', 'GNDDEL'];
 
@@ -194,8 +174,29 @@ class VatsimActivityService
 
                     $matchesCtr = false;
                     if (in_array($station, $ctrAllowedStations, true)) {
-                        foreach ($ctrStations as $ctrStation) {
+                        $allCtrStations = array_unique(array_merge($ctrStations, $legacyCtrStations));
+                        foreach ($allCtrStations as $ctrStation) {
                             if (str_starts_with($callsign, $ctrStation)) {
+                                $matchesCtr = true;
+                                break;
+                            }
+                        }
+
+                        // APP combined sectors cover TWR and GNDDEL topdown as well
+                        if (!$matchesCtr && $station !== 'APP') {
+                            foreach ($appStations as $appStation) {
+                                if (str_starts_with($callsign, $appStation)) {
+                                    $matchesCtr = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    // APP endorsement: also match combined APP sectors
+                    if (!$matchesCtr && $station === 'APP') {
+                        foreach ($appStations as $appStation) {
+                            if (str_starts_with($callsign, $appStation)) {
                                 $matchesCtr = true;
                                 break;
                             }
@@ -212,23 +213,9 @@ class VatsimActivityService
                     if ($connectionDate && ($lastActivityDate === null || $connectionDate->greaterThan($lastActivityDate))) {
                         $lastActivityDate = $connectionDate;
                     }
-
-                    /* Log::debug('Connection counted', [
-                        'position' => $position,
-                        'callsign' => $callsign,
-                        'minutes' => $minutes,
-                        'matched_by' => $matchesCtr ? 'CTR' : 'APT',
-                        'date' => $connectionDate?->format('Y-m-d'),
-                    ]); */
                 }
             }
         }
-
-        /* Log::debug('Activity calculation complete', [
-            'position' => $position,
-            'final_minutes' => $activityMinutes,
-            'last_activity_date' => $lastActivityDate?->format('Y-m-d')
-        ]); */
 
         return [
             'minutes' => $activityMinutes,
@@ -236,9 +223,6 @@ class VatsimActivityService
         ];
     }
 
-    /**
-     * Parse connection date from VATSIM API response
-     */
     protected function parseConnectionDate(array $connection): ?Carbon
     {
         if (isset($connection['disconnected_at'])) {
@@ -252,7 +236,6 @@ class VatsimActivityService
             }
         }
 
-        // Fallback: try other date fields that might be present
         foreach (['connected_at', 'start', 'end', 'created_at', 'date'] as $dateField) {
             if (isset($connection[$dateField])) {
                 try {
@@ -266,9 +249,6 @@ class VatsimActivityService
         return null;
     }
 
-    /**
-     * Check if callsign matches suffix condition
-     */
     protected function suffixCondition(string $endorsementApt, string $endorsementStation, string $callsign): bool
     {
         if (!str_starts_with($callsign, $endorsementApt . '_')) {
@@ -276,21 +256,15 @@ class VatsimActivityService
         }
 
         $parts = explode('_', $callsign);
-
         $csStation = end($parts);
-
         $viableSuffixes = $this->viableSuffixes[$endorsementStation] ?? [];
 
         return in_array($csStation, $viableSuffixes, true);
     }
 
-
-    /**
-     * Get activity status based on hours and requirements
-     */
     public function getActivityStatus(float $activityMinutes): string
     {
-        $minRequiredMinutes = config('services.vateud.min_activity_minutes', 180); // 3 hours default
+        $minRequiredMinutes = config('services.vateud.min_activity_minutes', 180);
         
         if ($activityMinutes >= $minRequiredMinutes) {
             return 'active';
@@ -301,9 +275,6 @@ class VatsimActivityService
         }
     }
 
-    /**
-     * Calculate progress percentage for activity requirements
-     */
     public function getActivityProgress(float $activityMinutes): float
     {
         $minRequiredMinutes = config('services.vateud.min_activity_minutes', 180);
