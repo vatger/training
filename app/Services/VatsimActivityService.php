@@ -38,7 +38,7 @@ class VatsimActivityService
         'EDDL' => ['EDGG_KL'],
     ];
 
-    protected $transitionEndDate = '2026-08-03';
+    protected $transitionEndDate = '2026-07-22';
 
     public function getEndorsementActivity(array $endorsement): array
     {
