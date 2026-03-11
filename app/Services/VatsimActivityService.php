@@ -18,7 +18,7 @@ class VatsimActivityService
     protected $ctrTopdown = [
         'EDDB' => ['EDWW_F', 'EDWW_B', 'EDWW_K', 'EDWW_M', 'EDWW_C'],
         'EDDH' => ['EDWW_H', 'EDWW_A', 'EDWW_W', 'EDWW_C'],
-        'EDDF' => ['EDGG_R', 'EDGG_D', 'EDGG_C', 'EDGG_S', 'EDGG_CA'],
+        'EDDF' => ['EDGG_R', 'EDGG_D', 'EDGG_CA', 'EDGG_SA', 'EDGG_CS'],
         'EDDK' => ['EDGG_N', 'EDGG_NH'],
         'EDDL' => ['EDGG_N', 'EDGG_NH'],
         'EDDM' => ['EDMM_N', 'EDMM_Z', 'EDMM_R'],
