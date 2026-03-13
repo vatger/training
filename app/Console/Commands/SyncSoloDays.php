@@ -25,8 +25,10 @@ class SyncSoloDays extends Command
         $this->info('Starting solo days sync from VatEUD...');
 
         try {
+            $this->resetUpgradedUsers();
+
             $soloEndorsements = $this->vatEudService->getSoloEndorsements();
-            
+
             if (empty($soloEndorsements)) {
                 $this->info('No solo endorsements found in VatEUD');
                 return 0;
@@ -36,9 +38,7 @@ class SyncSoloDays extends Command
 
             $userSoloDays = collect($soloEndorsements)
                 ->groupBy('user_cid')
-                ->map(function ($userSolos) {
-                    return $userSolos->max('position_days') ?? 0;
-                });
+                ->map(fn($userSolos) => $userSolos->max('position_days') ?? 0);
 
             $bar = $this->output->createProgressBar($userSoloDays->count());
             $bar->start();
@@ -47,32 +47,18 @@ class SyncSoloDays extends Command
             foreach ($userSoloDays as $vatsimId => $soloDays) {
                 try {
                     $user = User::where('vatsim_id', $vatsimId)->first();
-                    
+
                     if ($user) {
                         $currentDays = $user->solo_days_used ?? 0;
                         $newDays = (int) $soloDays;
 
-                        if ($this->shouldResetSoloDays($user)) {
-                            $this->line("\nResetting solo days for {$user->name} ({$vatsimId}) due to rating upgrade");
-                            $user->solo_days_used = 0;
-                            $user->rating_upgraded_at = null;
-                            $user->save();
-
-                            Log::info('Solo days reset due to rating upgrade', [
-                                'vatsim_id' => $vatsimId,
-                                'user_name' => $user->name,
-                                'old_rating' => $user->last_known_rating,
-                                'new_rating' => $user->rating,
-                            ]);
-                        }
-                        // Only update if VatEUD shows more days
-                        elseif ($newDays > $currentDays) {
+                        if ($newDays > $currentDays) {
                             $user->solo_days_used = $newDays;
                             $user->save();
-                            
+
                             $this->line("\nUpdated {$user->name} ({$vatsimId}): {$currentDays} → {$newDays} days");
                         }
-                        
+
                         $updatedCount++;
                     } else {
                         $this->warn("\nUser with VATSIM ID {$vatsimId} not found in database");
@@ -81,44 +67,54 @@ class SyncSoloDays extends Command
                     $this->error("\nFailed to update user {$vatsimId}: " . $e->getMessage());
                     Log::error('Failed to update solo days for user', [
                         'vatsim_id' => $vatsimId,
-                        'error' => $e->getMessage()
+                        'error' => $e->getMessage(),
                     ]);
                 }
-                
+
                 $bar->advance();
             }
 
             $bar->finish();
             $this->newLine(2);
             $this->info("Processed {$updatedCount} users.");
-            
+
             return 0;
 
         } catch (\Exception $e) {
             $this->error('Error during solo days sync: ' . $e->getMessage());
             Log::error('Solo days sync error', [
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
             return 1;
         }
     }
 
-    protected function shouldResetSoloDays(User $user): bool
+    protected function resetUpgradedUsers(): void
     {
-        if (!$user->rating_upgraded_at) {
-            return false;
+        $users = User::whereNotNull('rating_upgraded_at')
+            ->whereColumn('rating', '>', 'last_known_rating')
+            ->get();
+
+        if ($users->isEmpty()) {
+            return;
         }
 
-        if ($user->rating === $user->last_known_rating) {
-            return false;
-        }
+        $this->info("Resetting solo days for {$users->count()} rating-upgraded user(s)...");
 
-        // Rating has increased - reset solo days
-        if ($user->rating > $user->last_known_rating) {
-            return true;
-        }
+        foreach ($users as $user) {
+            $user->solo_days_used = 0;
+            $user->rating_upgraded_at = null;
+            $user->save();
 
-        return false;
+            $this->line("Reset solo days for {$user->name} ({$user->vatsim_id})");
+
+            Log::info('Solo days reset due to rating upgrade', [
+                'vatsim_id' => $user->vatsim_id,
+                'user_name' => $user->name,
+                'old_rating' => $user->last_known_rating,
+                'new_rating' => $user->rating,
+            ]);
+        }
     }
 }
