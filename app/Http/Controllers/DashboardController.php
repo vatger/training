@@ -65,7 +65,6 @@ class DashboardController extends Controller
           'position_display' => $course->position_display,
           'airport_icao' => $course->airport_icao,
           'claimed_by' => $claimedBy,
-          'recent_logs' => $allLogs->take(3)->toArray(),
           'all_logs' => $allLogs->toArray(),
         ];
       });
@@ -83,11 +82,10 @@ class DashboardController extends Controller
 
     $completedCourses = collect();
     foreach ($completedData as $courseData) {
-      $recentLogs = \App\Models\TrainingLog::where('trainee_id', $user->id)
+      $allLogsForCompleted = \App\Models\TrainingLog::where('trainee_id', $user->id)
         ->where('course_id', $courseData->id)
         ->with(['mentor'])
         ->orderBy('session_date', 'desc')
-        ->take(3)
         ->get()
         ->map(function ($log) {
           return [
@@ -99,6 +97,8 @@ class DashboardController extends Controller
             'result' => $log->result ?? false,
             'average_rating' => $log->average_rating ?? null,
             'mentor_name' => $log->mentor ? $log->mentor->name : 'Unknown',
+            'next_step' => $log->next_step ?? null,
+            'session_duration' => $log->session_duration ?? null,
           ];
         });
 
@@ -111,7 +111,7 @@ class DashboardController extends Controller
         'position_display' => $this->getPositionDisplay($courseData->position),
         'airport_icao' => $courseData->airport_icao,
         'completed_at' => \Carbon\Carbon::parse($courseData->completed_at)->format('Y-m-d'),
-        'recent_logs' => $recentLogs->toArray(),
+        'all_logs' => $allLogsForCompleted->toArray(),
       ]);
     }
 
