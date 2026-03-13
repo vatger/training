@@ -114,11 +114,19 @@ class VatsimOAuthController extends Controller
 
         $user = User::firstOrNew(['vatsim_id' => $profile['id']]);
 
+        $newRating = $profile['rating_atc'];
+        $previousRating = $user->last_known_rating ?? $user->rating;
+
+        if ($user->exists && $newRating > $previousRating) {
+            $user->rating_upgraded_at = now();
+        }
+
         $user->fill([
             'first_name' => $profile['firstname'],
             'last_name' => $profile['lastname'],
             'email' => $profile['email'] ?? null,
-            'rating' => $profile['rating_atc'],
+            'rating' => $newRating,
+            'last_known_rating' => $newRating,
             'subdivision' => $profile['subdivision_code'] ?? null,
             'last_rating_change' => $lastRatingChange,
             'is_staff' => $isStaff,
