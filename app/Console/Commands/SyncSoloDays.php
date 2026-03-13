@@ -92,8 +92,7 @@ class SyncSoloDays extends Command
 
     protected function resetUpgradedUsers(): void
     {
-        $users = User::whereNotNull('rating_upgraded_at')
-            ->whereColumn('rating', '>', 'last_known_rating')
+        $users = User::whereColumn('rating', '>', 'last_known_rating')
             ->get();
 
         if ($users->isEmpty()) {

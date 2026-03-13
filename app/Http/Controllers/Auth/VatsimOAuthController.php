@@ -117,7 +117,7 @@ class VatsimOAuthController extends Controller
         $newRating = $profile['rating_atc'];
         $previousRating = $user->last_known_rating ?? $user->rating;
 
-        if ($user->exists && $newRating > $previousRating) {
+        if ($user->exists && $previousRating !== null && $newRating > $previousRating) {
             $user->rating_upgraded_at = now();
         }
 
