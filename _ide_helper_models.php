@@ -244,7 +244,6 @@ namespace App\Models{
  * @property-read float $activity_hours
  * @property-read float $progress
  * @property-read string $status
- * @property-read \App\Models\User|null $trainee
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EndorsementActivity markedForRemoval()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EndorsementActivity needsUpdate()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EndorsementActivity newModelQuery()

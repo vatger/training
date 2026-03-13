@@ -26,6 +26,8 @@ class User extends Authenticatable implements FilamentUser
         'is_superuser',
         'is_admin',
         'password',
+        'last_known_rating',
+        'rating_upgraded_at',
         'solo_days_used',
     ];
 
