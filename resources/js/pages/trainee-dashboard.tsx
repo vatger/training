@@ -33,7 +33,6 @@ export interface Course {
     airport_icao: string;
     claimed_by: string | null;
     completed_at?: string;
-    recent_logs: TrainingLog[];
     all_logs?: TrainingLog[];
 }
 
@@ -193,11 +192,11 @@ export default function TraineeDashboard(props: Props) {
                                                                 <span className="font-medium">{course.claimed_by}</span>
                                                             </div>
                                                         )}
-                                                        {course.recent_logs && course.recent_logs.length > 0 && (
+                                                        {course.all_logs && course.all_logs.length > 0 && (
                                                             <div className="space-y-2">
                                                                 <div className="text-sm font-medium">Recent Sessions</div>
                                                                 <div className="space-y-1">
-                                                                    {course.recent_logs.map((log) => (
+                                                                    {course.all_logs.map((log) => (
                                                                         <div
                                                                             key={log.id}
                                                                             className="flex items-center justify-between rounded-md bg-muted/50 px-3 py-2 text-sm"
