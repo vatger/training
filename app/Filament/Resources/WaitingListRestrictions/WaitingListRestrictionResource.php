@@ -13,6 +13,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Filament\Facades\Filament;
 
 class WaitingListRestrictionResource extends Resource
 {
@@ -36,9 +37,22 @@ class WaitingListRestrictionResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
+    }
+
+    public static function canViewAny(): bool
+    {
+        $user = Filament::auth()->user();
+
+        if (!$user) {
+            return false;
+        }
+
+        if ($user->is_admin || $user->is_superuser) {
+            return true;
+        }
+
+        return $user->canAccessAdminResource('users');
     }
 
     public static function getNavigationGroup(): ?string
