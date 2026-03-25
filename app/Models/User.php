@@ -639,4 +639,20 @@ class User extends Authenticatable implements FilamentUser
     {
         return !empty($this->getLeadingMentorFirs());
     }
+
+    public function waitingListRestrictions()
+    {
+        return $this->hasMany(WaitingListRestriction::class);
+    }
+
+    public function isRestrictedFrom(string $type): bool
+    {
+        return $this->waitingListRestrictions()
+            ->where('type', $type)
+            ->where(function ($q) {
+                $q->whereNull('expires_at')
+                    ->orWhere('expires_at', '>=', now());
+            })
+            ->exists();
+    }
 }

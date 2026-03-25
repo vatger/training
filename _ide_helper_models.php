@@ -639,6 +639,7 @@ namespace App\Models{
  * @property-read int|null $permissions_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Role> $roles
  * @property-read int|null $roles_count
+ * @property-read \App\Models\UserSetting|null $settings
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\TrainingLog> $trainingLogs
  * @property-read int|null $training_logs_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\WaitingListEntry> $waitingListEntries
@@ -681,6 +682,7 @@ namespace App\Models{
  * @property string $theme
  * @property bool $english_only
  * @property array<array-key, mixed>|null $notification_preferences
+ * @property array<array-key, mixed>|null $waiting_list_restrictions
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\User $user
@@ -694,6 +696,7 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|UserSetting whereTheme($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|UserSetting whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|UserSetting whereUserId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserSetting whereWaitingListRestrictions($value)
  */
 	class UserSetting extends \Eloquent {}
 }
