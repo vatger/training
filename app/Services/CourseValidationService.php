@@ -82,6 +82,10 @@ class CourseValidationService
             return [false, 'You do not have the required rating for this course.'];
         }
 
+        if ($user->isRestrictedFrom($course->type)) {
+            return [false, 'You are currently restricted from joining this type of waiting list.'];
+        }
+
         if ($course->type === 'RTG') {
             $hasActiveRtg = Cache::remember(
                 "user_{$user->id}_has_active_rtg",
