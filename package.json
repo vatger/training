@@ -76,7 +76,7 @@
         "vaul": "^1.1.2",
         "vite": "^7.3.0",
         "ziggy-js": "^2.6.0",
-        "zod": "^4.3.4"
+        "zod": "^4.3.6"
     },
     "optionalDependencies": {
         "@rollup/rollup-linux-x64-gnu": "4.9.5",
