@@ -43,7 +43,7 @@ RUN apk add --no-cache --virtual .build-deps \
     icu-dev \
     libzip-dev \
     && docker-php-ext-install intl zip pdo_mysql opcache \
-    && pecl install redis \
+    && pecl install --prefer-stable redis \
     && docker-php-ext-enable redis \
     && apk del .build-deps
 
