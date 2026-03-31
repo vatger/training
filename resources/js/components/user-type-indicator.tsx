@@ -2,7 +2,7 @@ import { usePage } from '@inertiajs/react';
 import { Shield, User } from 'lucide-react';
 
 export default function UserTypeIndicator() {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { auth } = usePage().props as any;
     const user = auth.user;
 
