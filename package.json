@@ -76,12 +76,5 @@
         "vite": "^8.0.0",
         "ziggy-js": "^2.6.0",
         "zod": "^4.3.6"
-    },
-    "optionalDependencies": {
-        "@emnapi/core": "^1.9.1",
-        "@emnapi/runtime": "^1.9.1",
-        "@rolldown/linux-x64-gnu": "latest",
-        "@tailwindcss/oxide-linux-x64-gnu": "^4.2.2",
-        "lightningcss-linux-x64-gnu": "^1.30.2"
     }
 }
