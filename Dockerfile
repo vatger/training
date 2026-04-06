@@ -1,4 +1,4 @@
-FROM php:8.4-alpine AS frontend
+FROM php:8.5-alpine AS frontend
 
 RUN apk add --no-cache \
     nodejs \
@@ -31,7 +31,7 @@ RUN npm run build
 
 RUN rm -rf node_modules
 
-FROM php:8.4-fpm-alpine
+FROM php:8.5-fpm-alpine
 
 RUN apk add --no-cache \
     icu-libs \
