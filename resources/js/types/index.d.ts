@@ -1,61 +1,61 @@
-import { InertiaLinkProps } from '@inertiajs/react';
-import { LucideIcon } from 'lucide-react';
+import { InertiaLinkProps } from "@inertiajs/react"
+import { LucideIcon } from "lucide-react"
 
 export interface Auth {
-    user: User;
+	user: User
 }
 
 export interface BreadcrumbItem {
-    title: string;
-    href: string;
+	title: string
+	href: string
 }
 
 export interface NavGroup {
-    title: string;
-    items: NavItem[];
+	title: string
+	items: NavItem[]
 }
 
 export interface NavItem {
-    title: string;
-    href: NonNullable<InertiaLinkProps['href']>;
-    icon?: LucideIcon | null;
-    isActive?: boolean;
-    external?: boolean;
+	title: string
+	href: NonNullable<InertiaLinkProps["href"]>
+	icon?: LucideIcon | null
+	isActive?: boolean
+	external?: boolean
 }
 
 export interface SharedData {
-    name: string;
-    quote: { message: string; author: string };
-    auth: Auth;
-    sidebarOpen: boolean;
-    [key: string]: unknown;
+	name: string
+	quote: { message: string; author: string }
+	auth: Auth
+	sidebarOpen: boolean
+	[key: string]: unknown
 }
 
 export interface User {
-    id: number;
-    name: string;
-    email: string;
-    avatar?: string;
-    email_verified_at: string | null;
-    created_at: string;
-    updated_at: string;
-    [key: string]: unknown;
+	id: number
+	name: string
+	email: string
+	avatar?: string
+	email_verified_at: string | null
+	created_at: string
+	updated_at: string
+	[key: string]: unknown
 }
 
 export type Endorsement = {
-    id?: number;
-    position: string;
-    fullName: string;
-    activity?: number;
-    requiredActivity?: number;
-    status: 'active' | 'removal' | 'warning' | 'completed' | 'available';
-    lastActivity?: string;
-    type: 'GNDDEL' | 'TWR' | 'APP' | 'CTR';
-    expiresAt?: string;
-    mentor?: string;
-    removalDate?: string;
-    lastUpdated?: string;
-    moodleCourseId?: number;
-    hasEndorsement?: boolean;
-    moodleCompleted?: boolean;
-};
+	id?: number
+	position: string
+	fullName: string
+	activity?: number
+	requiredActivity?: number
+	status: "active" | "removal" | "warning" | "completed" | "available"
+	lastActivity?: string
+	type: "GNDDEL" | "TWR" | "APP" | "CTR"
+	expiresAt?: string
+	mentor?: string
+	removalDate?: string
+	lastUpdated?: string
+	moodleCourseId?: number
+	hasEndorsement?: boolean
+	moodleCompleted?: boolean
+}
