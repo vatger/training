@@ -1,163 +1,208 @@
-import { useEditor, EditorContent } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
-import Placeholder from '@tiptap/extension-placeholder';
-import { useCallback, useEffect } from 'react';
-import { Bold, Italic, List, ListOrdered, Heading1, Heading2, Heading3, Image, Strikethrough } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Image as ImageExtension } from '@tiptap/extension-image';
+import { Image as ImageExtension } from "@tiptap/extension-image"
+import Placeholder from "@tiptap/extension-placeholder"
+import { EditorContent, useEditor } from "@tiptap/react"
+import StarterKit from "@tiptap/starter-kit"
+import {
+	Bold,
+	Heading1,
+	Heading2,
+	Heading3,
+	Image,
+	Italic,
+	List,
+	ListOrdered,
+	Strikethrough,
+} from "lucide-react"
+import { useCallback, useEffect } from "react"
+import { cn } from "@/lib/utils"
 
 interface WYSIWYGEditorProps {
-    value: string;
-    onChange: (value: string) => void;
-    placeholder?: string;
-    minHeight?: string;
+	value: string
+	onChange: (value: string) => void
+	placeholder?: string
+	minHeight?: string
 }
 
 const MenuButton = ({
-    onClick,
-    isActive = false,
-    children,
-    title,
+	onClick,
+	isActive = false,
+	children,
+	title,
 }: {
-    onClick: () => void;
-    isActive?: boolean;
-    children: React.ReactNode;
-    title: string;
+	onClick: () => void
+	isActive?: boolean
+	children: React.ReactNode
+	title: string
 }) => (
-    <button
-        type="button"
-        onClick={onClick}
-        title={title}
-        className={cn('rounded p-2 transition-colors hover:bg-muted', isActive && 'bg-muted text-primary')}
-    >
-        {children}
-    </button>
-);
+	<button
+		className={cn(
+			"rounded p-2 transition-colors hover:bg-muted",
+			isActive && "bg-muted text-primary",
+		)}
+		onClick={onClick}
+		title={title}
+		type="button"
+	>
+		{children}
+	</button>
+)
 
 // Isolated toolbar component to prevent re-renders
-const EditorToolbar = ({ editor, addImage }: { editor: any; addImage: () => void }) => {
-    if (!editor) return null;
+const EditorToolbar = ({
+	editor,
+	addImage,
+}: {
+	// biome-ignore lint/suspicious/noExplicitAny: no specific type exists
+	editor: any
+	addImage: () => void
+}) => {
+	if (!editor) return null
 
-    return (
-        <div className="flex flex-wrap gap-1 border-b bg-muted/30 p-2">
-            <MenuButton onClick={() => editor.chain().focus().toggleBold().run()} isActive={editor.isActive('bold')} title="Bold">
-                <Bold className="h-4 w-4" />
-            </MenuButton>
-            <MenuButton onClick={() => editor.chain().focus().toggleItalic().run()} isActive={editor.isActive('italic')} title="Italic">
-                <Italic className="h-4 w-4" />
-            </MenuButton>
-            <MenuButton onClick={() => editor.chain().focus().toggleStrike().run()} isActive={editor.isActive('strike')} title="Strikethrough">
-                <Strikethrough className="h-4 w-4" />
-            </MenuButton>
+	return (
+		<div className="flex flex-wrap gap-1 border-b bg-muted/30 p-2">
+			<MenuButton
+				isActive={editor.isActive("bold")}
+				onClick={() => editor.chain().focus().toggleBold().run()}
+				title="Bold"
+			>
+				<Bold className="h-4 w-4" />
+			</MenuButton>
+			<MenuButton
+				isActive={editor.isActive("italic")}
+				onClick={() => editor.chain().focus().toggleItalic().run()}
+				title="Italic"
+			>
+				<Italic className="h-4 w-4" />
+			</MenuButton>
+			<MenuButton
+				isActive={editor.isActive("strike")}
+				onClick={() => editor.chain().focus().toggleStrike().run()}
+				title="Strikethrough"
+			>
+				<Strikethrough className="h-4 w-4" />
+			</MenuButton>
 
-            <div className="mx-1 w-px bg-border" />
+			<div className="mx-1 w-px bg-border" />
 
-            <MenuButton
-                onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-                isActive={editor.isActive('heading', { level: 1 })}
-                title="Heading 1"
-            >
-                <Heading1 className="h-4 w-4" />
-            </MenuButton>
-            <MenuButton
-                onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-                isActive={editor.isActive('heading', { level: 2 })}
-                title="Heading 2"
-            >
-                <Heading2 className="h-4 w-4" />
-            </MenuButton>
-            <MenuButton
-                onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-                isActive={editor.isActive('heading', { level: 3 })}
-                title="Heading 3"
-            >
-                <Heading3 className="h-4 w-4" />
-            </MenuButton>
+			<MenuButton
+				isActive={editor.isActive("heading", { level: 1 })}
+				onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+				title="Heading 1"
+			>
+				<Heading1 className="h-4 w-4" />
+			</MenuButton>
+			<MenuButton
+				isActive={editor.isActive("heading", { level: 2 })}
+				onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+				title="Heading 2"
+			>
+				<Heading2 className="h-4 w-4" />
+			</MenuButton>
+			<MenuButton
+				isActive={editor.isActive("heading", { level: 3 })}
+				onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+				title="Heading 3"
+			>
+				<Heading3 className="h-4 w-4" />
+			</MenuButton>
 
-            <div className="mx-1 w-px bg-border" />
+			<div className="mx-1 w-px bg-border" />
 
-            <MenuButton onClick={() => editor.chain().focus().toggleBulletList().run()} isActive={editor.isActive('bulletList')} title="Bullet List">
-                <List className="h-4 w-4" />
-            </MenuButton>
-            <MenuButton
-                onClick={() => editor.chain().focus().toggleOrderedList().run()}
-                isActive={editor.isActive('orderedList')}
-                title="Numbered List"
-            >
-                <ListOrdered className="h-4 w-4" />
-            </MenuButton>
+			<MenuButton
+				isActive={editor.isActive("bulletList")}
+				onClick={() => editor.chain().focus().toggleBulletList().run()}
+				title="Bullet List"
+			>
+				<List className="h-4 w-4" />
+			</MenuButton>
+			<MenuButton
+				isActive={editor.isActive("orderedList")}
+				onClick={() => editor.chain().focus().toggleOrderedList().run()}
+				title="Numbered List"
+			>
+				<ListOrdered className="h-4 w-4" />
+			</MenuButton>
 
-            <div className="mx-1 w-px bg-border" />
+			<div className="mx-1 w-px bg-border" />
 
-            <MenuButton onClick={addImage} title="Add Image">
-                <Image className="h-4 w-4" />
-            </MenuButton>
-        </div>
-    );
-};
+			<MenuButton onClick={addImage} title="Add Image">
+				<Image className="h-4 w-4" />
+			</MenuButton>
+		</div>
+	)
+}
 
-export function WYSIWYGEditor({ value, onChange, placeholder = 'Start writing...', minHeight = '150px' }: WYSIWYGEditorProps) {
-    const editor = useEditor({
-        extensions: [
-            StarterKit.configure({
-                heading: {
-                    levels: [1, 2, 3],
-                },
-            }),
-            Placeholder.configure({
-                placeholder,
-            }),
-            ImageExtension,
-        ],
-        content: value,
-        editorProps: {
-            attributes: {
-                class: 'prose prose-sm max-w-none focus:outline-none',
-            },
-        },
-        onUpdate: ({ editor }) => {
-            const html = editor.getHTML();
-            onChange(html);
-        },
-        // Critical performance optimization - don't re-render on every transaction
-        immediatelyRender: false,
-        shouldRerenderOnTransaction: false,
-    });
+export function WYSIWYGEditor({
+	value,
+	onChange,
+	placeholder = "Start writing...",
+	minHeight = "150px",
+}: WYSIWYGEditorProps) {
+	const editor = useEditor({
+		extensions: [
+			StarterKit.configure({
+				heading: {
+					levels: [1, 2, 3],
+				},
+			}),
+			Placeholder.configure({
+				placeholder,
+			}),
+			ImageExtension,
+		],
+		content: value,
+		editorProps: {
+			attributes: {
+				class: "prose prose-sm max-w-none focus:outline-none",
+			},
+		},
+		onUpdate: ({ editor }) => {
+			const html = editor.getHTML()
+			onChange(html)
+		},
+		// Critical performance optimization - don't re-render on every transaction
+		immediatelyRender: false,
+		shouldRerenderOnTransaction: false,
+	})
 
-    // Only update content when value prop changes externally (not from typing)
-    useEffect(() => {
-        if (editor && value !== editor.getHTML()) {
-            const { from, to } = editor.state.selection;
-            editor.commands.setContent(value, false);
-            // Restore cursor position
-            editor.commands.setTextSelection({ from, to });
-        }
-    }, [value, editor]);
+	// Only update content when value prop changes externally (not from typing)
+	useEffect(() => {
+		if (editor && value !== editor.getHTML()) {
+			const { from, to } = editor.state.selection
+			editor.commands.setContent(value)
+			// Restore cursor position
+			editor.commands.setTextSelection({ from, to })
+		}
+	}, [value, editor])
 
-    const addImage = useCallback(() => {
-        const url = window.prompt('URL');
+	const addImage = useCallback(() => {
+		const url = window.prompt("URL")
 
-        if (url) {
-            editor?.chain().focus().setImage({ src: url }).run();
-        }
-    }, [editor]);
+		if (url) {
+			editor?.chain().focus().setImage({ src: url }).run()
+		}
+	}, [editor])
 
-    if (!editor) {
-        return null;
-    }
+	if (!editor) {
+		return null
+	}
 
-    return (
-        <div className="overflow-hidden rounded-lg border">
-            <EditorToolbar editor={editor} addImage={addImage} />
+	return (
+		<div className="overflow-hidden rounded-lg border">
+			<EditorToolbar addImage={addImage} editor={editor} />
 
-            {/* Editor Content */}
-            <div className="min-h-[var(--min-height)] bg-white p-4 dark:bg-gray-950" style={{ '--min-height': minHeight } as React.CSSProperties}>
-                <EditorContent editor={editor} />
-            </div>
+			{/* Editor Content */}
+			<div
+				className="min-h-[var(--min-height)] bg-white p-4 dark:bg-gray-950"
+				style={{ "--min-height": minHeight } as React.CSSProperties}
+			>
+				<EditorContent editor={editor} />
+			</div>
 
-            <style
-                dangerouslySetInnerHTML={{
-                    __html: `
+			<style
+				// biome-ignore lint/security/noDangerouslySetInnerHtml: required by library
+				dangerouslySetInnerHTML={{
+					__html: `
                 .ProseMirror {
                     min-height: ${minHeight};
                 }
@@ -269,8 +314,8 @@ export function WYSIWYGEditor({ value, onChange, placeholder = 'Start writing...
                     font-style: italic;
                 }
             `,
-                }}
-            />
-        </div>
-    );
+				}}
+			/>
+		</div>
+	)
 }
