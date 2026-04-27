@@ -40,6 +40,7 @@ interface EndorsementData {
     progress: number;
     removalDate: string | null;
     removalDays: number;
+    lowActivitySince: string | null;
 }
 
 interface EndorsementGroupData {
@@ -52,6 +53,7 @@ interface EndorsementGroupData {
 
 interface PageProps {
     endorsementGroups: EndorsementGroupData[];
+    isSuperuser: boolean;
     userPermissions: {
         canRemoveForPositions: string[] | null;
         canRemoveAny: boolean;
@@ -83,7 +85,33 @@ const getEndorsementState = (endorsement: EndorsementData): 'active' | 'low-acti
     return 'active';
 };
 
-export default function ManageEndorsements({ endorsementGroups: initialGroups, userPermissions }: PageProps) {
+function EligibleSinceCell({ lowActivitySince }: { lowActivitySince: string | null }) {
+    if (!lowActivitySince) {
+        return <span className="text-muted-foreground">—</span>;
+    }
+
+    const since = new Date(lowActivitySince);
+    const now = new Date();
+    const diffMs = now.getTime() - since.getTime();
+    const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    let colorClass = 'text-yellow-700 dark:text-yellow-300';
+    if (days >= 60) colorClass = 'text-red-700 dark:text-red-300';
+    else if (days >= 30) colorClass = 'text-orange-700 dark:text-orange-300';
+
+    return (
+        <Tooltip>
+            <TooltipTrigger asChild>
+                <div className={cn('cursor-default text-sm font-medium', colorClass)}>{days === 0 ? 'Today' : `${days}d`}</div>
+            </TooltipTrigger>
+            <TooltipContent>
+                <p>Eligible for removal since {since.toLocaleDateString('de')}</p>
+            </TooltipContent>
+        </Tooltip>
+    );
+}
+
+export default function ManageEndorsements({ endorsementGroups: initialGroups, isSuperuser, userPermissions }: PageProps) {
     const [endorsementGroups, setEndorsementGroups] = useState(initialGroups);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
@@ -98,12 +126,7 @@ export default function ManageEndorsements({ endorsementGroups: initialGroups, u
         if (userPermissions.canRemoveForPositions === null) {
             return true;
         }
-
-        if (userPermissions.canRemoveForPositions.includes(position)) {
-            return true;
-        }
-
-        return false;
+        return userPermissions.canRemoveForPositions.includes(position);
     };
 
     const updateEndorsementInState = useCallback((endorsementId: number, updates: Partial<EndorsementData>) => {
@@ -194,19 +217,16 @@ export default function ManageEndorsements({ endorsementGroups: initialGroups, u
                 const flashMessage = (page.props as any).flash;
 
                 if (flashMessage?.error) {
-                    console.log('Error from backend:', flashMessage.error);
                     toast.error('Failed to mark for removal', {
                         description: flashMessage.error,
                         duration: 6000,
                     });
                 } else if (flashMessage?.success) {
-                    console.log('Success from backend:', flashMessage.success);
                     toast.success('Endorsement marked for removal', {
                         description: `${savedEndorsement.position} for ${savedEndorsement.userName} will be removed in ${removalWarningDays} days`,
                         duration: 4000,
                     });
                 } else {
-                    console.warn('No flash message received. Flash object:', flashMessage);
                     toast.success('Endorsement marked for removal', {
                         description: `${savedEndorsement.position} for ${savedEndorsement.userName} will be removed in ${removalWarningDays} days`,
                         duration: 4000,
@@ -216,8 +236,6 @@ export default function ManageEndorsements({ endorsementGroups: initialGroups, u
                 setIsProcessing(false);
             },
             onError: (errors) => {
-                console.error('Endorsement removal error:', errors);
-
                 updateEndorsementInState(savedEndorsement.endorsementId, {
                     removalDate: null,
                     removalDays: 0,
@@ -369,8 +387,10 @@ export default function ManageEndorsements({ endorsementGroups: initialGroups, u
                     </Card>
                 )}
             </div>
+
+            {/* Group detail dialog */}
             <Dialog open={isGroupDialogOpen} onOpenChange={setIsGroupDialogOpen}>
-                <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-[90vw] lg:max-w-[1000px]">
+                <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-[90vw] lg:max-w-[1100px]">
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2">{selectedGroup && selectedGroup.position_name}</DialogTitle>
                         <DialogDescription>
@@ -403,6 +423,20 @@ export default function ManageEndorsements({ endorsementGroups: initialGroups, u
                                         <TableHead>Controller</TableHead>
                                         <TableHead>Activity</TableHead>
                                         <TableHead>Status</TableHead>
+                                        {isSuperuser && (
+                                            <TableHead>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <span className="cursor-default border-b border-dashed border-muted-foreground">
+                                                            Eligible Since
+                                                        </span>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>How long this controller has been eligible for removal</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </TableHead>
+                                        )}
                                         <TableHead className="text-right">Actions</TableHead>
                                     </TableRow>
                                 </TableHeader>
@@ -470,6 +504,13 @@ export default function ManageEndorsements({ endorsementGroups: initialGroups, u
                                                         )}
                                                     </div>
                                                 </TableCell>
+                                                {isSuperuser && (
+                                                    <TableCell>
+                                                        <TooltipProvider>
+                                                            <EligibleSinceCell lowActivitySince={endorsement.lowActivitySince} />
+                                                        </TooltipProvider>
+                                                    </TableCell>
+                                                )}
                                                 <TableCell className="text-right">
                                                     <TooltipProvider>
                                                         <Tooltip>
@@ -496,7 +537,7 @@ export default function ManageEndorsements({ endorsementGroups: initialGroups, u
                                                             )}
                                                             {state === 'active' && (
                                                                 <TooltipContent>
-                                                                    <p>Endorsement is active - cannot mark for removal</p>
+                                                                    <p>Endorsement is active — cannot mark for removal</p>
                                                                 </TooltipContent>
                                                             )}
                                                             {!canRemove && state !== 'in-removal' && state !== 'active' && (
@@ -525,6 +566,8 @@ export default function ManageEndorsements({ endorsementGroups: initialGroups, u
                     )}
                 </DialogContent>
             </Dialog>
+
+            {/* Removal confirmation dialog */}
             <Dialog open={isRemovalDialogOpen} onOpenChange={setIsRemovalDialogOpen}>
                 <DialogContent>
                     <DialogHeader>

@@ -86,7 +86,7 @@ class VatsimActivityService
         ];
     }
 
-    protected function getVatsimConnections(int $vatsimId): array
+    public function getVatsimConnections(int $vatsimId): array
     {
         $cacheKey = "vatsim_activity:{$vatsimId}";
         
@@ -130,7 +130,7 @@ class VatsimActivityService
         });
     }
 
-    protected function calculateActivity(array $endorsement, array $connections): array
+    public function calculateActivity(array $endorsement, array $connections): array
     {
         $activityMinutes = 0;
         $position = $endorsement['position'];
@@ -279,5 +279,170 @@ class VatsimActivityService
     {
         $minRequiredMinutes = config('services.vateud.min_activity_minutes', 180);
         return min(($activityMinutes / $minRequiredMinutes) * 100, 100);
+    }
+
+    public function getVatsimConnectionsLong(int $vatsimId): array
+    {
+        $start = Carbon::now()->subYears(2)->format('Y-m-d');
+
+        $apiUrl = "http://stats.vatsim-germany.org/api/atc/{$vatsimId}/sessions/?start_date={$start}";
+
+        $response = Http::timeout(15)->get($apiUrl);
+
+        return $response->successful() ? $response->json() : [];
+    }
+
+    protected function getRelevantSessions(array $endorsement, array $connections): array
+    {
+        $sessions = [];
+        $position = $endorsement['position'];
+        $inTransition = Carbon::now()->lessThan(Carbon::parse($this->transitionEndDate));
+
+        foreach ($connections as $connection) {
+            $callsign = $connection['callsign'] ?? '';
+            $minutes = floatval($connection['minutes_online'] ?? 0);
+            $date = $this->parseConnectionDate($connection);
+
+            if (!$date || $minutes <= 0) {
+                continue;
+            }
+
+            $matches = false;
+
+            if (str_ends_with($position, '_CTR')) {
+                $ctrlPrefix = substr($position, 0, 6);
+
+                if (
+                    str_starts_with($callsign, $ctrlPrefix) ||
+                    ($position === 'EDWW_W_CTR' && $callsign === 'EDWW_CTR')
+                ) {
+                    $matches = true;
+                }
+            } else {
+                $parts = explode('_', $position);
+                if (count($parts) >= 2) {
+                    $airport = $parts[0];
+                    $station = end($parts);
+
+                    $ctrStations = $this->ctrTopdown[$airport] ?? [];
+                    $legacyCtrStations = $inTransition ? ($this->legacyCtrTopdown[$airport] ?? []) : [];
+                    $appStations = $this->appTopdown[$airport] ?? [];
+
+                    $ctrAllowedStations = ['APP', 'TWR', 'GNDDEL'];
+
+                    $matchesSuffix = $this->suffixCondition($airport, $station, $callsign);
+
+                    $matchesCtr = false;
+
+                    if (in_array($station, $ctrAllowedStations, true)) {
+                        $allCtrStations = array_unique(array_merge($ctrStations, $legacyCtrStations));
+
+                        foreach ($allCtrStations as $ctrStation) {
+                            if (str_starts_with($callsign, $ctrStation)) {
+                                $matchesCtr = true;
+                                break;
+                            }
+                        }
+
+                        if (!$matchesCtr && $station !== 'APP') {
+                            foreach ($appStations as $appStation) {
+                                if (str_starts_with($callsign, $appStation)) {
+                                    $matchesCtr = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    if (!$matchesCtr && $station === 'APP') {
+                        foreach ($appStations as $appStation) {
+                            if (str_starts_with($callsign, $appStation)) {
+                                $matchesCtr = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    $matches = $matchesCtr || $matchesSuffix;
+                }
+            }
+
+            if ($matches) {
+                $sessions[] = [
+                    'date' => $date,
+                    'minutes' => $minutes,
+                ];
+            }
+        }
+
+        return collect($sessions)->sortBy('date')->values()->all();
+    }
+
+    public function calculateLowActivitySince(array $endorsement, array $connections): ?string
+    {
+        $minRequiredMinutes = config('services.vateud.min_activity_minutes', 180);
+
+        $sessions = collect($this->getRelevantSessions($endorsement, $connections))
+            ->sortBy('date')
+            ->values();
+
+        if ($sessions->isEmpty()) {
+            return null;
+        }
+
+        $now = now();
+
+        // Step 1: check if currently valid
+        $currentMinutes = $sessions
+            ->filter(fn($s) => $s['date']->between($now->copy()->subMonths(6), $now))
+            ->sum('minutes');
+
+        if ($currentMinutes >= $minRequiredMinutes) {
+            return null;
+        }
+
+        // Step 2: build checkpoints (all session dates + now)
+        $checkpoints = $sessions->pluck('date')
+            ->push($now)
+            ->unique()
+            ->sort()
+            ->values();
+
+        $lastValidPoint = null;
+
+        // Step 3: evaluate rolling windows at each checkpoint
+        foreach ($checkpoints as $point) {
+            $windowStart = $point->copy()->subMonths(6);
+
+            $minutes = $sessions
+                ->filter(fn($s) => $s['date']->between($windowStart, $point))
+                ->sum('minutes');
+
+            if ($minutes >= $minRequiredMinutes) {
+                $lastValidPoint = $point;
+            }
+        }
+
+        // Step 4: if never valid → we cannot go before our dataset
+        if (!$lastValidPoint) {
+            // Find earliest possible point we can evaluate
+            $firstSessionDate = $sessions->first()['date'];
+
+            // earliest eligible is: first session + 6 months
+            $candidate = $firstSessionDate->copy()->addMonths(6);
+
+            // but never in future
+            return $candidate->lte($now) ? $candidate->toDateString() : null;
+        }
+
+        // Step 5: normal case
+        $eligibleSince = $lastValidPoint->copy()->addMonths(6);
+
+        // never return future dates
+        if ($eligibleSince->gt($now)) {
+            return null;
+        }
+
+        return $eligibleSince->toDateString();
     }
 }

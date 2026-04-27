@@ -139,7 +139,16 @@ class SyncEndorsementActivities extends Command
                 'position' => $endorsementActivity->position,
             ];
 
-            $activityResult = $this->activityService->getEndorsementActivity($endorsementData);
+            $connections = $this->activityService->getVatsimConnections($endorsementActivity->vatsim_id);
+            $connectionsFromLast2Years = $this->activityService->getVatsimConnectionsLong($endorsementActivity->vatsim_id);
+
+            $activityResult = $this->activityService->calculateActivity($endorsementData, $connections);
+
+            $eligibleSince = $this->activityService->calculateLowActivitySince(
+                $endorsementData,
+                $connectionsFromLast2Years,
+            );
+
             $activityMinutes = $activityResult['minutes'] ?? 0;
             $lastActivityDate = $activityResult['last_activity_date'] ?? null;
 
@@ -148,6 +157,8 @@ class SyncEndorsementActivities extends Command
             $endorsementActivity->activity_minutes = $activityMinutes;
             $endorsementActivity->last_activity_date = $lastActivityDate;
             $endorsementActivity->last_updated = now();
+
+            $endorsementActivity->low_activity_since = $eligibleSince;
 
             if ($activityMinutes >= $minRequiredMinutes) {
                 if ($endorsementActivity->removal_date) {

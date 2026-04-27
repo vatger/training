@@ -639,11 +639,12 @@ namespace App\Models{
  * @property-read int|null $permissions_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Role> $roles
  * @property-read int|null $roles_count
- * @property-read \App\Models\UserSetting|null $settings
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\TrainingLog> $trainingLogs
  * @property-read int|null $training_logs_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\WaitingListEntry> $waitingListEntries
  * @property-read int|null $waiting_list_entries_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\WaitingListRestriction> $waitingListRestrictions
+ * @property-read int|null $waiting_list_restrictions_count
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User admins()
  * @method static \Database\Factories\UserFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User leadership()
@@ -682,7 +683,6 @@ namespace App\Models{
  * @property string $theme
  * @property bool $english_only
  * @property array<array-key, mixed>|null $notification_preferences
- * @property array<array-key, mixed>|null $waiting_list_restrictions
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\User $user
@@ -696,7 +696,6 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|UserSetting whereTheme($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|UserSetting whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|UserSetting whereUserId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|UserSetting whereWaitingListRestrictions($value)
  */
 	class UserSetting extends \Eloquent {}
 }
@@ -730,5 +729,27 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|WaitingListEntry whereUserId($value)
  */
 	class WaitingListEntry extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
+ * @property int $id
+ * @property int $user_id
+ * @property string $type
+ * @property string|null $expires_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\User $user
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|WaitingListRestriction newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|WaitingListRestriction newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|WaitingListRestriction query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|WaitingListRestriction whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|WaitingListRestriction whereExpiresAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|WaitingListRestriction whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|WaitingListRestriction whereType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|WaitingListRestriction whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|WaitingListRestriction whereUserId($value)
+ */
+	class WaitingListRestriction extends \Eloquent {}
 }
 

@@ -170,8 +170,10 @@ class EndorsementController extends Controller
 
         $lmFirs = $user->is_superuser || $user->is_admin ? collect() : $user->leadingMentorFirs()->pluck('fir');
 
+        $isSuperuser = $user->is_superuser || $user->is_admin;
+
         $endorsements = collect($allTier1)
-            ->map(function ($endorsement) use ($activities, $users) {
+            ->map(function ($endorsement) use ($activities, $users, $isSuperuser) {
                 $activity = $activities->get($endorsement['id']);
                 if (!$activity) {
                     return null;
@@ -204,6 +206,7 @@ class EndorsementController extends Controller
                         : -1,
                     'eligibleForRemoval' => $olderThanSixMonths,
                     'endorsedAt' => $createdAt->format('Y-m-d'),
+                    'lowActivitySince' => $activity->low_activity_since?->format('Y-m-d'),
                 ];
             })
             ->filter()
@@ -302,6 +305,7 @@ class EndorsementController extends Controller
         }
         return Inertia::render('endorsements/manage', [
             'endorsementGroups' => $endorsementsByPosition,
+            'isSuperuser' => $isSuperuser,
             'userPermissions' => [
                 'canRemoveForPositions' => $canRemovePositions,
                 'canRemoveAny' => ($user->is_superuser || $user->is_admin) || (!empty($canRemovePositions) && count($canRemovePositions) > 0),
