@@ -77,8 +77,8 @@ export default function SortableCoursesTable({
 
 	const sortedCourses = useMemo(() => {
 		return [...courses].sort((a, b) => {
-			let aValue
-			let bValue
+			let aValue = null
+			let bValue = null
 
 			switch (sortField) {
 				case "name":

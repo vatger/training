@@ -9,6 +9,7 @@ const appName = import.meta.env.VITE_APP_NAME || "VATGER Training System"
 
 // Make route function globally available
 declare global {
+	// biome-ignore lint/suspicious/noRedeclare: no factor
 	var route: typeof route
 }
 

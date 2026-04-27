@@ -170,6 +170,7 @@ const MarkdownContent = ({ content }: { content: string | null }) => {
 		<>
 			<div
 				className="prose prose-sm dark:prose-invert max-w-none"
+				// biome-ignore lint/security/noDangerouslySetInnerHtml: required by library
 				dangerouslySetInnerHTML={{ __html: content }}
 				onClick={(e) => {
 					const target = e.target as HTMLElement

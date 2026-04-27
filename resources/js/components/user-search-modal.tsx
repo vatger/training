@@ -13,6 +13,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 
+// biome-ignore lint/suspicious/noRedeclare: no factor
 interface User {
 	id: number
 	vatsim_id: number
@@ -132,6 +133,7 @@ export function UserSearchModal({ open, onOpenChange }: UserSearchModalProps) {
 										className="flex w-full items-center gap-3 rounded-lg border p-3 text-left transition-colors hover:bg-accent"
 										key={user.id}
 										onClick={() => handleSelectUser(user)}
+										type="submit"
 									>
 										<div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
 											<User className="h-5 w-5 text-primary" />

@@ -6,7 +6,10 @@
 		"useIgnoreFile": true,
 		"defaultBranch": "main"
 	},
-	"files": { "ignoreUnknown": false, "includes": ["**", "!/public"] },
+	"files": {
+		"ignoreUnknown": false,
+		"includes": ["**", "!public", "!resources/js/components/ui/*"]
+	},
 	"formatter": { "enabled": true, "indentStyle": "tab" },
 	"linter": {
 		"enabled": true,

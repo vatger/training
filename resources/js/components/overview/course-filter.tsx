@@ -74,6 +74,7 @@ export function CourseFilter({
 								}`}
 								key={course.id}
 								onClick={() => onCourseSelect(course)}
+								type="submit"
 							>
 								<div
 									className={`rounded-full p-1 ${getPositionColor(course.position)}`}

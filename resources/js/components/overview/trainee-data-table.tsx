@@ -433,10 +433,10 @@ export function TraineeDataTable({
 					<div className="space-y-1">
 						{trainee.progress.length > 0 ? (
 							<div className="flex items-center gap-1">
-								{trainee.progress.slice(-5).map((passed, idx) => (
+								{trainee.progress.slice(-5).map((passed) => (
 									<div
 										className={`h-2 w-2 rounded-full ${passed ? "bg-green-500" : "bg-red-500"}`}
-										key={idx}
+										key={null}
 										title={`Session was ${passed ? "Passed" : "Failed"}`}
 									/>
 								))}
@@ -672,8 +672,9 @@ export function TraineeDataTable({
 								<button
 									className="max-w-76 rounded p-1 text-left transition-colors hover:bg-muted/64"
 									onClick={() => onRemarkClick(trainee)}
+									type="button"
 								>
-									{trainee.remark && trainee.remark.text ? (
+									{trainee.remark?.text ? (
 										<div>
 											<div className="line-clamp-2 text-sm">
 												{trainee.remark.text}
@@ -689,26 +690,24 @@ export function TraineeDataTable({
 									)}
 								</button>
 							</TooltipTrigger>
-							{trainee.remark &&
-								trainee.remark.text &&
-								trainee.remark.updated_at && (
-									<TooltipContent className="max-w-xs" side="top">
-										<div className="space-y-1">
-											<div className="font-medium">Last updated</div>
-											<div className="text-sm">
-												{formatRemarkDate(trainee.remark.updated_at)}
-												{trainee.remark.author_name && (
-													<>
-														{" by "}
-														<span className="font-medium">
-															{trainee.remark.author_name}
-														</span>
-													</>
-												)}
-											</div>
+							{trainee.remark?.text && trainee.remark.updated_at && (
+								<TooltipContent className="max-w-xs" side="top">
+									<div className="space-y-1">
+										<div className="font-medium">Last updated</div>
+										<div className="text-sm">
+											{formatRemarkDate(trainee.remark.updated_at)}
+											{trainee.remark.author_name && (
+												<>
+													{" by "}
+													<span className="font-medium">
+														{trainee.remark.author_name}
+													</span>
+												</>
+											)}
 										</div>
-									</TooltipContent>
-								)}
+									</div>
+								</TooltipContent>
+							)}
 						</Tooltip>
 					</TooltipProvider>
 				)

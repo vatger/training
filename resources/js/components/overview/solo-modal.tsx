@@ -396,8 +396,11 @@ export function SoloModal({
 				</div>
 				{moodle.details && moodle.details.length > 0 && (
 					<div className="ml-6 space-y-1">
-						{moodle.details.map((detail, idx) => (
-							<div className="flex items-center gap-2 text-xs" key={idx}>
+						{moodle.details.map((detail) => (
+							<div
+								className="flex items-center gap-2 text-xs"
+								key={detail.course_id}
+							>
 								{detail.completed ? (
 									<CheckCircle className="h-3 w-3 text-green-600" />
 								) : (

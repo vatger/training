@@ -113,8 +113,7 @@ export default function Courses({
 			const matchesType = typeFilter === "all" || course.type === typeFilter
 
 			const matchesFir =
-				firFilter === "all" ||
-				(course.mentor_group && course.mentor_group.includes(firFilter))
+				firFilter === "all" || course.mentor_group?.includes(firFilter)
 
 			let matchesTab = false
 			if (activeTab === "all") {
@@ -243,7 +242,10 @@ export default function Courses({
 					<div className="rounded-lg border bg-muted/50 p-4">
 						<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 							<div>
-								<label className="mb-2 block text-sm font-medium">
+								<label
+									className="mb-2 block text-sm font-medium"
+									htmlFor="Course Type"
+								>
 									Course Type
 								</label>
 								<Select onValueChange={setTypeFilter} value={typeFilter}>
@@ -262,7 +264,12 @@ export default function Courses({
 							</div>
 
 							<div>
-								<label className="mb-2 block text-sm font-medium">FIR</label>
+								<label
+									className="mb-2 block text-sm font-medium"
+									htmlFor="Select FIR"
+								>
+									FIR
+								</label>
 								<Select onValueChange={setFirFilter} value={firFilter}>
 									<SelectTrigger>
 										<SelectValue placeholder="All FIRs" />

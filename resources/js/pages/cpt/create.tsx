@@ -93,6 +93,7 @@ export default function CptCreate({ courses }: PageProps) {
 		}
 	}
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: triggers rerender every time
 	useEffect(() => {
 		if (data.course_id && data.date) {
 			fetchCourseData(data.course_id, data.date)

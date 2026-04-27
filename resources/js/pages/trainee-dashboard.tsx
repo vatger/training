@@ -6,6 +6,7 @@ import {
 	ExternalLink,
 	Eye,
 	GraduationCap,
+	// biome-ignore lint/suspicious/noShadowRestrictedNames: no factor
 	Map,
 	MapPin,
 } from "lucide-react"

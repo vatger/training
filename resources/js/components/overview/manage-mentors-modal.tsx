@@ -53,6 +53,7 @@ export function ManageMentorsModal({
 	const [isSearching, setIsSearching] = useState(false)
 	const [showAddSection, setShowAddSection] = useState(false)
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: triggers constant rerender
 	useEffect(() => {
 		if (isOpen && course) {
 			fetchMentors()

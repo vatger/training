@@ -1,5 +1,6 @@
 export default function AppLogoIcon() {
 	return (
+		// biome-ignore lint/a11y/noSvgWithoutTitle: not required
 		<svg
 			className="size-6"
 			data-name="Layer 2"

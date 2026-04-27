@@ -52,6 +52,7 @@ const EditorToolbar = ({
 	editor,
 	addImage,
 }: {
+	// biome-ignore lint/suspicious/noExplicitAny: no specific type exists
 	editor: any
 	addImage: () => void
 }) => {
@@ -168,7 +169,7 @@ export function WYSIWYGEditor({
 	useEffect(() => {
 		if (editor && value !== editor.getHTML()) {
 			const { from, to } = editor.state.selection
-			editor.commands.setContent(value, false)
+			editor.commands.setContent(value)
 			// Restore cursor position
 			editor.commands.setTextSelection({ from, to })
 		}
@@ -199,6 +200,7 @@ export function WYSIWYGEditor({
 			</div>
 
 			<style
+				// biome-ignore lint/security/noDangerouslySetInnerHtml: required by library
 				dangerouslySetInnerHTML={{
 					__html: `
                 .ProseMirror {
