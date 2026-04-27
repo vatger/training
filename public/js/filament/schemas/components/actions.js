@@ -35,4 +35,5 @@ var i = () => ({
 				(this.boundUpdateWidth = null))
 	},
 })
+
 export { i as default }

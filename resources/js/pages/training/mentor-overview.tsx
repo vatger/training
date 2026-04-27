@@ -103,6 +103,7 @@ export default function MentorOverview({
 		}
 	}
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: loadCourseData triggers on every rerender and does not need to be added to the dependency array
 	useEffect(() => {
 		if (!isInitialized) return
 
@@ -149,7 +150,14 @@ export default function MentorOverview({
 		} else {
 			setSelectedCourse(null)
 		}
-	}, [activeCategory, filteredCourses.length, isInitialized, initialCourseId])
+	}, [
+		filteredCourses.length,
+		isInitialized,
+		initialCourseId,
+		filteredCourses[0],
+		selectedCourse,
+		setSelectedCourse,
+	])
 
 	const handleCourseSelect = async (course: MentorCourse) => {
 		/* console.log('Course selected:', course.id, 'loaded:', course.loaded, 'trainees:', course.trainees?.length || 0); */

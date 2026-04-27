@@ -175,6 +175,7 @@ export default function ManageEndorsements({
 		return { total, lowActivity, inRemoval, actionable }
 	}
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: useGroupState triggers rerender
 	const filteredGroups = useMemo(() => {
 		return endorsementGroups
 			.filter((group) => {
@@ -440,7 +441,7 @@ export default function ManageEndorsements({
 				<DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-[90vw] lg:max-w-[1000px]">
 					<DialogHeader>
 						<DialogTitle className="flex items-center gap-2">
-							{selectedGroup && selectedGroup.position_name}
+							{selectedGroup?.position_name}
 						</DialogTitle>
 						<DialogDescription>
 							{selectedGroup && (

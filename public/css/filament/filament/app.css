@@ -8973,8 +8973,7 @@
 			--tw-ring-color: color-mix(in oklab, var(--color-white) 10%, transparent);
 		}
 	}
-	.fi-fo-file-upload
-		.filepond--root[data-style-panel-layout="compact\ circle"] {
+	.fi-fo-file-upload .filepond--root[data-style-panel-layout="compact circle"] {
 		border-radius: 3.40282e38px;
 	}
 	.fi-fo-file-upload .filepond--panel-root {

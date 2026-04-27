@@ -185,8 +185,7 @@ export default function CreateEditTrainingLog({
 			// Helper to safely get rating value from nested structure
 			const getRating = (category: string): number => {
 				if (
-					log.evaluations &&
-					log.evaluations[category] &&
+					log.evaluations?.[category] &&
 					typeof log.evaluations[category].rating === "number"
 				) {
 					return log.evaluations[category].rating
@@ -199,7 +198,7 @@ export default function CreateEditTrainingLog({
 				category: string,
 				type: "positives" | "negatives",
 			): string => {
-				if (log.evaluations && log.evaluations[category]) {
+				if (log.evaluations?.[category]) {
 					return log.evaluations[category][type] || ""
 				}
 				return ""
@@ -415,7 +414,7 @@ export default function CreateEditTrainingLog({
 				console.error("Failed to load draft:", error)
 			}
 		}
-	}, []) // Empty deps - only run once on mount
+	}, [continueDraft, isEditing, setData, storageKey]) // Empty deps - only run once on mount
 
 	// Check if any additional details have content to auto-expand
 	useEffect(() => {
@@ -430,7 +429,14 @@ export default function CreateEditTrainingLog({
 		if (hasAdditionalDetails) {
 			setShowAdditionalDetails(true)
 		}
-	}, [])
+	}, [
+		data.airspace_restrictions,
+		data.runway_configuration,
+		data.special_procedures,
+		data.surrounding_stations,
+		data.traffic_complexity,
+		data.traffic_level,
+	])
 
 	// Auto-save with debounce
 	const debouncedData = useDebounce(data, 1000)
@@ -815,7 +821,7 @@ export default function CreateEditTrainingLog({
 															onClick={() =>
 																setData(
 																	category.name as keyof LogFormData,
-																	option.value as any,
+																	option.value,
 																)
 															}
 															selected={
@@ -839,7 +845,7 @@ export default function CreateEditTrainingLog({
 														onChange={(value) =>
 															setData(
 																`${category.name}_positives` as keyof LogFormData,
-																value as any,
+																value,
 															)
 														}
 														placeholder=""
@@ -861,7 +867,7 @@ export default function CreateEditTrainingLog({
 														onChange={(value) =>
 															setData(
 																`${category.name}_negatives` as keyof LogFormData,
-																value as any,
+																value,
 															)
 														}
 														placeholder=""

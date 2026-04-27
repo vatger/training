@@ -68,4 +68,5 @@ function c({ livewireId: s }) {
 		},
 	}
 }
+
 export { c as default }

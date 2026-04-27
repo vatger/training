@@ -9,6 +9,7 @@ import {
 	ExternalLink,
 	Eye,
 	GraduationCap,
+	// biome-ignore lint/suspicious/noShadowRestrictedNames: No factor
 	Map,
 	Plane,
 	Shield,
@@ -608,10 +609,10 @@ export default function UserProfilePage({ userData }: { userData: UserData }) {
 								</CardHeader>
 								<CardContent>
 									<div className="space-y-4">
-										{endorsements.map((endorsement, idx) => (
+										{endorsements.map((endorsement) => (
 											<div
 												className="flex items-center justify-between rounded-lg border p-4"
-												key={idx}
+												key={endorsement.position}
 											>
 												<div className="flex items-center gap-3">
 													<Shield className="h-5 w-5 text-muted-foreground" />

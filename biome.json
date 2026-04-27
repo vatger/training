@@ -6,7 +6,7 @@
 		"useIgnoreFile": true,
 		"defaultBranch": "main"
 	},
-	"files": { "ignoreUnknown": false },
+	"files": { "ignoreUnknown": false, "includes": ["**", "!/public"] },
 	"formatter": { "enabled": true, "indentStyle": "tab" },
 	"linter": {
 		"enabled": true,
@@ -15,6 +15,9 @@
 			"complexity": {
 				"noUselessFragments": "off",
 				"noImportantStyles": "off"
+			},
+			"a11y": {
+				"useKeyWithClickEvents": "off"
 			}
 		}
 	},

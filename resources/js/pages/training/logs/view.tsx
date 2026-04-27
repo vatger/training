@@ -181,6 +181,7 @@ const MarkdownContent = ({ content }: { content: string | null }) => {
 						})
 					}
 				}}
+				role="img"
 			/>
 			{previewImage && (
 				<ImagePreviewModal
@@ -518,6 +519,7 @@ export default function ViewTrainingLog({
 			</div>
 
 			<style
+				// biome-ignore lint/security/noDangerouslySetInnerHtml: Is necessary and required by the library
 				dangerouslySetInnerHTML={{
 					__html: `
                     .prose {

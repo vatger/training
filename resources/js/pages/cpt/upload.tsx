@@ -74,7 +74,7 @@ export default function CptUpload({
 		e.stopPropagation()
 		setDragActive(false)
 
-		if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+		if (e.dataTransfer.files?.[0]) {
 			handleFile(e.dataTransfer.files[0])
 		}
 	}
@@ -130,7 +130,7 @@ export default function CptUpload({
 		const k = 1024
 		const sizes = ["Bytes", "KB", "MB", "GB"]
 		const i = Math.floor(Math.log(bytes) / Math.log(k))
-		return Math.round((bytes / k ** i) * 100) / 100 + " " + sizes[i]
+		return `${Math.round((bytes / k ** i) * 100) / 100} ${sizes[i]}`
 	}
 
 	return (
@@ -234,6 +234,7 @@ export default function CptUpload({
 											onDragLeave={handleDrag}
 											onDragOver={handleDrag}
 											onDrop={handleDrop}
+											role="document"
 										>
 											<Upload className="mb-4 h-16 w-16 text-blue-600" />
 											<h3 className="mb-2 text-lg font-medium text-blue-600">

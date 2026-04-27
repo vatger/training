@@ -81,7 +81,7 @@ export function useMoodleStatus(
 							[cacheKey]: response.data.status,
 						}))
 					}
-				} catch (error: any) {
+				} catch (error) {
 					console.error(
 						`Failed to fetch Moodle status for trainee ${trainee.id}:`,
 						error,
@@ -100,7 +100,7 @@ export function useMoodleStatus(
 		}
 
 		fetchStatuses()
-	}, [trainees.map((t) => t.id).join(","), courseId])
+	}, [courseId, trainees])
 
 	return { statuses, loading, progress }
 }
