@@ -10,3 +10,4 @@ CHANGELOG.md export-ignore
 README.md export-ignore
 .github/workflows/browser-tests.yml export-ignore
 node_modules linguist-vendored
+public linguist-vendored
