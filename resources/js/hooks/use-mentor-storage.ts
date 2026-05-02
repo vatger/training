@@ -84,7 +84,7 @@ export function useMentorStorage(courses: MentorCourse[]) {
 		if (courses.length > 0) {
 			loadState()
 		}
-	}, [courses.length, courses.find]) // Only depend on length to avoid re-running when courses update
+	}, [courses.length]) // Only depend on length to avoid re-running when courses update
 
 	// FIX: Update selectedCourse when courses array changes (e.g., when trainees are loaded)
 	useEffect(() => {

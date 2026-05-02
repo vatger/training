@@ -150,14 +150,7 @@ export default function MentorOverview({
 		} else {
 			setSelectedCourse(null)
 		}
-	}, [
-		filteredCourses.length,
-		isInitialized,
-		initialCourseId,
-		filteredCourses[0],
-		selectedCourse,
-		setSelectedCourse,
-	])
+	}, [activeCategory, filteredCourses.length, isInitialized, initialCourseId])
 
 	const handleCourseSelect = async (course: MentorCourse) => {
 		/* console.log('Course selected:', course.id, 'loaded:', course.loaded, 'trainees:', course.trainees?.length || 0); */
