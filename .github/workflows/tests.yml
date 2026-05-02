@@ -9,7 +9,7 @@ on:
   pull_request:
     branches:
       - develop
-      - main
+  #     - main
 
 jobs:
   ci:
