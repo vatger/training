@@ -103,7 +103,6 @@ export default function MentorOverview({
 		}
 	}
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: loadCourseData triggers on every rerender and does not need to be added to the dependency array
 	useEffect(() => {
 		if (!isInitialized) return
 

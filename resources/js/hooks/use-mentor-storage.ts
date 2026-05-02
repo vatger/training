@@ -110,7 +110,7 @@ export function useMentorStorage(courses: MentorCourse[]) {
 				setSelectedCourse(updatedCourse)
 			}
 		}
-	}, [courses, isInitialized, selectedCourse])
+	}, [courses, isInitialized])
 
 	// Save state to localStorage whenever it changes
 	useEffect(() => {

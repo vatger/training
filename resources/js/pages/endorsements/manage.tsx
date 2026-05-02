@@ -175,7 +175,6 @@ export default function ManageEndorsements({
 		return { total, lowActivity, inRemoval, actionable }
 	}
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: useGroupState triggers rerender
 	const filteredGroups = useMemo(() => {
 		return endorsementGroups
 			.filter((group) => {

@@ -100,7 +100,7 @@ export function useMoodleStatus(
 		}
 
 		fetchStatuses()
-	}, [courseId, trainees])
+	}, [trainees.map((t) => t.id).join(","), courseId])
 
 	return { statuses, loading, progress }
 }
