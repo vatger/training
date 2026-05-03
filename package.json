@@ -39,7 +39,7 @@
 		"@radix-ui/react-toggle": "^1.1.10",
 		"@radix-ui/react-toggle-group": "^1.1.11",
 		"@radix-ui/react-tooltip": "^1.2.8",
-		"@tailwindcss/vite": "^4.2.2",
+		"@tailwindcss/vite": "^4.2.4",
 		"@tanstack/react-table": "^8.21.3",
 		"@tiptap/extension-image": "^3.22.5",
 		"@tiptap/extension-placeholder": "^3.22.5",
