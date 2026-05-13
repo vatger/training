@@ -156,6 +156,9 @@ class SyncEndorsementActivities extends Command
                 }
             }
 
+            $eligibleSince = $this->activityService->calculateEligibleSince($endorsementData);
+            $endorsementActivity->eligible_since = $eligibleSince;
+
             $endorsementActivity->save();
 
         } catch (\Exception $e) {

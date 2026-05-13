@@ -280,4 +280,156 @@ class VatsimActivityService
         $minRequiredMinutes = config('services.vateud.min_activity_minutes', 180);
         return min(($activityMinutes / $minRequiredMinutes) * 100, 100);
     }
+
+    protected function getVatsimConnectionsTwoYears(int $vatsimId): array
+    {
+        $cacheKey = "vatsim_activity_2y:{$vatsimId}";
+        
+        return Cache::remember($cacheKey, now()->addHours(6), function () use ($vatsimId) {
+            $start = Carbon::now()->subYears(2)->format('Y-m-d');
+            $apiUrl = "http://stats.vatsim-germany.org/api/atc/{$vatsimId}/sessions/?start_date={$start}";
+            
+            try {
+                $response = Http::timeout(15)
+                    ->retry(2, 1000)
+                    ->get($apiUrl);
+
+                if (!$response->successful()) {
+                    return [];
+                }
+
+                $data = $response->json();
+                return is_array($data) ? $data : [];
+
+            } catch (\Exception $e) {
+                Log::error('Error fetching 2y VATSIM connections', [
+                    'vatsim_id' => $vatsimId,
+                    'error' => $e->getMessage(),
+                ]);
+                return [];
+            }
+        });
+    }
+
+    protected function extractRelevantSessions(array $endorsement, array $connections): array
+    {
+        $sessions = [];
+        $position = $endorsement['position'];
+        $inTransition = Carbon::now()->lessThan(Carbon::parse($this->transitionEndDate));
+
+        foreach ($connections as $connection) {
+            $callsign = $connection['callsign'] ?? '';
+            $minutes = floatval($connection['minutes_online'] ?? 0);
+            $date = $this->parseConnectionDate($connection);
+
+            if (!$date || $minutes <= 0) {
+                continue;
+            }
+
+            $matches = false;
+
+            if (str_ends_with($position, '_CTR')) {
+                $ctrlPrefix = substr($position, 0, 6);
+
+                if (str_starts_with($callsign, $ctrlPrefix) || 
+                    ($position === 'EDWW_W_CTR' && $callsign === 'EDWW_CTR')) {
+                    $matches = true;
+                }
+            } else {
+                $parts = explode('_', $position);
+                if (count($parts) >= 2) {
+                    $airport = $parts[0];
+                    $station = end($parts);
+
+                    $ctrStations = $this->ctrTopdown[$airport] ?? [];
+                    $legacyCtrStations = $inTransition ? ($this->legacyCtrTopdown[$airport] ?? []) : [];
+                    $appStations = $this->appTopdown[$airport] ?? [];
+
+                    $matchesSuffix = $this->suffixCondition($airport, $station, $callsign);
+
+                    $matchesCtr = false;
+
+                    $ctrAllowedStations = ['APP', 'TWR', 'GNDDEL'];
+
+                    if (in_array($station, $ctrAllowedStations, true)) {
+                        $allCtrStations = array_unique(array_merge($ctrStations, $legacyCtrStations));
+
+                        foreach ($allCtrStations as $ctrStation) {
+                            if (str_starts_with($callsign, $ctrStation)) {
+                                $matchesCtr = true;
+                                break;
+                            }
+                        }
+
+                        if (!$matchesCtr && $station !== 'APP') {
+                            foreach ($appStations as $appStation) {
+                                if (str_starts_with($callsign, $appStation)) {
+                                    $matchesCtr = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    if (!$matchesCtr && $station === 'APP') {
+                        foreach ($appStations as $appStation) {
+                            if (str_starts_with($callsign, $appStation)) {
+                                $matchesCtr = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    $matches = $matchesCtr || $matchesSuffix;
+                }
+            }
+
+            if ($matches) {
+                $sessions[] = [
+                    'date' => $date,
+                    'minutes' => $minutes,
+                ];
+            }
+        }
+
+        usort($sessions, fn($a, $b) => $a['date']->lt($b['date']) ? -1 : 1);
+
+        return $sessions;
+    }
+
+    public function calculateEligibleSince(array $endorsement): ?Carbon
+    {
+        $connections = $this->getVatsimConnectionsTwoYears($endorsement['user_cid']);
+        $sessions = $this->extractRelevantSessions($endorsement, $connections);
+
+        // 🔴 Requirement: no sessions in 2 years → NULL
+        if (empty($sessions)) {
+            return null;
+        }
+
+        $left = 0;
+        $totalMinutes = 0;
+        $lastValidDate = null;
+
+        for ($right = 0; $right < count($sessions); $right++) {
+            $totalMinutes += $sessions[$right]['minutes'];
+
+            while (
+                $sessions[$right]['date']->diffInDays($sessions[$left]['date']) > 180
+            ) {
+                $totalMinutes -= $sessions[$left]['minutes'];
+                $left++;
+            }
+
+            if ($totalMinutes >= 180) {
+                $lastValidDate = $sessions[$right]['date'];
+            }
+        }
+
+        if ($lastValidDate === null) {
+            return $sessions[0]['date']->copy()->addDays(180);
+        }
+
+        return $lastValidDate->copy()->addDays(180);
+    }
 }
