@@ -198,6 +198,7 @@ class EndorsementController extends Controller
                     'activityHours' => $activity->activity_hours,
                     'status' => $activity->status,
                     'progress' => $activity->progress,
+                    'eligibleSince' => $activity->eligible_since,
                     'removalDate' => $activity->removal_date?->format('Y-m-d'),
                     'removalDays' => $activity->removal_date
                         ? $activity->removal_date->diffInDays(now(), false)
@@ -305,6 +306,7 @@ class EndorsementController extends Controller
             'userPermissions' => [
                 'canRemoveForPositions' => $canRemovePositions,
                 'canRemoveAny' => ($user->is_superuser || $user->is_admin) || (!empty($canRemovePositions) && count($canRemovePositions) > 0),
+                'isAdmin' => $user->is_superuser || $user->is_admin,
             ],
         ]);
     }

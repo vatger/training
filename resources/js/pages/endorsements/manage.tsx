@@ -57,6 +57,7 @@ interface EndorsementData {
 	activityHours: number
 	status: "active" | "warning" | "removal"
 	progress: number
+	eligibleSince: string
 	removalDate: string | null
 	removalDays: number
 }
@@ -74,6 +75,7 @@ interface PageProps {
 	userPermissions: {
 		canRemoveForPositions: string[] | null
 		canRemoveAny: boolean
+		isAdmin: boolean
 	}
 }
 
@@ -121,6 +123,8 @@ export default function ManageEndorsements({
 	const [isRemovalDialogOpen, setIsRemovalDialogOpen] = useState(false)
 	const [isProcessing, setIsProcessing] = useState(false)
 	const [showActiveEndorsements, setShowActiveEndorsements] = useState(false)
+
+	const { isAdmin } = userPermissions
 
 	const canRemoveForPosition = (position: string): boolean => {
 		if (userPermissions.canRemoveForPositions === null) {
@@ -478,6 +482,7 @@ export default function ManageEndorsements({
 										<TableHead>Controller</TableHead>
 										<TableHead>Activity</TableHead>
 										<TableHead>Status</TableHead>
+										{isAdmin && <TableHead>Eligible Since</TableHead>}
 										<TableHead className="text-right">Actions</TableHead>
 									</TableRow>
 								</TableHeader>
@@ -564,6 +569,20 @@ export default function ManageEndorsements({
 														)}
 													</div>
 												</TableCell>
+												{isAdmin && (
+													<TableCell>
+														{state !== "active"
+															? (() => {
+																	const date = new Date(
+																		endorsement.eligibleSince,
+																	)
+																	return date.getFullYear() === 1970
+																		? "Unknown"
+																		: date.toLocaleDateString("de")
+																})()
+															: null}
+													</TableCell>
+												)}
 												<TableCell className="text-right">
 													<TooltipProvider>
 														<Tooltip>
