@@ -402,34 +402,55 @@ class VatsimActivityService
         $connections = $this->getVatsimConnectionsTwoYears($endorsement['user_cid']);
         $sessions = $this->extractRelevantSessions($endorsement, $connections);
 
-        // 🔴 Requirement: no sessions in 2 years → NULL
+        // No sessions in 2 years -> no value
         if (empty($sessions)) {
             return null;
         }
 
-        $left = 0;
-        $totalMinutes = 0;
-        $lastValidDate = null;
+        $requiredMinutes = config('services.vateud.min_activity_minutes', 180);
 
-        for ($right = 0; $right < count($sessions); $right++) {
-            $totalMinutes += $sessions[$right]['minutes'];
+        $events = [];
 
-            while (
-                $sessions[$right]['date']->diffInDays($sessions[$left]['date']) > 180
+        foreach ($sessions as $session) {
+            $events[] = [
+                'date' => $session['date']->copy(),
+                'delta' => $session['minutes'],
+            ];
+
+            $events[] = [
+                'date' => $session['date']->copy()->addDays(180),
+                'delta' => -$session['minutes'],
+            ];
+        }
+
+        usort($events, function ($a, $b) {
+            return $a['date']->timestamp <=> $b['date']->timestamp;
+        });
+
+        $runningMinutes = 0;
+        $eligibleSince = null;
+
+        foreach ($events as $event) {
+            $before = $runningMinutes;
+
+            $runningMinutes += $event['delta'];
+
+            if (
+                $before >= $requiredMinutes &&
+                $runningMinutes < $requiredMinutes
             ) {
-                $totalMinutes -= $sessions[$left]['minutes'];
-                $left++;
+                $eligibleSince = $event['date']->copy();
             }
 
-            if ($totalMinutes >= 180) {
-                $lastValidDate = $sessions[$right]['date'];
+            if ($runningMinutes >= $requiredMinutes) {
+                $eligibleSince = null;
             }
         }
 
-        if ($lastValidDate === null) {
-            return $sessions[0]['date']->copy()->addDays(180);
+        if ($runningMinutes < $requiredMinutes) {
+            return $eligibleSince;
         }
 
-        return $lastValidDate->copy()->addDays(180);
+        return null;
     }
 }
