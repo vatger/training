@@ -57,67 +57,91 @@ class CheckRosterStatus extends Command
     }
 
     protected function checkUser(int $vatsimId): void
-    {
+{
+    try {
+        $entry = RosterEntry::firstOrCreate(
+            ['user_id' => $vatsimId],
+            [
+                'last_session' => null,
+                'removal_date' => null,
+            ]
+        );
+
         try {
-            $entry = RosterEntry::firstOrCreate(
-                ['user_id' => $vatsimId],
-                ['last_session' => null, 'removal_date' => null]
-            );
+            $lastSession = $this->getLastSession($vatsimId);
 
-            try {
-                $lastSession = $this->getLastSession($vatsimId);
-
-                if ($lastSession instanceof Carbon && $lastSession->year > 2000) {
-                    $entry->last_session = $lastSession;
-                    $entry->save();
-                }
-            } catch (\Exception $e) {
-                Log::warning('Session fetch failed', [
-                    'vatsim_id' => $vatsimId,
-                    'error' => $e->getMessage(),
-                ]);
-            }
-
-            if (!$entry->last_session) {
-                return;
-            }
-
-            $inactiveDays = $entry->last_session->diffInDays(now());
-
-            $WARNING_THRESHOLD = 330; // ~11 months
-            $REMOVAL_THRESHOLD = 365; // 12 months
-            $GRACE_DAYS = 35;
-
-
-            if ($inactiveDays >= $WARNING_THRESHOLD && !$entry->removal_date) {
-
-                $this->sendRemovalWarning($vatsimId);
-
-                $entry->removal_date = now()->addDays($GRACE_DAYS);
+            if ($lastSession instanceof Carbon && $lastSession->year > 2000) {
+                $entry->last_session = $lastSession;
                 $entry->save();
-
-                return;
             }
-
-            if (
-                $inactiveDays >= $REMOVAL_THRESHOLD &&
-                $entry->removal_date &&
-                now()->gte($entry->removal_date)
-            ) {
-
-                $this->removeFromRoster($vatsimId);
-                $entry->delete();
-
-                return;
-            }
-
         } catch (\Throwable $e) {
-            Log::error('USER CHECK FAILED', [
+            Log::warning('Failed fetching last session', [
                 'vatsim_id' => $vatsimId,
                 'error' => $e->getMessage(),
             ]);
         }
+
+        if (!$entry->last_session) {
+            return;
+        }
+
+        $inactiveDays = $entry->last_session->diffInDays(now());
+
+        $WARNING_THRESHOLD = 330; // ~11 months
+        $REMOVAL_THRESHOLD = 365; // 12 months
+        $GRACE_DAYS = 35;
+
+        if ($inactiveDays < $WARNING_THRESHOLD) {
+
+            if ($entry->removal_date) {
+                Log::info('USER RECOVERED ROSTER ACTIVITY - resetting warning', [
+                    'vatsim_id' => $vatsimId,
+                ]);
+
+                $entry->removal_date = null;
+                $entry->save();
+            }
+
+            return;
+        }
+
+        if ($inactiveDays >= $WARNING_THRESHOLD && !$entry->removal_date) {
+
+            Log::warning('SENDING ROSTER REMOVAL WARNING', [
+                'vatsim_id' => $vatsimId,
+            ]);
+
+            $this->sendRemovalWarning($vatsimId);
+
+            $entry->removal_date = now()->addDays($GRACE_DAYS);
+            $entry->save();
+
+            return;
+        }
+
+        if (
+            $inactiveDays >= $REMOVAL_THRESHOLD &&
+            $entry->removal_date &&
+            now()->gte($entry->removal_date)
+        ) {
+            Log::warning('REMOVING USER FROM ROSTER', [
+                'vatsim_id' => $vatsimId,
+                'inactive_days' => $inactiveDays,
+                'removal_date' => $entry->removal_date,
+            ]);
+
+            $this->removeFromRoster($vatsimId);
+            $entry->delete();
+
+            return;
+        }
+    } catch (\Throwable $e) {
+        Log::error('ROSTER CHECK FAILED', [
+            'vatsim_id' => $vatsimId,
+            'error' => $e->getMessage(),
+        ]);
     }
+}
 
     protected function getRoster(): array
     {
@@ -268,6 +292,6 @@ class CheckRosterStatus extends Command
             ]
         );
 
-        Log::warning("REMOVAL COMPLETE: {$vatsimId}");
+        Log::warning("ROSTER REMOVAL COMPLETE: {$vatsimId}");
     }
 }
