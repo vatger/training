@@ -214,44 +214,31 @@ class CheckRosterStatus extends Command
     }
 
     protected function sendRemovalWarning(int $vatsimId): void
-    {   
-        $apiKey = config('services.vatger.api_key');
-        $apiBaseUrl = config('services.vatger.api_url');
-        
-        if (!$apiKey) {
-            Log::warning('VATGER API key not configured, skipping removal notification');
-            return;
-        }
+    {
+        $message =
+            "You have not controlled in the past 11 months. " .
+            "To remain on the VATSIM Germany roster, please log in and control within the next 35 days. " .
+            "Otherwise, your account will be removed from the roster. " .
+            "If you believe this is a mistake, please contact the ATD.";
 
-        $message = "You have not controlled in the past 11 months. " .
-                   "If you want to stay on the VATSIM Germany roster, " .
-                   "please log in to the VATSIM network and control at least once in the next 35 days. " .
-                   "If you do not, your account will be removed from the roster. " .
-                   "If you believe this is a mistake, please contact the ATD.";
+        $result = $this->vatgerService->sendNotification(
+            $vatsimId,
+            'Removal from VATSIM Germany Roster',
+            $message,
+            'VATGER ATD',
+            'https://vatsim-germany.org'
+        );
 
-        $data = [
-            'title' => 'Removal from VATSIM Germany Roster',
-            'message' => $message,
-            'source_name' => 'VATGER ATD',
-            'via' => 'board.ping',
-        ];
-
-        try {
-            $response = Http::withHeaders([
-                'Authorization' => "Token {$apiKey}",
-            ])->post("{$apiBaseUrl}/user/{$vatsimId}/send_notification", $data);
-
-            if (!$response->successful()) {
-                Log::warning('Failed to send removal notification', [
-                    'vatsim_id' => $vatsimId,
-                    'status' => $response->status()
-                ]);
-            }
-        } catch (\Exception $e) {
-            Log::error('Error sending removal notification', [
+        if (!$result['success']) {
+            Log::error('Failed to send roster removal warning', [
                 'vatsim_id' => $vatsimId,
-                'error' => $e->getMessage()
             ]);
+        } else {
+            ActivityLogger::log(
+                'roster.notified',
+                $vatsimId,
+                "Notified roster removal for $vatsimId",
+            );
         }
     }
 
@@ -273,7 +260,7 @@ class CheckRosterStatus extends Command
         ActivityLogger::log(
             'roster.removed',
             null,
-            "User {$vatsimId} removed due to inactivity",
+            "User {$vatsimId} removed from roster due to inactivity",
             [
                 'vatsim_id' => $vatsimId,
                 'reason' => 'inactivity',
