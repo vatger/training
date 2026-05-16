@@ -243,9 +243,19 @@ class VatEudService
             $rosterResponse = Http::withHeaders($this->headers)
                 ->delete("{$this->baseUrl}/facility/roster/{$vatsimId}");
 
+            if (!$rosterResponse->successful()) {
+                Log::error('Roster removal failed', [
+                    'vatsim_id' => $vatsimId,
+                    'status' => $rosterResponse->status(),
+                    'body' => $rosterResponse->body(),
+                ]);
+
+                return false;
+            }
+
             $tier1 = collect($this->getTier1Endorsements())
                 ->where('user_cid', $vatsimId);
-            
+
             $tier2 = collect($this->getTier2Endorsements())
                 ->where('user_cid', $vatsimId);
 
@@ -259,12 +269,18 @@ class VatEudService
                     ->delete("{$this->baseUrl}/facility/endorsements/tier-2/{$endorsement['id']}");
             }
 
+            Log::warning('ROSTER REMOVAL COMPLETED', [
+                'vatsim_id' => $vatsimId,
+            ]);
+
             return true;
+
         } catch (\Exception $e) {
             Log::error('Error removing roster and endorsements', [
                 'vatsim_id' => $vatsimId,
                 'error' => $e->getMessage()
             ]);
+
             return false;
         }
     }
