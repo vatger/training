@@ -233,6 +233,12 @@ class CheckRosterStatus extends Command
             Log::error('Failed to send roster removal warning', [
                 'vatsim_id' => $vatsimId,
             ]);
+        } else {
+            ActivityLogger::log(
+                'roster.notified',
+                $vatsimId,
+                "Notified roster removal for $vatsimId",
+            );
         }
     }
 
@@ -254,7 +260,7 @@ class CheckRosterStatus extends Command
         ActivityLogger::log(
             'roster.removed',
             null,
-            "User {$vatsimId} removed due to inactivity",
+            "User {$vatsimId} removed from roster due to inactivity",
             [
                 'vatsim_id' => $vatsimId,
                 'reason' => 'inactivity',
