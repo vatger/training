@@ -56,138 +56,136 @@ class CheckRosterStatus extends Command
         }
     }
 
-    protected function getRoster(): array
-    {
-        try {
-            $response = Http::withHeaders([
-                'X-API-KEY' => config('services.vateud.token'),
-                'Accept' => 'application/json',
-                'User-Agent' => 'VATGER Training System',
-            ])->get('https://core.vateud.net/api/facility/roster');
-
-            if ($response->successful()) {
-                $data = $response->json();
-                return $data['data']['controllers'] ?? [];
-            }
-        } catch (\Exception $e) {
-            Log::error('Failed to fetch roster from VatEUD', ['error' => $e->getMessage()]);
-        }
-
-        return [];
-    }
-
     protected function checkUser(int $vatsimId): void
-    {
+{
+    try {
+        $entry = RosterEntry::firstOrCreate(
+            ['user_id' => $vatsimId],
+            [
+                'last_session' => null,
+                'removal_date' => null,
+            ]
+        );
+
         try {
-            $entry = RosterEntry::firstOrCreate(
-                ['user_id' => $vatsimId],
-                [
-                    'last_session' => Carbon::createFromTimestamp(0),
-                    'removal_date' => null
-                ]
-            );
+            $lastSession = $this->getLastSession($vatsimId);
 
-            if ($entry->last_session && !$entry->last_session->timezone) {
-                $entry->last_session = Carbon::parse($entry->last_session)->timezone('UTC');
-                $entry->save();
-            }
-
-            if ($entry->last_session && now()->diffInDays($entry->last_session) < (11 * 30)) {
-                return;
-            }
-
-            try {
-                $lastSession = $this->getLastSession($vatsimId);
+            if ($lastSession instanceof Carbon && $lastSession->year > 2000) {
                 $entry->last_session = $lastSession;
                 $entry->save();
-            } catch (\Exception $e) {
-                $this->warn("Error getting last session for {$vatsimId}: " . $e->getMessage());
-                return;
             }
-
-            if ($entry->last_session->lt(now()->subDays(366))) {
-                if ($entry->removal_date && $entry->removal_date->lt(now())) {
-                    $this->removeFromRoster($vatsimId);
-                    $entry->delete();
-                    return;
-                }
-            }
-
-            if ($entry->last_session->lt(now()->subDays(11 * 30))) {
-                try {
-                    [$isRecentS1, $ratingChangeDate] = $this->checkS1Status($vatsimId);
-
-                    if ($isRecentS1) {
-                        $entry->last_session = $ratingChangeDate;
-                        $entry->removal_date = null;
-                        $entry->save();
-                        return;
-                    }
-                } catch (\Exception $e) {
-                    $this->warn("Error checking rating for {$vatsimId}: " . $e->getMessage());
-                }
-
-                if (!$entry->removal_date) {
-                    $this->sendRemovalWarning($vatsimId);
-                    $entry->removal_date = now()->addDays(35);
-                    $entry->save();
-                    $this->info("Set removal date for {$vatsimId}: " . $entry->removal_date->format('Y-m-d'));
-                }
-            } else {
-                if ($entry->removal_date) {
-                    $entry->removal_date = null;
-                    $entry->save();
-                }
-            }
-
-        } catch (\Exception $e) {
-            $this->error("Error checking user {$vatsimId}: " . $e->getMessage());
-            Log::error('Error in roster check for user', [
+        } catch (\Throwable $e) {
+            Log::warning('Failed fetching last session', [
                 'vatsim_id' => $vatsimId,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
+
+        if (!$entry->last_session) {
+            return;
+        }
+
+        $inactiveDays = $entry->last_session->diffInDays(now());
+
+        $WARNING_THRESHOLD = 330; // ~11 months
+        $REMOVAL_THRESHOLD = 365; // 12 months
+        $GRACE_DAYS = 35;
+
+        if ($inactiveDays < $WARNING_THRESHOLD) {
+
+            if ($entry->removal_date) {
+                Log::info('USER RECOVERED ROSTER ACTIVITY - resetting warning', [
+                    'vatsim_id' => $vatsimId,
+                ]);
+
+                $entry->removal_date = null;
+                $entry->save();
+            }
+
+            return;
+        }
+
+        if ($inactiveDays >= $WARNING_THRESHOLD && !$entry->removal_date) {
+
+            Log::warning('SENDING ROSTER REMOVAL WARNING', [
+                'vatsim_id' => $vatsimId,
+            ]);
+
+            $this->sendRemovalWarning($vatsimId);
+
+            $entry->removal_date = now()->addDays($GRACE_DAYS);
+            $entry->save();
+
+            return;
+        }
+
+        if (
+            $inactiveDays >= $REMOVAL_THRESHOLD &&
+            $entry->removal_date &&
+            now()->gte($entry->removal_date)
+        ) {
+            Log::warning('REMOVING USER FROM ROSTER', [
+                'vatsim_id' => $vatsimId,
+                'inactive_days' => $inactiveDays,
+                'removal_date' => $entry->removal_date,
+            ]);
+
+            $this->removeFromRoster($vatsimId);
+            $entry->delete();
+
+            return;
+        }
+    } catch (\Throwable $e) {
+        Log::error('ROSTER CHECK FAILED', [
+            'vatsim_id' => $vatsimId,
+            'error' => $e->getMessage(),
+        ]);
+    }
+}
+
+    protected function getRoster(): array
+    {
+        $response = Http::withHeaders([
+            'X-API-KEY' => config('services.vateud.token'),
+            'Accept' => 'application/json',
+        ])->get('https://core.vateud.net/api/facility/roster');
+
+        return $response->successful()
+            ? ($response->json()['data']['controllers'] ?? [])
+            : [];
     }
 
     protected function getLastSession(int $vatsimId): Carbon
     {
-        $date = now()->subDays(365);
-        $apiUrl = "http://stats.vatsim-germany.org/api/atc/{$vatsimId}/sessions/?start_date={$date->format('Y-m-d')}";
+        $date = now()->subYear();
 
-        try {
-            $response = Http::timeout(15)->get($apiUrl);
-            
-            if (!$response->successful()) {
-                throw new \Exception("API request failed with status: " . $response->status());
+        $response = Http::timeout(15)->get(
+            "http://stats.vatsim-germany.org/api/atc/{$vatsimId}/sessions/?start_date={$date->format('Y-m-d')}"
+        );
+
+        if (!$response->successful()) {
+            throw new \Exception('Session API failed');
+        }
+
+        $latest = null;
+
+        foreach ($response->json() as $session) {
+            $prefix = substr($session['callsign'] ?? '', 0, 2);
+
+            if (!in_array($prefix, ['ED', 'ET'])) {
+                continue;
             }
 
-            $connections = $response->json();
-            if (!is_array($connections)) {
-                $connections = [];
-            }
-            
-            foreach ($connections as $connection) {
-                $callsign = $connection['callsign'] ?? '';
-                $prefix = substr($callsign, 0, 2);
-                
-                if (in_array($prefix, ['ED', 'ET'])) {
-                    $endTime = $connection['disconnected_at'] ?? null;
-                    if ($endTime) {
-                        return Carbon::parse($endTime)->timezone('UTC');
-                    }
+            if (!empty($session['disconnected_at'])) {
+                $time = Carbon::parse($session['disconnected_at']);
+
+                if (!$latest || $time->gt($latest)) {
+                    $latest = $time;
                 }
             }
-
-            $this->warn("No German connections found for user {$vatsimId}");
-            return Carbon::createFromTimestamp(0)->timezone('UTC');
-
-        } catch (\Exception $e) {
-            Log::error('Error fetching last session from vatsim-germany.org', [
-                'vatsim_id' => $vatsimId,
-                'error' => $e->getMessage()
-            ]);
-            throw $e;
         }
+
+        return $latest ?? Carbon::createFromTimestamp(0);
     }
 
     protected function checkS1Status(int $vatsimId): array
@@ -240,95 +238,60 @@ class CheckRosterStatus extends Command
     }
 
     protected function sendRemovalWarning(int $vatsimId): void
-    {   
-        $apiKey = config('services.vatger.api_key');
-        $apiBaseUrl = config('services.vatger.api_url');
-        
-        if (!$apiKey) {
-            Log::warning('VATGER API key not configured, skipping removal notification');
-            return;
-        }
+    {
+        $message =
+            "You have not controlled in the past 11 months. " .
+            "To remain on the VATSIM Germany roster, please log in and control within the next 35 days. " .
+            "Otherwise, your account will be removed from the roster. " .
+            "If you believe this is a mistake, please contact the ATD.";
 
-        $message = "You have not controlled in the past 11 months. " .
-                   "If you want to stay on the VATSIM Germany roster, " .
-                   "please log in to the VATSIM network and control at least once in the next 35 days. " .
-                   "If you do not, your account will be removed from the roster. " .
-                   "If you believe this is a mistake, please contact the ATD.";
+        $result = $this->vatgerService->sendNotification(
+            $vatsimId,
+            'Removal from VATSIM Germany Roster',
+            $message,
+            'VATGER ATD',
+            'https://vatsim-germany.org'
+        );
 
-        $data = [
-            'title' => 'Removal from VATSIM Germany Roster',
-            'message' => $message,
-            'source_name' => 'VATGER ATD',
-            'via' => 'board.ping',
-        ];
-
-        try {
-            $response = Http::withHeaders([
-                'Authorization' => "Token {$apiKey}",
-            ])->post("{$apiBaseUrl}/user/{$vatsimId}/send_notification", $data);
-
-            if (!$response->successful()) {
-                Log::warning('Failed to send removal notification', [
-                    'vatsim_id' => $vatsimId,
-                    'status' => $response->status()
-                ]);
-            }
-        } catch (\Exception $e) {
-            Log::error('Error sending removal notification', [
+        if (!$result['success']) {
+            Log::error('Failed to send roster removal warning', [
                 'vatsim_id' => $vatsimId,
-                'error' => $e->getMessage()
             ]);
+        } else {
+            ActivityLogger::log(
+                'roster.notified',
+                $vatsimId,
+                "Notified roster removal for $vatsimId",
+            );
         }
     }
 
     protected function removeFromRoster(int $vatsimId): void
     {
-        try {
-            $this->info("Removing user {$vatsimId} from roster...");
+        $success = $this->vatEudService->removeRosterAndEndorsements($vatsimId);
 
-            $user = User::where('vatsim_id', $vatsimId)->first();
-
-            $this->vatEudService->removeRosterAndEndorsements($vatsimId);
-
-            WaitingListEntry::whereHas('user', function ($query) use ($vatsimId) {
-                $query->where('vatsim_id', $vatsimId);
-            })->delete();
-
-            if ($user) {
-                ActivityLogger::log(
-                    'roster.removed',
-                    $user,
-                    "User {$user->name} (VATSIM ID: {$vatsimId}) removed from roster due to inactivity",
-                    [
-                        'vatsim_id' => $vatsimId,
-                        'user_id' => $user->id,
-                        'user_name' => $user->name,
-                        'reason' => 'inactivity',
-                        'removed_by' => 'system',
-                    ]
-                );
-            } else {
-                ActivityLogger::log(
-                    'roster.removed',
-                    null,
-                    "VATSIM ID {$vatsimId} removed from roster due to inactivity",
-                    [
-                        'vatsim_id' => $vatsimId,
-                        'reason' => 'inactivity',
-                        'removed_by' => 'system',
-                    ]
-                );
-            }
-
-            Log::info('User removed from roster', [
-                'vatsim_id' => $vatsimId
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error('Error removing user from roster', [
+        if (!$success) {
+            Log::error('Roster removal failed at VATEUD', [
                 'vatsim_id' => $vatsimId,
-                'error' => $e->getMessage()
             ]);
+            return;
         }
+
+        WaitingListEntry::whereHas('user', function ($q) use ($vatsimId) {
+            $q->where('vatsim_id', $vatsimId);
+        })->delete();
+
+        ActivityLogger::log(
+            'roster.removed',
+            null,
+            "User {$vatsimId} removed from roster due to inactivity",
+            [
+                'vatsim_id' => $vatsimId,
+                'reason' => 'inactivity',
+                'removed_by' => 'system',
+            ]
+        );
+
+        Log::warning("ROSTER REMOVAL COMPLETE: {$vatsimId}");
     }
 }

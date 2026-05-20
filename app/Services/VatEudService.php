@@ -243,28 +243,86 @@ class VatEudService
             $rosterResponse = Http::withHeaders($this->headers)
                 ->delete("{$this->baseUrl}/facility/roster/{$vatsimId}");
 
+            if (!$rosterResponse->successful()) {
+                Log::error('Roster removal failed', [
+                    'vatsim_id' => $vatsimId,
+                    'status' => $rosterResponse->status(),
+                    'body' => $rosterResponse->body(),
+                ]);
+
+                return false;
+            }
+
             $tier1 = collect($this->getTier1Endorsements())
-                ->where('user_cid', $vatsimId);
-            
-            $tier2 = collect($this->getTier2Endorsements())
                 ->where('user_cid', $vatsimId);
 
             foreach ($tier1 as $endorsement) {
-                Http::withHeaders($this->headers)
-                    ->delete("{$this->baseUrl}/facility/endorsements/tier-1/{$endorsement['id']}");
+                try {
+                    $response = Http::withHeaders($this->headers)
+                        ->delete("{$this->baseUrl}/facility/endorsements/tier-1/{$endorsement['id']}");
+
+                    if (!$response->successful()) {
+                        Log::warning('Failed to delete Tier 1 endorsement', [
+                            'vatsim_id' => $vatsimId,
+                            'endorsement_id' => $endorsement['id'],
+                            'status' => $response->status(),
+                            'body' => $response->body(),
+                        ]);
+
+                        $success = false;
+                    }
+                } catch (\Throwable $e) {
+                    Log::error('Exception while deleting Tier 1 endorsement', [
+                        'vatsim_id' => $vatsimId,
+                        'endorsement_id' => $endorsement['id'],
+                        'error' => $e->getMessage(),
+                    ]);
+
+                    $success = false;
+                }
             }
+
+            $tier2 = collect($this->getTier2Endorsements())
+                ->where('user_cid', $vatsimId);
 
             foreach ($tier2 as $endorsement) {
-                Http::withHeaders($this->headers)
-                    ->delete("{$this->baseUrl}/facility/endorsements/tier-2/{$endorsement['id']}");
+                try {
+                    $response = Http::withHeaders($this->headers)
+                        ->delete("{$this->baseUrl}/facility/endorsements/tier-2/{$endorsement['id']}");
+
+                    if (!$response->successful()) {
+                        Log::warning('Failed to delete Tier 2 endorsement', [
+                            'vatsim_id' => $vatsimId,
+                            'endorsement_id' => $endorsement['id'],
+                            'status' => $response->status(),
+                            'body' => $response->body(),
+                        ]);
+
+                        $success = false;
+                    }
+                } catch (\Throwable $e) {
+                    Log::error('Exception while deleting Tier 2 endorsement', [
+                        'vatsim_id' => $vatsimId,
+                        'endorsement_id' => $endorsement['id'],
+                        'error' => $e->getMessage(),
+                    ]);
+
+                    $success = false;
+                }
             }
 
+            Log::warning('ROSTER REMOVAL COMPLETED', [
+                'vatsim_id' => $vatsimId,
+            ]);
+
             return true;
+
         } catch (\Exception $e) {
             Log::error('Error removing roster and endorsements', [
                 'vatsim_id' => $vatsimId,
                 'error' => $e->getMessage()
             ]);
+
             return false;
         }
     }

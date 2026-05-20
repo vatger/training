@@ -61,6 +61,7 @@ enum ActivityAction: string
     case CPT_UPDATED = 'cpt.updated';
 
     case ROSTER_REMOVED = 'roster.removed';
+    case ROSTER_NOTIFIED = 'roster.notified';
 
     case GDPR_DELETION = 'gdpr.deletion';
     case API_USER_RETRIEVAL = 'api.user.retrieval';
@@ -129,6 +130,7 @@ enum ActivityAction: string
             self::CPT_UPDATED => 'CPT Updated',
 
             self::ROSTER_REMOVED => 'Removed from Roster',
+            self::ROSTER_NOTIFIED => 'Notified Roster Removal',
 
             self::GDPR_DELETION => 'GDPR User Deletion',
 
@@ -180,6 +182,7 @@ enum ActivityAction: string
             self::COURSE_FINISHED,
             self::COURSE_UPDATED,
             self::COT_UPDATED,
+            self::ROSTER_NOTIFIED,
             self::UPDATED => 'warning',
 
             self::CPT_EXAMINER_JOINED,

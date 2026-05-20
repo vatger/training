@@ -18,6 +18,7 @@ class EndorsementActivity extends Model
         'last_updated',
         'last_activity_date',
         'removal_date',
+        'eligible_since',
         'removal_notified',
         'created_at_vateud',
     ];
@@ -27,6 +28,7 @@ class EndorsementActivity extends Model
         'last_updated' => 'datetime',
         'last_activity_date' => 'date',
         'removal_date' => 'date',
+        'eligible_since' => 'datetime',
         'removal_notified' => 'boolean',
         'created_at_vateud' => 'datetime',
     ];
