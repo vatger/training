@@ -1,6 +1,16 @@
 {
     auto_https off
     admin off
+
+    log {
+        output file /var/log/caddy/error.log {
+            roll_size 10MiB
+            roll_keep 10
+            roll_keep_for 720h
+        }
+        format console
+        level ERROR
+    }
 }
 
 :80 {
@@ -12,9 +22,9 @@
         trusted_proxies private_ranges
     }
 
-    file_server
-
     try_files {path} /index.php?{query}
+
+    file_server
 
     header {
         -Server
@@ -23,30 +33,12 @@
         X-XSS-Protection "1; mode=block"
     }
 
-    # Access logs
     log {
         output file /var/log/caddy/access.log {
             roll_size 10MiB
             roll_keep 10
             roll_keep_for 720h
         }
-
         format console
-    }
-
-    # Error handling + error logs
-    handle_errors {
-        log {
-            output file /var/log/caddy/error.log {
-                roll_size 10MiB
-                roll_keep 10
-                roll_keep_for 720h
-            }
-
-            format console
-            level ERROR
-        }
-
-        respond "{http.error.status_code} {http.error.status_text}"
     }
 }
