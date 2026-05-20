@@ -5,26 +5,48 @@
 
 :80 {
     root * /var/www/html/public
-    
+
     encode gzip
-    
+
     php_fastcgi localhost:9000 {
         trusted_proxies private_ranges
     }
-    
+
     file_server
-    
+
     try_files {path} /index.php?{query}
-    
+
     header {
         -Server
         X-Frame-Options "SAMEORIGIN"
         X-Content-Type-Options "nosniff"
         X-XSS-Protection "1; mode=block"
     }
-    
+
+    # Access logs
     log {
-        output stdout
+        output file /var/log/caddy/access.log {
+            roll_size 10MiB
+            roll_keep 10
+            roll_keep_for 720h
+        }
+
         format console
+    }
+
+    # Error handling + error logs
+    handle_errors {
+        log {
+            output file /var/log/caddy/error.log {
+                roll_size 10MiB
+                roll_keep 10
+                roll_keep_for 720h
+            }
+
+            format console
+            level ERROR
+        }
+
+        respond "{http.error.status_code} {http.error.status_text}"
     }
 }
