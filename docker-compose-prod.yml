@@ -70,11 +70,7 @@ services:
       - VATGER_OAUTH_AUTH_URL
       - VATGER_OAUTH_TOKEN_URL
       - VATGER_OAUTH_BASE_URL
-    command: >
-      sh -c "
-        (while true; do php artisan schedule:run --verbose --no-interaction; sleep 60; done) &
-        /start.sh
-      "
+    command: sh -c "su -s /bin/sh www-data -c 'while true; do php artisan schedule:run --verbose --no-interaction; sleep 60; done' & /start.sh"
     depends_on:
       - redis
       
