@@ -382,110 +382,123 @@ class EndorsementController extends Controller
 
     public function removeTier1(Request $request, int $endorsementId)
     {
-        $user = $request->user();
+        try {
+            $user = $request->user();
 
-        if (!$user->isMentor() && !$user->is_superuser) {
-            return back()->with('flash', [
-                'error' => 'Access denied. Mentor privileges required.'
-            ]);
-        }
+            if (!$user->isMentor() && !$user->is_superuser) {
+                return back()->with('flash', [
+                    'error' => 'Access denied. Mentor privileges required.'
+                ]);
+            }
 
-        $endorsement = EndorsementActivity::where('endorsement_id', $endorsementId)->first();
+            $endorsement = EndorsementActivity::where('endorsement_id', $endorsementId)->first();
 
-        if (!$endorsement) {
-            Log::error('Error removing Tier 1 endorsement', [
-                'tier1_id' => $endorsementId,
-                'user_id' => $user->id,
-                'error' => 'Endorsement not found'
-            ]);
-            return back()->with('flash', [
-                'error' => 'Endorsement not found in the system.'
-            ]);
-        }
+            if (!$endorsement) {
+                Log::error('Error removing Tier 1 endorsement', [
+                    'tier1_id' => $endorsementId,
+                    'user_id' => $user->id,
+                    'error' => 'Endorsement not found'
+                ]);
+                return back()->with('flash', [
+                    'error' => 'Endorsement not found in the system.'
+                ]);
+            }
 
-        if (!$user->is_superuser && !$user->is_admin) {
-            $hasPermission = false;
+            if (!$user->is_superuser && !$user->is_admin) {
+                $hasPermission = false;
 
-            if ($user->canRemoveEndorsementForPosition($endorsement->position)) {
-                $hasPermission = true;
-            } else {
-                $lmFirs = $user->leadingMentorFirs()->pluck('fir');
-                if ($lmFirs->isNotEmpty() && $this->endorsementMatchesLeadingMentorFir($endorsement->position, $lmFirs)) {
+                if ($user->canRemoveEndorsementForPosition($endorsement->position)) {
                     $hasPermission = true;
+                } else {
+                    $lmFirs = $user->leadingMentorFirs()->pluck('fir');
+                    if ($lmFirs->isNotEmpty() && $this->endorsementMatchesLeadingMentorFir($endorsement->position, $lmFirs)) {
+                        $hasPermission = true;
+                    }
+                }
+
+                if (!$hasPermission) {
+                    Log::warning('Unauthorized endorsement removal attempt', [
+                        'user_id' => $user->id,
+                        'user_name' => $user->name,
+                        'endorsement_id' => $endorsementId,
+                        'position' => $endorsement->position,
+                        'vatsim_id' => $endorsement->vatsim_id
+                    ]);
+
+                    return back()->with('flash', [
+                        'error' => 'You do not have permission to manage this endorsement. Only Chief of Training or Leading Mentor for this position can remove endorsements.'
+                    ]);
                 }
             }
 
-            if (!$hasPermission) {
-                Log::warning('Unauthorized endorsement removal attempt', [
+            if ($endorsement->removal_date) {
+                return back()->with('flash', [
+                    'error' => 'This endorsement is already marked for removal.'
+                ]);
+            }
+
+            $endorsementCreatedAt = Carbon::parse(
+                collect($this->vatEudService->getTier1Endorsements())
+                    ->firstWhere('id', $endorsementId)['created_at'] ?? null
+            );
+
+            if (!$endorsementCreatedAt || $endorsementCreatedAt->gt(now()->subMonths(6))) {
+                return back()->with('flash', [
+                    'error' => 'Endorsement must be at least 6 months old before it can be removed.'
+                ]);
+            }
+
+            $minRequiredMinutes = config('services.vateud.min_activity_minutes', 180);
+
+            if ($endorsement->activity_minutes >= $minRequiredMinutes) {
+                return back()->with('flash', [
+                    'error' => 'Endorsement has sufficient activity and cannot be marked for removal.'
+                ]);
+            }
+
+            try {
+                $endorsement->removal_date = Carbon::now()->addDays(
+                    config('services.vateud.removal_warning_days', 31)
+                );
+                $endorsement->removal_notified = false;
+                $endorsement->last_updated = Carbon::createFromTimestamp(1);
+                $endorsement->save();
+
+                $trainee = User::where('vatsim_id', $endorsement->vatsim_id)->first();
+
+                if ($trainee) {
+                    ActivityLogger::endorsementRemoved(
+                        $endorsement->position,
+                        $trainee,
+                        $user,
+                        'Marked for removal due to low activity'
+                    );
+                }
+
+                Log::info('Endorsement marked for removal', [
                     'user_id' => $user->id,
                     'user_name' => $user->name,
                     'endorsement_id' => $endorsementId,
                     'position' => $endorsement->position,
-                    'vatsim_id' => $endorsement->vatsim_id
+                    'vatsim_id' => $endorsement->vatsim_id,
+                    'trainee_name' => $trainee?->name
                 ]);
 
                 return back()->with('flash', [
-                    'error' => 'You do not have permission to manage this endorsement. Only Chief of Training or Leading Mentor for this position can remove endorsements.'
+                    'success' => "Successfully marked {$endorsement->position} for removal"
+                ]);
+            } catch (\Exception $e) {
+                Log::error('Failed to mark endorsement for removal', [
+                    'endorsement_id' => $endorsementId,
+                    'user_id' => $user->id,
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+
+                return back()->with('flash', [
+                    'error' => 'An error occurred while marking the endorsement for removal. Please try again.'
                 ]);
             }
-        }
-
-        if ($endorsement->removal_date) {
-            return back()->with('flash', [
-                'error' => 'This endorsement is already marked for removal.'
-            ]);
-        }
-
-        $endorsementCreatedAt = Carbon::parse(
-            collect($this->vatEudService->getTier1Endorsements())
-                ->firstWhere('id', $endorsementId)['created_at'] ?? null
-        );
-
-        if (!$endorsementCreatedAt || $endorsementCreatedAt->gt(now()->subMonths(6))) {
-            return back()->with('flash', [
-                'error' => 'Endorsement must be at least 6 months old before it can be removed.'
-            ]);
-        }
-
-        $minRequiredMinutes = config('services.vateud.min_activity_minutes', 180);
-
-        if ($endorsement->activity_minutes >= $minRequiredMinutes) {
-            return back()->with('flash', [
-                'error' => 'Endorsement has sufficient activity and cannot be marked for removal.'
-            ]);
-        }
-
-        try {
-            $endorsement->removal_date = Carbon::now()->addDays(
-                config('services.vateud.removal_warning_days', 31)
-            );
-            $endorsement->removal_notified = false;
-            $endorsement->last_updated = Carbon::createFromTimestamp(1);
-            $endorsement->save();
-
-            $trainee = User::where('vatsim_id', $endorsement->vatsim_id)->first();
-
-            if ($trainee) {
-                ActivityLogger::endorsementRemoved(
-                    $endorsement->position,
-                    $trainee,
-                    $user,
-                    'Marked for removal due to low activity'
-                );
-            }
-
-            Log::info('Endorsement marked for removal', [
-                'user_id' => $user->id,
-                'user_name' => $user->name,
-                'endorsement_id' => $endorsementId,
-                'position' => $endorsement->position,
-                'vatsim_id' => $endorsement->vatsim_id,
-                'trainee_name' => $trainee?->name
-            ]);
-
-            return back()->with('flash', [
-                'success' => "Successfully marked {$endorsement->position} for removal"
-            ]);
         } catch (\Exception $e) {
             Log::error('Failed to mark endorsement for removal', [
                 'endorsement_id' => $endorsementId,
