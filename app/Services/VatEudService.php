@@ -81,7 +81,7 @@ class VatEudService
             Log::info('Mock: Creating Tier 1 endorsement', [
                 'user_cid' => $userCid,
                 'position' => $position,
-                'instructor_cid' => $instructorCid,
+                'instructor_cid' => config('services.vateud.atd_lead_cid', 1441619),
             ]);
 
             return ['success' => true];
@@ -93,7 +93,7 @@ class VatEudService
                 ->post("{$this->baseUrl}/facility/endorsements/tier-1", [
                     'user_cid' => $userCid,
                     'position' => $position,
-                    'instructor_cid' => $instructorCid,
+                    'instructor_cid' => config('services.vateud.atd_lead_cid', 1441619),
                 ]);
 
             if ($response->successful()) {
@@ -396,7 +396,7 @@ class VatEudService
                 ->post("{$this->baseUrl}/facility/endorsements/tier-2", [
                     'user_cid' => $userCid,
                     'position' => $position,
-                    'instructor_cid' => $instructorCid,
+                    'instructor_cid' => config('services.vateud.atd_lead_cid', 1441619),
                 ]);
 
             if ($response->successful()) {
@@ -433,7 +433,7 @@ class VatEudService
                     'user_cid' => $userCid,
                     'position' => $position,
                     'expire_at' => $expireAt,
-                    'instructor_cid' => $instructorCid,
+                    'instructor_cid' => config('services.vateud.atd_lead_cid', 1441619),
                 ]);
 
             if ($response->successful()) {
@@ -659,7 +659,7 @@ class VatEudService
                 ->post("{$this->baseUrl}/facility/training/exams/assign", [
                     'user_cid' => $vatsimId,
                     'exam_id' => $examId,
-                    'instructor_cid' => $instructorId,
+                    'instructor_cid' => config('services.vateud.atd_lead_cid', 1441619),
                 ]);
 
             if ($response->successful()) {
