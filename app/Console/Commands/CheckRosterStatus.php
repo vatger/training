@@ -260,7 +260,7 @@ class CheckRosterStatus extends Command
         } else {
             ActivityLogger::log(
                 'roster.notified',
-                User::where('vatsim_id', $vatsimId),
+                User::where('vatsim_id', $vatsimId)->first(),
                 "Notified roster removal for $vatsimId",
             );
         }
@@ -283,7 +283,7 @@ class CheckRosterStatus extends Command
 
         ActivityLogger::log(
             'roster.removed',
-            null,
+            User::where('vatsim_id', $vatsimId)->first(),
             "User {$vatsimId} removed from roster due to inactivity",
             [
                 'vatsim_id' => $vatsimId,
