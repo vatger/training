@@ -126,7 +126,7 @@ class VatsimOAuthController extends Controller
             'last_name' => $profile['lastname'],
             'email' => $profile['email'] ?? null,
             'rating' => $newRating,
-            'last_known_rating' => $newRating,
+            'last_known_rating' => $previousRating,
             'subdivision' => $profile['subdivision_code'] ?? null,
             'last_rating_change' => $lastRatingChange,
             'is_staff' => $isStaff,

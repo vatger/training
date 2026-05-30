@@ -103,6 +103,7 @@ class SyncSoloDays extends Command
 
         foreach ($users as $user) {
             $user->solo_days_used = 0;
+            $user->last_known_rating = $user->rating;
             $user->rating_upgraded_at = null;
             $user->save();
 
