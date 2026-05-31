@@ -10,6 +10,7 @@ use App\Services\VatgerService;
 use App\Services\ActivityLogger;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -143,16 +144,39 @@ class CheckRosterStatus extends Command
         }
     }
 
-    protected function getRoster(): array
+    public function getRoster(): array
     {
+        $cacheKey = 'vateud:roster';
+
+        $cached = Cache::get($cacheKey);
+
+        if ($cached !== null) {
+            return $cached;
+        }
+
+        try {
         $response = Http::withHeaders([
             'X-API-KEY' => config('services.vateud.token'),
             'Accept' => 'application/json',
-        ])->get('https://core.vateud.net/api/facility/roster');
+                'User-Agent' => 'VATGER Training System',
+            ])
+                ->timeout(5)
+                ->get('https://core.vateud.net/api/facility/roster');
 
-        return $response->successful()
-            ? ($response->json()['data']['controllers'] ?? [])
-            : [];
+            if ($response->successful()) {
+                $controllers = $response->json('data.controllers', []);
+
+                Cache::put($cacheKey, $controllers, now()->addHour());
+
+                return $controllers;
+            }
+        } catch (\Exception $e) {
+            Log::error('Failed to fetch roster from VatEUD', [
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        return Cache::get('vateud:roster:last_known_good', []);
     }
 
     protected function getLastSession(int $vatsimId): Carbon

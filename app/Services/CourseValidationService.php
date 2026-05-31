@@ -141,26 +141,37 @@ class CourseValidationService
 
     public function getRoster(): array
     {
-        return Cache::remember('vateud:roster', now()->addHours(1), function () {
-            try {
-                $response = Http::withHeaders([
-                    'X-API-KEY' => config('services.vateud.token'),
-                    'Accept' => 'application/json',
-                    'User-Agent' => 'VATGER Training System',
-                ])
-                    ->timeout(5)
-                    ->get('https://core.vateud.net/api/facility/roster');
+        $cacheKey = 'vateud:roster';
 
-                if ($response->successful()) {
-                    $data = $response->json();
-                    return $data['data']['controllers'] ?? [];
-                }
-            } catch (\Exception $e) {
-                Log::error('Failed to fetch roster from VatEUD', ['error' => $e->getMessage()]);
+        $cached = Cache::get($cacheKey);
+
+        if ($cached !== null) {
+            return $cached;
+        }
+
+        try {
+            $response = Http::withHeaders([
+                'X-API-KEY' => config('services.vateud.token'),
+                'Accept' => 'application/json',
+                'User-Agent' => 'VATGER Training System',
+            ])
+                ->timeout(5)
+                ->get('https://core.vateud.net/api/facility/roster');
+
+            if ($response->successful()) {
+                $controllers = $response->json('data.controllers', []);
+
+                Cache::put($cacheKey, $controllers, now()->addHour());
+
+                return $controllers;
             }
+        } catch (\Exception $e) {
+            Log::error('Failed to fetch roster from VatEUD', [
+                'error' => $e->getMessage(),
+            ]);
+        }
 
-            return [];
-        });
+        return Cache::get('vateud:roster:last_known_good', []);
     }
 
     public function getUserEndorsements(int $vatsimId): \Illuminate\Support\Collection
