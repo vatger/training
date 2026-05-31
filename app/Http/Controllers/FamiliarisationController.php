@@ -22,38 +22,32 @@ class FamiliarisationController extends Controller
     public function index(Request $request): Response
     {
         try {
-            // Get all familiarisations grouped by user
-            $familiarisations = \App\Models\Familiarisation::with(['user', 'sector'])
+            $familiarisations = \App\Models\Familiarisation::query()
+                ->with(['user:id,vatsim_id', 'sector:id,name'])
                 ->get()
-                ->groupBy('user.vatsim_id');
-
-            $formattedData = [];
-            foreach ($familiarisations as $vatsimId => $userFams) {
-                $user = $userFams->first()->user;
-                $sectors = $userFams->map(function ($fam) {
-                    return $fam->sector->name;
-                })->sort()->implode(', ');
-
-                $formattedData[] = [
-                    'vatsim_id' => $vatsimId,
-                    'name' => $user->name,
-                    'sectors' => $sectors,
+                ->groupBy(fn($fam) => $fam->user->vatsim_id)
+                ->map(function ($userFams, $cid) {
+                    return [
+                        'cid' => (int) $cid,
+                        'stations' => $userFams
+                            ->pluck('sector.name')
+                            ->sort()
+                            ->values()
+                            ->all(),
                 ];
-            }
-
-            // Sort by name
-            usort($formattedData, function ($a, $b) {
-                return strcmp($a['name'], $b['name']);
-            });
+                })
+                ->sortBy('cid')
+                ->values()
+                ->all();
 
             return Inertia::render('training/familiarisations', [
-                'familiarisations' => $formattedData,
+                'familiarisations' => $familiarisations,
                 'statistics' => [
-                    'total_users' => count($formattedData),
+                    'total_users' => count($familiarisations),
                     'total_familiarisations' => \App\Models\Familiarisation::count(),
                 ],
             ]);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             \Log::error('Error loading familiarisations', [
                 'error' => $e->getMessage(),
             ]);
@@ -61,41 +55,6 @@ class FamiliarisationController extends Controller
             return Inertia::render('training/familiarisations', [
                 'familiarisations' => [],
                 'error' => 'Failed to load familiarisations.',
-            ]);
-        }
-    }
-
-    /**
-     * Show familiarisations for a specific user
-     */
-    public function userFamiliarisations(Request $request): Response
-    {
-        $user = $request->user();
-        
-        if (!$user->isVatsimUser()) {
-            return Inertia::render('training/my-familiarisations', [
-                'familiarisations' => [],
-                'isVatsimUser' => false,
-            ]);
-        }
-
-        try {
-            $familiarisations = $this->familiarisationService->getFamiliarisations($user->vatsim_id);
-
-            return Inertia::render('training/my-familiarisations', [
-                'familiarisations' => $familiarisations,
-                'isVatsimUser' => true,
-            ]);
-        } catch (\Exception $e) {
-            \Log::error('Error loading user familiarisations', [
-                'user_id' => $user->id,
-                'error' => $e->getMessage(),
-            ]);
-
-            return Inertia::render('training/my-familiarisations', [
-                'familiarisations' => [],
-                'isVatsimUser' => true,
-                'error' => 'Failed to load your familiarisations.',
             ]);
         }
     }
