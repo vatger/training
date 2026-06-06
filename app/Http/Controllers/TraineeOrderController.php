@@ -2,13 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\MentorCourseResponseBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Inertia\Inertia;
 
 class TraineeOrderController extends Controller
 {
+    public function __construct(
+        private MentorCourseResponseBuilder $responseBuilder,
+    ) {
+    }
+
     public function updateOrder(Request $request)
     {
         $user = $request->user();
@@ -23,39 +28,33 @@ class TraineeOrderController extends Controller
             'trainee_ids.*' => 'integer|exists:users,id',
         ]);
 
-        $courseId = $request->course_id;
-        $traineeIds = $request->trainee_ids;
+        $course = \App\Models\Course::findOrFail($request->course_id);
 
-        $course = \App\Models\Course::findOrFail($courseId);
         if (!$user->is_superuser && !$user->is_admin && !$user->mentorCourses()->where('courses.id', $course->id)->exists()) {
             return response()->json(['error' => 'You cannot modify this course'], 403);
         }
 
         try {
-            DB::transaction(function () use ($courseId, $traineeIds) {
-                foreach ($traineeIds as $index => $traineeId) {
+            DB::transaction(function () use ($request) {
+                foreach ($request->trainee_ids as $index => $traineeId) {
                     DB::table('course_trainees')
-                        ->where('course_id', $courseId)
+                        ->where('course_id', $request->course_id)
                         ->where('user_id', $traineeId)
-                        ->update([
-                            'custom_order' => $index + 1,
-                            'updated_at' => now(),
-                        ]);
+                        ->update(['custom_order' => $index + 1, 'updated_at' => now()]);
                 }
             });
 
             Log::info('Trainee order updated', [
                 'mentor_id' => $user->id,
-                'course_id' => $courseId,
-                'trainee_count' => count($traineeIds),
+                'course_id' => $request->course_id,
+                'trainee_count' => count($request->trainee_ids),
             ]);
 
-            return $this->returnWithRefreshedCourse($courseId, $user);
-
+            return $this->responseBuilder->build($course, $user);
         } catch (\Exception $e) {
             Log::error('Error updating trainee order', [
                 'mentor_id' => $user->id,
-                'course_id' => $courseId,
+                'course_id' => $request->course_id,
                 'error' => $e->getMessage(),
             ]);
 
@@ -75,102 +74,28 @@ class TraineeOrderController extends Controller
             'course_id' => 'required|integer|exists:courses,id',
         ]);
 
-        $courseId = $request->course_id;
+        $course = \App\Models\Course::findOrFail($request->course_id);
 
-        $course = \App\Models\Course::findOrFail($courseId);
         if (!$user->is_superuser && !$user->is_admin && !$user->mentorCourses()->where('courses.id', $course->id)->exists()) {
             return response()->json(['error' => 'You cannot modify this course'], 403);
         }
 
         try {
             DB::table('course_trainees')
-                ->where('course_id', $courseId)
-                ->update([
-                    'custom_order' => null,
-                    'updated_at' => now(),
-                ]);
+                ->where('course_id', $course->id)
+                ->update(['custom_order' => null, 'updated_at' => now()]);
 
-            Log::info('Trainee order reset', [
-                'mentor_id' => $user->id,
-                'course_id' => $courseId,
-            ]);
+            Log::info('Trainee order reset', ['mentor_id' => $user->id, 'course_id' => $course->id]);
 
-            return $this->returnWithRefreshedCourse($courseId, $user);
-
+            return $this->responseBuilder->build($course, $user);
         } catch (\Exception $e) {
             Log::error('Error resetting trainee order', [
                 'mentor_id' => $user->id,
-                'course_id' => $courseId,
+                'course_id' => $course->id,
                 'error' => $e->getMessage(),
             ]);
 
             return back()->withErrors(['error' => 'Failed to reset trainee order']);
         }
-    }
-
-    protected function returnWithRefreshedCourse($courseId, $user)
-    {
-        if ($user->is_superuser || $user->is_admin) {
-            $courses = \App\Models\Course::select(['id', 'name', 'position', 'type', 'solo_station'])
-                ->withCount('activeTrainees')
-                ->get();
-        } else {
-            $courses = $user->mentorCourses()
-                ->select(['courses.id', 'courses.name', 'courses.position', 'courses.type', 'courses.solo_station'])
-                ->withCount('activeTrainees')
-                ->get();
-        }
-
-        $ctrCourses = $courses->filter(fn($c) => $c->position === 'CTR');
-        $nonCtrCourses = $courses->filter(fn($c) => $c->position !== 'CTR');
-
-        $positionOrder = ['GND' => 1, 'TWR' => 2, 'APP' => 3];
-        $nonCtrCourses = $nonCtrCourses
-            ->sortBy(function ($course) use ($positionOrder) {
-                return $positionOrder[$course->position] ?? 999;
-            })
-            ->sortBy('name');
-
-        $ctrCourses = $ctrCourses->sortBy('name');
-        $courses = $nonCtrCourses->concat($ctrCourses)->values();
-
-        $coursesMetadata = $courses->map(function ($course) use ($courseId, $user) {
-            if ($course->id === $courseId) {
-                try {
-                    $fullCourse = \App\Models\Course::find($courseId);
-                    if ($fullCourse) {
-                        $courseData = app(\App\Http\Controllers\MentorOverviewController::class)->loadCourseData($fullCourse, $user);
-                        $courseData['loaded'] = true;
-                        return $courseData;
-                    }
-                } catch (\Exception $e) {
-                    Log::error('Failed to load course', ['course_id' => $courseId, 'error' => $e->getMessage()]);
-                }
-            }
-
-            return [
-                'id' => $course->id,
-                'name' => $course->name,
-                'position' => $course->position,
-                'type' => $course->type,
-                'soloStation' => $course->solo_station,
-                'activeTrainees' => $course->active_trainees_count,
-                'trainees' => [],
-                'loaded' => false,
-            ];
-        });
-
-        $totalActiveTrainees = $courses->sum(fn($c) => $c->active_trainees_count);
-
-        return Inertia::render('training/mentor-overview', [
-            'courses' => $coursesMetadata->values(),
-            'initialCourseId' => $courseId,
-            'statistics' => [
-                'activeTrainees' => $totalActiveTrainees,
-                'claimedTrainees' => 0,
-                'trainingSessions' => 0,
-                'waitingList' => 0,
-            ],
-        ]);
     }
 }
