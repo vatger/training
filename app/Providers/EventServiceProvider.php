@@ -33,18 +33,21 @@ use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvi
 class EventServiceProvider extends ServiceProvider
 {
     protected $listen = [
-        TrainingStarted::class      => [LogTrainingStarted::class],
-        CourseFinished::class       => [LogCourseFinished::class],
-        TraineeClaimed::class       => [LogTraineeClaimed::class],
-        TraineeUnclaimed::class     => [LogTraineeUnclaimed::class],
-        TraineeAssigned::class      => [LogTraineeAssigned::class],
-        TraineeRemoved::class       => [LogTraineeRemoved::class],
-        TraineeReactivated::class   => [LogTraineeReactivated::class],
+        TrainingStarted::class => [LogTrainingStarted::class],
+        CourseFinished::class => [LogCourseFinished::class],
+        TraineeClaimed::class => [LogTraineeClaimed::class],
+        TraineeUnclaimed::class => [LogTraineeUnclaimed::class],
+        TraineeAssigned::class => [LogTraineeAssigned::class],
+        TraineeRemoved::class => [LogTraineeRemoved::class],
+        TraineeReactivated::class => [LogTraineeReactivated::class],
         TraineeAddedToCourse::class => [LogTraineeAddedToCourse::class],
-        MentorAdded::class          => [LogMentorAdded::class],
-        MentorRemoved::class        => [LogMentorRemoved::class],
+        MentorAdded::class => [LogMentorAdded::class],
+        MentorRemoved::class => [LogMentorRemoved::class],
         TraineeRemarkUpdated::class => [LogTraineeRemarkUpdated::class],
-        WaitingListJoined::class    => [LogWaitingListJoined::class],
-        WaitingListLeft::class      => [LogWaitingListLeft::class],
+        WaitingListJoined::class => [LogWaitingListJoined::class],
+        WaitingListLeft::class => [LogWaitingListLeft::class],
+        SoloGranted::class => [LogSoloGranted::class],
+        SoloExtended::class => [LogSoloExtended::class],
+        SoloRemoved::class => [LogSoloRemoved::class],
     ];
 }
