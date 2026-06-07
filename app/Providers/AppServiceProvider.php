@@ -37,5 +37,11 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('endorsements.request-tier2', [EndorsementPolicy::class, 'requestTier2']);
         Gate::define('endorsements.view-own', [EndorsementPolicy::class, 'viewOwn']);
 
+        $this->app->bind(
+            \App\Integrations\Vatger\VatgerClientInterface::class,
+            app()->environment('testing', 'local')
+            ? \App\Integrations\Vatger\FakeVatgerClient::class
+            : \App\Integrations\Vatger\VatgerClient::class,
+        );
     }
 }

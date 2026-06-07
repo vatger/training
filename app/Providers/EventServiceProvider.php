@@ -15,6 +15,14 @@ use App\Domain\Training\Events\TraineeUnclaimed;
 use App\Domain\Training\Events\TrainingStarted;
 use App\Domain\WaitingList\Events\WaitingListJoined;
 use App\Domain\WaitingList\Events\WaitingListLeft;
+use App\Domain\Cpt\Events\CptCreated;
+use App\Domain\Cpt\Events\CptDeleted;
+use App\Domain\Cpt\Events\CptGraded;
+use App\Domain\Cpt\Events\CptExaminerJoined;
+use App\Domain\Cpt\Events\CptExaminerLeft;
+use App\Domain\Cpt\Events\CptLocalJoined;
+use App\Domain\Cpt\Events\CptLocalLeft;
+use App\Domain\Cpt\Events\CptLogUploaded;
 use App\Listeners\LogCourseFinished;
 use App\Listeners\LogMentorAdded;
 use App\Listeners\LogMentorRemoved;
@@ -28,6 +36,15 @@ use App\Listeners\LogTraineeUnclaimed;
 use App\Listeners\LogTrainingStarted;
 use App\Listeners\LogWaitingListJoined;
 use App\Listeners\LogWaitingListLeft;
+use App\Listeners\LogCptCreated;
+use App\Listeners\LogCptDeleted;
+use App\Listeners\LogCptGraded;
+use App\Listeners\LogCptExaminerJoined;
+use App\Listeners\LogCptExaminerLeft;
+use App\Listeners\LogCptLocalJoined;
+use App\Listeners\LogCptLocalLeft;
+use App\Listeners\LogCptLogUploaded;
+
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
 class EventServiceProvider extends ServiceProvider
@@ -49,5 +66,13 @@ class EventServiceProvider extends ServiceProvider
         SoloGranted::class => [LogSoloGranted::class],
         SoloExtended::class => [LogSoloExtended::class],
         SoloRemoved::class => [LogSoloRemoved::class],
+        CptCreated::class => [LogCptCreated::class],
+        CptGraded::class => [LogCptGraded::class],
+        CptDeleted::class => [LogCptDeleted::class],
+        CptExaminerJoined::class => [LogCptExaminerJoined::class],
+        CptExaminerLeft::class => [LogCptExaminerLeft::class],
+        CptLocalJoined::class => [LogCptLocalJoined::class],
+        CptLocalLeft::class => [LogCptLocalLeft::class],
+        CptLogUploaded::class => [LogCptLogUploaded::class],
     ];
 }
