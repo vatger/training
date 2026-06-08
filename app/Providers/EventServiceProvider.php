@@ -25,6 +25,8 @@ use App\Domain\Cpt\Events\CptLocalLeft;
 use App\Domain\Cpt\Events\CptLogUploaded;
 use App\Domain\Endorsement\Events\EndorsementMarkedForRemoval;
 use App\Domain\Endorsement\Events\Tier2EndorsementGranted;
+use App\Domain\Roster\Events\RosterRemovalWarningIssued;
+use App\Domain\Roster\Events\UserRemovedFromRoster;
 use App\Listeners\LogCourseFinished;
 use App\Listeners\LogMentorAdded;
 use App\Listeners\LogMentorRemoved;
@@ -48,6 +50,8 @@ use App\Listeners\LogCptLocalLeft;
 use App\Listeners\LogCptLogUploaded;
 use App\Listeners\LogEndorsementMarkedForRemoval;
 use App\Listeners\LogTier2EndorsementGranted;
+use App\Listeners\LogRosterRemovalWarningIssued;
+use App\Listeners\LogUserRemovedFromRoster;
 
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
@@ -80,5 +84,7 @@ class EventServiceProvider extends ServiceProvider
         CptLogUploaded::class => [LogCptLogUploaded::class],
         EndorsementMarkedForRemoval::class => [LogEndorsementMarkedForRemoval::class],
         Tier2EndorsementGranted::class => [LogTier2EndorsementGranted::class],
+        RosterRemovalWarningIssued::class => [LogRosterRemovalWarningIssued::class],
+        UserRemovedFromRoster::class => [LogUserRemovedFromRoster::class],
     ];
 }
