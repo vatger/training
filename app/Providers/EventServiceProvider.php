@@ -23,6 +23,8 @@ use App\Domain\Cpt\Events\CptExaminerLeft;
 use App\Domain\Cpt\Events\CptLocalJoined;
 use App\Domain\Cpt\Events\CptLocalLeft;
 use App\Domain\Cpt\Events\CptLogUploaded;
+use App\Domain\Endorsement\Events\EndorsementMarkedForRemoval;
+use App\Domain\Endorsement\Events\Tier2EndorsementGranted;
 use App\Listeners\LogCourseFinished;
 use App\Listeners\LogMentorAdded;
 use App\Listeners\LogMentorRemoved;
@@ -44,6 +46,8 @@ use App\Listeners\LogCptExaminerLeft;
 use App\Listeners\LogCptLocalJoined;
 use App\Listeners\LogCptLocalLeft;
 use App\Listeners\LogCptLogUploaded;
+use App\Listeners\LogEndorsementMarkedForRemoval;
+use App\Listeners\LogTier2EndorsementGranted;
 
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
@@ -74,5 +78,7 @@ class EventServiceProvider extends ServiceProvider
         CptLocalJoined::class => [LogCptLocalJoined::class],
         CptLocalLeft::class => [LogCptLocalLeft::class],
         CptLogUploaded::class => [LogCptLogUploaded::class],
+        EndorsementMarkedForRemoval::class => [LogEndorsementMarkedForRemoval::class],
+        Tier2EndorsementGranted::class => [LogTier2EndorsementGranted::class],
     ];
 }
