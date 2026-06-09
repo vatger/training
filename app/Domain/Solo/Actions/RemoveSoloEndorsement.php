@@ -3,21 +3,21 @@
 namespace App\Domain\Solo\Actions;
 
 use App\Domain\Solo\Events\SoloRemoved;
+use App\Integrations\VatEud\VatEudService;
 use App\Models\Course;
 use App\Models\User;
-use App\Services\VatEudService;
 use Illuminate\Validation\ValidationException;
 
 class RemoveSoloEndorsement
 {
     public function __construct(
-        private VatEudService $vatEudService,
+        private readonly VatEudService $vatEud,
     ) {}
 
     public function execute(Course $course, User $trainee, User $mentor): void
     {
-        $solo = collect($this->vatEudService->getSoloEndorsements())->first(
-            fn($s) => $s['user_cid'] == $trainee->vatsim_id && $s['position'] === $course->solo_station,
+        $solo = collect($this->vatEud->getSoloEndorsements())->first(
+            fn($s) => $s->userCid === $trainee->vatsim_id && $s->position === $course->solo_station,
         );
 
         if (!$solo) {
@@ -26,7 +26,7 @@ class RemoveSoloEndorsement
             ]);
         }
 
-        $success = $this->vatEudService->removeSoloEndorsement($solo['id']);
+        $success = $this->vatEud->deleteSoloEndorsement($solo->id);
 
         if (!$success) {
             throw ValidationException::withMessages([
@@ -34,7 +34,7 @@ class RemoveSoloEndorsement
             ]);
         }
 
-        $this->vatEudService->refreshEndorsementCache();
+        $this->vatEud->refreshEndorsementCache();
 
         event(new SoloRemoved($course, $trainee, $mentor, $course->solo_station));
     }

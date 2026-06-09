@@ -3,6 +3,9 @@
 namespace App\Providers;
 
 use App\Services\VatsimConnectService;
+use App\Integrations\VatEud\FakeVatEudClient;
+use App\Integrations\VatEud\VatEudClient;
+use App\Integrations\VatEud\VatEudClientInterface;
 use Illuminate\Support\ServiceProvider;
 use App\Policies\EndorsementPolicy;
 use Illuminate\Support\Facades\Gate;
@@ -18,6 +21,20 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(VatsimConnectService::class, function ($app) {
             return new VatsimConnectService();
         });
+
+        $this->app->bind(
+            \App\Integrations\Vatger\VatgerClientInterface::class,
+            app()->environment('testing', 'local')
+            ? \App\Integrations\Vatger\FakeVatgerClient::class
+            : \App\Integrations\Vatger\VatgerClient::class,
+        );
+
+        $this->app->bind(
+            VatEudClientInterface::class,
+            $this->app->environment('testing', 'local')
+            ? FakeVatEudClient::class
+            : VatEudClient::class,
+        );
     }
 
     /**
@@ -36,12 +53,5 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('endorsements.remove-tier1', [EndorsementPolicy::class, 'removeTier1']);
         Gate::define('endorsements.request-tier2', [EndorsementPolicy::class, 'requestTier2']);
         Gate::define('endorsements.view-own', [EndorsementPolicy::class, 'viewOwn']);
-
-        $this->app->bind(
-            \App\Integrations\Vatger\VatgerClientInterface::class,
-            app()->environment('testing', 'local')
-            ? \App\Integrations\Vatger\FakeVatgerClient::class
-            : \App\Integrations\Vatger\VatgerClient::class,
-        );
     }
 }

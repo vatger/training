@@ -3,9 +3,9 @@
 namespace App\Domain\Cpt\Actions;
 
 use App\Domain\Cpt\Events\CptGraded;
+use App\Integrations\VatEud\VatEudService;
 use App\Models\Cpt;
 use App\Models\User;
-use App\Services\VatEudService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
@@ -38,11 +38,13 @@ class GradeCpt
                 'log_id' => $latestLog->id,
                 'log_file' => $latestLog->log_file,
             ]);
+
             return;
         }
 
         if (!$cpt->examiner) {
             Log::error('CPT grading: no examiner assigned', ['cpt_id' => $cpt->id]);
+
             return;
         }
 
@@ -56,7 +58,11 @@ class GradeCpt
         );
 
         if (!$uploadResult['success']) {
-            Log::error('CPT grading: VatEud upload failed', ['cpt_id' => $cpt->id, 'result' => $uploadResult]);
+            Log::error('CPT grading: VatEud upload failed', [
+                'cpt_id' => $cpt->id,
+                'result' => $uploadResult,
+            ]);
+
             return;
         }
 
@@ -67,15 +73,18 @@ class GradeCpt
 
     private function requestUpgrade(Cpt $cpt): void
     {
-        $newRating    = $cpt->trainee->rating + 1;
         $upgradeResult = $this->vatEud->requestUpgrade(
-            traineeCid:   $cpt->trainee->vatsim_id,
+            traineeCid: $cpt->trainee->vatsim_id,
             instructorCid: config('services.vateud.atd_lead_cid', 1441619),
-            newRating:    $newRating,
+            newRating: $cpt->trainee->rating + 1,
         );
 
         if (!$upgradeResult['success']) {
-            Log::error('CPT grading: upgrade request failed', ['cpt_id' => $cpt->id, 'result' => $upgradeResult]);
+            Log::error('CPT grading: upgrade request failed', [
+                'cpt_id' => $cpt->id,
+                'result' => $upgradeResult,
+            ]);
+
             return;
         }
 

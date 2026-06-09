@@ -3,22 +3,22 @@
 namespace App\Domain\Solo\Actions;
 
 use App\Domain\Solo\Events\SoloExtended;
+use App\Integrations\VatEud\VatEudService;
 use App\Models\Course;
 use App\Models\User;
-use App\Services\VatEudService;
 use Carbon\Carbon;
 use Illuminate\Validation\ValidationException;
 
 class ExtendSoloEndorsement
 {
     public function __construct(
-        private VatEudService $vatEudService,
+        private readonly VatEudService $vatEud,
     ) {}
 
     public function execute(Course $course, User $trainee, User $mentor, Carbon $expiryDate): void
     {
-        $solo = collect($this->vatEudService->getSoloEndorsements())->first(
-            fn($s) => $s['user_cid'] == $trainee->vatsim_id && $s['position'] === $course->solo_station,
+        $solo = collect($this->vatEud->getSoloEndorsements())->first(
+            fn($s) => $s->userCid === $trainee->vatsim_id && $s->position === $course->solo_station,
         );
 
         if (!$solo) {
@@ -27,11 +27,11 @@ class ExtendSoloEndorsement
             ]);
         }
 
-        $this->vatEudService->removeSoloEndorsement($solo['id']);
+        $this->vatEud->deleteSoloEndorsement($solo->id);
 
         $formattedExpiry = $expiryDate->setTime(23, 59, 0)->format('Y-m-d\TH:i:s.v\Z');
 
-        $result = $this->vatEudService->createSoloEndorsement(
+        $result = $this->vatEud->createSoloEndorsement(
             $trainee->vatsim_id,
             $course->solo_station,
             $formattedExpiry,
@@ -44,7 +44,7 @@ class ExtendSoloEndorsement
             ]);
         }
 
-        $this->vatEudService->refreshEndorsementCache();
+        $this->vatEud->refreshEndorsementCache();
 
         event(new SoloExtended($course, $trainee, $mentor, $course->solo_station, $formattedExpiry));
     }

@@ -3,18 +3,20 @@
 namespace App\Domain\Solo\Actions;
 
 use App\Domain\Solo\Events\SoloGranted;
+use App\Integrations\Moodle\MoodleClientInterface;
+use App\Integrations\VatEud\VatEudService;
 use App\Models\Course;
 use App\Models\User;
-use App\Services\MoodleService;
-use App\Services\VatEudService;
 use Carbon\Carbon;
 use Illuminate\Validation\ValidationException;
 
 class GrantSoloEndorsement
 {
+    private const CORE_THEORY_IDS = ['GND' => 6, 'TWR' => 9, 'APP' => 10, 'CTR' => 11];
+
     public function __construct(
-        private VatEudService $vatEudService,
-        private MoodleService $moodleService,
+        private readonly VatEudService $vatEud,
+        private readonly MoodleClientInterface $moodle,
     ) {}
 
     public function execute(Course $course, User $trainee, User $mentor, Carbon $expiryDate): void
@@ -25,7 +27,7 @@ class GrantSoloEndorsement
 
         $formattedExpiry = $expiryDate->setTime(23, 59, 0)->format('Y-m-d\TH:i:s.v\Z');
 
-        $result = $this->vatEudService->createSoloEndorsement(
+        $result = $this->vatEud->createSoloEndorsement(
             $trainee->vatsim_id,
             $course->solo_station,
             $formattedExpiry,
@@ -38,7 +40,7 @@ class GrantSoloEndorsement
             ]);
         }
 
-        $this->vatEudService->refreshEndorsementCache();
+        $this->vatEud->refreshEndorsementCache();
 
         event(new SoloGranted($course, $trainee, $mentor, $course->solo_station, $formattedExpiry));
     }
@@ -50,7 +52,7 @@ class GrantSoloEndorsement
         }
 
         foreach ($course->moodle_course_ids as $moodleCourseId) {
-            if (!$this->moodleService->getCourseCompletion($trainee->vatsim_id, $moodleCourseId)) {
+            if (!$this->moodle->getCourseCompletion($trainee->vatsim_id, $moodleCourseId)) {
                 throw ValidationException::withMessages([
                     'error' => 'Trainee has not completed all required Moodle courses',
                 ]);
@@ -60,9 +62,17 @@ class GrantSoloEndorsement
 
     private function assertCoreTheoryPassed(User $trainee, Course $course): void
     {
-        $status = $this->resolveCoreTheoryStatus($trainee, $course);
+        if (!isset(self::CORE_THEORY_IDS[$course->position])) {
+            return;
+        }
 
-        if (!in_array($status, ['passed', 'not_required'])) {
+        $examId = self::CORE_THEORY_IDS[$course->position];
+        $exams = $this->vatEud->getUserExams($trainee->vatsim_id);
+        $passed = collect($exams->results)
+            ->filter(fn($r) => $r->examId === $examId && $r->passed && $r->expiry->isFuture())
+            ->isNotEmpty();
+
+        if (!$passed) {
             throw ValidationException::withMessages([
                 'error' => 'Trainee has not passed the required core theory test',
             ]);
@@ -71,8 +81,8 @@ class GrantSoloEndorsement
 
     private function assertNoExistingSolo(User $trainee, Course $course): void
     {
-        $existing = collect($this->vatEudService->getSoloEndorsements())->first(
-            fn($s) => $s['user_cid'] == $trainee->vatsim_id && $s['position'] === $course->solo_station,
+        $existing = collect($this->vatEud->getSoloEndorsements())->first(
+            fn($s) => $s->userCid === $trainee->vatsim_id && $s->position === $course->solo_station,
         );
 
         if ($existing) {
@@ -80,28 +90,5 @@ class GrantSoloEndorsement
                 'error' => 'Trainee already has a solo endorsement for this position',
             ]);
         }
-    }
-
-    private function resolveCoreTheoryStatus(User $trainee, Course $course): string
-    {
-        $coreTheoryIds = ['GND' => 6, 'TWR' => 9, 'APP' => 10, 'CTR' => 11];
-
-        if (!isset($coreTheoryIds[$course->position])) {
-            return 'not_required';
-        }
-
-        $examId = $coreTheoryIds[$course->position];
-        $exams  = $this->vatEudService->getUserExams($trainee->vatsim_id);
-
-        $passed = collect($exams['results'] ?? [])
-            ->where('exam_id', $examId)
-            ->where('passed', true)
-            ->filter(fn($e) => Carbon::parse($e['expiry'])->isFuture());
-
-        if ($passed->isNotEmpty()) {
-            return 'passed';
-        }
-
-        return 'not_passed';
     }
 }
