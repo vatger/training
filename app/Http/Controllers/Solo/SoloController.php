@@ -10,7 +10,7 @@ use App\Models\Course;
 use App\Models\User;
 use App\Services\MentorCourseResponseBuilder;
 use App\Services\MoodleService;
-use App\Services\VatEudService;
+use App\Integrations\VatEud\VatEudService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
