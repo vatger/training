@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Http\Controllers\MentorOverviewController;
+use App\Http\Controllers\Training\MentorOverviewController;
 use App\Models\Course;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -28,8 +28,7 @@ class MentorCourseResponseBuilder
             try {
                 $full = Course::find($course->id);
                 if ($full) {
-                    $data           = $this->mentorOverviewController->loadCourseData($full, $user);
-                    $data['loaded'] = true;
+                    $data = $this->mentorOverviewController->loadCourseTrainees($full, $user);
                     return $data;
                 }
             } catch (\Exception $e) {

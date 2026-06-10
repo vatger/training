@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Integrations\VatEud\DTOs\Tier1EndorsementData;
 use App\Integrations\VatEud\VatEudService;
 use App\Integrations\Moodle\MoodleClientInterface;
 use App\Models\Course;

@@ -22,11 +22,27 @@ class AppServiceProvider extends ServiceProvider
             return new VatsimConnectService();
         });
 
+        $fake = $this->app->environment('testing', 'local');
+
+        $this->app->bind(
+            VatEudClientInterface::class,
+            $fake
+            ? FakeVatEudClient::class
+            : VatEudClient::class,
+        );
+
         $this->app->bind(
             \App\Integrations\Vatger\VatgerClientInterface::class,
-            app()->environment('testing', 'local')
+            $fake
             ? \App\Integrations\Vatger\FakeVatgerClient::class
             : \App\Integrations\Vatger\VatgerClient::class,
+        );
+
+        $this->app->bind(
+            \App\Integrations\Moodle\MoodleClientInterface::class,
+            $fake
+            ? \App\Integrations\Moodle\FakeMoodleClient::class
+            : \App\Integrations\Moodle\MoodleClient::class,
         );
 
         $this->app->bind(

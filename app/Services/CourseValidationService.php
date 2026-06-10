@@ -6,7 +6,7 @@ use App\Models\Course;
 use App\Models\User;
 use App\Models\WaitingListEntry;
 use App\Models\Familiarisation;
-use App\Services\VatEudService;
+use App\Integrations\VatEud\VatEudService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
