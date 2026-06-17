@@ -12,6 +12,8 @@ class VatEudService
 
     protected string $baseUrl = 'https://core.vateud.net/api';
 
+    protected const MIN_SOLO_DURATION_DAYS = 7;
+
     public function __construct()
     {
         $this->headers = [
@@ -422,10 +424,17 @@ class VatEudService
         string $expireAt,
         int $instructorCid
     ): array {
+        if (Carbon::parse($expireAt)->lt(now()->addDays(self::MIN_SOLO_DURATION_DAYS))) {
+            return [
+                'success' => false,
+                'message' => 'Solo endorsement duration must be at least '.self::MIN_SOLO_DURATION_DAYS.' days.',
+            ];
+        }
+ 
         if (config('services.vateud.use_mock', false)) {
             return ['success' => true];
         }
-
+ 
         try {
             $response = Http::withHeaders($this->headers)
                 ->timeout(10)
@@ -435,19 +444,19 @@ class VatEudService
                     'expire_at' => $expireAt,
                     'instructor_cid' => config('services.vateud.atd_lead_cid', 1441619),
                 ]);
-
+ 
             if ($response->successful()) {
                 Cache::forget('vateud:solo_endorsements');
-
+ 
                 return ['success' => true];
             }
-
+ 
             $data = $response->json();
-
+ 
             $errorMessage = is_array($data)
                 ? ($data['message'] ?? 'Failed to create solo endorsement')
                 : 'Failed to create solo endorsement';
-
+ 
             return [
                 'success' => false,
                 'message' => $errorMessage,
@@ -459,7 +468,7 @@ class VatEudService
                 'instructor_cid' => $instructorCid,
                 'error' => $e->getMessage(),
             ]);
-
+ 
             return [
                 'success' => false,
                 'message' => $e->getMessage(),
