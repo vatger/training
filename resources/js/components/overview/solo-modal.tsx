@@ -174,8 +174,16 @@ export function SoloModal({
 		const maxDate = new Date()
 		maxDate.setDate(maxDate.getDate() + 29)
 
+		const minDate = new Date()
+		minDate.setDate(minDate.getDate() + 6)
+
 		if (date > maxDate) {
 			setError("Solo endorsement cannot exceed 30 days from today")
+			return false
+		}
+
+		if (date < minDate) {
+			setError("Solo endorsement must be minimum 7 days in the future")
 			return false
 		}
 
@@ -619,7 +627,9 @@ export function SoloModal({
 												today.setHours(0, 0, 0, 0)
 												const maxDate = new Date()
 												maxDate.setDate(maxDate.getDate() + 29)
-												return date < today || date > maxDate
+												const minDate = new Date()
+												minDate.setDate(minDate.getDate() + 6)
+												return date < today || date > maxDate || date < minDate
 											}}
 											initialFocus
 											mode="single"
@@ -633,8 +643,8 @@ export function SoloModal({
 								</Popover>
 								<p className="text-xs text-muted-foreground">
 									{mode === "add"
-										? "Select when this solo endorsement will expire (maximum 30 days from today)"
-										: "Select new expiry date to extend the solo endorsement (maximum 30 days from today)"}
+										? "Select when this solo endorsement will expire (minimum 7 days, maximum 30 days from today)"
+										: "Select new expiry date to extend the solo endorsement (minimum 7 days, maximum 30 days from today)"}
 								</p>
 							</div>
 

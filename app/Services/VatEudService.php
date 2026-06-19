@@ -13,7 +13,7 @@ class VatEudService
 
     protected string $baseUrl = 'https://core.vateud.net/api';
 
-    protected const MIN_SOLO_DURATION_DAYS = 7;
+    protected const MIN_SOLO_DURATION_DAYS = 6;
 
     public function __construct()
     {
