@@ -19,8 +19,6 @@ class LogTier2EndorsementGranted
                 'position' => $event->tier2Endorsement->position,
                 'trainee_id' => $event->trainee->id,
                 'trainee_name' => $event->trainee->name,
-                'mentor_id' => $event->trainee->id,
-                'mentor_name' => $event->trainee->name,
                 'type' => 'tier2',
             ],
         ]);
