@@ -11,6 +11,7 @@ readonly class SoloEndorsementData
         public int     $userCid,
         public string  $position,
         public int     $facility,
+        public int $mentor,
         public Carbon  $expireAt,
         public Carbon  $createdAt,
     ) {}
@@ -22,6 +23,7 @@ readonly class SoloEndorsementData
             userCid:   $data['user_cid'],
             position:  $data['position'],
             facility:  $data['facility'],
+            mentor: $data['instructor_cid'],
             expireAt:  Carbon::parse($data['expire_at']),
             createdAt: Carbon::parse($data['created_at']),
         );

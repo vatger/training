@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Integrations\VatEud\DTOs\Tier1EndorsementData;
 use App\Integrations\VatEud\VatEudService;
 use App\Integrations\Moodle\MoodleClientInterface;
+use App\Integrations\VatEud\DTOs\SoloEndorsementData;
 use App\Models\Course;
 use App\Models\EndorsementActivity;
 use App\Models\Tier2Endorsement;
@@ -320,23 +321,15 @@ class EndorsementViewService
     private function getUserSoloEndorsements(int $vatsimId): array
     {
         return collect($this->vatEudService->getSoloEndorsements())
-            ->where('user_cid', $vatsimId)
-            ->map(function ($solo) {
-                $expiresAt = null;
-                if (! empty($solo['expiry'])) {
-                    try {
-                        $expiresAt = Carbon::parse($solo['expiry'])->toDateString();
-                    } catch (\Exception) {
-                    }
-                }
-
+            ->where('userCid', $vatsimId)
+            ->map(function (SoloEndorsementData $solo) {
                 return [
-                    'position' => $solo['position'],
-                    'fullName' => $this->getPositionFullName($solo['position']),
-                    'type' => $this->getPositionType($solo['position']),
+                    'position' => $solo->position,
+                    'fullName' => $this->getPositionFullName($solo->position),
+                    'type' => $this->getPositionType($solo->position),
                     'status' => 'active',
-                    'mentor' => $this->getMentorName($solo['instructor_cid'] ?? null),
-                    'expiresAt' => $expiresAt,
+                    'mentor' => $solo->mentor,
+                    'expiresAt' => $solo->expireAt?->toDateString(),
                 ];
             })
             ->values()
