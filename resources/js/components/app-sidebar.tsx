@@ -52,7 +52,7 @@ const navSections = [
 			},
 			{
 				title: "Endorsements",
-				href: route("endorsements"),
+				href: route("endorsements.trainee"),
 				icon: CircleCheck,
 			},
 		] as NavItem[],

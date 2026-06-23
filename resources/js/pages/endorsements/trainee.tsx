@@ -31,11 +31,11 @@ const breadcrumbs: BreadcrumbItem[] = [
 	},
 	{
 		title: "Endorsements",
-		href: route("endorsements"),
+		href: route("endorsements.trainee"),
 	},
 	{
 		title: "My Endorsements",
-		href: route("endorsements"),
+		href: route("endorsements.trainee"),
 	},
 ]
 

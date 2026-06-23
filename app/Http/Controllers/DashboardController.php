@@ -119,7 +119,7 @@ class DashboardController extends Controller
       ->count();
 
     $moodleCourses = [];
-    $moodleService = app(\App\Services\MoodleService::class);
+    $moodleService = app(\App\Integrations\Moodle\MoodleClient::class);
 
     foreach ($activeCourses as $course) {
       $fullCourse = \App\Models\Course::find($course['id']);
