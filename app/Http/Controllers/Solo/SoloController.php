@@ -150,7 +150,7 @@ class SoloController extends Controller
         try {
             $this->grantSolo->execute($course, $trainee, $user, $expiryDate);
 
-            return $this->responseBuilder->buildCourseData($course, $user);
+            return $this->responseBuilder->build($course, $user);
         } catch (ValidationException $e) {
             return back()->withErrors($e->errors());
         } catch (\Exception $e) {
@@ -194,7 +194,7 @@ class SoloController extends Controller
         try {
             $this->extendSolo->execute($course, $trainee, $user, $expiryDate);
 
-            return $this->responseBuilder->buildCourseData($course, $user);
+            return $this->responseBuilder->build($course, $user);
         } catch (ValidationException $e) {
             return back()->withErrors($e->errors());
         } catch (\Exception $e) {
@@ -232,7 +232,7 @@ class SoloController extends Controller
         try {
             $this->removeSolo->execute($course, $trainee, $user);
 
-            return $this->responseBuilder->buildCourseData($course, $user);
+            return $this->responseBuilder->build($course, $user);
         } catch (ValidationException $e) {
             return back()->withErrors($e->errors());
         } catch (\Exception $e) {

@@ -22,7 +22,10 @@ class MentorManagementController extends Controller
     {
         $user = $request->user();
 
-        $courses = \App\Models\Course::all()->map(function ($course) use ($user) {
+        $moodleClient = app(\App\Integrations\Moodle\MoodleClient::class);
+        $moodleSignedUp = $moodleClient->userExists($user->vatsim_id);
+
+        $courses = Course::all()->map(function ($course) use ($user) {
             $waitingEntry = \App\Models\WaitingListEntry::where('course_id', $course->id)
                 ->where('user_id', $user->id)
                 ->first();
@@ -72,7 +75,7 @@ class MentorManagementController extends Controller
         return Inertia::render('training/courses', [
             'courses' => $courses->values(),
             'isVatsimUser' => $user->isVatsimUser(),
-            'moodleSignedUp' => false,
+            'moodleSignedUp' => $moodleSignedUp,
             'userHasActiveRtgCourse' => $userHasActiveRtgCourse,
         ]);
     }

@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 
 class MentorCourseResponseBuilder
 {
-    public function buildCourseData(Course $course, User $user): array
+    public function build(Course $course, User $user): array
     {
         $trainees = DB::table('course_trainees')
             ->join('users', 'course_trainees.user_id', '=', 'users.id')

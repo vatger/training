@@ -114,7 +114,7 @@ class MentorOverviewController extends Controller
             try {
                 $courseToLoad = Course::find($courseToLoadId);
                 if ($courseToLoad) {
-                    $loadedCourseData = $this->responseBuilder->buildCourseData($courseToLoad, $user);
+                    $loadedCourseData = $this->responseBuilder->build($courseToLoad, $user);
                     $loadedCourseData['loaded'] = true;
 
                     $coursesMetadata = $coursesMetadata->map(function ($meta) use ($loadedCourseData) {
@@ -170,7 +170,7 @@ class MentorOverviewController extends Controller
             return response()->json(['error' => 'Access denied'], 403);
         }
 
-        return response()->json($this->responseBuilder->buildCourseData($course, $user));
+        return response()->json($this->responseBuilder->build($course, $user));
     }
 
     public function getMoodleStatusForTrainee(Request $request)
