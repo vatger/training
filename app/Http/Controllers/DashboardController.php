@@ -119,7 +119,7 @@ class DashboardController extends Controller
       ->count();
 
     $moodleCourses = [];
-    $moodleService = app(\App\Integrations\Moodle\MoodleClient::class);
+    $moodleClient = app(\App\Integrations\Moodle\MoodleClient::class);
 
     foreach ($activeCourses as $course) {
       $fullCourse = \App\Models\Course::find($course['id']);
@@ -131,8 +131,8 @@ class DashboardController extends Controller
         if (is_array($moodleIds)) {
           foreach ($moodleIds as $moodleId) {
             try {
-              $courseName = $moodleService->getCourseName($moodleId);
-              $isPassed = $moodleService->getCourseCompletion($user->vatsim_id, $moodleId);
+              $courseName = $moodleClient->getCourseName($moodleId);
+              $isPassed = $moodleClient->getCourseCompletion($user->vatsim_id, $moodleId);
 
               $moodleCourses[] = [
                 'id' => $moodleId,

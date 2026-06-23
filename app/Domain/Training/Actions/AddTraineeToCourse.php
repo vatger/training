@@ -3,16 +3,16 @@
 namespace App\Domain\Training\Actions;
 
 use App\Domain\Training\Events\TraineeAddedToCourse;
+use App\Integrations\Moodle\MoodleClient;
 use App\Models\Course;
 use App\Models\User;
 use App\Models\WaitingListEntry;
-use App\Services\MoodleService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class AddTraineeToCourse
 {
-    public function __construct(private readonly MoodleService $moodleService)
+    public function __construct(private readonly MoodleClient $moodleClient)
     {
     }
 
@@ -58,7 +58,9 @@ class AddTraineeToCourse
         }
 
         try {
-            $this->moodleService->enrollUserInCourses($trainee->vatsim_id, $course->moodle_course_ids);
+            foreach ($course->moodle_course_ids as $courseId) {
+                $this->moodleClient->enrollUser($trainee->vatsim_id, $courseId);
+            }
         } catch (\Exception $e) {
             Log::warning('Failed to enroll trainee in Moodle courses', [
                 'trainee_id' => $trainee->id,

@@ -205,10 +205,16 @@ class MentorOverviewController extends Controller
         }
 
         try {
-            $moodleService = app(\App\Services\MoodleService::class);
+            $moodleClient = app(\App\Integrations\Moodle\MoodleClient::class);
 
-            $status = $moodleService->userExists($trainee->vatsim_id)
-                ? ($moodleService->checkAllCoursesCompleted($trainee->vatsim_id, $course->moodle_course_ids) ? 'completed' : 'in-progress')
+            $status = $moodleClient->userExists($trainee->vatsim_id)
+                ? (
+                    collect($course->moodle_course_ids)->every(
+                        fn($courseId) => $moodleClient->getCourseCompletion($trainee->vatsim_id, $courseId)
+                    )
+                    ? 'completed'
+                    : 'in-progress'
+                )
                 : 'not-started';
 
             Cache::put($cacheKey, $status, 300);

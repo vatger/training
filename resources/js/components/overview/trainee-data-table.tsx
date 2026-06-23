@@ -431,7 +431,7 @@ export function TraineeDataTable({
 				const trainee = row.original
 				return (
 					<div className="space-y-1">
-						{trainee.progress.length > 0 ? (
+						{(trainee.progress ?? []).length > 0 ? (
 							<div className="flex items-center gap-1">
 								{trainee.progress.slice(-5).map((passed) => (
 									<div

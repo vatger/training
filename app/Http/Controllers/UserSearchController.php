@@ -287,7 +287,7 @@ class UserSearchController extends Controller
             });
 
         $moodleCourses = [];
-        $moodleService = app(\App\Services\MoodleService::class);
+        $moodleClient = app(\App\Integrations\Moodle\MoodleClient::class);
 
         $courseIds = $activeCourses->pluck('id');
         $coursesWithMoodle = \App\Models\Course::whereIn('id', $courseIds)
@@ -302,8 +302,8 @@ class UserSearchController extends Controller
             if (is_array($moodleIds)) {
                 foreach ($moodleIds as $moodleId) {
                     try {
-                        $courseName = $moodleService->getCourseName($moodleId);
-                        $isPassed = $moodleService->getCourseCompletion($user->vatsim_id, $moodleId);
+                        $courseName = $moodleClient->getCourseName($moodleId);
+                        $isPassed = $moodleClient->getCourseCompletion($user->vatsim_id, $moodleId);
 
                         $moodleCourses[] = [
                             'id' => $moodleId,

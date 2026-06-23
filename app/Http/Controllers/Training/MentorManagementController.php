@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Course;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 use Illuminate\Support\Facades\Log;
 
 class MentorManagementController extends Controller
@@ -16,6 +17,88 @@ class MentorManagementController extends Controller
         private AddMentorToCourse      $addMentorToCourse,
         private RemoveMentorFromCourse $removeMentorFromCourse,
     ) {}
+
+    public function index(Request $request): \Inertia\Response
+    {
+        $user = $request->user();
+
+        $courses = \App\Models\Course::all()->map(function ($course) use ($user) {
+            $waitingEntry = \App\Models\WaitingListEntry::where('course_id', $course->id)
+                ->where('user_id', $user->id)
+                ->first();
+
+            $isOnWaitingList = (bool) $waitingEntry;
+            $waitingPosition = null;
+
+            if ($isOnWaitingList) {
+                $waitingPosition = \App\Models\WaitingListEntry::where('course_id', $course->id)
+                    ->where('date_added', '<=', $waitingEntry->date_added)
+                    ->count();
+            }
+
+            $canJoin = !$isOnWaitingList
+                && $user->vatsim_rating >= $course->min_rating
+                && $user->vatsim_rating <= $course->max_rating;
+
+            $joinError = null;
+            if (!$canJoin && !$isOnWaitingList) {
+                $joinError = 'Your rating does not meet the requirements for this course.';
+            }
+
+            return [
+                'id' => $course->id,
+                'name' => $course->name,
+                'trainee_display_name' => $course->trainee_display_name,
+                'description' => $course->description,
+                'airport_name' => $course->airport_name,
+                'airport_icao' => $course->airport_icao,
+                'type' => $course->type,
+                'type_display' => $course->type_display,
+                'position' => $course->position,
+                'position_display' => $course->position_display,
+                'min_rating' => $course->min_rating,
+                'max_rating' => $course->max_rating,
+                'is_on_waiting_list' => $isOnWaitingList,
+                'waiting_list_position' => $waitingPosition,
+                'can_join' => $canJoin,
+                'join_error' => $joinError,
+            ];
+        });
+
+        $userHasActiveRtgCourse = \App\Models\WaitingListEntry::where('user_id', $user->id)
+            ->whereHas('course', fn($q) => $q->where('type', 'RTG'))
+            ->exists();
+
+        return Inertia::render('training/courses', [
+            'courses' => $courses->values(),
+            'isVatsimUser' => $user->isVatsimUser(),
+            'moodleSignedUp' => false,
+            'userHasActiveRtgCourse' => $userHasActiveRtgCourse,
+        ]);
+    }
+
+    public function toggleWaitingList(Request $request, Course $course)
+    {
+        $user = $request->user();
+
+        $existing = \App\Models\WaitingListEntry::where('course_id', $course->id)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if ($existing) {
+            $existing->delete();
+            return back()->with('success', 'Removed from waiting list.');
+        }
+
+        \App\Models\WaitingListEntry::create([
+            'course_id' => $course->id,
+            'user_id' => $user->id,
+            'date_added' => now(),
+            'activity' => 0,
+        ]);
+
+        return back()->with('success', 'Added to waiting list.');
+    }
 
     public function addMentor(Request $request)
     {

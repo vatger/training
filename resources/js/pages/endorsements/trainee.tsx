@@ -26,16 +26,12 @@ import type { BreadcrumbItem, Endorsement } from "@/types"
 
 const breadcrumbs: BreadcrumbItem[] = [
 	{
-		title: "Dashboard",
-		href: dashboard().url,
+			title: "Dashboard",
+			href: dashboard().url,
 	},
 	{
-		title: "Endorsements",
-		href: route("endorsements.trainee"),
-	},
-	{
-		title: "My Endorsements",
-		href: route("endorsements.trainee"),
+			title: "My Endorsements",
+			href: route("endorsements.trainee"),
 	},
 ]
 

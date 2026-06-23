@@ -107,7 +107,7 @@ export function AssignDialog({
 	useEffect(() => {
 		if (isOpen && courseId) {
 			setIsLoading(true)
-			fetch(route("overview.get-course-mentors", courseId))
+			fetch(route("overview.course.mentors", courseId))
 				.then((res) => res.json())
 				.then((data) => {
 					setMentors(data)

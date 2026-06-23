@@ -66,7 +66,7 @@ export function ManageMentorsModal({
 		setIsLoading(true)
 		try {
 			const response = await axios.get(
-				route("overview.get-course-mentors", course.id),
+				route("overview.course.mentors", course.id),
 			)
 			setMentors(response.data)
 		} catch (error) {

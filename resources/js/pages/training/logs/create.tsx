@@ -472,7 +472,7 @@ export default function CreateEditTrainingLog({
 		if (isEditing && log) {
 			router.visit(route("training-logs.show", log.id))
 		} else {
-			router.visit(route("overview.overview"))
+			router.visit(route("overview.index"))
 		}
 	}
 

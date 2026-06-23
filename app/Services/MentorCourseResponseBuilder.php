@@ -2,115 +2,49 @@
 
 namespace App\Services;
 
-use App\Http\Controllers\Training\MentorOverviewController;
 use App\Models\Course;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
-use Inertia\Inertia;
-use Inertia\Response;
 
 class MentorCourseResponseBuilder
 {
-    public function __construct(
-        private MentorOverviewController $mentorOverviewController,
-    ) {}
-
-    public function build(Course $activeCourse, User $user): Response
+    public function buildCourseData(Course $course, User $user): array
     {
-        $courses = $this->fetchAccessibleCourses($user);
-        $sorted  = $this->sortCourses($courses);
+        $trainees = DB::table('course_trainees')
+            ->join('users', 'course_trainees.user_id', '=', 'users.id')
+            ->where('course_trainees.course_id', $course->id)
+            ->whereNull('course_trainees.completed_at')
+            ->select(
+                'users.id',
+                'users.vatsim_id',
+                'users.first_name',
+                'users.last_name',
+                'course_trainees.claimed_by_mentor_id',
+                'course_trainees.remarks',
+                'course_trainees.custom_order',
+                'course_trainees.created_at as enrolled_at',
+            )
+            ->orderBy('course_trainees.custom_order')
+            ->get()
+            ->map(fn($t) => [
+                'id' => $t->id,
+                'vatsim_id' => $t->vatsim_id,
+                'name' => $t->first_name . ' ' . $t->last_name,
+                'claimed_by_mentor_id' => $t->claimed_by_mentor_id,
+                'remark' => $t->remarks,
+                'order' => $t->custom_order,
+                'enrolled_at' => $t->enrolled_at,
+            ]);
 
-        $coursesMetadata = $sorted->map(function ($course) use ($activeCourse, $user) {
-            if ($course->id !== $activeCourse->id) {
-                return $this->stubCourse($course);
-            }
-
-            try {
-                $full = Course::find($course->id);
-                if ($full) {
-                    $data = $this->mentorOverviewController->loadCourseTrainees($full, $user);
-                    return $data;
-                }
-            } catch (\Exception $e) {
-                \Log::error('MentorCourseResponseBuilder: failed to load course', [
-                    'course_id' => $course->id,
-                    'error'     => $e->getMessage(),
-                ]);
-            }
-
-            return $this->stubCourse($course);
-        });
-
-        return Inertia::render('training/mentor-overview', [
-            'courses'        => $coursesMetadata->values(),
-            'initialCourseId' => $activeCourse->id,
-            'statistics'     => $this->buildStatistics($user, $sorted),
-        ]);
-    }
-
-    private function fetchAccessibleCourses(User $user): \Illuminate\Support\Collection
-    {
-        if ($user->is_superuser || $user->is_admin) {
-            return Course::select(['id', 'name', 'position', 'type', 'solo_station', 'mentor_group_id'])
-                ->withCount('activeTrainees')
-                ->get();
-        }
-
-        return $user->mentorCourses()
-            ->select(['courses.id', 'courses.name', 'courses.position', 'courses.type', 'courses.solo_station', 'courses.mentor_group_id'])
-            ->withCount('activeTrainees')
-            ->get();
-    }
-
-    private function sortCourses(\Illuminate\Support\Collection $courses): \Illuminate\Support\Collection
-    {
-        $positionOrder = ['GND' => 1, 'TWR' => 2, 'APP' => 3];
-
-        $nonCtr = $courses
-            ->filter(fn($c) => $c->position !== 'CTR')
-            ->sortBy(fn($c) => $positionOrder[$c->position] ?? 999)
-            ->sortBy('name');
-
-        $ctr = $courses
-            ->filter(fn($c) => $c->position === 'CTR')
-            ->sortBy('name');
-
-        return $nonCtr->concat($ctr)->values();
-    }
-
-    private function stubCourse(Course $course): array
-    {
         return [
             'id'             => $course->id,
             'name'           => $course->name,
             'position'       => $course->position,
             'type'           => $course->type,
             'soloStation'    => $course->solo_station,
-            'activeTrainees' => $course->active_trainees_count,
-            'trainees'       => [],
-            'loaded'         => false,
-        ];
-    }
-
-    private function buildStatistics(User $user, \Illuminate\Support\Collection $courses): array
-    {
-        $courseIds = $courses->pluck('id')->toArray();
-
-        return [
-            'activeTrainees' => $courses->sum(fn($c) => $c->active_trainees_count),
-            'claimedTrainees' => DB::table('course_trainees')
-                ->whereIn('course_id', $courseIds)
-                ->where('claimed_by_mentor_id', $user->id)
-                ->whereNull('completed_at')
-                ->count(),
-            'trainingSessions' => DB::table('training_logs')
-                ->whereIn('course_id', $courseIds)
-                ->where('mentor_id', $user->id)
-                ->where('session_date', '>=', now()->subDays(30))
-                ->count(),
-            'waitingList' => DB::table('waiting_list_entries')
-                ->whereIn('course_id', $courseIds)
-                ->count(),
+            'activeTrainees' => $trainees->count(),
+            'trainees' => $trainees->values(),
+            'loaded' => true,
         ];
     }
 }

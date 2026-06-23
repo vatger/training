@@ -84,7 +84,7 @@ export function ProgressModal({
 			setIsLoading(true)
 			try {
 				const response = await fetch(
-					route("api.training-logs.trainee", trainee.id),
+					route("overview.trainee-logs", trainee.id),
 				)
 				if (response.ok) {
 					const data = await response.json()

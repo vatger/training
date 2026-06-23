@@ -34,7 +34,7 @@ class EndorsementViewService
         $allTier1 = $this->vatEudService->getTier1Endorsements();
 
         $endorsementIds = collect($allTier1)->pluck('id')->toArray();
-        $vatsimIds = collect($allTier1)->pluck('user_cid')->unique()->toArray();
+        $vatsimIds = collect($allTier1)->map(fn($e) => $e->userCid)->unique()->toArray();
 
         $activities = EndorsementActivity::whereIn('endorsement_id', $endorsementIds)
             ->get()
@@ -76,34 +76,33 @@ class EndorsementViewService
             'userPermissions' => [
                 'canRemoveForPositions' => $canRemovePositions,
                 'canRemoveAny' => ($user->is_superuser || $user->is_admin)
-                    || (! empty($canRemovePositions) && count($canRemovePositions) > 0),
+                    || (!empty($canRemovePositions) && count($canRemovePositions) > 0),
                 'isAdmin' => $user->is_superuser || $user->is_admin,
             ],
         ];
     }
 
-    private function mapEndorsement(array $endorsement, $activities, $users): ?array
+    private function mapEndorsement(Tier1EndorsementData $endorsement, $activities, $users): ?array
     {
-        $activity = $activities->get($endorsement['id']);
-        if (! $activity) {
+        $activity = $activities->get($endorsement->id);
+        if (!$activity) {
             return null;
         }
 
-        $createdAt = Carbon::parse($endorsement['created_at']);
-        $olderThanSixMonths = $createdAt->lte(now()->subMonths(6));
+        $olderThanSixMonths = $endorsement->createdAt->lte(now()->subMonths(6));
         $hasGoodActivity = $activity->activity_hours >= 3;
 
-        if (! $hasGoodActivity && ! $olderThanSixMonths) {
+        if (!$hasGoodActivity && !$olderThanSixMonths) {
             return null;
         }
 
-        $user = $users->get($endorsement['user_cid']);
+        $user = $users->get($endorsement->userCid);
 
         return [
             'id' => $activity->id,
-            'endorsementId' => $endorsement['id'],
-            'position' => $endorsement['position'],
-            'vatsimId' => $endorsement['user_cid'],
+            'endorsementId' => $endorsement->id,
+            'position' => $endorsement->position,
+            'vatsimId' => $endorsement->userCid,
             'userName' => $user?->name ?? 'Unknown',
             'activity' => $activity->activity_minutes,
             'activityHours' => $activity->activity_hours,
@@ -115,7 +114,7 @@ class EndorsementViewService
                 ? $activity->removal_date->diffInDays(now(), false)
                 : -1,
             'eligibleForRemoval' => $olderThanSixMonths,
-            'endorsedAt' => $createdAt->format('Y-m-d'),
+            'endorsedAt' => $endorsement->createdAt->format('Y-m-d'),
         ];
     }
 
@@ -249,7 +248,7 @@ class EndorsementViewService
     private function getUserTier1Endorsements(int $vatsimId): array
     {
         $tier1Endorsements = collect($this->vatEudService->getTier1Endorsements())
-            ->where('user_cid', $vatsimId);
+            ->filter(fn($e) => $e->userCid === $vatsimId);
 
         if ($tier1Endorsements->isEmpty()) {
             return [];
@@ -261,15 +260,15 @@ class EndorsementViewService
 
         return $tier1Endorsements
             ->map(function ($endorsement) use ($activities) {
-                $activity = $activities->get($endorsement['id']);
-                if (! $activity) {
+                $activity = $activities->get($endorsement->id);
+                if (!$activity) {
                     return null;
                 }
 
                 return [
-                    'position' => $endorsement['position'],
-                    'fullName' => $this->getPositionFullName($endorsement['position']),
-                    'type' => $this->getPositionType($endorsement['position']),
+                    'position' => $endorsement->position,
+                    'fullName' => $this->getPositionFullName($endorsement->position),
+                    'type' => $this->getPositionType($endorsement->position),
                     'activity' => $activity->activity_minutes,
                     'activityHours' => $activity->activity_hours,
                     'status' => $activity->status,

@@ -6,10 +6,10 @@ use App\Domain\Solo\Actions\ExtendSoloEndorsement;
 use App\Domain\Solo\Actions\GrantSoloEndorsement;
 use App\Domain\Solo\Actions\RemoveSoloEndorsement;
 use App\Http\Controllers\Controller;
+use App\Integrations\Moodle\MoodleClient;
 use App\Models\Course;
 use App\Models\User;
 use App\Services\MentorCourseResponseBuilder;
-use App\Services\MoodleService;
 use App\Integrations\VatEud\VatEudService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -23,7 +23,7 @@ class SoloController extends Controller
         private ExtendSoloEndorsement $extendSolo,
         private RemoveSoloEndorsement $removeSolo,
         private VatEudService $vatEudService,
-        private MoodleService $moodleService,
+        private MoodleClient $moodleClient,
         private MentorCourseResponseBuilder $responseBuilder,
     ) {}
 
@@ -150,7 +150,7 @@ class SoloController extends Controller
         try {
             $this->grantSolo->execute($course, $trainee, $user, $expiryDate);
 
-            return $this->responseBuilder->build($course, $user);
+            return $this->responseBuilder->buildCourseData($course, $user);
         } catch (ValidationException $e) {
             return back()->withErrors($e->errors());
         } catch (\Exception $e) {
@@ -194,7 +194,7 @@ class SoloController extends Controller
         try {
             $this->extendSolo->execute($course, $trainee, $user, $expiryDate);
 
-            return $this->responseBuilder->build($course, $user);
+            return $this->responseBuilder->buildCourseData($course, $user);
         } catch (ValidationException $e) {
             return back()->withErrors($e->errors());
         } catch (\Exception $e) {
@@ -232,7 +232,7 @@ class SoloController extends Controller
         try {
             $this->removeSolo->execute($course, $trainee, $user);
 
-            return $this->responseBuilder->build($course, $user);
+            return $this->responseBuilder->buildCourseData($course, $user);
         } catch (ValidationException $e) {
             return back()->withErrors($e->errors());
         } catch (\Exception $e) {
@@ -258,7 +258,7 @@ class SoloController extends Controller
             $details = [];
 
             foreach ($course->moodle_course_ids as $moodleCourseId) {
-                $completed = $this->moodleService->getCourseCompletion($trainee->vatsim_id, $moodleCourseId);
+                $completed = $this->moodleClient->getCourseCompletion($trainee->vatsim_id, $moodleCourseId);
                 $details[] = ['course_id' => $moodleCourseId, 'completed' => $completed];
 
                 if (!$completed) {
