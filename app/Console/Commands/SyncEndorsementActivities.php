@@ -48,32 +48,32 @@ class SyncEndorsementActivities extends Command
 
         foreach ($tier1Endorsements as $endorsement) {
             try {
-                if (EndorsementActivity::where('endorsement_id', $endorsement['id'])->exists()) {
+                if (EndorsementActivity::where('endorsement_id', $endorsement->id)->exists()) {
                     continue;
                 }
 
                 $createdAt = null;
-                if (!empty($endorsement['created_at'])) {
+                if (!empty($endorsement->createdAt)) {
                     try {
-                        $createdAt = Carbon::createFromFormat('Y-m-d\TH:i:s.u\Z', $endorsement['created_at']);
+                        $createdAt = Carbon::createFromFormat('Y-m-d\TH:i:s.u\Z', $endorsement->createdAt);
                     } catch (\Exception) {
                         $createdAt = Carbon::createFromTimestamp(1);
                     }
                 }
 
                 EndorsementActivity::create([
-                    'endorsement_id' => $endorsement['id'],
-                    'vatsim_id' => $endorsement['user_cid'],
-                    'position' => $endorsement['position'],
+                    'endorsement_id' => $endorsement->id,
+                    'vatsim_id' => $endorsement->userCid,
+                    'position' => $endorsement->position,
                     'activity_minutes' => 0.0,
                     'created_at_vateud' => $createdAt ?? Carbon::createFromTimestamp(1),
                     'last_updated' => Carbon::createFromTimestamp(1),
                 ]);
 
-                $this->line("Created activity record for endorsement {$endorsement['id']} (User: {$endorsement['user_cid']}, Position: {$endorsement['position']})");
+                $this->line("Created activity record for endorsement {$endorsement->id} (User: {$endorsement->userCid}, Position: {$endorsement->position})");
             } catch (\Exception $e) {
-                $this->error("Failed to sync endorsement {$endorsement['id']}: " . $e->getMessage());
-                Log::error('Failed to sync endorsement', ['endorsement_id' => $endorsement['id'], 'error' => $e->getMessage()]);
+                $this->error("Failed to sync endorsement {$endorsement->id}: " . $e->getMessage());
+                Log::error('Failed to sync endorsement', ['endorsement_id' => $endorsement->id, 'error' => $e->getMessage()]);
             }
         }
 

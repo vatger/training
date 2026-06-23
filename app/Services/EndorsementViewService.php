@@ -287,7 +287,7 @@ class EndorsementViewService
     private function getUserTier2Endorsements(int $vatsimId): array
     {
         $activePositions = collect($this->vatEudService->getTier2Endorsements())
-            ->where('user_cid', $vatsimId)
+            ->filter(fn($e) => $e->userCid === $vatsimId)
             ->pluck('position')
             ->toArray();
 

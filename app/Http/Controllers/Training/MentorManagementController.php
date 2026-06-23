@@ -7,6 +7,7 @@ use App\Domain\Training\Actions\RemoveMentorFromCourse;
 use App\Http\Controllers\Controller;
 use App\Models\Course;
 use App\Models\User;
+use App\Services\CourseValidationService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Log;
@@ -16,6 +17,7 @@ class MentorManagementController extends Controller
     public function __construct(
         private AddMentorToCourse      $addMentorToCourse,
         private RemoveMentorFromCourse $removeMentorFromCourse,
+        private CourseValidationService $courseValidationService,
     ) {}
 
     public function index(Request $request): \Inertia\Response
@@ -39,14 +41,9 @@ class MentorManagementController extends Controller
                     ->count();
             }
 
-            $canJoin = !$isOnWaitingList
-                && $user->vatsim_rating >= $course->min_rating
-                && $user->vatsim_rating <= $course->max_rating;
-
-            $joinError = null;
-            if (!$canJoin && !$isOnWaitingList) {
-                $joinError = 'Your rating does not meet the requirements for this course.';
-            }
+            [$canJoin, $joinError] = $isOnWaitingList
+                ? [false, null]
+                : $this->courseValidationService->canUserJoinCourse($course, $user);
 
             return [
                 'id' => $course->id,
@@ -64,7 +61,7 @@ class MentorManagementController extends Controller
                 'is_on_waiting_list' => $isOnWaitingList,
                 'waiting_list_position' => $waitingPosition,
                 'can_join' => $canJoin,
-                'join_error' => $joinError,
+                'join_error' => $joinError ?: null,
             ];
         });
 
@@ -91,6 +88,12 @@ class MentorManagementController extends Controller
         if ($existing) {
             $existing->delete();
             return back()->with('success', 'Removed from waiting list.');
+        }
+
+        [$canJoin, $error] = $this->courseValidationService->canUserJoinCourse($course, $user);
+
+        if (!$canJoin) {
+            return back()->withErrors(['join' => $error]);
         }
 
         \App\Models\WaitingListEntry::create([
