@@ -57,7 +57,7 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { useMoodleStatus } from "@/hooks/use-moodle-status"
-import type { MentorCourse, Trainee } from "@/types/mentor"
+import { getInitials, type MentorCourse, type Trainee } from "@/types/mentor"
 import { ProgressModal } from "./progress-modal"
 import { SoloModal } from "./solo-modal"
 
@@ -401,7 +401,7 @@ export function TraineeDataTable({
 				return (
 					<div className="flex items-center gap-3">
 						<div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 font-medium text-primary">
-							{trainee.initials}
+							{getInitials(trainee.name)}
 						</div>
 						<div className="flex flex-col">
 							<Link

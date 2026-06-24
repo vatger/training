@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Training;
 
 use App\Http\Controllers\Controller;
+use App\Integrations\VatEud\VatEudService;
 use App\Models\Course;
 use App\Services\MentorCourseResponseBuilder;
 use Illuminate\Http\Request;
@@ -11,11 +12,13 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
+use Carbon\Carbon;
 
 class MentorOverviewController extends Controller
 {
     public function __construct(
         private MentorCourseResponseBuilder $responseBuilder,
+        private VatEudService $vatEudService,
     ) {}
 
     public function index(Request $request): Response
@@ -114,7 +117,7 @@ class MentorOverviewController extends Controller
             try {
                 $courseToLoad = Course::find($courseToLoadId);
                 if ($courseToLoad) {
-                    $loadedCourseData = $this->responseBuilder->build($courseToLoad, $user);
+                    $loadedCourseData = $this->responseBuilder->build($courseToLoad, $user, $this->buildEndorsementsMap($courseToLoad));
                     $loadedCourseData['loaded'] = true;
 
                     $coursesMetadata = $coursesMetadata->map(function ($meta) use ($loadedCourseData) {
@@ -170,7 +173,7 @@ class MentorOverviewController extends Controller
             return response()->json(['error' => 'Access denied'], 403);
         }
 
-        return response()->json($this->responseBuilder->build($course, $user));
+        return response()->json($this->responseBuilder->build($course, $user, $this->buildEndorsementsMap($course)));
     }
 
     public function getMoodleStatusForTrainee(Request $request)
@@ -292,5 +295,42 @@ class MentorOverviewController extends Controller
                 'vatsim_id' => $mentor->vatsim_id,
             ])
         );
+    }
+
+    private function buildEndorsementsMap(Course $course): array
+    {
+        if (!$course->solo_station)
+            return [];
+
+        try {
+            $solos = collect($this->vatEudService->getSoloEndorsements())
+                ->where('position', $course->solo_station)
+                ->keyBy('userCid');
+
+            $tier1 = collect($this->vatEudService->getTier1Endorsements())
+                ->where('position', $course->solo_station)
+                ->keyBy('userCid');
+        } catch (\Exception $e) {
+            return [];
+        }
+
+        $now = Carbon::now();
+        $map = [];
+
+        foreach ($solos as $cid => $solo) {
+            $expiry = Carbon::parse($solo->expireAt);
+            $map[$cid]['soloStatus'] = [
+                'remaining' => max(0, (int) $now->diffInDays($expiry, false)),
+                'used' => (int) Carbon::parse($solo->createdAt)->diffInDays($now),
+                'extensionDaysLeft' => 31,
+                'expiry' => $expiry->format('Y-m-d'),
+            ];
+        }
+
+        foreach ($tier1 as $cid => $endorsement) {
+            $map[$cid]['endorsementStatus'] = $endorsement->position;
+        }
+
+        return $map;
     }
 }
