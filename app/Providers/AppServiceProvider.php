@@ -7,7 +7,9 @@ use App\Integrations\VatEud\FakeVatEudClient;
 use App\Integrations\VatEud\VatEudClient;
 use App\Integrations\VatEud\VatEudClientInterface;
 use Illuminate\Support\ServiceProvider;
+use App\Models\TrainingLog;
 use App\Policies\EndorsementPolicy;
+use App\Policies\TrainingLogPolicy;
 use Illuminate\Support\Facades\Gate;
 
 class AppServiceProvider extends ServiceProvider
@@ -47,7 +49,7 @@ class AppServiceProvider extends ServiceProvider
 
         $this->app->bind(
             VatEudClientInterface::class,
-            $this->app->environment('testing', 'local')
+            $fake
             ? FakeVatEudClient::class
             : VatEudClient::class,
         );
@@ -69,5 +71,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('endorsements.remove-tier1', [EndorsementPolicy::class, 'removeTier1']);
         Gate::define('endorsements.request-tier2', [EndorsementPolicy::class, 'requestTier2']);
         Gate::define('endorsements.view-own', [EndorsementPolicy::class, 'viewOwn']);
+
+        Gate::policy(TrainingLog::class, TrainingLogPolicy::class);
     }
 }

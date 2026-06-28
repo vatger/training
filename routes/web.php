@@ -1,11 +1,11 @@
 <?php
 
 use App\Http\Controllers\Training\MentorOverviewController;
-use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
-use App\Http\Controllers\Endorsement\EndorsementController;
 use App\Http\Controllers\Training\MentorManagementController;
+use App\Http\Controllers\Training\TraineeManagementController;
+use App\Http\Controllers\Training\TrainingRemarkController;
 use App\Http\Controllers\Training\WaitingListController;
+use App\Http\Controllers\Endorsement\EndorsementController;
 use App\Http\Controllers\FamiliarisationController;
 use App\Http\Controllers\UserSearchController;
 use App\Http\Controllers\TraineeOrderController;
@@ -14,6 +14,7 @@ use App\Http\Controllers\TrainingLogController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Cpt\CptController;
 use App\Http\Controllers\UserSettingsController;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return redirect("/dashboard");
@@ -63,12 +64,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::post('users/search', [UserSearchController::class, 'search'])->name('users.search');
         Route::get('users/{vatsimId}', [UserSearchController::class, 'show'])->name('users.profile');
-        /* 
-                Route::get('training-logs/course/{courseId}', [TrainingLogController::class, 'getCourseLogs'])
-                    ->name('training-logs.course-logs');
-                Route::get('training-logs/trainee/{traineeId}', [TrainingLogController::class, 'getTraineeLogs'])
-                    ->name('training-logs.trainee-logs');
-         */
+
         Route::prefix('overview')->name('overview.')->group(function () {
             Route::get('/', [MentorOverviewController::class, 'index'])
                 ->name('index');
@@ -76,37 +72,40 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/mentor-overview/course/{courseId}/trainees', [MentorOverviewController::class, 'loadCourseTrainees'])
                 ->name('course.trainees');
 
+            Route::get('/trainee-logs/{traineeId}', [MentorOverviewController::class, 'getTraineeLogs'])
+                ->name('trainee-logs');
+
             Route::get('/course/{course}/mentors', [MentorOverviewController::class, 'getCourseMentors'])
                 ->name('course.mentors');
 
-            Route::post('/update-remark', [MentorOverviewController::class, 'updateRemark'])
+            Route::post('/update-remark', [TrainingRemarkController::class, 'updateRemark'])
                 ->name('update-remark');
 
-            Route::post('/remove-trainee', [MentorOverviewController::class, 'removeTrainee'])
+            Route::post('/remove-trainee', [TraineeManagementController::class, 'removeTrainee'])
                 ->name('remove-trainee');
 
-            Route::post('/finish-trainee', [MentorOverviewController::class, 'finishCourse'])
+            Route::post('/finish-trainee', [TraineeManagementController::class, 'finishCourse'])
                 ->name('finish-trainee');
 
-            Route::post('/claim-trainee', [MentorOverviewController::class, 'claimTrainee'])
+            Route::post('/claim-trainee', [TraineeManagementController::class, 'claimTrainee'])
                 ->name('claim-trainee');
-            Route::post('/unclaim-trainee', [MentorOverviewController::class, 'unclaimTrainee'])
+            Route::post('/unclaim-trainee', [TraineeManagementController::class, 'unclaimTrainee'])
                 ->name('unclaim-trainee');
-            Route::post('/assign-trainee', [MentorOverviewController::class, 'assignTrainee'])
+            Route::post('/assign-trainee', [TraineeManagementController::class, 'assignTrainee'])
                 ->name('assign-trainee');
 
-            Route::post('/add-mentor', [MentorOverviewController::class, 'addMentor'])
+            Route::post('/add-mentor', [MentorManagementController::class, 'addMentor'])
                 ->name('add-mentor');
-            Route::post('/remove-mentor', [MentorOverviewController::class, 'removeMentor'])
+            Route::post('/remove-mentor', [MentorManagementController::class, 'removeMentor'])
                 ->name('remove-mentor');
 
             Route::get('/past-trainees/{course}', [MentorOverviewController::class, 'getPastTrainees'])
                 ->name('past-trainees');
 
-            Route::post('/reactivate-trainee', [MentorOverviewController::class, 'reactivateTrainee'])
+            Route::post('/reactivate-trainee', [TraineeManagementController::class, 'reactivateTrainee'])
                 ->name('reactivate-trainee');
 
-            Route::post('/add-trainee-to-course', [MentorOverviewController::class, 'addTraineeToCourse'])
+            Route::post('/add-trainee-to-course', [TraineeManagementController::class, 'addTraineeToCourse'])
                 ->name('add-trainee-to-course');
 
             Route::post('/update-trainee-order', [TraineeOrderController::class, 'updateOrder'])
@@ -129,33 +128,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 ->name('assign-core-test');
         });
     });
-    /* 
-        Route::prefix('training-logs')->name('training-logs.')->group(function () {
+    Route::prefix('training-logs')->name('training-logs.')->group(function () {
+        // Anyone authenticated can view a specific log (policy enforces per-log access)
+        Route::get('/{trainingLog}', [TrainingLogController::class, 'show'])->name('show');
 
-            Route::get('/', [TrainingLogController::class, 'index'])
-                ->name('index');
-
-            Route::get('/create/{traineeId}/{courseId}', [TrainingLogController::class, 'create'])
-                ->name('create');
-
-            Route::get('/view/{traineeId}/{courseId}', [TrainingLogController::class, 'viewTraineeLogs'])
-                ->name('view');
-
-            Route::post('/', [TrainingLogController::class, 'store'])
-                ->name('store');
-
-            Route::get('/{id}', [TrainingLogController::class, 'show'])
-                ->name('show');
-
-            Route::get('/{id}/edit', [TrainingLogController::class, 'edit'])
-                ->name('edit');
-
-            Route::put('/{id}', [TrainingLogController::class, 'update'])
-                ->name('update');
-
-            Route::delete('/{id}', [TrainingLogController::class, 'destroy'])
-                ->name('destroy');
-        }); */
+        // Mentor-only: create, edit, mutate
+        Route::middleware('mentor')->group(function () {
+            Route::get('/', [TrainingLogController::class, 'index'])->name('index');
+            Route::get('/create/{traineeId}/{courseId}', [TrainingLogController::class, 'create'])->name('create');
+            Route::post('/', [TrainingLogController::class, 'store'])->name('store');
+            Route::get('/{trainingLog}/edit', [TrainingLogController::class, 'edit'])->name('edit');
+            Route::put('/{trainingLog}', [TrainingLogController::class, 'update'])->name('update');
+            Route::delete('/{trainingLog}', [TrainingLogController::class, 'destroy'])->name('destroy');
+        });
+    });
 
     Route::prefix('cpt')->name('cpt.')->group(function () {
         Route::get('/', [CptController::class, 'index'])->name('index');

@@ -2,17 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\MentorCourseResponseBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class TraineeOrderController extends Controller
 {
-    public function __construct(
-        private MentorCourseResponseBuilder $responseBuilder,
-    ) {
-    }
 
     public function updateOrder(Request $request)
     {
@@ -50,7 +45,7 @@ class TraineeOrderController extends Controller
                 'trainee_count' => count($request->trainee_ids),
             ]);
 
-            return $this->responseBuilder->build($course, $user);
+            return redirect()->route('overview.index', ['last_course_id' => $course->id]);
         } catch (\Exception $e) {
             Log::error('Error updating trainee order', [
                 'mentor_id' => $user->id,
@@ -87,7 +82,7 @@ class TraineeOrderController extends Controller
 
             Log::info('Trainee order reset', ['mentor_id' => $user->id, 'course_id' => $course->id]);
 
-            return $this->responseBuilder->build($course, $user);
+            return redirect()->route('overview.index', ['last_course_id' => $course->id]);
         } catch (\Exception $e) {
             Log::error('Error resetting trainee order', [
                 'mentor_id' => $user->id,

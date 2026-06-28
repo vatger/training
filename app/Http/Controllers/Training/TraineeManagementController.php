@@ -12,21 +12,19 @@ use App\Domain\Training\Actions\UnclaimTrainee;
 use App\Http\Controllers\Controller;
 use App\Models\Course;
 use App\Models\User;
-use App\Services\MentorCourseResponseBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class TraineeManagementController extends Controller
 {
     public function __construct(
-        private ClaimTrainee              $claimTrainee,
-        private UnclaimTrainee            $unclaimTrainee,
-        private AssignTrainee             $assignTrainee,
-        private RemoveTrainee             $removeTrainee,
-        private ReactivateTrainee         $reactivateTrainee,
-        private AddTraineeToCourse        $addTraineeToCourse,
-        private FinishCourse              $finishCourse,
-        private MentorCourseResponseBuilder $responseBuilder,
+        private ClaimTrainee       $claimTrainee,
+        private UnclaimTrainee     $unclaimTrainee,
+        private AssignTrainee      $assignTrainee,
+        private RemoveTrainee      $removeTrainee,
+        private ReactivateTrainee  $reactivateTrainee,
+        private AddTraineeToCourse $addTraineeToCourse,
+        private FinishCourse       $finishCourse,
     ) {}
 
     public function claimTrainee(Request $request)
@@ -55,7 +53,7 @@ class TraineeManagementController extends Controller
 
         try {
             $this->claimTrainee->execute($course, $trainee, $user);
-            return $this->responseBuilder->build($course, $user);
+            return redirect()->route('overview.index', ['last_course_id' => $course->id]);
         } catch (\Exception $e) {
             Log::error('Error claiming trainee', ['mentor_id' => $user->id, 'trainee_id' => $trainee->id, 'course_id' => $course->id, 'error' => $e->getMessage()]);
             return back()->withErrors(['error' => 'An error occurred while claiming the trainee.']);
@@ -88,7 +86,7 @@ class TraineeManagementController extends Controller
 
         try {
             $this->unclaimTrainee->execute($course, $trainee, $user);
-            return $this->responseBuilder->build($course, $user);
+            return redirect()->route('overview.index', ['last_course_id' => $course->id]);
         } catch (\Exception $e) {
             Log::error('Error unclaiming trainee', ['mentor_id' => $user->id, 'trainee_id' => $trainee->id, 'course_id' => $course->id, 'error' => $e->getMessage()]);
             return back()->withErrors(['error' => 'An error occurred while unclaiming the trainee.']);
@@ -127,7 +125,7 @@ class TraineeManagementController extends Controller
 
         try {
             $this->assignTrainee->execute($course, $trainee, $newMentor, $user);
-            return $this->responseBuilder->build($course, $user);
+            return redirect()->route('overview.index', ['last_course_id' => $course->id]);
         } catch (\Exception $e) {
             Log::error('Error assigning trainee', ['mentor_id' => $user->id, 'trainee_id' => $trainee->id, 'course_id' => $course->id, 'new_mentor_id' => $validated['mentor_id'], 'error' => $e->getMessage()]);
             return back()->withErrors(['error' => 'An error occurred while assigning the trainee.']);
@@ -156,7 +154,7 @@ class TraineeManagementController extends Controller
 
         try {
             $this->removeTrainee->execute($course, $trainee, $user);
-            return $this->responseBuilder->build($course, $user);
+            return redirect()->route('overview.index', ['last_course_id' => $course->id]);
         } catch (\Exception $e) {
             Log::error('Error removing trainee from course', ['mentor_id' => $user->id, 'trainee_id' => $trainee->id, 'course_id' => $course->id, 'error' => $e->getMessage()]);
             return back()->withErrors(['error' => 'An error occurred while removing the trainee.']);
@@ -189,7 +187,7 @@ class TraineeManagementController extends Controller
 
         try {
             $this->reactivateTrainee->execute($course, $trainee, $user);
-            return $this->responseBuilder->build($course, $user);
+            return redirect()->route('overview.index', ['last_course_id' => $course->id]);
         } catch (\Exception $e) {
             Log::error('Error reactivating trainee', ['mentor_id' => $user->id, 'trainee_id' => $trainee->id, 'course_id' => $course->id, 'error' => $e->getMessage()]);
             return back()->withErrors(['error' => 'An error occurred while reactivating the trainee.']);
@@ -226,7 +224,7 @@ class TraineeManagementController extends Controller
 
         try {
             $this->addTraineeToCourse->execute($course, $trainee, $user);
-            return $this->responseBuilder->build($course, $user);
+            return redirect()->route('overview.index', ['last_course_id' => $course->id]);
         } catch (\Exception $e) {
             Log::error('Error adding trainee to course', ['mentor_id' => $user->id, 'trainee_id' => $trainee->id, 'course_id' => $course->id, 'error' => $e->getMessage()]);
             return back()->withErrors(['error' => 'An error occurred while adding the trainee.']);
@@ -259,7 +257,7 @@ class TraineeManagementController extends Controller
 
         try {
             $this->finishCourse->execute($course, $trainee, $user);
-            return $this->responseBuilder->build($course, $user);
+            return redirect()->route('overview.index', ['last_course_id' => $course->id]);
         } catch (\Exception $e) {
             Log::error('Error finishing course', ['mentor_id' => $user->id, 'trainee_id' => $trainee->id, 'course_id' => $course->id, 'error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
             return back()->withErrors(['error' => 'An error occurred while finishing the course. Please try again.']);

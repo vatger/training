@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Training;
 use App\Http\Controllers\Controller;
 use App\Integrations\VatEud\VatEudService;
 use App\Models\Course;
+use App\Models\User;
 use App\Services\MentorCourseResponseBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -295,6 +296,110 @@ class MentorOverviewController extends Controller
                 'vatsim_id' => $mentor->vatsim_id,
             ])
         );
+    }
+
+    public function getTraineeLogs(Request $request, int $traineeId)
+    {
+        $user = $request->user();
+
+        User::findOrFail($traineeId);
+
+        $query = \App\Models\TrainingLog::with(['mentor', 'course'])
+            ->where('trainee_id', $traineeId)
+            ->orderBy('session_date', 'desc');
+
+        if (!$user->is_superuser && !$user->is_admin) {
+            $accessibleCourseIds = $user->getAccessibleCourseIds();
+            $query->whereIn('course_id', $accessibleCourseIds);
+        }
+
+        $typeDisplayMap = ['O' => 'Online', 'S' => 'Sim', 'L' => 'Lesson', 'C' => 'Custom'];
+
+        $logs = $query->get()->map(fn($log) => [
+            'id'               => $log->id,
+            'session_date'     => $log->session_date->format('Y-m-d'),
+            'position'         => $log->position,
+            'type'             => $log->type,
+            'type_display'     => $typeDisplayMap[$log->type] ?? $log->type,
+            'result'           => (bool) $log->result,
+            'average_rating'   => $log->average_rating,
+            'session_duration' => $log->session_duration,
+            'final_comment'    => $log->final_comment,
+            'next_step'        => $log->next_step,
+            'mentor'           => $log->mentor ? [
+                'id'   => $log->mentor->id,
+                'name' => $log->mentor->name,
+            ] : null,
+            'course' => $log->course ? [
+                'id'       => $log->course->id,
+                'name'     => $log->course->name,
+                'position' => $log->course->position,
+                'type'     => $log->course->type,
+            ] : null,
+        ]);
+
+        return response()->json(['logs' => $logs]);
+    }
+
+    public function grantEndorsement(Request $request)
+    {
+        $user = $request->user();
+
+        if (!$user->isMentor() && !$user->is_superuser) {
+            return back()->withErrors(['error' => 'Access denied']);
+        }
+
+        $validated = $request->validate([
+            'trainee_id' => 'required|integer|exists:users,id',
+            'course_id'  => 'required|integer|exists:courses,id',
+        ]);
+
+        $course  = Course::findOrFail($validated['course_id']);
+        $trainee = User::findOrFail($validated['trainee_id']);
+
+        if (!$user->canViewCourse($course)) {
+            return back()->withErrors(['error' => 'Access denied to this course']);
+        }
+
+        $endorsementGroups = $course->endorsementGroups();
+
+        if ($endorsementGroups->isEmpty()) {
+            return back()->withErrors(['error' => 'This course has no endorsements configured']);
+        }
+
+        if (!$trainee->isVatsimUser()) {
+            return back()->withErrors(['error' => 'Trainee does not have a VATSIM account']);
+        }
+
+        $failed = [];
+        foreach ($endorsementGroups as $position) {
+            try {
+                $granted = $this->vatEudService->createTier1Endorsement(
+                    $trainee->vatsim_id,
+                    $position,
+                    $user->vatsim_id,
+                );
+
+                if (!$granted) {
+                    $failed[] = $position;
+                }
+            } catch (\Exception $e) {
+                Log::error('Failed to grant tier1 endorsement', [
+                    'mentor_id'  => $user->id,
+                    'trainee_id' => $trainee->id,
+                    'course_id'  => $course->id,
+                    'position'   => $position,
+                    'error'      => $e->getMessage(),
+                ]);
+                $failed[] = $position;
+            }
+        }
+
+        if (!empty($failed)) {
+            return back()->withErrors(['error' => 'Failed to grant endorsements for: ' . implode(', ', $failed)]);
+        }
+
+        return redirect()->route('overview.index', ['last_course_id' => $course->id]);
     }
 
     private function buildEndorsementsMap(Course $course): array

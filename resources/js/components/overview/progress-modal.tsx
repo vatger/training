@@ -24,7 +24,7 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog"
 import { cn } from "@/lib/utils"
-import type { Trainee } from "@/types/mentor"
+import { getInitials, type Trainee } from "@/types/mentor"
 
 interface TrainingLog {
 	id: number
@@ -173,7 +173,7 @@ export function ProgressModal({
 					<DialogHeader>
 						<DialogTitle className="flex items-center gap-3">
 							<div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 font-medium text-primary">
-								{trainee?.initials}
+								{trainee !== null && getInitials(trainee?.name)}
 							</div>
 							<div>
 								<div>{trainee?.name}</div>
