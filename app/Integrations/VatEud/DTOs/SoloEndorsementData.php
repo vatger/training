@@ -24,7 +24,7 @@ readonly class SoloEndorsementData
             position:  $data['position'],
             facility:  $data['facility'],
             mentor: $data['instructor_cid'],
-            expireAt:  Carbon::parse($data['expire_at']),
+            expireAt:  Carbon::parse($data['expiry']),
             createdAt: Carbon::parse($data['created_at']),
         );
     }

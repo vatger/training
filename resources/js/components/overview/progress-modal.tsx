@@ -88,7 +88,6 @@ export function ProgressModal({
 				)
 				if (response.ok) {
 					const data = await response.json()
-					// FIX: Filter logs for this specific course only
 					const courseLogs = data.logs
 						.filter((log: TrainingLog) => log.course?.id === courseId)
 						.sort(

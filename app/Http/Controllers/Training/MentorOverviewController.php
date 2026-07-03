@@ -246,7 +246,7 @@ class MentorOverviewController extends Controller
         $user = $request->user();
         $course = Course::findOrFail($courseId);
 
-        if (!$user->isMentor() && !$user->is_superuser) {
+        if (!$user->isMentor() && !$user->isSuperuser()) {
             return response()->json(['error' => 'Access denied'], 403);
         }
 
@@ -281,7 +281,7 @@ class MentorOverviewController extends Controller
         $user = $request->user();
         $course = Course::findOrFail($courseId);
 
-        if (!$user->isMentor() && !$user->is_superuser) {
+        if (!$user->isMentor() && !$user->isSuperuser()) {
             return response()->json(['error' => 'Access denied'], 403);
         }
 
@@ -311,6 +311,10 @@ class MentorOverviewController extends Controller
         if (!$user->is_superuser && !$user->is_admin) {
             $accessibleCourseIds = $user->getAccessibleCourseIds();
             $query->whereIn('course_id', $accessibleCourseIds);
+        }
+
+        if ($courseId = $request->query('course_id')) {
+            $query->where('course_id', (int) $courseId);
         }
 
         $typeDisplayMap = ['O' => 'Online', 'S' => 'Sim', 'L' => 'Lesson', 'C' => 'Custom'];
@@ -404,17 +408,25 @@ class MentorOverviewController extends Controller
 
     private function buildEndorsementsMap(Course $course): array
     {
-        if (!$course->solo_station)
+        $endorsementGroupPositions = $course->endorsementGroups()->toArray();
+        $hasSoloStation = !empty($course->solo_station);
+
+        if (!$hasSoloStation && empty($endorsementGroupPositions)) {
             return [];
+        }
 
         try {
-            $solos = collect($this->vatEudService->getSoloEndorsements())
-                ->where('position', $course->solo_station)
-                ->keyBy('userCid');
+            $solos = $hasSoloStation
+                ? collect($this->vatEudService->getSoloEndorsements())
+                    ->where('position', $course->solo_station)
+                    ->keyBy('userCid')
+                : collect();
 
-            $tier1 = collect($this->vatEudService->getTier1Endorsements())
-                ->where('position', $course->solo_station)
-                ->keyBy('userCid');
+            $tier1 = !empty($endorsementGroupPositions)
+                ? collect($this->vatEudService->getTier1Endorsements())
+                    ->filter(fn($e) => in_array($e->position, $endorsementGroupPositions))
+                    ->keyBy('userCid')
+                : collect();
         } catch (\Exception $e) {
             return [];
         }
