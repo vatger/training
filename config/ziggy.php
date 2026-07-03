@@ -51,6 +51,7 @@ return [
         // Mentor Overview
         'overview.index',
         'overview.course.trainees',
+        'overview.trainee-logs',
         
         'overview.update-remark',
         

@@ -83,18 +83,15 @@ export function ProgressModal({
 
 			setIsLoading(true)
 			try {
-				const response = await fetch(
-					route("overview.trainee-logs", trainee.id),
-				)
+				const url = `/overview/trainee-logs/${trainee.id}?course_id=${courseId}`
+				const response = await fetch(url)
 				if (response.ok) {
 					const data = await response.json()
-					const courseLogs = data.logs
-						.filter((log: TrainingLog) => log.course?.id === courseId)
-						.sort(
-							(a: TrainingLog, b: TrainingLog) =>
-								new Date(b.session_date).getTime() -
-								new Date(a.session_date).getTime(),
-						)
+					const courseLogs = [...data.logs].sort(
+						(a: TrainingLog, b: TrainingLog) =>
+							new Date(b.session_date).getTime() -
+							new Date(a.session_date).getTime(),
+					)
 					setLogs(courseLogs)
 				}
 			} catch (error) {

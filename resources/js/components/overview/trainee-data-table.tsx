@@ -433,10 +433,10 @@ export function TraineeDataTable({
 					<div className="space-y-1">
 						{(trainee.progress ?? []).length > 0 ? (
 							<div className="flex items-center gap-1">
-								{trainee.progress.slice(-5).map((passed) => (
+								{trainee.progress.slice(-5).map((passed, index) => (
 									<div
 										className={`h-2 w-2 rounded-full ${passed ? "bg-green-500" : "bg-red-500"}`}
-										key={null}
+										key={index}
 										title={`Session was ${passed ? "Passed" : "Failed"}`}
 									/>
 								))}
