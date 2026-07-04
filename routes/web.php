@@ -116,8 +116,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('/grant-endorsement', [MentorOverviewController::class, 'grantEndorsement'])
                 ->name('grant-endorsement');
 
-            Route::post('/moodle-status-trainee', [MentorOverviewController::class, 'getMoodleStatusForTrainee'])
-                ->name('get-moodle-status-trainee');
+            Route::post('/moodle-status-batch', [MentorOverviewController::class, 'getMoodleStatusBatch'])
+                ->name('get-moodle-status-batch');
 
             Route::post('/solo/add', [SoloController::class, 'addSolo'])->name('add-solo');
             Route::post('/solo/extend', [SoloController::class, 'extendSolo'])->name('extend-solo');

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Training;
 
 use App\Http\Controllers\Controller;
 use App\Integrations\VatEud\VatEudService;
+use App\Jobs\FetchMoodleStatus;
 use App\Models\Course;
 use App\Models\User;
 use App\Services\MentorCourseResponseBuilder;
@@ -177,7 +178,7 @@ class MentorOverviewController extends Controller
         return response()->json($this->responseBuilder->build($course, $user, $this->buildEndorsementsMap($course)));
     }
 
-    public function getMoodleStatusForTrainee(Request $request)
+    public function getMoodleStatusBatch(Request $request)
     {
         $user = $request->user();
 
@@ -185,60 +186,42 @@ class MentorOverviewController extends Controller
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        $request->validate([
-            'trainee_id' => 'required|integer|exists:users,id',
-            'course_id'  => 'required|integer|exists:courses,id',
+        $validated = $request->validate([
+            'course_id'     => 'required|integer|exists:courses,id',
+            'trainee_ids'   => 'required|array|min:1|max:100',
+            'trainee_ids.*' => 'integer|exists:users,id',
         ]);
 
-        $trainee = \App\Models\User::findOrFail($request->input('trainee_id'));
-        $course  = Course::findOrFail($request->input('course_id'));
+        $course = Course::findOrFail($validated['course_id']);
 
         if (empty($course->moodle_course_ids)) {
-            return response()->json([
-                'success' => true,
-                'status'  => null,
-                'message' => 'Course does not require Moodle completion',
-            ]);
+            return response()->json(['success' => true, 'statuses' => []]);
         }
 
-        $cacheKey = "moodle_status_{$trainee->vatsim_id}_{$course->id}";
-        $cached   = Cache::get($cacheKey);
+        $trainees = User::whereIn('id', $validated['trainee_ids'])->get()->keyBy('id');
+        $statuses = [];
 
-        if ($cached !== null) {
-            return response()->json(['success' => true, 'status' => $cached, 'cached' => true]);
+        foreach ($validated['trainee_ids'] as $traineeId) {
+            $trainee = $trainees->get($traineeId);
+            if (!$trainee) continue;
+
+            $cacheKey   = FetchMoodleStatus::cacheKey($trainee->vatsim_id, $course->id);
+            $pendingKey = FetchMoodleStatus::pendingKey($trainee->vatsim_id, $course->id);
+
+            $cached = Cache::get($cacheKey);
+            if ($cached !== null) {
+                $statuses[$traineeId] = $cached;
+                continue;
+            }
+
+            if (Cache::add($pendingKey, true, 60)) {
+                FetchMoodleStatus::dispatch($trainee->id, $course->id);
+            }
+
+            $statuses[$traineeId] = 'pending';
         }
 
-        try {
-            $moodleClient = app(\App\Integrations\Moodle\MoodleClient::class);
-
-            $status = $moodleClient->userExists($trainee->vatsim_id)
-                ? (
-                    collect($course->moodle_course_ids)->every(
-                        fn($courseId) => $moodleClient->getCourseCompletion($trainee->vatsim_id, $courseId)
-                    )
-                    ? 'completed'
-                    : 'in-progress'
-                )
-                : 'not-started';
-
-            Cache::put($cacheKey, $status, 300);
-
-            return response()->json(['success' => true, 'status' => $status, 'cached' => false]);
-        } catch (\Exception $e) {
-            Log::error('Moodle status check failed', [
-                'trainee_id' => $trainee->id,
-                'vatsim_id' => $trainee->vatsim_id,
-                'course_id' => $course->id,
-                'moodle_course_ids' => $course->moodle_course_ids,
-                'error' => $e->getMessage(),
-            ]);
-
-            return response()->json([
-                'success' => false,
-                'status'  => 'unknown',
-                'error'   => 'Failed to check Moodle status',
-            ]);
-        }
+        return response()->json(['success' => true, 'statuses' => $statuses]);
     }
 
     public function getPastTrainees(Request $request, $courseId)

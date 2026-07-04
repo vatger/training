@@ -287,7 +287,11 @@ export function TraineeDataTable({
 	const [selectedTraineeForProgress, setSelectedTraineeForProgress] =
 		useState<Trainee | null>(null)
 
-	const traineeData = trainees.map((t) => ({ id: t.id, vatsimId: t.vatsimId }))
+	const showMoodleStatus =
+		course.type === "GST" || course.type === "EDMT" || course.type === "RST"
+	const traineeData = showMoodleStatus
+		? trainees.map((t) => ({ id: t.id, vatsimId: t.vatsimId }))
+		: []
 	const { statuses: moodleStatuses, loading: moodleLoading } = useMoodleStatus(
 		traineeData,
 		course.id,
@@ -298,15 +302,11 @@ export function TraineeDataTable({
 	}, [trainees])
 
 	useEffect(() => {
-		const visibility: VisibilityState = {
+		setColumnVisibility({
 			solo: course.type === "RTG" && course.position !== "GND",
 			endorsement: course.type === "RTG" && course.position === "GND",
-			moodleStatus:
-				course.type === "GST" ||
-				course.type === "EDMT" ||
-				course.type === "RST",
-		}
-		setColumnVisibility(visibility)
+			moodleStatus: showMoodleStatus,
+		})
 	}, [course])
 
 	const handleUnclaimTrainee = (trainee: Trainee) => {
@@ -584,8 +584,7 @@ export function TraineeDataTable({
 			header: "Moodle Status",
 			cell: ({ row }) => {
 				const trainee = row.original
-				const cacheKey = `${trainee.vatsimId}_${course.id}`
-				const moodleStatus = moodleStatuses[cacheKey]
+				const moodleStatus = moodleStatuses[trainee.id]
 
 				if (moodleLoading && !moodleStatus) {
 					return (
@@ -601,6 +600,18 @@ export function TraineeDataTable({
 
 				if (!moodleStatus) {
 					return <span className="text-sm text-muted-foreground">—</span>
+				}
+
+				if (moodleStatus === "pending") {
+					return (
+						<Badge
+							className="border-gray-200 bg-gray-50 text-gray-700"
+							variant="outline"
+						>
+							<Loader2 className="mr-1 h-3 w-3 animate-spin" />
+							Loading...
+						</Badge>
+					)
 				}
 
 				const getStatusConfig = (status: string) => {

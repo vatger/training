@@ -1,36 +1,28 @@
 import axios from "axios"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
-interface MoodleStatuses {
-	[key: string]: "completed" | "in-progress" | "not-started" | "unknown"
+export type MoodleStatus = "completed" | "in-progress" | "not-started" | "unknown" | "pending"
+
+type MoodleStatuses = Record<number, MoodleStatus>
+
+const POLL_INTERVAL_MS = 4000
+
+function csrfToken(): string | null {
+	return document.head.querySelector('meta[name="csrf-token"]')?.getAttribute("content") ?? null
 }
 
-interface FetchProgress {
-	loaded: number
-	total: number
-}
+async function fetchStatusBatch(
+	courseId: number,
+	traineeIds: number[],
+	signal: AbortSignal,
+): Promise<MoodleStatuses> {
+	const response = await axios.post(
+		route("overview.get-moodle-status-batch"),
+		{ course_id: courseId, trainee_ids: traineeIds },
+		{ headers: { "X-CSRF-TOKEN": csrfToken() }, signal },
+	)
 
-async function fetchWithLimit<T>(
-	items: T[],
-	limit: number,
-	fetchFn: (item: T) => Promise<void>,
-): Promise<void> {
-	const queue = [...items]
-	const executing: Promise<void>[] = []
-
-	while (queue.length > 0 || executing.length > 0) {
-		while (executing.length < limit && queue.length > 0) {
-			const item = queue.shift()!
-			const promise = fetchFn(item).finally(() => {
-				executing.splice(executing.indexOf(promise), 1)
-			})
-			executing.push(promise)
-		}
-
-		if (executing.length > 0) {
-			await Promise.race(executing)
-		}
-	}
+	return response.data.success ? (response.data.statuses ?? {}) : {}
 }
 
 export function useMoodleStatus(
@@ -38,69 +30,63 @@ export function useMoodleStatus(
 	courseId: number,
 ) {
 	const [statuses, setStatuses] = useState<MoodleStatuses>({})
-	const [progress, setProgress] = useState<FetchProgress>({
-		loaded: 0,
-		total: 0,
-	})
 	const [loading, setLoading] = useState(false)
+	const pollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+	const traineesKey = trainees.map((t) => t.id).join(",")
 
 	useEffect(() => {
 		if (trainees.length === 0) return
 
-		const fetchStatuses = async () => {
-			setLoading(true)
-			setProgress({ loaded: 0, total: trainees.length })
+		const controller = new AbortController()
+		setStatuses({})
+		setLoading(true)
 
-			const csrfToken = document.head
-				.querySelector('meta[name="csrf-token"]')
-				?.getAttribute("content")
-			let completed = 0
-
-			await fetchWithLimit(trainees, 3, async (trainee) => {
-				const cacheKey = `${trainee.vatsimId}_${courseId}`
-
-				try {
-					const response = await axios.post(
-						route("overview.get-moodle-status-trainee"),
-						{
-							trainee_id: trainee.id,
-							course_id: courseId,
-						},
-						{
-							headers: {
-								"X-CSRF-TOKEN": csrfToken,
-								"Content-Type": "application/json",
-								Accept: "application/json",
-							},
-						},
-					)
-
-					if (response.data.success && response.data.status) {
-						setStatuses((prev) => ({
-							...prev,
-							[cacheKey]: response.data.status,
-						}))
-					}
-				} catch (error) {
-					console.error(
-						`Failed to fetch Moodle status for trainee ${trainee.id}:`,
-						error,
-					)
-					setStatuses((prev) => ({
-						...prev,
-						[cacheKey]: "unknown",
-					}))
-				} finally {
-					completed++
-					setProgress({ loaded: completed, total: trainees.length })
+		fetchStatusBatch(courseId, trainees.map((t) => t.id), controller.signal)
+			.then((result) => {
+				if (!controller.signal.aborted) setStatuses(result)
+			})
+			.catch(() => {
+				if (!controller.signal.aborted) {
+					const fallback: MoodleStatuses = {}
+					trainees.forEach((t) => (fallback[t.id] = "unknown"))
+					setStatuses(fallback)
 				}
 			})
+			.finally(() => {
+				if (!controller.signal.aborted) setLoading(false)
+			})
 
-			setLoading(false)
+		return () => {
+			controller.abort()
+			if (pollTimerRef.current) clearTimeout(pollTimerRef.current)
 		}
+	}, [traineesKey, courseId])
 
-		fetchStatuses()
-	}, [trainees.map((t) => t.id).join(","), courseId])
+	useEffect(() => {
+		const pendingIds = Object.entries(statuses)
+			.filter(([, status]) => status === "pending")
+			.map(([id]) => Number(id))
 
-	return { statuses, loading, progress }
+		if (pendingIds.length === 0) return
+
+		const controller = new AbortController()
+
+		pollTimerRef.current = setTimeout(() => {
+			fetchStatusBatch(courseId, pendingIds, controller.signal)
+				.then((result) => {
+					if (!controller.signal.aborted) {
+						setStatuses((prev) => ({ ...prev, ...result }))
+					}
+				})
+				.catch(() => {})
+		}, POLL_INTERVAL_MS)
+
+		return () => {
+			controller.abort()
+			if (pollTimerRef.current) clearTimeout(pollTimerRef.current)
+		}
+	}, [statuses, traineesKey, courseId])
+
+	return { statuses, loading }
 }

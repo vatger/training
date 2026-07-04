@@ -73,7 +73,7 @@ return [
         'overview.reset-trainee-order',
 
         'overview.grant-endorsement',
-        'overview.get-moodle-status-trainee',
+        'overview.get-moodle-status-batch',
 
 
         'overview.add-solo',
