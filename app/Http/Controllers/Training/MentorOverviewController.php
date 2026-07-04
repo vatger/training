@@ -416,6 +416,8 @@ class MentorOverviewController extends Controller
         }
 
         try {
+            $allTier1 = $this->vatEudService->getTier1Endorsements();
+
             $solos = $hasSoloStation
                 ? collect($this->vatEudService->getSoloEndorsements())
                     ->where('position', $course->solo_station)
@@ -423,11 +425,12 @@ class MentorOverviewController extends Controller
                 : collect();
 
             $tier1 = !empty($endorsementGroupPositions)
-                ? collect($this->vatEudService->getTier1Endorsements())
+                ? collect($allTier1)
                     ->filter(fn($e) => in_array($e->position, $endorsementGroupPositions))
                     ->keyBy('userCid')
                 : collect();
         } catch (\Exception $e) {
+            Log::error('buildEndorsementsMap exception', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
             return [];
         }
 
