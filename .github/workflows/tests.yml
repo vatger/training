@@ -1,15 +1,14 @@
 name: tests
 
 on:
-  # DISABLE TESTS FOR NOW
-  # push:
-  #   branches:
-  #     - develop
-  #     - main
+  push:
+    branches:
+      - develop
+      - main
   pull_request:
     branches:
       - develop
-  #     - main
+      - main
 
 jobs:
   ci:
