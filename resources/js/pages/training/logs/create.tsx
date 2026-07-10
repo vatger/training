@@ -52,7 +52,6 @@ interface TrainingLogProps {
 		session_duration: number | null
 		special_procedures: string | null
 		airspace_restrictions: string | null
-		// Ratings are in the evaluations object, not at top level
 		evaluations?: {
 			[key: string]: {
 				rating: number
@@ -159,7 +158,6 @@ export default function CreateEditTrainingLog({
 		"idle" | "saving" | "saved"
 	>("idle")
 
-	// Different storage keys for create vs edit
 	const storageKey = isEditing
 		? `${DRAFT_STORAGE_KEY_PREFIX_EDIT}${log?.id}`
 		: `${DRAFT_STORAGE_KEY_PREFIX_CREATE}${trainee.id}-${course?.id}`
@@ -175,14 +173,8 @@ export default function CreateEditTrainingLog({
 		},
 	]
 
-	// Helper function to get initial form data
 	const getInitialFormData = (): LogFormData => {
 		if (isEditing && log) {
-			// When editing, load ALL data from the log
-			// IMPORTANT: Ratings come from log.evaluations object, not directly from log
-			// The backend formats them as: log.evaluations.theory.rating, etc.
-
-			// Helper to safely get rating value from nested structure
 			const getRating = (category: string): number => {
 				if (
 					log.evaluations?.[category] &&
@@ -193,7 +185,6 @@ export default function CreateEditTrainingLog({
 				return 0
 			}
 
-			// Helper to safely get feedback text
 			const getFeedback = (
 				category: string,
 				type: "positives" | "negatives",
@@ -217,7 +208,6 @@ export default function CreateEditTrainingLog({
 				special_procedures: log.special_procedures || "",
 				airspace_restrictions: log.airspace_restrictions || "",
 
-				// Ratings from nested evaluations object
 				theory: getRating("theory"),
 				theory_positives: getFeedback("theory", "positives"),
 				theory_negatives: getFeedback("theory", "negatives"),
@@ -298,14 +288,12 @@ export default function CreateEditTrainingLog({
 				next_step: log.next_step || "",
 			}
 		} else {
-			// When creating, start with empty/default values
-			// All ratings default to 0 (Not Rated)
 			return {
 				trainee_id: trainee.id,
 				course_id: course?.id,
 				session_date: new Date().toISOString().split("T")[0],
 				position: "",
-				type: "", // Empty - required field, user must select
+				type: "",
 				traffic_level: "",
 				traffic_complexity: "",
 				runway_configuration: "",
@@ -313,7 +301,6 @@ export default function CreateEditTrainingLog({
 				session_duration: "",
 				special_procedures: "",
 				airspace_restrictions: "",
-				// All ratings default to 0 (Not Rated)
 				theory: 0,
 				theory_positives: "",
 				theory_negatives: "",
@@ -362,48 +349,14 @@ export default function CreateEditTrainingLog({
 		getInitialFormData(),
 	)
 
-	// Debug: Log initial data in edit mode to verify loading
 	useEffect(() => {
-		if (isEditing && log) {
-			/* console.log('Edit mode - Loading log data:', {
-                logId: log.id,
-                sessionType: log.type,
-                evaluationsStructure: log.evaluations
-                    ? {
-                          theory: log.evaluations.theory,
-                          phraseology: log.evaluations.phraseology,
-                          coordination: log.evaluations.coordination,
-                          tag_management: log.evaluations.tag_management,
-                      }
-                    : 'No evaluations object',
-                formData: {
-                    type: data.type,
-                    theory: data.theory,
-                    phraseology: data.phraseology,
-                    coordination: data.coordination,
-                    tag_management: data.tag_management,
-                },
-            }); */
-		}
-	}, [isEditing, log])
-
-	// Load draft from localStorage
-	useEffect(() => {
-		// IMPORTANT: Don't run this effect until we know if we should load a draft
-		// For edit mode: ONLY load draft if continueDraft is true (which it shouldn't be by default)
-		// For create mode: Load draft if continueDraft is true
-
 		if (!continueDraft) {
-			// Not continuing a draft, so use the initial data from getInitialFormData()
-			// For edit mode, this means use the log data
-			// For create mode, this means start fresh (and clear any old draft)
 			if (!isEditing) {
 				localStorage.removeItem(storageKey)
 			}
 			return
 		}
 
-		// If we get here, continueDraft is true, so load the draft
 		const savedDraft = localStorage.getItem(storageKey)
 		if (savedDraft) {
 			try {
@@ -414,9 +367,8 @@ export default function CreateEditTrainingLog({
 				console.error("Failed to load draft:", error)
 			}
 		}
-	}, [continueDraft, isEditing, setData, storageKey]) // Empty deps - only run once on mount
+	}, [continueDraft, isEditing, setData, storageKey]) 
 
-	// Check if any additional details have content to auto-expand
 	useEffect(() => {
 		const hasAdditionalDetails =
 			data.traffic_level ||
@@ -438,7 +390,6 @@ export default function CreateEditTrainingLog({
 		data.traffic_level,
 	])
 
-	// Auto-save with debounce
 	const debouncedData = useDebounce(data, 1000)
 
 	useEffect(() => {
