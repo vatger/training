@@ -61,7 +61,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     Route::middleware('mentor')->group(function () {
-
         Route::post('users/search', [UserSearchController::class, 'search'])->name('users.search');
         Route::get('users/{vatsimId}', [UserSearchController::class, 'show'])->name('users.profile');
 
@@ -127,9 +126,30 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('/solo/assign-test', [SoloController::class, 'assignCoreTest'])
                 ->name('assign-core-test');
         });
+
+        Route::prefix('cpt')->name('cpt.')->group(function () {
+            Route::get('/', [CptController::class, 'index'])->name('index');
+            Route::get('/create', [CptController::class, 'create'])->name('create');
+            Route::post('/', [CptController::class, 'store'])->name('store');
+            Route::get('/course-data', [CptController::class, 'getCourseData'])->name('course-data');
+
+            Route::get('/log/{log}', [CptController::class, 'viewLog'])->name('log.view');
+
+            Route::post('/{cpt}/join-examiner', [CptController::class, 'joinExaminer'])->name('join-examiner');
+            Route::post('/{cpt}/leave-examiner', [CptController::class, 'leaveExaminer'])->name('leave-examiner');
+            Route::post('/{cpt}/join-local', [CptController::class, 'joinLocal'])->name('join-local');
+            Route::post('/{cpt}/leave-local', [CptController::class, 'leaveLocal'])->name('leave-local');
+
+            Route::get('/{cpt}/upload', [CptController::class, 'uploadPage'])->name('upload');
+            Route::post('/{cpt}/upload', [CptController::class, 'upload'])->name('upload.store');
+
+            Route::delete('/{cpt}', [CptController::class, 'destroy'])->name('destroy');
+
+            Route::post('/{cpt}/grade/{result}', [CptController::class, 'grade'])->name('grade');
+        });
     });
+
     Route::prefix('training-logs')->name('training-logs.')->group(function () {
-        // Anyone authenticated can view a specific log (policy enforces per-log access)
         Route::get('/{trainingLog}', [TrainingLogController::class, 'show'])->name('show');
 
         // Mentor-only: create, edit, mutate
@@ -141,27 +161,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::put('/{trainingLog}', [TrainingLogController::class, 'update'])->name('update');
             Route::delete('/{trainingLog}', [TrainingLogController::class, 'destroy'])->name('destroy');
         });
-    });
-
-    Route::prefix('cpt')->name('cpt.')->group(function () {
-        Route::get('/', [CptController::class, 'index'])->name('index');
-        Route::get('/create', [CptController::class, 'create'])->name('create');
-        Route::post('/', [CptController::class, 'store'])->name('store');
-        Route::get('/course-data', [CptController::class, 'getCourseData'])->name('course-data');
-
-        Route::get('/log/{log}', [CptController::class, 'viewLog'])->name('log.view');
-
-        Route::post('/{cpt}/join-examiner', [CptController::class, 'joinExaminer'])->name('join-examiner');
-        Route::post('/{cpt}/leave-examiner', [CptController::class, 'leaveExaminer'])->name('leave-examiner');
-        Route::post('/{cpt}/join-local', [CptController::class, 'joinLocal'])->name('join-local');
-        Route::post('/{cpt}/leave-local', [CptController::class, 'leaveLocal'])->name('leave-local');
-
-        Route::get('/{cpt}/upload', [CptController::class, 'uploadPage'])->name('upload');
-        Route::post('/{cpt}/upload', [CptController::class, 'upload'])->name('upload.store');
-
-        Route::delete('/{cpt}', [CptController::class, 'destroy'])->name('destroy');
-
-        Route::post('/{cpt}/grade/{result}', [CptController::class, 'grade'])->name('grade');
     });
 });
 
