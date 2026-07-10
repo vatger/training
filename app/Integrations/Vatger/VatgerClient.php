@@ -13,7 +13,7 @@ class VatgerClient implements VatgerClientInterface
     public function __construct()
     {
         $this->apiKey  = config('services.vatger.api_key');
-        $this->baseUrl = config('services.vatger.api_url', 'http://vatsim-germany.org/api');
+        $this->baseUrl = config('services.vatger.api_url');
     }
 
     public function postConfirmedCpts(array $cpts): array
