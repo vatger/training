@@ -35,8 +35,8 @@ class SyncSoloDays extends Command
             $this->info('Found ' . count($soloEndorsements) . ' solo endorsements');
 
             $userSoloDays = collect($soloEndorsements)
-                ->groupBy('user_cid')
-                ->map(fn($userSolos) => $userSolos->max('position_days') ?? 0);
+                ->groupBy('userCid')
+                ->map(fn($userSolos) => $userSolos->max('positionDays') ?? 0);
 
             $bar = $this->output->createProgressBar($userSoloDays->count());
             $bar->start();

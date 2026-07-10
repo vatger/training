@@ -52,14 +52,7 @@ class SyncEndorsementActivities extends Command
                     continue;
                 }
 
-                $createdAt = null;
-                if (!empty($endorsement->createdAt)) {
-                    try {
-                        $createdAt = Carbon::createFromFormat('Y-m-d\TH:i:s.u\Z', $endorsement->createdAt);
-                    } catch (\Exception) {
-                        $createdAt = Carbon::createFromTimestamp(1);
-                    }
-                }
+                $createdAt = $endorsement->createdAt;
 
                 EndorsementActivity::create([
                     'endorsement_id' => $endorsement->id,

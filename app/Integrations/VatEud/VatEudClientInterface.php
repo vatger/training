@@ -49,4 +49,7 @@ interface VatEudClientInterface
     public function requestUpgrade(int $traineeCid, int $instructorCid, int $newRating): array;
 
     public function getLastGermanSession(int $vatsimId): ?Carbon;
+
+    /** @return int[] */
+    public function getRoster(): array;
 }

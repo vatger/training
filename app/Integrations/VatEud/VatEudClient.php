@@ -509,6 +509,36 @@ class VatEudClient implements VatEudClientInterface
         }
     }
 
+    public function getRoster(): array
+    {
+        try {
+            $response = Http::withHeaders($this->headers)
+                ->timeout(10)
+                ->get("{$this->baseUrl}/facility/roster");
+
+            if (! $response->successful()) {
+                Log::error('Failed to fetch roster', [
+                    'status' => $response->status(),
+                    'body'   => $response->body(),
+                ]);
+
+                return [];
+            }
+
+            $data = $response->json();
+            $raw  = $data['data'] ?? (is_array($data) ? $data : []);
+
+            return array_values(array_filter(array_map(
+                fn(array $entry) => isset($entry['user_cid']) ? (int) $entry['user_cid'] : null,
+                $raw,
+            )));
+        } catch (\Throwable $e) {
+            Log::error('Error fetching roster', ['error' => $e->getMessage()]);
+
+            return [];
+        }
+    }
+
     private function sortByPosition(array $endorsements): array
     {
         usort($endorsements, fn($a, $b) => strcmp(

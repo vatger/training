@@ -6,6 +6,7 @@ use App\Models\WaitingListEntry;
 use App\Services\VatsimActivityService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class SyncWaitingListActivity extends Command
@@ -116,7 +117,7 @@ class SyncWaitingListActivity extends Command
         $apiUrl = "http://stats.vatsim-germany.org/api/atc/{$user->vatsim_id}/sessions/?start_date={$start}";
 
         try {
-            $response = \Http::timeout(15)->retry(2, 1000)->get($apiUrl);
+            $response = Http::timeout(15)->retry(2, 1000)->get($apiUrl);
             
             if (!$response->successful()) {
                 Log::warning('VATSIM Germany API request failed for waiting list', [
@@ -153,7 +154,7 @@ class SyncWaitingListActivity extends Command
         $url = "https://raw.githubusercontent.com/VATGER-Nav/datahub/refs/heads/production/api/{$firLower}/twr.json";
 
         try {
-            $response = \Http::get($url);
+            $response = Http::get($url);
             if (!$response->successful()) {
                 Log::warning("Failed to fetch datahub for {$fir}");
                 return 0;
@@ -220,7 +221,7 @@ class SyncWaitingListActivity extends Command
             if (
                 count($parts) >= 2 &&
                 $parts[0] === $airport &&
-                end($parts) === 'TWR'
+                in_array(end($parts), ['APP', 'DEP'], true)
             ) {
                 $totalMinutes += floatval($session['minutes_online'] ?? 0);
             }

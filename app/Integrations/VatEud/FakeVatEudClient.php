@@ -106,4 +106,9 @@ class FakeVatEudClient implements VatEudClientInterface
     {
         return Carbon::now()->subDays(10);
     }
+
+    public function getRoster(): array
+    {
+        return [1601613, 1441619];
+    }
 }
