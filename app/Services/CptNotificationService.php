@@ -60,8 +60,9 @@ class CptNotificationService
                     vatsimId: $user->vatsim_id,
                     title: 'Available CPT',
                     message: "A new CPT is available: {$cpt->course->solo_station} on {$cpt->date->format('d.m.Y')} at {$cpt->date->format('H:i')}lcl",
-                    linkText: 'Training Centre',
+                    sourceName: 'VATGER ATD',
                     linkUrl: route('cpt.index'),
+                    linkText: 'Training Centre',
                 );
             }
         });
@@ -95,8 +96,9 @@ class CptNotificationService
                     vatsimId: $user->vatsim_id,
                     title: 'CPT Assignment Changed',
                     message: $message,
-                    linkText: 'View CPT',
+                    sourceName: 'VATGER ATD',
                     linkUrl: route('cpt.index'),
+                    linkText: 'View CPT',
                 );
             }
         });
