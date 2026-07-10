@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Log;
 
 class VatgerClient implements VatgerClientInterface
 {
-    private string $apiKey;
+    private ?string $apiKey;
     private string $baseUrl;
 
     public function __construct()
