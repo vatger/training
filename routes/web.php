@@ -130,6 +130,27 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::get('api/training-logs/course/{courseId}', [TrainingLogController::class, 'getCourseLogs'])
             ->name('api.training-logs.course');
+
+        Route::prefix('cpt')->name('cpt.')->group(function () {
+            Route::get('/', [CptController::class, 'index'])->name('index');
+            Route::get('/create', [CptController::class, 'create'])->name('create');
+            Route::post('/', [CptController::class, 'store'])->name('store');
+            Route::get('/course-data', [CptController::class, 'getCourseData'])->name('course-data');
+    
+            Route::get('/log/{log}', [CptController::class, 'viewLog'])->name('log.view');
+    
+            Route::post('/{cpt}/join-examiner', [CptController::class, 'joinExaminer'])->name('join-examiner');
+            Route::post('/{cpt}/leave-examiner', [CptController::class, 'leaveExaminer'])->name('leave-examiner');
+            Route::post('/{cpt}/join-local', [CptController::class, 'joinLocal'])->name('join-local');
+            Route::post('/{cpt}/leave-local', [CptController::class, 'leaveLocal'])->name('leave-local');
+    
+            Route::get('/{cpt}/upload', [CptController::class, 'uploadPage'])->name('upload');
+            Route::post('/{cpt}/upload', [CptController::class, 'upload'])->name('upload.store');
+    
+            Route::delete('/{cpt}', [CptController::class, 'destroy'])->name('destroy');
+    
+            Route::post('/{cpt}/grade/{result}', [CptController::class, 'grade'])->name('grade');
+        });
     });
 
     Route::prefix('training-logs')->name('training-logs.')->group(function () {
@@ -161,27 +182,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('api/training-logs/trainee/{traineeId}', [TrainingLogController::class, 'getTraineeLogs'])
         ->name('api.training-logs.trainee');
-
-    Route::prefix('cpt')->name('cpt.')->group(function () {
-        Route::get('/', [CptController::class, 'index'])->name('index');
-        Route::get('/create', [CptController::class, 'create'])->name('create');
-        Route::post('/', [CptController::class, 'store'])->name('store');
-        Route::get('/course-data', [CptController::class, 'getCourseData'])->name('course-data');
-
-        Route::get('/log/{log}', [CptController::class, 'viewLog'])->name('log.view');
-
-        Route::post('/{cpt}/join-examiner', [CptController::class, 'joinExaminer'])->name('join-examiner');
-        Route::post('/{cpt}/leave-examiner', [CptController::class, 'leaveExaminer'])->name('leave-examiner');
-        Route::post('/{cpt}/join-local', [CptController::class, 'joinLocal'])->name('join-local');
-        Route::post('/{cpt}/leave-local', [CptController::class, 'leaveLocal'])->name('leave-local');
-
-        Route::get('/{cpt}/upload', [CptController::class, 'uploadPage'])->name('upload');
-        Route::post('/{cpt}/upload', [CptController::class, 'upload'])->name('upload.store');
-
-        Route::delete('/{cpt}', [CptController::class, 'destroy'])->name('destroy');
-
-        Route::post('/{cpt}/grade/{result}', [CptController::class, 'grade'])->name('grade');
-    });
 });
 
 require __DIR__ . '/auth.php';
