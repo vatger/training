@@ -65,9 +65,9 @@ export function ManageMentorsModal({
 
 		setIsLoading(true)
 		try {
-			const response = await fetch(`/overview/course/${course.id}/mentors`);
+			const response = await fetch(`/overview/course/${course.id}/mentors`)
 			if (response.ok) {
-				const data = await response.json();
+				const data = await response.json()
 				setMentors(data)
 			}
 		} catch (error) {

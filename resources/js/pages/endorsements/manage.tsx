@@ -242,7 +242,9 @@ export default function ManageEndorsements({
 			{
 				preserveScroll: true,
 				onSuccess: (page) => {
-					const flashMessage = (page.props as any).flash
+					const flashMessage = (
+						page.props as { flash?: { error?: string; success?: string } }
+					).flash
 
 					if (flashMessage?.error) {
 						console.log("Error from backend:", flashMessage.error)

@@ -115,9 +115,9 @@ export function AssignDialog({
 
 		setIsLoading(true)
 		try {
-			const response = await fetch(`/overview/course/${courseId}/mentors`);
+			const response = await fetch(`/overview/course/${courseId}/mentors`)
 			if (response.ok) {
-				const data = await response.json();
+				const data = await response.json()
 				setMentors(data)
 			}
 		} catch (error) {
@@ -136,7 +136,7 @@ export function AssignDialog({
 			{
 				trainee_id: trainee.id,
 				course_id: courseId,
-				mentor_id: parseInt(selectedMentorId),
+				mentor_id: parseInt(selectedMentorId, 10),
 			},
 			{
 				preserveScroll: true,

@@ -1,14 +1,23 @@
 import axios from "axios"
 import { useEffect, useRef, useState } from "react"
 
-export type MoodleStatus = "completed" | "in-progress" | "not-started" | "unknown" | "pending"
+export type MoodleStatus =
+	| "completed"
+	| "in-progress"
+	| "not-started"
+	| "unknown"
+	| "pending"
 
 type MoodleStatuses = Record<number, MoodleStatus>
 
 const POLL_INTERVAL_MS = 4000
 
 function csrfToken(): string | null {
-	return document.head.querySelector('meta[name="csrf-token"]')?.getAttribute("content") ?? null
+	return (
+		document.head
+			.querySelector('meta[name="csrf-token"]')
+			?.getAttribute("content") ?? null
+	)
 }
 
 async function fetchStatusBatch(
@@ -42,14 +51,20 @@ export function useMoodleStatus(
 		setStatuses({})
 		setLoading(true)
 
-		fetchStatusBatch(courseId, trainees.map((t) => t.id), controller.signal)
+		fetchStatusBatch(
+			courseId,
+			trainees.map((t) => t.id),
+			controller.signal,
+		)
 			.then((result) => {
 				if (!controller.signal.aborted) setStatuses(result)
 			})
 			.catch(() => {
 				if (!controller.signal.aborted) {
 					const fallback: MoodleStatuses = {}
-					trainees.forEach((t) => (fallback[t.id] = "unknown"))
+					trainees.forEach((t) => {
+						fallback[t.id] = "unknown"
+					})
 					setStatuses(fallback)
 				}
 			})

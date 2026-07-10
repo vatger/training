@@ -367,7 +367,7 @@ export default function CreateEditTrainingLog({
 				console.error("Failed to load draft:", error)
 			}
 		}
-	}, [continueDraft, isEditing, setData, storageKey]) 
+	}, [continueDraft, isEditing, setData, storageKey])
 
 	useEffect(() => {
 		const hasAdditionalDetails =

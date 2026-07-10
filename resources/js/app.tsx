@@ -3,6 +3,7 @@ import "../css/app.css"
 import { createInertiaApp } from "@inertiajs/react"
 import { resolvePageComponent } from "laravel-vite-plugin/inertia-helpers"
 import { createRoot } from "react-dom/client"
+// biome-ignore lint/correctness/noUnusedImports: assigned to window.route at runtime
 import { route } from "ziggy-js"
 
 const appName = import.meta.env.VITE_APP_NAME || "VATGER Training System"
