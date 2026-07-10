@@ -2,8 +2,6 @@
 
 namespace App\Console\Commands;
 
-use App\Domain\Endorsement\Actions\RemoveTier1Endorsement;
-use App\Domain\Endorsement\Actions\SyncEndorsementActivity;
 use App\Integrations\VatEud\VatEudClientInterface;
 use App\Integrations\Vatger\VatgerClientInterface;
 use App\Models\EndorsementActivity;
@@ -100,8 +98,8 @@ class RemoveEndorsements extends Command
                 }
 
                 $activityData = $this->activityService->getEndorsementActivity([
-                    'user_cid' => $tier1Entry['user_cid'],
-                    'position' => $tier1Entry['position'],
+                    'user_cid' => $tier1Entry->userCid,
+                    'position' => $tier1Entry->position,
                 ]);
                 $currentActivityMinutes = $activityData['minutes'];
                 $minMinutes = config('services.vateud.min_activity_minutes', 180);
@@ -118,16 +116,13 @@ class RemoveEndorsements extends Command
                     continue;
                 }
 
-                $success = $this->vatEudClient->removeTier1Endorsement($endorsement->endorsement_id);
+                $success = $this->vatEudClient->deleteTier1Endorsement($endorsement->endorsement_id);
 
                 if ($success) {
                     $this->info("✓ Removed endorsement {$endorsement->endorsement_id} ({$endorsement->position}) for user {$endorsement->vatsim_id}");
                     event(new \App\Domain\Endorsement\Events\EndorsementRemoved(
-                        endorsementId: $endorsement->endorsement_id,
-                        vatsimId: $endorsement->vatsim_id,
-                        position: $endorsement->position,
+                        activity: $endorsement,
                         activityMinutes: $currentActivityMinutes,
-                        removalDate: $endorsement->removal_date,
                     ));
                     $endorsement->delete();
                 } else {
@@ -159,13 +154,5 @@ class RemoveEndorsements extends Command
         if (!$result['success']) {
             throw new \RuntimeException("Failed to send notification to {$endorsement->vatsim_id}");
         }
-
-        event(new \App\Domain\Endorsement\Events\EndorsementMarkedForRemoval(
-            vatsimId: $endorsement->vatsim_id,
-            position: $endorsement->position,
-            activityMinutes: $endorsement->activity_minutes,
-            removalDate: $endorsement->removal_date,
-            endorsementId: $endorsement->endorsement_id,
-        ));
     }
 }
