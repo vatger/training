@@ -37,7 +37,6 @@ class TrainingLogController extends Controller
             ['value' => 'O', 'label' => 'Online'],
             ['value' => 'S', 'label' => 'Sim'],
             ['value' => 'L', 'label' => 'Lesson'],
-            ['value' => 'C', 'label' => 'Custom'],
         ];
     }
 

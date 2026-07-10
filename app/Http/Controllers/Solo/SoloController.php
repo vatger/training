@@ -122,7 +122,7 @@ class SoloController extends Controller
         $validated = $request->validate([
             'trainee_id'  => 'required|integer|exists:users,id',
             'course_id'   => 'required|integer|exists:courses,id',
-            'expiry_date' => 'required|date|after:today',
+            'expiry_date' => ['required', 'date', 'after:' . now()->addDays(6)->format('Y-m-d')],
         ]);
 
         $trainee = User::findOrFail($validated['trainee_id']);
@@ -174,7 +174,7 @@ class SoloController extends Controller
         $validated = $request->validate([
             'trainee_id'  => 'required|integer|exists:users,id',
             'course_id'   => 'required|integer|exists:courses,id',
-            'expiry_date' => 'required|date|after:today',
+            'expiry_date' => ['required', 'date', 'after:' . now()->addDays(6)->format('Y-m-d')],
         ]);
 
         $trainee = User::findOrFail($validated['trainee_id']);
@@ -288,16 +288,14 @@ class SoloController extends Controller
             $examId = $coreTheoryIds[$course->position];
             $exams = $this->vatEudService->getUserExams($trainee->vatsim_id);
 
-            $passed = collect($exams['results'] ?? [])
-                ->where('exam_id', $examId)
-                ->where('passed', true)
-                ->filter(fn($e) => Carbon::parse($e['expiry'])->isFuture());
+            $passed = collect($exams->results)
+                ->filter(fn($r) => $r->examId === $examId && $r->passed && $r->expiry->isFuture());
 
             if ($passed->isNotEmpty()) {
                 return ['status' => 'passed', 'exam_id' => $examId];
             }
 
-            $assigned = collect($exams['assignments'] ?? [])
+            $assigned = collect($exams->assignments)
                 ->where('exam_id', $examId)
                 ->filter(fn($a) => Carbon::parse($a['expires'])->isFuture());
 

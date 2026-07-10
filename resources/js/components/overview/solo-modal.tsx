@@ -77,7 +77,7 @@ export function SoloModal({
 	useEffect(() => {
 		if (isOpen && trainee) {
 			const defaultDate = new Date()
-			defaultDate.setDate(defaultDate.getDate() + 29)
+			defaultDate.setDate(defaultDate.getDate() + 7)
 			setExpiryDate(defaultDate)
 
 			setMode("none")
@@ -168,8 +168,9 @@ export function SoloModal({
 	}
 
 	const validateExpiryDate = (date: Date): boolean => {
-		const today = new Date()
-		today.setHours(0, 0, 0, 0)
+		const minDate = new Date()
+		minDate.setDate(minDate.getDate() + 7)
+		minDate.setHours(0, 0, 0, 0)
 
 		const maxDate = new Date()
 		maxDate.setDate(maxDate.getDate() + 29)
@@ -179,8 +180,8 @@ export function SoloModal({
 			return false
 		}
 
-		if (date < today) {
-			setError("Expiry date cannot be in the past")
+		if (date < minDate) {
+			setError("Solo endorsement must be at least 7 days from today")
 			return false
 		}
 
@@ -615,11 +616,12 @@ export function SoloModal({
 									<PopoverContent className="w-auto p-0">
 										<Calendar
 											disabled={(date) => {
-												const today = new Date()
-												today.setHours(0, 0, 0, 0)
+												const minDate = new Date()
+												minDate.setDate(minDate.getDate() + 7)
+												minDate.setHours(0, 0, 0, 0)
 												const maxDate = new Date()
 												maxDate.setDate(maxDate.getDate() + 29)
-												return date < today || date > maxDate
+												return date < minDate || date > maxDate
 											}}
 											initialFocus
 											mode="single"
@@ -633,8 +635,8 @@ export function SoloModal({
 								</Popover>
 								<p className="text-xs text-muted-foreground">
 									{mode === "add"
-										? "Select when this solo endorsement will expire (maximum 30 days from today)"
-										: "Select new expiry date to extend the solo endorsement (maximum 30 days from today)"}
+										? "Select when this solo endorsement will expire (minimum 7 days, maximum 30 days from today)"
+										: "Select new expiry date to extend the solo endorsement (minimum 7 days, maximum 30 days from today)"}
 								</p>
 							</div>
 
