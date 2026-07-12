@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Domain\Cpt\Events\CptCreated;
+use App\Domain\Gdpr\Events\UserDeleted;
 use App\Domain\Cpt\Events\CptDeleted;
 use App\Domain\Cpt\Events\CptExaminerJoined;
 use App\Domain\Cpt\Events\CptExaminerLeft;
@@ -57,6 +58,7 @@ use App\Listeners\LogTraineeRemarkUpdated;
 use App\Listeners\LogTraineeRemoved;
 use App\Listeners\LogTraineeUnclaimed;
 use App\Listeners\LogTrainingStarted;
+use App\Listeners\LogUserDeleted;
 use App\Listeners\LogUserRemovedFromRoster;
 use App\Listeners\LogWaitingListJoined;
 use App\Listeners\LogWaitingListLeft;
@@ -94,5 +96,6 @@ class EventServiceProvider extends ServiceProvider
         Tier2EndorsementGranted::class => [LogTier2EndorsementGranted::class],
         RosterRemovalWarningIssued::class => [LogRosterRemovalWarningIssued::class],
         UserRemovedFromRoster::class => [LogUserRemovedFromRoster::class],
+        UserDeleted::class => [LogUserDeleted::class],
     ];
 }

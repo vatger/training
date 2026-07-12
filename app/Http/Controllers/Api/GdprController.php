@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Domain\Gdpr\Events\UserDeleted;
 use App\Http\Controllers\Controller;
+use App\Integrations\VatEud\VatEudService;
 use App\Models\User;
-use App\Services\ActivityLogger;
-use App\Services\VatEudService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -43,18 +43,7 @@ class GdprController extends Controller
                 
                 $this->deleteVisitorFromVatEUD($vatsimId);
 
-                ActivityLogger::log(
-                    'gdpr.deletion',
-                    $user,
-                    "GDPR deletion for user {$user->name} (VATSIM ID: {$vatsimId})",
-                    [
-                        'vatsim_id' => $vatsimId,
-                        'user_name' => $user->name,
-                        'user_email' => $user->email,
-                        'ip_address' => $request->ip(),
-                    ],
-                    null
-                );
+                event(new UserDeleted($user, $request->ip()));
 
                 $user->delete();
 
