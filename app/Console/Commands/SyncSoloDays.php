@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
+use App\Integrations\VatEud\VatEudClientInterface;
 use App\Models\User;
-use App\Services\VatEudService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
@@ -12,12 +12,10 @@ class SyncSoloDays extends Command
     protected $signature = 'solo:sync-days';
     protected $description = 'Sync solo days used from VatEUD for all users with active solos';
 
-    protected VatEudService $vatEudService;
-
-    public function __construct(VatEudService $vatEudService)
-    {
+    public function __construct(
+        private readonly VatEudClientInterface $vatEudClient,
+    ) {
         parent::__construct();
-        $this->vatEudService = $vatEudService;
     }
 
     public function handle(): int
@@ -27,7 +25,7 @@ class SyncSoloDays extends Command
         try {
             $this->resetUpgradedUsers();
 
-            $soloEndorsements = $this->vatEudService->getSoloEndorsements();
+            $soloEndorsements = $this->vatEudClient->getSoloEndorsements();
 
             if (empty($soloEndorsements)) {
                 $this->info('No solo endorsements found in VatEUD');
@@ -37,13 +35,14 @@ class SyncSoloDays extends Command
             $this->info('Found ' . count($soloEndorsements) . ' solo endorsements');
 
             $userSoloDays = collect($soloEndorsements)
-                ->groupBy('user_cid')
-                ->map(fn($userSolos) => $userSolos->max('position_days') ?? 0);
+                ->groupBy('userCid')
+                ->map(fn($userSolos) => $userSolos->max('positionDays') ?? 0);
 
             $bar = $this->output->createProgressBar($userSoloDays->count());
             $bar->start();
 
             $updatedCount = 0;
+
             foreach ($userSoloDays as $vatsimId => $soloDays) {
                 try {
                     $user = User::where('vatsim_id', $vatsimId)->first();
@@ -65,10 +64,7 @@ class SyncSoloDays extends Command
                     }
                 } catch (\Exception $e) {
                     $this->error("\nFailed to update user {$vatsimId}: " . $e->getMessage());
-                    Log::error('Failed to update solo days for user', [
-                        'vatsim_id' => $vatsimId,
-                        'error' => $e->getMessage(),
-                    ]);
+                    Log::error('Failed to update solo days for user', ['vatsim_id' => $vatsimId, 'error' => $e->getMessage()]);
                 }
 
                 $bar->advance();
@@ -82,18 +78,14 @@ class SyncSoloDays extends Command
 
         } catch (\Exception $e) {
             $this->error('Error during solo days sync: ' . $e->getMessage());
-            Log::error('Solo days sync error', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
+            Log::error('Solo days sync error', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
             return 1;
         }
     }
 
-    protected function resetUpgradedUsers(): void
+    private function resetUpgradedUsers(): void
     {
-        $users = User::whereColumn('rating', '>', 'last_known_rating')
-            ->get();
+        $users = User::whereColumn('rating', '>', 'last_known_rating')->get();
 
         if ($users->isEmpty()) {
             return;
@@ -112,7 +104,6 @@ class SyncSoloDays extends Command
             Log::info('Solo days reset due to rating upgrade', [
                 'vatsim_id' => $user->vatsim_id,
                 'user_name' => $user->name,
-                'old_rating' => $user->last_known_rating,
                 'new_rating' => $user->rating,
             ]);
         }

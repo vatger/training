@@ -9,7 +9,6 @@ export interface Trainee {
 	id: number
 	name: string
 	vatsimId: number
-	initials: string
 	progress: boolean[]
 	lastSession: string | null
 	nextStep: string
@@ -17,13 +16,17 @@ export interface Trainee {
 	claimedByMentorId: number | null
 	soloStatus: SoloStatus | null
 	endorsementStatus: string | null
-	moodleStatus: string | null
 	remark: {
 		text: string
 		updated_at: string | null
-		author_initials: string | null
 		author_name: string | null
 	} | null
+}
+
+export function getInitials(name: string): string {
+	const parts = name.trim().split(/\s+/)
+	if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase()
+	return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
 }
 
 export interface MentorCourse {

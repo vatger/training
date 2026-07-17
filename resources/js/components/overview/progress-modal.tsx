@@ -24,7 +24,7 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog"
 import { cn } from "@/lib/utils"
-import type { Trainee } from "@/types/mentor"
+import { getInitials, type Trainee } from "@/types/mentor"
 
 interface TrainingLog {
 	id: number
@@ -83,19 +83,15 @@ export function ProgressModal({
 
 			setIsLoading(true)
 			try {
-				const response = await fetch(
-					route("api.training-logs.trainee", trainee.id),
-				)
+				const url = `/overview/trainee-logs/${trainee.id}?course_id=${courseId}`
+				const response = await fetch(url)
 				if (response.ok) {
 					const data = await response.json()
-					// FIX: Filter logs for this specific course only
-					const courseLogs = data.logs
-						.filter((log: TrainingLog) => log.course?.id === courseId)
-						.sort(
-							(a: TrainingLog, b: TrainingLog) =>
-								new Date(b.session_date).getTime() -
-								new Date(a.session_date).getTime(),
-						)
+					const courseLogs = [...data.logs].sort(
+						(a: TrainingLog, b: TrainingLog) =>
+							new Date(b.session_date).getTime() -
+							new Date(a.session_date).getTime(),
+					)
 					setLogs(courseLogs)
 				}
 			} catch (error) {
@@ -173,7 +169,7 @@ export function ProgressModal({
 					<DialogHeader>
 						<DialogTitle className="flex items-center gap-3">
 							<div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 font-medium text-primary">
-								{trainee?.initials}
+								{trainee !== null && getInitials(trainee?.name)}
 							</div>
 							<div>
 								<div>{trainee?.name}</div>

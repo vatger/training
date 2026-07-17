@@ -57,7 +57,7 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { useMoodleStatus } from "@/hooks/use-moodle-status"
-import type { MentorCourse, Trainee } from "@/types/mentor"
+import { getInitials, type MentorCourse, type Trainee } from "@/types/mentor"
 import { ProgressModal } from "./progress-modal"
 import { SoloModal } from "./solo-modal"
 
@@ -287,7 +287,11 @@ export function TraineeDataTable({
 	const [selectedTraineeForProgress, setSelectedTraineeForProgress] =
 		useState<Trainee | null>(null)
 
-	const traineeData = trainees.map((t) => ({ id: t.id, vatsimId: t.vatsimId }))
+	const showMoodleStatus =
+		course.type === "GST" || course.type === "EDMT" || course.type === "RST"
+	const traineeData = showMoodleStatus
+		? trainees.map((t) => ({ id: t.id, vatsimId: t.vatsimId }))
+		: []
 	const { statuses: moodleStatuses, loading: moodleLoading } = useMoodleStatus(
 		traineeData,
 		course.id,
@@ -298,15 +302,11 @@ export function TraineeDataTable({
 	}, [trainees])
 
 	useEffect(() => {
-		const visibility: VisibilityState = {
+		setColumnVisibility({
 			solo: course.type === "RTG" && course.position !== "GND",
 			endorsement: course.type === "RTG" && course.position === "GND",
-			moodleStatus:
-				course.type === "GST" ||
-				course.type === "EDMT" ||
-				course.type === "RST",
-		}
-		setColumnVisibility(visibility)
+			moodleStatus: showMoodleStatus,
+		})
 	}, [course])
 
 	const handleUnclaimTrainee = (trainee: Trainee) => {
@@ -401,7 +401,7 @@ export function TraineeDataTable({
 				return (
 					<div className="flex items-center gap-3">
 						<div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 font-medium text-primary">
-							{trainee.initials}
+							{getInitials(trainee.name)}
 						</div>
 						<div className="flex flex-col">
 							<Link
@@ -431,15 +431,17 @@ export function TraineeDataTable({
 				const trainee = row.original
 				return (
 					<div className="space-y-1">
-						{trainee.progress.length > 0 ? (
+						{(trainee.progress ?? []).length > 0 ? (
 							<div className="flex items-center gap-1">
-								{trainee.progress.slice(-5).map((passed) => (
-									<div
-										className={`h-2 w-2 rounded-full ${passed ? "bg-green-500" : "bg-red-500"}`}
-										key={null}
-										title={`Session was ${passed ? "Passed" : "Failed"}`}
-									/>
-								))}
+								{Array.from(trainee.progress.slice(-5).entries()).map(
+									([index, passed]) => (
+										<div
+											className={`h-2 w-2 rounded-full ${passed ? "bg-green-500" : "bg-red-500"}`}
+											key={index}
+											title={`Session was ${passed ? "Passed" : "Failed"}`}
+										/>
+									),
+								)}
 								{trainee.progress.length > 5 && (
 									<span className="ml-1 text-xs text-muted-foreground">
 										+{trainee.progress.length - 5}
@@ -584,8 +586,7 @@ export function TraineeDataTable({
 			header: "Moodle Status",
 			cell: ({ row }) => {
 				const trainee = row.original
-				const cacheKey = `${trainee.vatsimId}_${course.id}`
-				const moodleStatus = moodleStatuses[cacheKey]
+				const moodleStatus = moodleStatuses[trainee.id]
 
 				if (moodleLoading && !moodleStatus) {
 					return (
@@ -601,6 +602,18 @@ export function TraineeDataTable({
 
 				if (!moodleStatus) {
 					return <span className="text-sm text-muted-foreground">—</span>
+				}
+
+				if (moodleStatus === "pending") {
+					return (
+						<Badge
+							className="border-gray-200 bg-gray-50 text-gray-700"
+							variant="outline"
+						>
+							<Loader2 className="mr-1 h-3 w-3 animate-spin" />
+							Loading...
+						</Badge>
+					)
 				}
 
 				const getStatusConfig = (status: string) => {

@@ -106,18 +106,26 @@ export function AssignDialog({
 
 	useEffect(() => {
 		if (isOpen && courseId) {
-			setIsLoading(true)
-			fetch(route("overview.get-course-mentors", courseId))
-				.then((res) => res.json())
-				.then((data) => {
-					setMentors(data)
-					setIsLoading(false)
-				})
-				.catch(() => {
-					setIsLoading(false)
-				})
+			fetchMentors()
 		}
 	}, [isOpen, courseId])
+
+	const fetchMentors = async () => {
+		if (!courseId) return
+
+		setIsLoading(true)
+		try {
+			const response = await fetch(`/overview/course/${courseId}/mentors`)
+			if (response.ok) {
+				const data = await response.json()
+				setMentors(data)
+			}
+		} catch (error) {
+			console.error("Error fetching mentors:", error)
+		} finally {
+			setIsLoading(false)
+		}
+	}
 
 	const handleAssign = () => {
 		if (!trainee || !courseId || !selectedMentorId) return
@@ -128,7 +136,7 @@ export function AssignDialog({
 			{
 				trainee_id: trainee.id,
 				course_id: courseId,
-				mentor_id: parseInt(selectedMentorId),
+				mentor_id: parseInt(selectedMentorId, 10),
 			},
 			{
 				preserveScroll: true,

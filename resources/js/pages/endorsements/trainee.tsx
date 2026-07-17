@@ -30,12 +30,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 		href: dashboard().url,
 	},
 	{
-		title: "Endorsements",
-		href: route("endorsements"),
-	},
-	{
 		title: "My Endorsements",
-		href: route("endorsements"),
+		href: route("endorsements.trainee"),
 	},
 ]
 

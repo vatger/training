@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
+use App\Integrations\VatEud\VatEudClientInterface;
 use App\Models\EndorsementActivity;
-use App\Services\VatEudService;
 use App\Services\VatsimActivityService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
@@ -12,17 +12,13 @@ use Illuminate\Support\Facades\Log;
 class SyncEndorsementActivities extends Command
 {
     protected $signature = 'endorsements:sync-activities';
-
     protected $description = 'Sync endorsement activities from VATSIM and VatEUD for all endorsements';
 
-    protected VatEudService $vatEudService;
-    protected VatsimActivityService $activityService;
-
-    public function __construct(VatEudService $vatEudService, VatsimActivityService $activityService)
-    {
+    public function __construct(
+        private readonly VatEudClientInterface $vatEudClient,
+        private readonly VatsimActivityService $activityService,
+    ) {
         parent::__construct();
-        $this->vatEudService = $vatEudService;
-        $this->activityService = $activityService;
     }
 
     public function handle(): int
@@ -37,74 +33,57 @@ class SyncEndorsementActivities extends Command
             return 0;
         } catch (\Exception $e) {
             $this->error('Error during sync: ' . $e->getMessage());
-            Log::error('Endorsement sync error', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
+            Log::error('Endorsement sync error', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
             return 1;
         }
     }
 
-    protected function syncAllTier1Endorsements(): void
+    private function syncAllTier1Endorsements(): void
     {
         $this->info('Fetching ALL Tier 1 endorsements from VatEUD...');
 
-        $tier1Endorsements = $this->vatEudService->getTier1Endorsements();
-        
+        $tier1Endorsements = $this->vatEudClient->getTier1Endorsements();
+
         $this->info('Found ' . count($tier1Endorsements) . ' Tier 1 endorsements');
 
         foreach ($tier1Endorsements as $endorsement) {
             try {
-                $existingActivity = EndorsementActivity::where('endorsement_id', $endorsement['id'])->first();
-
-                if ($existingActivity) {
+                if (EndorsementActivity::where('endorsement_id', $endorsement->id)->exists()) {
                     continue;
                 }
 
-                $createdAt = null;
-                if (!empty($endorsement['created_at'])) {
-                    try {
-                        $createdAt = Carbon::createFromFormat('Y-m-d\TH:i:s.u\Z', $endorsement['created_at']);
-                    } catch (\Exception $e) {
-                        $createdAt = Carbon::createFromTimestamp(1);
-                    }
-                }
+                $createdAt = $endorsement->createdAt;
 
                 EndorsementActivity::create([
-                    'endorsement_id' => $endorsement['id'],
-                    'vatsim_id' => $endorsement['user_cid'],
-                    'position' => $endorsement['position'],
+                    'endorsement_id' => $endorsement->id,
+                    'vatsim_id' => $endorsement->userCid,
+                    'position' => $endorsement->position,
                     'activity_minutes' => 0.0,
                     'created_at_vateud' => $createdAt ?? Carbon::createFromTimestamp(1),
                     'last_updated' => Carbon::createFromTimestamp(1),
                 ]);
 
-                $this->line("Created new activity record for endorsement {$endorsement['id']} (User: {$endorsement['user_cid']}, Position: {$endorsement['position']})");
-
+                $this->line("Created activity record for endorsement {$endorsement->id} (User: {$endorsement->userCid}, Position: {$endorsement->position})");
             } catch (\Exception $e) {
-                $this->error("Failed to sync endorsement {$endorsement['id']}: " . $e->getMessage());
-                Log::error('Failed to sync endorsement', [
-                    'endorsement_id' => $endorsement['id'],
-                    'error' => $e->getMessage()
-                ]);
+                $this->error("Failed to sync endorsement {$endorsement->id}: " . $e->getMessage());
+                Log::error('Failed to sync endorsement', ['endorsement_id' => $endorsement->id, 'error' => $e->getMessage()]);
             }
         }
 
         $this->cleanupRemovedEndorsements($tier1Endorsements);
     }
 
-    protected function cleanupRemovedEndorsements(array $currentEndorsements): void
+    private function cleanupRemovedEndorsements(array $currentEndorsements): void
     {
         $currentIds = collect($currentEndorsements)->pluck('id')->toArray();
-        
         $removedCount = EndorsementActivity::whereNotIn('endorsement_id', $currentIds)->delete();
-        
+
         if ($removedCount > 0) {
             $this->info("Cleaned up {$removedCount} removed Tier 1 endorsements");
         }
     }
 
-    protected function updateAllActivities(): void
+    private function updateAllActivities(): void
     {
         $totalCount = EndorsementActivity::count();
 
@@ -117,10 +96,10 @@ class SyncEndorsementActivities extends Command
 
         $bar = $this->output->createProgressBar($totalCount);
         $bar->start();
-        
+
         $processedCount = 0;
 
-        EndorsementActivity::each(function ($endorsementActivity) use (&$processedCount, &$bar) {
+        EndorsementActivity::each(function (EndorsementActivity $endorsementActivity) use (&$processedCount, $bar) {
             $this->updateEndorsementActivity($endorsementActivity);
             $processedCount++;
             $bar->advance();
@@ -131,40 +110,36 @@ class SyncEndorsementActivities extends Command
         $this->info("Completed updating {$processedCount} endorsements.");
     }
 
-    protected function updateEndorsementActivity(EndorsementActivity $endorsementActivity): void
+    private function updateEndorsementActivity(EndorsementActivity $endorsementActivity): void
     {
         try {
-            $endorsementData = [
+            $activityResult = $this->activityService->getEndorsementActivity([
                 'user_cid' => $endorsementActivity->vatsim_id,
                 'position' => $endorsementActivity->position,
-            ];
+            ]);
 
-            $activityResult = $this->activityService->getEndorsementActivity($endorsementData);
             $activityMinutes = $activityResult['minutes'] ?? 0;
-            $lastActivityDate = $activityResult['last_activity_date'] ?? null;
-
             $minRequiredMinutes = config('services.vateud.min_activity_minutes', 180);
 
             $endorsementActivity->activity_minutes = $activityMinutes;
-            $endorsementActivity->last_activity_date = $lastActivityDate;
+            $endorsementActivity->last_activity_date = $activityResult['last_activity_date'] ?? null;
             $endorsementActivity->last_updated = now();
 
-            if ($activityMinutes >= $minRequiredMinutes) {
-                if ($endorsementActivity->removal_date) {
-                    $endorsementActivity->removal_date = null;
-                    $endorsementActivity->removal_notified = false;
-                }
+            if ($activityMinutes >= $minRequiredMinutes && $endorsementActivity->removal_date) {
+                $endorsementActivity->removal_date = null;
+                $endorsementActivity->removal_notified = false;
             }
 
-            $eligibleSince = $this->activityService->calculateEligibleSince($endorsementData);
-            $endorsementActivity->eligible_since = $eligibleSince;
+            $endorsementActivity->eligible_since = $this->activityService->calculateEligibleSince([
+                'user_cid' => $endorsementActivity->vatsim_id,
+                'position' => $endorsementActivity->position,
+            ]);
 
             $endorsementActivity->save();
-
         } catch (\Exception $e) {
             Log::error('Failed to update endorsement activity', [
                 'endorsement_id' => $endorsementActivity->id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
     }

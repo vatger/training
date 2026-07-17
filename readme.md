@@ -1,4 +1,5 @@
 [![Docker Image Generation](https://github.com/vatger/training/actions/workflows/deploy.yml/badge.svg?branch=main)](https://github.com/vatger/training/actions/workflows/deploy.yml)
+[![Coverage](.github/coverage-badge.svg)](https://github.com/vatger/training/actions/workflows/tests.yml)
 
 # Training Centre
 

@@ -15,7 +15,7 @@ export default function ActivityProgress({
 	current: number
 	status: string
 }) {
-	const formattedCurrent = formatMinutesToHHMM(current) + "h"
+	const formattedCurrent = `${formatMinutesToHHMM(current)}h`
 	const formattedMax = "3h"
 
 	// Format for tooltip (Xh Ym)

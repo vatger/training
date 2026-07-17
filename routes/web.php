@@ -1,19 +1,23 @@
 <?php
 
-use App\Http\Controllers\MentorOverviewController;
-use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
-use App\Http\Controllers\EndorsementController;
-use App\Http\Controllers\CourseController;
-use App\Http\Controllers\WaitingListController;
+use App\Http\Controllers\Training\MentorOverviewController;
+use App\Http\Controllers\Training\MentorManagementController;
+use App\Http\Controllers\Training\TraineeManagementController;
+use App\Http\Controllers\Training\TrainingRemarkController;
+use App\Http\Controllers\Training\WaitingListController;
+use App\Http\Controllers\Endorsement\EndorsementController;
 use App\Http\Controllers\FamiliarisationController;
 use App\Http\Controllers\UserSearchController;
 use App\Http\Controllers\TraineeOrderController;
-use App\Http\Controllers\SoloController;
+use App\Http\Controllers\Solo\SoloController;
 use App\Http\Controllers\TrainingLogController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\CptController;
+use App\Http\Controllers\Cpt\CptController;
+use App\Http\Controllers\Cpt\CptAssignmentController;
+use App\Http\Controllers\Cpt\CptGradingController;
+use App\Http\Controllers\Cpt\CptLogController;
 use App\Http\Controllers\UserSettingsController;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return redirect("/dashboard");
@@ -22,13 +26,11 @@ Route::get('/', function () {
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Settings routes
     Route::prefix('settings')->name('settings.')->group(function () {
         Route::get('/', [UserSettingsController::class, 'index'])->name('index');
         Route::post('/', [UserSettingsController::class, 'update'])->name('update');
     });
 
-    // Endorsement routes
     Route::prefix('endorsements')->name('endorsements.')->group(function () {
         Route::get('/my-endorsements', [EndorsementController::class, 'traineeView'])
             ->name('trainee');
@@ -45,12 +47,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('tier2.request');
     });
 
-    Route::get('endorsements/my-endorsements', [EndorsementController::class, 'traineeView'])
-        ->name('endorsements');
-
     Route::prefix('courses')->name('courses.')->group(function () {
-        Route::get('/', [CourseController::class, 'index'])->name('index');
-        Route::post('/{course}/waiting-list', [CourseController::class, 'toggleWaitingList'])->name('toggle-waiting-list');
+        Route::get('/', [MentorManagementController::class, 'index'])->name('index');
+        Route::post('/{course}/waiting-list', [MentorManagementController::class, 'toggleWaitingList'])->name('toggle-waiting-list');
     });
 
     Route::prefix('waiting-lists')->name('waiting-lists.')->middleware('mentor')->group(function () {
@@ -65,11 +64,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     Route::middleware('mentor')->group(function () {
-
         Route::post('users/search', [UserSearchController::class, 'search'])->name('users.search');
         Route::get('users/{vatsimId}', [UserSearchController::class, 'show'])->name('users.profile');
-
-        Route::get('/course/{course}/mentors', [MentorOverviewController::class, 'getCourseMentors'])->name('overview.get-course-mentors');
 
         Route::prefix('overview')->name('overview.')->group(function () {
             Route::get('/', [MentorOverviewController::class, 'index'])
@@ -78,34 +74,40 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/mentor-overview/course/{courseId}/trainees', [MentorOverviewController::class, 'loadCourseTrainees'])
                 ->name('course.trainees');
 
-            Route::post('/update-remark', [MentorOverviewController::class, 'updateRemark'])
+            Route::get('/trainee-logs/{traineeId}', [MentorOverviewController::class, 'getTraineeLogs'])
+                ->name('trainee-logs');
+
+            Route::get('/course/{course}/mentors', [MentorOverviewController::class, 'getCourseMentors'])
+                ->name('course.mentors');
+
+            Route::post('/update-remark', [TrainingRemarkController::class, 'updateRemark'])
                 ->name('update-remark');
 
-            Route::post('/remove-trainee', [MentorOverviewController::class, 'removeTrainee'])
+            Route::post('/remove-trainee', [TraineeManagementController::class, 'removeTrainee'])
                 ->name('remove-trainee');
 
-            Route::post('/finish-trainee', [MentorOverviewController::class, 'finishCourse'])
+            Route::post('/finish-trainee', [TraineeManagementController::class, 'finishCourse'])
                 ->name('finish-trainee');
 
-            Route::post('/claim-trainee', [MentorOverviewController::class, 'claimTrainee'])
+            Route::post('/claim-trainee', [TraineeManagementController::class, 'claimTrainee'])
                 ->name('claim-trainee');
-            Route::post('/unclaim-trainee', [MentorOverviewController::class, 'unclaimTrainee'])
+            Route::post('/unclaim-trainee', [TraineeManagementController::class, 'unclaimTrainee'])
                 ->name('unclaim-trainee');
-            Route::post('/assign-trainee', [MentorOverviewController::class, 'assignTrainee'])
+            Route::post('/assign-trainee', [TraineeManagementController::class, 'assignTrainee'])
                 ->name('assign-trainee');
 
-            Route::post('/add-mentor', [MentorOverviewController::class, 'addMentor'])
+            Route::post('/add-mentor', [MentorManagementController::class, 'addMentor'])
                 ->name('add-mentor');
-            Route::post('/remove-mentor', [MentorOverviewController::class, 'removeMentor'])
+            Route::post('/remove-mentor', [MentorManagementController::class, 'removeMentor'])
                 ->name('remove-mentor');
 
             Route::get('/past-trainees/{course}', [MentorOverviewController::class, 'getPastTrainees'])
                 ->name('past-trainees');
 
-            Route::post('/reactivate-trainee', [MentorOverviewController::class, 'reactivateTrainee'])
+            Route::post('/reactivate-trainee', [TraineeManagementController::class, 'reactivateTrainee'])
                 ->name('reactivate-trainee');
 
-            Route::post('/add-trainee-to-course', [MentorOverviewController::class, 'addTraineeToCourse'])
+            Route::post('/add-trainee-to-course', [TraineeManagementController::class, 'addTraineeToCourse'])
                 ->name('add-trainee-to-course');
 
             Route::post('/update-trainee-order', [TraineeOrderController::class, 'updateOrder'])
@@ -116,8 +118,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('/grant-endorsement', [MentorOverviewController::class, 'grantEndorsement'])
                 ->name('grant-endorsement');
 
-            Route::post('/moodle-status-trainee', [MentorOverviewController::class, 'getMoodleStatusForTrainee'])
-                ->name('get-moodle-status-trainee');
+            Route::post('/moodle-status-batch', [MentorOverviewController::class, 'getMoodleStatusBatch'])
+                ->name('get-moodle-status-batch');
 
             Route::post('/solo/add', [SoloController::class, 'addSolo'])->name('add-solo');
             Route::post('/solo/extend', [SoloController::class, 'extendSolo'])->name('extend-solo');
@@ -128,60 +130,41 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 ->name('assign-core-test');
         });
 
-        Route::get('api/training-logs/course/{courseId}', [TrainingLogController::class, 'getCourseLogs'])
-            ->name('api.training-logs.course');
-
         Route::prefix('cpt')->name('cpt.')->group(function () {
             Route::get('/', [CptController::class, 'index'])->name('index');
             Route::get('/create', [CptController::class, 'create'])->name('create');
             Route::post('/', [CptController::class, 'store'])->name('store');
             Route::get('/course-data', [CptController::class, 'getCourseData'])->name('course-data');
-    
-            Route::get('/log/{log}', [CptController::class, 'viewLog'])->name('log.view');
-    
-            Route::post('/{cpt}/join-examiner', [CptController::class, 'joinExaminer'])->name('join-examiner');
-            Route::post('/{cpt}/leave-examiner', [CptController::class, 'leaveExaminer'])->name('leave-examiner');
-            Route::post('/{cpt}/join-local', [CptController::class, 'joinLocal'])->name('join-local');
-            Route::post('/{cpt}/leave-local', [CptController::class, 'leaveLocal'])->name('leave-local');
-    
-            Route::get('/{cpt}/upload', [CptController::class, 'uploadPage'])->name('upload');
-            Route::post('/{cpt}/upload', [CptController::class, 'upload'])->name('upload.store');
-    
+
+            Route::get('/log/{log}', [CptLogController::class, 'viewLog'])->name('log.view');
+
+            Route::post('/{cpt}/join-examiner', [CptAssignmentController::class, 'joinExaminer'])->name('join-examiner');
+            Route::post('/{cpt}/leave-examiner', [CptAssignmentController::class, 'leaveExaminer'])->name('leave-examiner');
+            Route::post('/{cpt}/join-local', [CptAssignmentController::class, 'joinLocal'])->name('join-local');
+            Route::post('/{cpt}/leave-local', [CptAssignmentController::class, 'leaveLocal'])->name('leave-local');
+
+            Route::get('/{cpt}/upload', [CptLogController::class, 'uploadPage'])->name('upload');
+            Route::post('/{cpt}/upload', [CptLogController::class, 'upload'])->name('upload.store');
+
             Route::delete('/{cpt}', [CptController::class, 'destroy'])->name('destroy');
-    
-            Route::post('/{cpt}/grade/{result}', [CptController::class, 'grade'])->name('grade');
+
+            Route::post('/{cpt}/grade/{result}', [CptGradingController::class, 'grade'])->name('grade');
         });
     });
 
     Route::prefix('training-logs')->name('training-logs.')->group(function () {
+        Route::get('/{trainingLog}', [TrainingLogController::class, 'show'])->name('show');
 
-        Route::get('/', [TrainingLogController::class, 'index'])
-            ->name('index');
-
-        Route::get('/create/{traineeId}/{courseId}', [TrainingLogController::class, 'create'])
-            ->name('create');
-
-        Route::get('/view/{traineeId}/{courseId}', [TrainingLogController::class, 'viewTraineeLogs'])
-            ->name('view');
-
-        Route::post('/', [TrainingLogController::class, 'store'])
-            ->name('store');
-
-        Route::get('/{id}', [TrainingLogController::class, 'show'])
-            ->name('show');
-
-        Route::get('/{id}/edit', [TrainingLogController::class, 'edit'])
-            ->name('edit');
-
-        Route::put('/{id}', [TrainingLogController::class, 'update'])
-            ->name('update');
-
-        Route::delete('/{id}', [TrainingLogController::class, 'destroy'])
-            ->name('destroy');
+        // Mentor-only: create, edit, mutate
+        Route::middleware('mentor')->group(function () {
+            Route::get('/', [TrainingLogController::class, 'index'])->name('index');
+            Route::get('/create/{traineeId}/{courseId}', [TrainingLogController::class, 'create'])->name('create');
+            Route::post('/', [TrainingLogController::class, 'store'])->name('store');
+            Route::get('/{trainingLog}/edit', [TrainingLogController::class, 'edit'])->name('edit');
+            Route::put('/{trainingLog}', [TrainingLogController::class, 'update'])->name('update');
+            Route::delete('/{trainingLog}', [TrainingLogController::class, 'destroy'])->name('destroy');
+        });
     });
-
-    Route::get('api/training-logs/trainee/{traineeId}', [TrainingLogController::class, 'getTraineeLogs'])
-        ->name('api.training-logs.trainee');
 });
 
 require __DIR__ . '/auth.php';

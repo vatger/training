@@ -77,7 +77,7 @@ export function SoloModal({
 	useEffect(() => {
 		if (isOpen && trainee) {
 			const defaultDate = new Date()
-			defaultDate.setDate(defaultDate.getDate() + 29)
+			defaultDate.setDate(defaultDate.getDate() + 7)
 			setExpiryDate(defaultDate)
 
 			setMode("none")
@@ -168,14 +168,12 @@ export function SoloModal({
 	}
 
 	const validateExpiryDate = (date: Date): boolean => {
-		const today = new Date()
-		today.setHours(0, 0, 0, 0)
+		const minDate = new Date()
+		minDate.setDate(minDate.getDate() + 7)
+		minDate.setHours(0, 0, 0, 0)
 
 		const maxDate = new Date()
 		maxDate.setDate(maxDate.getDate() + 29)
-
-		const minDate = new Date()
-		minDate.setDate(minDate.getDate() + 6)
 
 		if (date > maxDate) {
 			setError("Solo endorsement cannot exceed 30 days from today")
@@ -183,12 +181,7 @@ export function SoloModal({
 		}
 
 		if (date < minDate) {
-			setError("Solo endorsement must be minimum 7 days in the future")
-			return false
-		}
-
-		if (date < today) {
-			setError("Expiry date cannot be in the past")
+			setError("Solo endorsement must be at least 7 days from today")
 			return false
 		}
 
@@ -623,13 +616,12 @@ export function SoloModal({
 									<PopoverContent className="w-auto p-0">
 										<Calendar
 											disabled={(date) => {
-												const today = new Date()
-												today.setHours(0, 0, 0, 0)
+												const minDate = new Date()
+												minDate.setDate(minDate.getDate() + 7)
+												minDate.setHours(0, 0, 0, 0)
 												const maxDate = new Date()
 												maxDate.setDate(maxDate.getDate() + 29)
-												const minDate = new Date()
-												minDate.setDate(minDate.getDate() + 6)
-												return date < today || date > maxDate || date < minDate
+												return date < minDate || date > maxDate
 											}}
 											initialFocus
 											mode="single"

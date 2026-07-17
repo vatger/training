@@ -10,9 +10,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('course_trainees', function (Blueprint $table) {
+            $table->dropIndex('course_trainee_order_idx');
+        });
+
+        Schema::table('course_trainees', function (Blueprint $table) {
             $table->dropForeign(['custom_order_mentor_id']);
             $table->dropColumn('custom_order_mentor_id');
-            $table->dropIndex('course_trainee_order_idx');
         });
 
         Schema::table('course_trainees', function (Blueprint $table) {

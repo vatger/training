@@ -51,6 +51,7 @@ return [
         // Mentor Overview
         'overview.index',
         'overview.course.trainees',
+        'overview.trainee-logs',
         
         'overview.update-remark',
         
@@ -72,7 +73,7 @@ return [
         'overview.reset-trainee-order',
 
         'overview.grant-endorsement',
-        'overview.get-moodle-status-trainee',
+        'overview.get-moodle-status-batch',
 
 
         'overview.add-solo',

@@ -3,8 +3,13 @@
 namespace App\Providers;
 
 use App\Services\VatsimConnectService;
+use App\Integrations\VatEud\FakeVatEudClient;
+use App\Integrations\VatEud\VatEudClient;
+use App\Integrations\VatEud\VatEudClientInterface;
 use Illuminate\Support\ServiceProvider;
+use App\Models\TrainingLog;
 use App\Policies\EndorsementPolicy;
+use App\Policies\TrainingLogPolicy;
 use Illuminate\Support\Facades\Gate;
 
 class AppServiceProvider extends ServiceProvider
@@ -18,6 +23,36 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(VatsimConnectService::class, function ($app) {
             return new VatsimConnectService();
         });
+
+        $fake = $this->app->environment('testing', 'local');
+
+        $this->app->bind(
+            VatEudClientInterface::class,
+            $fake
+            ? FakeVatEudClient::class
+            : VatEudClient::class,
+        );
+
+        $this->app->bind(
+            \App\Integrations\Vatger\VatgerClientInterface::class,
+            $fake
+            ? \App\Integrations\Vatger\FakeVatgerClient::class
+            : \App\Integrations\Vatger\VatgerClient::class,
+        );
+
+        $this->app->bind(
+            \App\Integrations\Moodle\MoodleClientInterface::class,
+            $fake
+            ? \App\Integrations\Moodle\FakeMoodleClient::class
+            : \App\Integrations\Moodle\MoodleClient::class,
+        );
+
+        $this->app->bind(
+            VatEudClientInterface::class,
+            $fake
+            ? FakeVatEudClient::class
+            : VatEudClient::class,
+        );
     }
 
     /**
@@ -37,5 +72,6 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('endorsements.request-tier2', [EndorsementPolicy::class, 'requestTier2']);
         Gate::define('endorsements.view-own', [EndorsementPolicy::class, 'viewOwn']);
 
+        Gate::policy(TrainingLog::class, TrainingLogPolicy::class);
     }
 }

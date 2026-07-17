@@ -6,7 +6,7 @@ use App\Models\Course;
 use App\Models\User;
 use App\Models\WaitingListEntry;
 use App\Models\Familiarisation;
-use App\Services\VatEudService;
+use App\Integrations\VatEud\VatEudService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -176,20 +176,8 @@ class CourseValidationService
 
     public function getUserEndorsements(int $vatsimId): \Illuminate\Support\Collection
     {
-        return Cache::remember("user_endorsements:{$vatsimId}", now()->addHours(2), function () use ($vatsimId) {
-            try {
-                $tier1 = $this->vatEudService->getTier1Endorsements();
-                return collect($tier1)
-                    ->where('user_cid', $vatsimId)
-                    ->pluck('position');
-            } catch (\Exception $e) {
-                Log::error('Failed to fetch user endorsements', [
-                    'vatsim_id' => $vatsimId,
-                    'error' => $e->getMessage()
-                ]);
-                return collect();
-            }
-        });
+        return \App\Models\EndorsementActivity::where('vatsim_id', $vatsimId)
+            ->pluck('position');
     }
 
     public function hasMinimumActivity(Course $course, User $user): bool
