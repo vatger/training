@@ -42,7 +42,7 @@ class MentorManagementController extends Controller
             ->where('course_trainees.user_id', $user->id)
             ->where('courses.type', 'RTG')
             ->where('course_trainees.status', 'completed')
-            ->when($user->last_rating_change, fn ($q) => $q->where('course_trainees.completed_at', '>', $user->last_rating_change))
+            ->where('courses.max_rating', '>=', $user->rating)
             ->exists();
 
         $courses = Course::with('mentorGroup')->get()->map(function ($course) use ($user, $isAdmin, $isGerSubdivision, $isOnRoster, $isVisitor, $userEndorsements, $userFamSectorIds, $userHasActiveRtgEnrollment) {

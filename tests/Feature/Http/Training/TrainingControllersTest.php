@@ -1426,13 +1426,12 @@ test('courses index hides all RTG courses when user is actively enrolled in one'
         );
 });
 
-test('courses index sets rtgRatingPending true when user completed RTG after last rating change', function () {
+test('courses index sets rtgRatingPending true when user completed RTG and rating has not yet been upgraded', function () {
     $course = Course::factory()->create(['type' => 'RTG', 'position' => 'TWR', 'min_rating' => 2, 'max_rating' => 3]);
 
     $user = User::factory()->create([
-        'subdivision'       => 'GER',
-        'rating'            => 3,
-        'last_rating_change' => now()->subMonths(6),
+        'subdivision' => 'GER',
+        'rating'      => 3, // still at course max_rating — upgrade not received yet
     ]);
     Http::swap(new \Illuminate\Http\Client\Factory());
     Http::fake(['*' => Http::response(['data' => ['controllers' => [$user->vatsim_id]]], 200)]);
@@ -1446,6 +1445,28 @@ test('courses index sets rtgRatingPending true when user completed RTG after las
         ->assertInertia(fn ($page) => $page
             ->component('training/courses')
             ->where('rtgRatingPending', true)
+        );
+});
+
+test('courses index sets rtgRatingPending false when rating has been upgraded above course max', function () {
+    $course = Course::factory()->create(['type' => 'RTG', 'position' => 'TWR', 'min_rating' => 2, 'max_rating' => 3]);
+
+    $user = User::factory()->create([
+        'subdivision' => 'GER',
+        'rating'      => 4, // upgraded past max_rating=3 — system received the change
+    ]);
+    Http::swap(new \Illuminate\Http\Client\Factory());
+    Http::fake(['*' => Http::response(['data' => ['controllers' => [$user->vatsim_id]]], 200)]);
+    Cache::flush();
+
+    trainingHttpAttachTrainee($course, $user, ['completed_at' => now()->subWeek(), 'status' => 'completed']);
+
+    $this->actingAs($user)
+        ->get(route('courses.index'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('training/courses')
+            ->where('rtgRatingPending', false)
         );
 });
 
