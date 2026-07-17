@@ -119,6 +119,7 @@ class VatsimOAuthController extends Controller
 
         if ($user->exists && $previousRating !== null && $newRating > $previousRating) {
             $user->rating_upgraded_at = now();
+            $user->rating_upgrade_pending = false;
         }
 
         $user->fill([

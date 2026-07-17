@@ -431,6 +431,34 @@ test('GradeCpt does not call VatEud when no logs exist even if log_uploaded is t
     app(GradeCpt::class)->execute($cpt, true, $grader);
 });
 
+test('GradeCpt sets rating_upgrade_pending to true when upgrade is requested', function () {
+    Storage::fake('private');
+
+    $examiner = User::factory()->create(['vatsim_id' => 1111111]);
+    $trainee  = User::factory()->create(['vatsim_id' => 2222222, 'rating' => 3, 'rating_upgrade_pending' => false]);
+    $grader   = User::factory()->create();
+    $course   = Course::factory()->create(['solo_station' => 'EDDF_TWR']);
+
+    $cpt = Cpt::create([
+        'course_id'   => $course->id,
+        'trainee_id'  => $trainee->id,
+        'examiner_id' => $examiner->id,
+        'local_id'    => null,
+        'date'        => now()->addDays(7),
+    ]);
+
+    app(UploadCptLog::class)->execute($cpt, User::factory()->create(), UploadedFile::fake()->create('log.txt', 10));
+
+    $vatEudMock = Mockery::mock(VatEudClientInterface::class);
+    $vatEudMock->shouldReceive('uploadCptLog')->once()->andReturn(['success' => true]);
+    $vatEudMock->shouldReceive('requestUpgrade')->once()->andReturn(['success' => true]);
+    $this->app->instance(VatEudClientInterface::class, $vatEudMock);
+
+    app(GradeCpt::class)->execute($cpt->fresh(), true, $grader);
+
+    expect($trainee->fresh()->rating_upgrade_pending)->toBeTrue();
+});
+
 test('GradeCpt does not request upgrade when cpt is not passed', function () {
     Storage::fake('private');
 

@@ -97,6 +97,7 @@ class SyncSoloDays extends Command
             $user->solo_days_used = 0;
             $user->last_known_rating = $user->rating;
             $user->rating_upgraded_at = null;
+            $user->rating_upgrade_pending = false;
             $user->save();
 
             $this->line("Reset solo days for {$user->name} ({$user->vatsim_id})");

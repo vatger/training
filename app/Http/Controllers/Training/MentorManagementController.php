@@ -37,13 +37,7 @@ class MentorManagementController extends Controller
             ->pluck('familiarisation_sector_id')
             ->all();
         $userHasActiveRtgEnrollment = $user->activeRatingCourses()->exists();
-        $rtgRatingPending = !$userHasActiveRtgEnrollment && \DB::table('course_trainees')
-            ->join('courses', 'course_trainees.course_id', '=', 'courses.id')
-            ->where('course_trainees.user_id', $user->id)
-            ->where('courses.type', 'RTG')
-            ->where('course_trainees.status', 'completed')
-            ->when($user->last_rating_change, fn ($q) => $q->where('course_trainees.completed_at', '>', $user->last_rating_change))
-            ->exists();
+        $rtgRatingPending = (bool) $user->rating_upgrade_pending;
 
         $courses = Course::with('mentorGroup')->get()->map(function ($course) use ($user, $isAdmin, $isGerSubdivision, $isOnRoster, $isVisitor, $userEndorsements, $userFamSectorIds, $userHasActiveRtgEnrollment) {
             $waitingEntry = \App\Models\WaitingListEntry::where('course_id', $course->id)

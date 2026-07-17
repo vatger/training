@@ -49,9 +49,10 @@ test('returns 0 and outputs info when there are no solo endorsements', function 
 
 test('resets solo_days_used to 0 for users whose rating increased', function () {
     $user = User::factory()->create([
-        'rating'          => 4,
-        'last_known_rating' => 3,
-        'solo_days_used'  => 15,
+        'rating'                 => 4,
+        'last_known_rating'      => 3,
+        'solo_days_used'         => 15,
+        'rating_upgrade_pending' => true,
     ]);
 
     bindSoloClient([]);
@@ -61,6 +62,7 @@ test('resets solo_days_used to 0 for users whose rating increased', function () 
     $user->refresh();
     expect($user->solo_days_used)->toBe(0);
     expect($user->last_known_rating)->toBe(4);
+    expect($user->rating_upgrade_pending)->toBeFalse();
 });
 
 test('resets multiple upgraded users before syncing', function () {

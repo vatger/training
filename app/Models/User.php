@@ -28,6 +28,7 @@ class User extends Authenticatable implements FilamentUser
         'password',
         'last_known_rating',
         'rating_upgraded_at',
+        'rating_upgrade_pending',
         'solo_days_used',
     ];
 
@@ -41,6 +42,7 @@ class User extends Authenticatable implements FilamentUser
         'is_staff' => 'boolean',
         'is_superuser' => 'boolean',
         'is_admin' => 'boolean',
+        'rating_upgrade_pending' => 'boolean',
         'rating' => 'integer',
         'vatsim_id' => 'integer',
         'email_verified_at' => 'datetime',

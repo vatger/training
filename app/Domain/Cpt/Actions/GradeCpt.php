@@ -89,8 +89,9 @@ class GradeCpt
         }
 
         $cpt->trainee->update([
-            'rating_upgraded_at' => now(),
-            'last_known_rating'  => $cpt->trainee->rating,
+            'rating_upgraded_at'     => now(),
+            'last_known_rating'      => $cpt->trainee->rating,
+            'rating_upgrade_pending' => true,
         ]);
     }
 
