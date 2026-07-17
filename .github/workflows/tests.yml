@@ -14,9 +14,6 @@ jobs:
   ci:
     runs-on: ubuntu-latest
 
-    permissions:
-      contents: write
-
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -50,13 +47,4 @@ jobs:
         run: php artisan key:generate
 
       - name: Tests
-        run: ./vendor/bin/pest --coverage-clover=coverage/clover.xml
-
-      - name: Generate Coverage Badge
-        if: github.event_name == 'push'
-        uses: timkrase/phpunit-coverage-badge@v1.2.1
-        with:
-          report: coverage/clover.xml
-          coverage_badge_path: .github/coverage-badge.svg
-          push_badge: true
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
+        run: ./vendor/bin/pest
