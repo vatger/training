@@ -32,7 +32,12 @@ class MentorManagementController extends Controller
         $isGerSubdivision = $user->subdivision === 'GER';
         $isVisitor = !$isGerSubdivision && $isOnRoster;
 
-        $courses = Course::with('mentorGroup')->get()->map(function ($course) use ($user, $isAdmin, $isGerSubdivision, $isOnRoster, $isVisitor) {
+        $userEndorsements = $this->courseValidationService->getUserEndorsements($user->vatsim_id);
+        $userFamSectorIds = \App\Models\Familiarisation::where('user_id', $user->id)
+            ->pluck('familiarisation_sector_id')
+            ->all();
+
+        $courses = Course::with('mentorGroup')->get()->map(function ($course) use ($user, $isAdmin, $isGerSubdivision, $isOnRoster, $isVisitor, $userEndorsements, $userFamSectorIds) {
             $waitingEntry = \App\Models\WaitingListEntry::where('course_id', $course->id)
                 ->where('user_id', $user->id)
                 ->first();
@@ -46,11 +51,11 @@ class MentorManagementController extends Controller
                     ->count();
             }
 
-            [$canJoin, $joinError] = $this->courseValidationService->canUserJoinCourse($course, $user);
-
-            if (!$isAdmin && !$isOnWaitingList && !$this->isCourseVisibleToUser($course, $isGerSubdivision, $isOnRoster, $isVisitor, $user->rating)) {
+            if (!$isAdmin && !$isOnWaitingList && !$this->isCourseVisibleToUser($course, $isGerSubdivision, $isOnRoster, $isVisitor, $user->rating, $userEndorsements, $userFamSectorIds)) {
                 return null;
             }
+
+            [$canJoin, $joinError] = $this->courseValidationService->canUserJoinCourse($course, $user);
 
             return [
                 'id' => $course->id,
@@ -158,6 +163,8 @@ class MentorManagementController extends Controller
         bool $isOnRoster,
         bool $isVisitor,
         int $userRating,
+        \Illuminate\Support\Collection $userEndorsements,
+        array $userFamSectorIds,
     ): bool {
         if ($isGerSubdivision && $isOnRoster) {
             if ($course->type === 'RST' || $course->type === 'GST') {
@@ -178,6 +185,17 @@ class MentorManagementController extends Controller
         }
 
         if ($course->type !== 'GST' && !($course->min_rating <= $userRating && $userRating <= $course->max_rating)) {
+            return false;
+        }
+
+        if ($course->type === 'EDMT') {
+            $endorsementGroups = $course->endorsementGroups();
+            if ($endorsementGroups->isNotEmpty() && $endorsementGroups->every(fn ($g) => $userEndorsements->contains($g))) {
+                return false;
+            }
+        }
+
+        if ($course->familiarisation_sector_id && in_array($course->familiarisation_sector_id, $userFamSectorIds)) {
             return false;
         }
 

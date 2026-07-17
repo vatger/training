@@ -1425,6 +1425,72 @@ test('admin user sees all courses regardless of eligibility', function () {
         );
 });
 
+test('courses index hides EDMT course when user already holds all required endorsements', function () {
+    $sector = \App\Models\FamiliarisationSector::create(['name' => 'Test Sector', 'fir' => 'EDGG']);
+    $course = Course::factory()->create(['type' => 'EDMT', 'position' => 'TWR', 'min_rating' => 2, 'max_rating' => 3, 'familiarisation_sector_id' => null]);
+    \DB::table('course_endorsement_groups')->insert(['course_id' => $course->id, 'endorsement_group_name' => 'EDDF_TWR']);
+
+    $user = User::factory()->create(['subdivision' => 'GER', 'rating' => 3]);
+    \App\Models\EndorsementActivity::create([
+        'endorsement_id'   => 1,
+        'vatsim_id'        => $user->vatsim_id,
+        'position'         => 'EDDF_TWR',
+        'activity_minutes' => 0,
+        'last_updated'     => now(),
+    ]);
+
+    Http::swap(new \Illuminate\Http\Client\Factory());
+    Http::fake(['*' => Http::response(['data' => ['controllers' => [$user->vatsim_id]]], 200)]);
+    Cache::flush();
+
+    $this->actingAs($user)
+        ->get(route('courses.index'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('training/courses')
+            ->where('courses', fn ($courses) => !collect($courses)->pluck('id')->contains($course->id))
+        );
+});
+
+test('courses index hides FAM course when user already has the familiarisation', function () {
+    $sector = \App\Models\FamiliarisationSector::create(['name' => 'Test Sector', 'fir' => 'EDGG']);
+    $course = Course::factory()->create(['type' => 'FAM', 'position' => 'CTR', 'min_rating' => 2, 'max_rating' => 3, 'familiarisation_sector_id' => $sector->id]);
+
+    $user = User::factory()->create(['subdivision' => 'GER', 'rating' => 3]);
+    \App\Models\Familiarisation::create(['user_id' => $user->id, 'familiarisation_sector_id' => $sector->id]);
+
+    Http::swap(new \Illuminate\Http\Client\Factory());
+    Http::fake(['*' => Http::response(['data' => ['controllers' => [$user->vatsim_id]]], 200)]);
+    Cache::flush();
+
+    $this->actingAs($user)
+        ->get(route('courses.index'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('training/courses')
+            ->where('courses', fn ($courses) => !collect($courses)->pluck('id')->contains($course->id))
+        );
+});
+
+test('courses index includes FAM course when user has no familiarisation for its sector', function () {
+    $sector = \App\Models\FamiliarisationSector::create(['name' => 'Test Sector', 'fir' => 'EDGG']);
+    $course = Course::factory()->create(['type' => 'FAM', 'position' => 'CTR', 'min_rating' => 2, 'max_rating' => 3, 'familiarisation_sector_id' => $sector->id]);
+
+    $user = User::factory()->create(['subdivision' => 'GER', 'rating' => 3]);
+
+    Http::swap(new \Illuminate\Http\Client\Factory());
+    Http::fake(['*' => Http::response(['data' => ['controllers' => [$user->vatsim_id]]], 200)]);
+    Cache::flush();
+
+    $this->actingAs($user)
+        ->get(route('courses.index'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('training/courses')
+            ->where('courses', fn ($courses) => collect($courses)->pluck('id')->contains($course->id))
+        );
+});
+
 test('courses index includes courses the user is already on the waiting list for', function () {
     $course = Course::factory()->create([
         'type'       => 'RTG',
