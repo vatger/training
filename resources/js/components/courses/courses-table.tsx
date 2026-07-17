@@ -17,6 +17,7 @@ interface SortableCoursesTableProps {
 	courses: Course[]
 	onCourseUpdate?: (courseId: number, updates: Partial<Course>) => void
 	userHasActiveRtgCourse?: boolean
+	rtgRatingPending?: boolean
 }
 
 type SortField =
@@ -50,6 +51,7 @@ export default function SortableCoursesTable({
 	courses: initialCourses,
 	onCourseUpdate,
 	userHasActiveRtgCourse = false,
+	rtgRatingPending = false,
 }: SortableCoursesTableProps) {
 	const [courses, setCourses] = useState(initialCourses)
 	const [sortField, setSortField] = useState<SortField>("name")
@@ -248,6 +250,7 @@ export default function SortableCoursesTable({
 										className="w-full"
 										course={course}
 										onCourseUpdate={handleCourseUpdate}
+										rtgRatingPending={rtgRatingPending}
 										size="sm"
 										userHasActiveRtgCourse={userHasActiveRtgCourse}
 									/>

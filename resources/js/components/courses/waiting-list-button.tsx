@@ -26,6 +26,7 @@ interface WaitingListButtonProps {
 	className?: string
 	size?: "sm" | "default" | "lg"
 	userHasActiveRtgCourse?: boolean
+	rtgRatingPending?: boolean
 }
 
 export default function WaitingListButton({
@@ -35,6 +36,7 @@ export default function WaitingListButton({
 	className = "",
 	size = "sm",
 	userHasActiveRtgCourse = false,
+	rtgRatingPending = false,
 }: WaitingListButtonProps) {
 	const [isLoading, setIsLoading] = useState(false)
 	const [loadingAction, setLoadingAction] = useState<
@@ -254,12 +256,18 @@ export default function WaitingListButton({
 		course.type === "RTG" &&
 		userHasActiveRtgCourse &&
 		!course.is_on_waiting_list
+	const isDisabledDueToRtgRatingPending =
+		course.type === "RTG" && rtgRatingPending && !course.is_on_waiting_list
 	const isButtonDisabled =
 		isLoading ||
 		(!course.can_join && !course.is_on_waiting_list) ||
-		isDisabledDueToRtgRestriction
+		isDisabledDueToRtgRestriction ||
+		isDisabledDueToRtgRatingPending
 
 	const getTooltipError = () => {
+		if (isDisabledDueToRtgRatingPending) {
+			return "Your rating upgrade is pending in our system. You'll be able to join once your new rating has been applied."
+		}
 		if (isDisabledDueToRtgRestriction) {
 			return "You can only join one rating course at a time"
 		}

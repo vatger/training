@@ -36,8 +36,16 @@ class MentorManagementController extends Controller
         $userFamSectorIds = \App\Models\Familiarisation::where('user_id', $user->id)
             ->pluck('familiarisation_sector_id')
             ->all();
+        $userHasActiveRtgEnrollment = $user->activeRatingCourses()->exists();
+        $rtgRatingPending = !$userHasActiveRtgEnrollment && \DB::table('course_trainees')
+            ->join('courses', 'course_trainees.course_id', '=', 'courses.id')
+            ->where('course_trainees.user_id', $user->id)
+            ->where('courses.type', 'RTG')
+            ->where('course_trainees.status', 'completed')
+            ->when($user->last_rating_change, fn ($q) => $q->where('course_trainees.completed_at', '>', $user->last_rating_change))
+            ->exists();
 
-        $courses = Course::with('mentorGroup')->get()->map(function ($course) use ($user, $isAdmin, $isGerSubdivision, $isOnRoster, $isVisitor, $userEndorsements, $userFamSectorIds) {
+        $courses = Course::with('mentorGroup')->get()->map(function ($course) use ($user, $isAdmin, $isGerSubdivision, $isOnRoster, $isVisitor, $userEndorsements, $userFamSectorIds, $userHasActiveRtgEnrollment) {
             $waitingEntry = \App\Models\WaitingListEntry::where('course_id', $course->id)
                 ->where('user_id', $user->id)
                 ->first();
@@ -51,7 +59,7 @@ class MentorManagementController extends Controller
                     ->count();
             }
 
-            if (!$isAdmin && !$isOnWaitingList && !$this->isCourseVisibleToUser($course, $isGerSubdivision, $isOnRoster, $isVisitor, $user->rating, $userEndorsements, $userFamSectorIds)) {
+            if (!$isAdmin && !$isOnWaitingList && !$this->isCourseVisibleToUser($course, $isGerSubdivision, $isOnRoster, $isVisitor, $user->rating, $userEndorsements, $userFamSectorIds, $userHasActiveRtgEnrollment)) {
                 return null;
             }
 
@@ -88,6 +96,7 @@ class MentorManagementController extends Controller
             'isVatsimUser' => $user->isVatsimUser(),
             'moodleSignedUp' => $moodleSignedUp,
             'userHasActiveRtgCourse' => $userHasActiveRtgCourse,
+            'rtgRatingPending' => $rtgRatingPending,
         ]);
     }
 
@@ -165,7 +174,12 @@ class MentorManagementController extends Controller
         int $userRating,
         \Illuminate\Support\Collection $userEndorsements,
         array $userFamSectorIds,
+        bool $userHasActiveRtgEnrollment,
     ): bool {
+        if ($course->type === 'RTG' && $userHasActiveRtgEnrollment) {
+            return false;
+        }
+
         if ($isGerSubdivision && $isOnRoster) {
             if ($course->type === 'RST' || $course->type === 'GST') {
                 return false;

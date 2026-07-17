@@ -18,6 +18,7 @@ interface CourseCardProps {
 	course: Course
 	onCourseUpdate?: (courseId: number, updates: Partial<Course>) => void
 	userHasActiveRtgCourse?: boolean
+	rtgRatingPending?: boolean
 }
 
 const getStatusColor = (course: Course) => {
@@ -34,6 +35,7 @@ export default function CourseCard({
 	course: initialCourse,
 	onCourseUpdate,
 	userHasActiveRtgCourse = false,
+	rtgRatingPending = false,
 }: CourseCardProps) {
 	const [course, setCourse] = useState(initialCourse)
 
@@ -112,6 +114,7 @@ export default function CourseCard({
 					className="w-full transition-all duration-200"
 					course={course}
 					onCourseUpdate={handleCourseUpdate}
+					rtgRatingPending={rtgRatingPending}
 					size="sm"
 					userHasActiveRtgCourse={userHasActiveRtgCourse}
 				/>

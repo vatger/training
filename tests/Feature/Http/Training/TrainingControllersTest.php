@@ -1385,26 +1385,6 @@ test('courses index hides courses outside the user rating range', function () {
         );
 });
 
-test('courses index shows other RTG courses when user is actively training in one with can_join false', function () {
-    $activeCourse      = Course::factory()->create(['type' => 'RTG', 'position' => 'TWR', 'min_rating' => 2, 'max_rating' => 3]);
-    $alternativeCourse = Course::factory()->create(['type' => 'RTG', 'position' => 'APP', 'min_rating' => 2, 'max_rating' => 3]);
-
-    $user = User::factory()->create(['subdivision' => 'GER', 'rating' => 3]);
-    Http::swap(new \Illuminate\Http\Client\Factory());
-    Http::fake(['*' => Http::response(['data' => ['controllers' => [$user->vatsim_id]]], 200)]);
-    Cache::flush();
-
-    trainingHttpAttachTrainee($activeCourse, $user);
-
-    $this->actingAs($user)
-        ->get(route('courses.index'))
-        ->assertOk()
-        ->assertInertia(fn ($page) => $page
-            ->component('training/courses')
-            ->where('courses', fn ($courses) => collect($courses)->pluck('id')->contains($alternativeCourse->id)
-                && collect($courses)->firstWhere('id', $alternativeCourse->id)['can_join'] === false)
-        );
-});
 
 test('admin user sees all courses regardless of eligibility', function () {
     $lowRatingCourse = Course::factory()->create(['type' => 'RTG', 'position' => 'TWR', 'min_rating' => 2, 'max_rating' => 3]);
@@ -1422,6 +1402,89 @@ test('admin user sees all courses regardless of eligibility', function () {
             ->component('training/courses')
             ->where('courses', fn ($courses) => collect($courses)->pluck('id')->contains($lowRatingCourse->id)
                 && collect($courses)->pluck('id')->contains($highRatingCourse->id))
+        );
+});
+
+test('courses index hides all RTG courses when user is actively enrolled in one', function () {
+    $enrolledCourse    = Course::factory()->create(['type' => 'RTG', 'position' => 'TWR', 'min_rating' => 2, 'max_rating' => 3]);
+    $alternativeCourse = Course::factory()->create(['type' => 'RTG', 'position' => 'APP', 'min_rating' => 2, 'max_rating' => 3]);
+
+    $user = User::factory()->create(['subdivision' => 'GER', 'rating' => 3]);
+    Http::swap(new \Illuminate\Http\Client\Factory());
+    Http::fake(['*' => Http::response(['data' => ['controllers' => [$user->vatsim_id]]], 200)]);
+    Cache::flush();
+
+    trainingHttpAttachTrainee($enrolledCourse, $user);
+
+    $this->actingAs($user)
+        ->get(route('courses.index'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('training/courses')
+            ->where('courses', fn ($courses) => !collect($courses)->pluck('id')->contains($enrolledCourse->id)
+                && !collect($courses)->pluck('id')->contains($alternativeCourse->id))
+        );
+});
+
+test('courses index sets rtgRatingPending true when user completed RTG after last rating change', function () {
+    $course = Course::factory()->create(['type' => 'RTG', 'position' => 'TWR', 'min_rating' => 2, 'max_rating' => 3]);
+
+    $user = User::factory()->create([
+        'subdivision'       => 'GER',
+        'rating'            => 3,
+        'last_rating_change' => now()->subMonths(6),
+    ]);
+    Http::swap(new \Illuminate\Http\Client\Factory());
+    Http::fake(['*' => Http::response(['data' => ['controllers' => [$user->vatsim_id]]], 200)]);
+    Cache::flush();
+
+    trainingHttpAttachTrainee($course, $user, ['completed_at' => now()->subWeek(), 'status' => 'completed']);
+
+    $this->actingAs($user)
+        ->get(route('courses.index'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('training/courses')
+            ->where('rtgRatingPending', true)
+        );
+});
+
+test('courses index sets rtgRatingPending false when user was removed from RTG course', function () {
+    $course = Course::factory()->create(['type' => 'RTG', 'position' => 'TWR', 'min_rating' => 2, 'max_rating' => 3]);
+
+    $user = User::factory()->create([
+        'subdivision'       => 'GER',
+        'rating'            => 3,
+        'last_rating_change' => now()->subMonths(6),
+    ]);
+    Http::swap(new \Illuminate\Http\Client\Factory());
+    Http::fake(['*' => Http::response(['data' => ['controllers' => [$user->vatsim_id]]], 200)]);
+    Cache::flush();
+
+    // Removed trainee: completed_at is set but status is 'removed', not 'completed'
+    trainingHttpAttachTrainee($course, $user, ['completed_at' => now()->subWeek(), 'status' => 'removed']);
+
+    $this->actingAs($user)
+        ->get(route('courses.index'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('training/courses')
+            ->where('rtgRatingPending', false)
+        );
+});
+
+test('courses index sets rtgRatingPending false when no RTG course has been completed', function () {
+    $user = User::factory()->create(['subdivision' => 'GER', 'rating' => 3]);
+    Http::swap(new \Illuminate\Http\Client\Factory());
+    Http::fake(['*' => Http::response(['data' => ['controllers' => [$user->vatsim_id]]], 200)]);
+    Cache::flush();
+
+    $this->actingAs($user)
+        ->get(route('courses.index'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('training/courses')
+            ->where('rtgRatingPending', false)
         );
 });
 

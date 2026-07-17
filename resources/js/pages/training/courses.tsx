@@ -66,6 +66,7 @@ interface PageProps {
 	isVatsimUser: boolean
 	moodleSignedUp: boolean
 	userHasActiveRtgCourse: boolean
+	rtgRatingPending: boolean
 	error?: string
 }
 
@@ -74,6 +75,7 @@ export default function Courses({
 	isVatsimUser,
 	moodleSignedUp = false,
 	userHasActiveRtgCourse = false,
+	rtgRatingPending = false,
 	error,
 }: PageProps) {
 	const [courses, setCourses] = useState(initialCourses)
@@ -177,6 +179,23 @@ export default function Courses({
 						<div className="flex items-center gap-2 text-red-800">
 							<AlertCircle className="h-5 w-5" />
 							<span>{error}</span>
+						</div>
+					</div>
+				)}
+
+				{rtgRatingPending && (
+					<div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-950/30">
+						<div className="flex items-start gap-2 text-blue-800 dark:text-blue-300">
+							<AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
+							<div>
+								<p className="font-medium">Rating upgrade pending</p>
+								<p className="text-sm">
+									You have recently completed a rating course. Your new rating
+									has not yet been applied to our system — joining a new rating
+									course waiting list will be available once the update has been
+									received.
+								</p>
+							</div>
 						</div>
 					</div>
 				)}
@@ -305,6 +324,7 @@ export default function Courses({
 								course={course}
 								key={course.id}
 								onCourseUpdate={handleCourseUpdate}
+								rtgRatingPending={rtgRatingPending}
 								userHasActiveRtgCourse={currentUserHasActiveRtgCourse}
 							/>
 						))}
@@ -313,6 +333,7 @@ export default function Courses({
 					<SortableCoursesTable
 						courses={filteredCourses}
 						onCourseUpdate={handleCourseUpdate}
+						rtgRatingPending={rtgRatingPending}
 						userHasActiveRtgCourse={currentUserHasActiveRtgCourse}
 					/>
 				)}
