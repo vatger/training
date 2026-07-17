@@ -14,6 +14,9 @@ jobs:
   ci:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write
+
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -49,19 +52,11 @@ jobs:
       - name: Tests
         run: ./vendor/bin/pest --coverage-clover=coverage/clover.xml
 
-      - name: Coverage Summary
-        if: always()
-        run: |
-          php -r "
-            \$xml = simplexml_load_file('coverage/clover.xml');
-            \$metrics = \$xml->project->metrics;
-            \$covered = (int)\$metrics['coveredstatements'];
-            \$total = (int)\$metrics['statements'];
-            \$pct = \$total > 0 ? round(\$covered / \$total * 100, 1) : 0;
-            \$bar = str_repeat('█', (int)(\$pct / 5)) . str_repeat('░', 20 - (int)(\$pct / 5));
-            echo '## Test Coverage' . PHP_EOL;
-            echo '| | |' . PHP_EOL;
-            echo '|---|---|' . PHP_EOL;
-            echo '| Coverage | \$bar \$pct% |' . PHP_EOL;
-            echo '| Statements | \$covered / \$total |' . PHP_EOL;
-          " >> \$GITHUB_STEP_SUMMARY
+      - name: Generate Coverage Badge
+        if: github.event_name == 'push'
+        uses: timkrase/phpunit-coverage-badge@v1.2.1
+        with:
+          report: coverage/clover.xml
+          badge_path: .github/coverage-badge.svg
+          push_badge: true
+          credentials: ${{ secrets.GITHUB_TOKEN }}
