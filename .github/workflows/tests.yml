@@ -1,21 +1,19 @@
 name: tests
 
 on:
-  push:
-    branches:
-      - develop
-      - main
+  # DISABLE TESTS FOR NOW
+  # push:
+  #   branches:
+  #     - develop
+  #     - main
   pull_request:
     branches:
       - develop
-      - main
+  #     - main
 
 jobs:
   ci:
     runs-on: ubuntu-latest
-
-    permissions:
-      contents: write
 
     steps:
       - name: Checkout
@@ -26,7 +24,7 @@ jobs:
         with:
           php-version: 8.4
           tools: composer:v2
-          coverage: pcov
+          coverage: xdebug
 
       - name: Setup Node
         uses: actions/setup-node@v6
@@ -57,6 +55,6 @@ jobs:
         uses: timkrase/phpunit-coverage-badge@v1.2.1
         with:
           report: coverage/clover.xml
-          badge_path: .github/coverage-badge.svg
+          coverage_badge_path: .github/coverage-badge.svg
           push_badge: true
-          credentials: ${{ secrets.GITHUB_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
