@@ -113,7 +113,9 @@ export default function Courses({
 			const matchesType = typeFilter === "all" || course.type === typeFilter
 
 			const matchesFir =
-				firFilter === "all" || course.mentor_group?.includes(firFilter)
+				firFilter === "all" ||
+				!course.mentor_group ||
+				course.mentor_group.includes(firFilter)
 
 			let matchesTab = false
 			if (activeTab === "all") {

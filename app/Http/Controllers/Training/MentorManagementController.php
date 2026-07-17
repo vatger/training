@@ -27,7 +27,12 @@ class MentorManagementController extends Controller
         $moodleClient = app(\App\Integrations\Moodle\MoodleClient::class);
         $moodleSignedUp = $moodleClient->userExists($user->vatsim_id);
 
-        $courses = Course::all()->map(function ($course) use ($user) {
+        $isAdmin = $user->is_admin || $user->is_superuser;
+        $isOnRoster = $this->courseValidationService->isUserOnRoster($user->vatsim_id);
+        $isGerSubdivision = $user->subdivision === 'GER';
+        $isVisitor = !$isGerSubdivision && $isOnRoster;
+
+        $courses = Course::with('mentorGroup')->get()->map(function ($course) use ($user, $isAdmin, $isGerSubdivision, $isOnRoster, $isVisitor) {
             $waitingEntry = \App\Models\WaitingListEntry::where('course_id', $course->id)
                 ->where('user_id', $user->id)
                 ->first();
@@ -41,9 +46,11 @@ class MentorManagementController extends Controller
                     ->count();
             }
 
-            [$canJoin, $joinError] = $isOnWaitingList
-                ? [false, null]
-                : $this->courseValidationService->canUserJoinCourse($course, $user);
+            [$canJoin, $joinError] = $this->courseValidationService->canUserJoinCourse($course, $user);
+
+            if (!$isAdmin && !$isOnWaitingList && !$this->isCourseVisibleToUser($course, $isGerSubdivision, $isOnRoster, $isVisitor, $user->rating)) {
+                return null;
+            }
 
             return [
                 'id' => $course->id,
@@ -56,14 +63,16 @@ class MentorManagementController extends Controller
                 'type_display' => $course->type_display,
                 'position' => $course->position,
                 'position_display' => $course->position_display,
+                'mentor_group' => $course->mentorGroup?->name,
                 'min_rating' => $course->min_rating,
                 'max_rating' => $course->max_rating,
                 'is_on_waiting_list' => $isOnWaitingList,
                 'waiting_list_position' => $waitingPosition,
+                'waiting_list_activity' => $waitingEntry?->activity,
                 'can_join' => $canJoin,
                 'join_error' => $joinError ?: null,
             ];
-        });
+        })->filter();
 
         $userHasActiveRtgCourse = \App\Models\WaitingListEntry::where('user_id', $user->id)
             ->whereHas('course', fn($q) => $q->where('type', 'RTG'))
@@ -141,6 +150,38 @@ class MentorManagementController extends Controller
             Log::error('Error adding mentor to course', ['admin_id' => $user->id, 'new_mentor_id' => $validated['user_id'], 'course_id' => $course->id, 'error' => $e->getMessage()]);
             return back()->withErrors(['error' => 'An error occurred while adding the mentor.']);
         }
+    }
+
+    private function isCourseVisibleToUser(
+        Course $course,
+        bool $isGerSubdivision,
+        bool $isOnRoster,
+        bool $isVisitor,
+        int $userRating,
+    ): bool {
+        if ($isGerSubdivision && $isOnRoster) {
+            if ($course->type === 'RST' || $course->type === 'GST') {
+                return false;
+            }
+        } elseif ($isGerSubdivision && !$isOnRoster) {
+            if ($course->type !== 'RST') {
+                return false;
+            }
+        } elseif ($isVisitor) {
+            if ($course->type === 'RST' || $course->type === 'GST') {
+                return false;
+            }
+        } else {
+            if ($course->type !== 'GST') {
+                return false;
+            }
+        }
+
+        if ($course->type !== 'GST' && !($course->min_rating <= $userRating && $userRating <= $course->max_rating)) {
+            return false;
+        }
+
+        return true;
     }
 
     public function removeMentor(Request $request)

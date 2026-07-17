@@ -1349,3 +1349,106 @@ test('tier2 request fails when user already has the endorsement', function () {
         ->post(route('endorsements.tier2.request', $tier2->id))
         ->assertRedirect();
 });
+
+// ─── MentorManagementController: courses index ────────────────────────────────
+
+test('unauthenticated user is redirected from courses index', function () {
+    $this->get(route('courses.index'))->assertRedirect();
+});
+
+test('courses index hides courses outside the user rating range', function () {
+    $eligibleCourse = Course::factory()->create([
+        'type'       => 'RTG',
+        'position'   => 'TWR',
+        'min_rating' => 2,
+        'max_rating' => 3,
+    ]);
+    $ineligibleCourse = Course::factory()->create([
+        'type'       => 'RTG',
+        'position'   => 'APP',
+        'min_rating' => 4,
+        'max_rating' => 5,
+    ]);
+
+    $user = User::factory()->create(['subdivision' => 'GER', 'rating' => 3]);
+    Http::swap(new \Illuminate\Http\Client\Factory());
+    Http::fake(['*' => Http::response(['data' => ['controllers' => [$user->vatsim_id]]], 200)]);
+    Cache::flush();
+
+    $this->actingAs($user)
+        ->get(route('courses.index'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('training/courses')
+            ->where('courses', fn ($courses) => collect($courses)->pluck('id')->contains($eligibleCourse->id)
+                && !collect($courses)->pluck('id')->contains($ineligibleCourse->id))
+        );
+});
+
+test('courses index shows other RTG courses when user is actively training in one with can_join false', function () {
+    $activeCourse      = Course::factory()->create(['type' => 'RTG', 'position' => 'TWR', 'min_rating' => 2, 'max_rating' => 3]);
+    $alternativeCourse = Course::factory()->create(['type' => 'RTG', 'position' => 'APP', 'min_rating' => 2, 'max_rating' => 3]);
+
+    $user = User::factory()->create(['subdivision' => 'GER', 'rating' => 3]);
+    Http::swap(new \Illuminate\Http\Client\Factory());
+    Http::fake(['*' => Http::response(['data' => ['controllers' => [$user->vatsim_id]]], 200)]);
+    Cache::flush();
+
+    trainingHttpAttachTrainee($activeCourse, $user);
+
+    $this->actingAs($user)
+        ->get(route('courses.index'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('training/courses')
+            ->where('courses', fn ($courses) => collect($courses)->pluck('id')->contains($alternativeCourse->id)
+                && collect($courses)->firstWhere('id', $alternativeCourse->id)['can_join'] === false)
+        );
+});
+
+test('admin user sees all courses regardless of eligibility', function () {
+    $lowRatingCourse = Course::factory()->create(['type' => 'RTG', 'position' => 'TWR', 'min_rating' => 2, 'max_rating' => 3]);
+    $highRatingCourse = Course::factory()->create(['type' => 'RTG', 'position' => 'APP', 'min_rating' => 4, 'max_rating' => 5]);
+
+    $admin = User::factory()->superuser()->create(['subdivision' => 'GER', 'rating' => 2]);
+    Http::swap(new \Illuminate\Http\Client\Factory());
+    Http::fake(['*' => Http::response(['data' => ['controllers' => [$admin->vatsim_id]]], 200)]);
+    Cache::flush();
+
+    $this->actingAs($admin)
+        ->get(route('courses.index'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('training/courses')
+            ->where('courses', fn ($courses) => collect($courses)->pluck('id')->contains($lowRatingCourse->id)
+                && collect($courses)->pluck('id')->contains($highRatingCourse->id))
+        );
+});
+
+test('courses index includes courses the user is already on the waiting list for', function () {
+    $course = Course::factory()->create([
+        'type'       => 'RTG',
+        'position'   => 'TWR',
+        'min_rating' => 2,
+        'max_rating' => 3,
+    ]);
+
+    $user = User::factory()->create(['subdivision' => 'GER', 'rating' => 3]);
+    Http::fake(['*' => Http::response(['data' => ['controllers' => [$user->vatsim_id]]], 200)]);
+    Cache::flush();
+
+    WaitingListEntry::create([
+        'course_id'  => $course->id,
+        'user_id'    => $user->id,
+        'date_added' => now(),
+        'activity'   => 0,
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('courses.index'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('training/courses')
+            ->where('courses', fn ($courses) => collect($courses)->pluck('id')->contains($course->id))
+        );
+});
