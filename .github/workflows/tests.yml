@@ -1,15 +1,14 @@
 name: tests
 
 on:
-  # DISABLE TESTS FOR NOW
-  # push:
-  #   branches:
-  #     - develop
-  #     - main
+  push:
+    branches:
+      - develop
+      - main
   pull_request:
     branches:
       - develop
-  #     - main
+      - main
 
 jobs:
   ci:
@@ -24,7 +23,7 @@ jobs:
         with:
           php-version: 8.4
           tools: composer:v2
-          coverage: xdebug
+          coverage: pcov
 
       - name: Setup Node
         uses: actions/setup-node@v6
