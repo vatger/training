@@ -121,18 +121,11 @@ class CourseValidationService
             }
         }
 
-        if (
-            $user->rating === 3 &&
-            $course->type === 'RTG' &&
-            $course->position === 'APP'
-        ) {
+        if ($course->type === 'RTG' && $user->last_rating_change) {
             $minDays = (int) config('services.training.s3_rating_change_days', 90);
-
-            if ($user->last_rating_change) {
-                $daysSinceRatingChange = Carbon::parse($user->last_rating_change)->diffInDays(now());
-                if ($daysSinceRatingChange < $minDays) {
-                    return [false, 'Your last rating change was less than 3 months ago. You cannot join an S3 course yet.'];
-                }
+            $daysSinceRatingChange = Carbon::parse($user->last_rating_change)->diffInDays(now());
+            if ($daysSinceRatingChange < $minDays) {
+                return [false, 'Your last rating change was less than 3 months ago. You cannot join a new rating course yet.'];
             }
         }
 

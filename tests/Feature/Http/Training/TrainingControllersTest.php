@@ -1426,17 +1426,19 @@ test('courses index hides all RTG courses when user is actively enrolled in one'
         );
 });
 
-test('courses index sets rtgRatingPending true when user completed RTG and rating has not yet been upgraded', function () {
+test('courses index sets rtgRatingPending true when RTG course was completed after last rating change', function () {
     $course = Course::factory()->create(['type' => 'RTG', 'position' => 'TWR', 'min_rating' => 2, 'max_rating' => 3]);
 
     $user = User::factory()->create([
-        'subdivision' => 'GER',
-        'rating'      => 3, // still at course max_rating — upgrade not received yet
+        'subdivision'        => 'GER',
+        'rating'             => 3,
+        'last_rating_change' => now()->subMonths(6), // rating change was months ago
     ]);
     Http::swap(new \Illuminate\Http\Client\Factory());
     Http::fake(['*' => Http::response(['data' => ['controllers' => [$user->vatsim_id]]], 200)]);
     Cache::flush();
 
+    // completed_at (1 week ago) > last_rating_change (6 months ago) → pending
     trainingHttpAttachTrainee($course, $user, ['completed_at' => now()->subWeek(), 'status' => 'completed']);
 
     $this->actingAs($user)
@@ -1448,18 +1450,20 @@ test('courses index sets rtgRatingPending true when user completed RTG and ratin
         );
 });
 
-test('courses index sets rtgRatingPending false when rating has been upgraded above course max', function () {
+test('courses index sets rtgRatingPending false when rating was changed after course completion', function () {
     $course = Course::factory()->create(['type' => 'RTG', 'position' => 'TWR', 'min_rating' => 2, 'max_rating' => 3]);
 
     $user = User::factory()->create([
-        'subdivision' => 'GER',
-        'rating'      => 4, // upgraded past max_rating=3 — system received the change
+        'subdivision'        => 'GER',
+        'rating'             => 3,
+        'last_rating_change' => now()->subDays(5), // rating change arrived recently
     ]);
     Http::swap(new \Illuminate\Http\Client\Factory());
     Http::fake(['*' => Http::response(['data' => ['controllers' => [$user->vatsim_id]]], 200)]);
     Cache::flush();
 
-    trainingHttpAttachTrainee($course, $user, ['completed_at' => now()->subWeek(), 'status' => 'completed']);
+    // completed_at (3 months ago) < last_rating_change (5 days ago) → not pending
+    trainingHttpAttachTrainee($course, $user, ['completed_at' => now()->subMonths(3), 'status' => 'completed']);
 
     $this->actingAs($user)
         ->get(route('courses.index'))

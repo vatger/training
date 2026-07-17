@@ -214,7 +214,17 @@ test('user restricted from course type cannot join', function () {
         ->and($reason)->toBe('You are currently restricted from joining this type of waiting list.');
 });
 
-// ─── S3 / APP rating change window ────────────────────────────────────────────
+// ─── 90-day rating change waiting period (all RTG courses) ───────────────────
+
+test('user cannot join any rtg course within 90 days of rating change', function () {
+    $user = gerUserOnRoster(['rating' => 2, 'last_rating_change' => now()->subDays(30)]);
+    $course = Course::factory()->create(['type' => 'RTG', 'position' => 'GND', 'min_rating' => 1, 'max_rating' => 2]);
+
+    [$canJoin, $reason] = makeService()->canUserJoinCourse($course, $user);
+
+    expect($canJoin)->toBeFalse()
+        ->and($reason)->toBe('Your last rating change was less than 3 months ago. You cannot join a new rating course yet.');
+});
 
 test('s3 user cannot join app rtg course within 90 days of rating change', function () {
     $user = gerUserOnRoster(['rating' => 3, 'last_rating_change' => now()->subDays(30)]);
@@ -222,10 +232,11 @@ test('s3 user cannot join app rtg course within 90 days of rating change', funct
 
     [$canJoin, $reason] = makeService()->canUserJoinCourse($course, $user);
 
-    expect($canJoin)->toBeFalse();
+    expect($canJoin)->toBeFalse()
+        ->and($reason)->toBe('Your last rating change was less than 3 months ago. You cannot join a new rating course yet.');
 });
 
-test('s3 user can join app rtg course after 90 days of rating change', function () {
+test('user can join rtg course after 90 days of rating change', function () {
     $user = gerUserOnRoster(['rating' => 3, 'last_rating_change' => now()->subDays(91)]);
     $course = Course::factory()->create(['type' => 'RTG', 'position' => 'APP', 'min_rating' => 3, 'max_rating' => 4]);
 
@@ -233,6 +244,15 @@ test('s3 user can join app rtg course after 90 days of rating change', function 
 
     expect($canJoin)->toBeTrue()
         ->and($reason)->toBe('');
+});
+
+test('user with no last_rating_change can join rtg course without waiting period', function () {
+    $user = gerUserOnRoster(['rating' => 3, 'last_rating_change' => null]);
+    $course = Course::factory()->create(['type' => 'RTG', 'position' => 'TWR', 'min_rating' => 2, 'max_rating' => 3]);
+
+    [$canJoin] = makeService()->canUserJoinCourse($course, $user);
+
+    expect($canJoin)->toBeTrue();
 });
 
 // ─── Familiarisation ──────────────────────────────────────────────────────────

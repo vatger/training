@@ -42,7 +42,7 @@ function fakeRosterWith(array $vatsimIds): void
 test('JoinWaitingList success: entry created and event fired', function () {
     Event::fake();
 
-    $user = User::factory()->create(['rating' => 2, 'subdivision' => 'GER']);
+    $user = User::factory()->create(['rating' => 2, 'subdivision' => 'GER', 'last_rating_change' => now()->subDays(100)]);
     fakeRosterWith([$user->vatsim_id]);
 
     $course = Course::factory()->create(['type' => 'RTG', 'min_rating' => 2, 'max_rating' => 3]);
@@ -66,7 +66,7 @@ test('JoinWaitingList success: entry created and event fired', function () {
 test('JoinWaitingList fails if user is already on waiting list for that course', function () {
     Event::fake();
 
-    $user = User::factory()->create(['rating' => 2, 'subdivision' => 'GER']);
+    $user = User::factory()->create(['rating' => 2, 'subdivision' => 'GER', 'last_rating_change' => now()->subDays(100)]);
     fakeRosterWith([$user->vatsim_id]);
 
     $course = Course::factory()->create(['type' => 'RTG', 'min_rating' => 2, 'max_rating' => 3]);
@@ -88,7 +88,7 @@ test('JoinWaitingList fails if user is already on waiting list for that course',
 test('JoinWaitingList fails if user is already on waiting list for a different RTG course', function () {
     Event::fake();
 
-    $user = User::factory()->create(['rating' => 2, 'subdivision' => 'GER']);
+    $user = User::factory()->create(['rating' => 2, 'subdivision' => 'GER', 'last_rating_change' => now()->subDays(100)]);
     fakeRosterWith([$user->vatsim_id]);
 
     $courseA = Course::factory()->create(['type' => 'RTG', 'min_rating' => 2, 'max_rating' => 3]);
