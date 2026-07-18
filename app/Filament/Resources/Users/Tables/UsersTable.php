@@ -27,10 +27,6 @@ class UsersTable
                     ->searchable(['first_name', 'last_name'])
                     ->sortable(),
 
-                TextColumn::make('email')
-                    ->searchable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-
                 TextColumn::make('subdivision')
                     ->badge()
                     ->color('info')
@@ -96,21 +92,6 @@ class UsersTable
 
                 TernaryFilter::make('is_admin')
                     ->label('Admin Accounts'),
-
-                SelectFilter::make('subdivision')
-                    ->options([
-                        'GER' => 'Germany',
-                        'USA' => 'United States',
-                        'GBR' => 'United Kingdom',
-                        'FRA' => 'France',
-                        'ITA' => 'Italy',
-                        'ESP' => 'Spain',
-                        'NLD' => 'Netherlands',
-                        'BEL' => 'Belgium',
-                        'AUT' => 'Austria',
-                        'CHE' => 'Switzerland',
-                    ])
-                    ->multiple(),
 
                 SelectFilter::make('rating')
                     ->label('ATC Rating')
