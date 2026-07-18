@@ -15,8 +15,9 @@ class WaitingListRestrictionForm
                 Select::make('user_id')
                     ->label('User')
                     ->relationship('user', 'first_name')
-                    ->getOptionLabelFromRecordUsing(fn ($record) => $record->name . ' (' . $record->vatsim_id . ')')
-                    ->searchable(['first_name', 'last_name', 'vatsim_id'])
+                    ->getSearchResultsUsing(\App\Filament\Support\UserSearch::callback())
+                    ->getOptionLabelFromRecordUsing(\App\Filament\Support\UserSearch::optionLabel())
+                    ->searchable()
                     ->required(),
 
                 Select::make('type')

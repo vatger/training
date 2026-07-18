@@ -19,18 +19,18 @@ class TrainingLogForm
                         Forms\Components\Select::make('trainee_id')
                             ->label('Trainee')
                             ->relationship('trainee', 'first_name')
-                            ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->first_name} {$record->last_name} ({$record->vatsim_id})")
-                            ->searchable(['first_name', 'last_name', 'vatsim_id'])
-                            ->required()
-                            ->preload(),
+                            ->getSearchResultsUsing(\App\Filament\Support\UserSearch::callback())
+                            ->getOptionLabelFromRecordUsing(\App\Filament\Support\UserSearch::optionLabel())
+                            ->searchable()
+                            ->required(),
 
                         Forms\Components\Select::make('mentor_id')
                             ->label('Mentor')
                             ->relationship('mentor', 'first_name')
-                            ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->first_name} {$record->last_name} ({$record->vatsim_id})")
-                            ->searchable(['first_name', 'last_name', 'vatsim_id'])
-                            ->required()
-                            ->preload(),
+                            ->getSearchResultsUsing(\App\Filament\Support\UserSearch::callback())
+                            ->getOptionLabelFromRecordUsing(\App\Filament\Support\UserSearch::optionLabel())
+                            ->searchable()
+                            ->required(),
 
                         Forms\Components\Select::make('course_id')
                             ->label('Course')

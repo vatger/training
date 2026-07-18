@@ -34,8 +34,9 @@ class CptForm
                         Forms\Components\Select::make('trainee_id')
                             ->label('Trainee')
                             ->relationship('trainee', 'first_name')
-                            ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->first_name} {$record->last_name} ({$record->vatsim_id})")
-                            ->searchable(['first_name', 'last_name', 'vatsim_id'])
+                            ->getSearchResultsUsing(\App\Filament\Support\UserSearch::callback())
+                            ->getOptionLabelFromRecordUsing(\App\Filament\Support\UserSearch::optionLabel())
+                            ->searchable()
                             ->required()
                             ->preload()
                             ->disabled(),
@@ -43,16 +44,16 @@ class CptForm
                         Forms\Components\Select::make('examiner_id')
                             ->label('Examiner')
                             ->relationship('examiner', 'first_name')
-                            ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->first_name} {$record->last_name} ({$record->vatsim_id})")
-                            ->searchable(['first_name', 'last_name', 'vatsim_id'])
-                            ->preload(),
+                            ->getSearchResultsUsing(\App\Filament\Support\UserSearch::callback())
+                            ->getOptionLabelFromRecordUsing(\App\Filament\Support\UserSearch::optionLabel())
+                            ->searchable(),
 
                         Forms\Components\Select::make('local_id')
                             ->label('Local Contact')
                             ->relationship('local', 'first_name')
-                            ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->first_name} {$record->last_name} ({$record->vatsim_id})")
-                            ->searchable(['first_name', 'last_name', 'vatsim_id'])
-                            ->preload(),
+                            ->getSearchResultsUsing(\App\Filament\Support\UserSearch::callback())
+                            ->getOptionLabelFromRecordUsing(\App\Filament\Support\UserSearch::optionLabel())
+                            ->searchable(),
                     ])->columns(3),
 
                 Section::make('Course')

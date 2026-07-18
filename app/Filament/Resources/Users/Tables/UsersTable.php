@@ -10,6 +10,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Filters\SelectFilter;
+use Illuminate\Database\Eloquent\Builder;
 
 class UsersTable
 {
@@ -19,12 +20,10 @@ class UsersTable
             ->columns([
                 TextColumn::make('vatsim_id')
                     ->label('VATSIM ID')
-                    ->searchable()
                     ->sortable(),
 
                 TextColumn::make('name')
                     ->label('Name')
-                    ->searchable(['first_name', 'last_name'])
                     ->sortable(),
 
                 TextColumn::make('subdivision')
@@ -123,6 +122,28 @@ class UsersTable
                     DeleteBulkAction::make(),
                 ]),
             ])
+            ->searchable()
+            ->searchUsing(function (Builder $query, string $search): void {
+                $search = trim($search);
+
+                $query->where(function (Builder $query) use ($search): void {
+                    // Pure number → starts-with match on VATSIM ID
+                    if (ctype_digit($search)) {
+                        $query->where('vatsim_id', 'like', "{$search}%");
+                        return;
+                    }
+
+                    // Text → split on whitespace, every word must appear in first or last name
+                    $terms = preg_split('/\s+/', $search, -1, PREG_SPLIT_NO_EMPTY);
+
+                    foreach ($terms as $term) {
+                        $query->where(function (Builder $query) use ($term): void {
+                            $query->where('first_name', 'like', "%{$term}%")
+                                ->orWhere('last_name', 'like', "%{$term}%");
+                        });
+                    }
+                });
+            })
             ->defaultSort('vatsim_id', 'asc')
             ->defaultPaginationPageOption(100)
             ->paginationPageOptions([25, 50, 100, 200, 500]);

@@ -17,10 +17,10 @@ class FamiliarisationForm
                         Forms\Components\Select::make('user_id')
                             ->label('User')
                             ->relationship('user', 'first_name')
-                            ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->first_name} {$record->last_name} ({$record->vatsim_id})")
-                            ->searchable(['first_name', 'last_name', 'vatsim_id'])
+                            ->getSearchResultsUsing(\App\Filament\Support\UserSearch::callback())
+                            ->getOptionLabelFromRecordUsing(\App\Filament\Support\UserSearch::optionLabel())
+                            ->searchable()
                             ->required()
-                            ->preload()
                             ->helperText('Select the user to grant familiarisation'),
 
                         Forms\Components\Select::make('familiarisation_sector_id')
