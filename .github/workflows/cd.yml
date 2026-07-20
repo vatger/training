@@ -1,0 +1,118 @@
+name: CD
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-production
+  cancel-in-progress: false
+
+jobs:
+  build-push:
+    name: Build & Push Image
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion == 'success'
+
+    permissions:
+      contents: read
+      packages: write
+
+    outputs:
+      image-digest: ${{ steps.build.outputs.digest }}
+      image-tags: ${{ steps.meta.outputs.tags }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract image metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=raw,value=latest
+            type=sha,prefix=sha-,format=short
+
+      - name: Build and push
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          # Reuse the cache built by the CI docker-build job — this makes the
+          # push step fast since all layers should already be cached.
+          cache-from: type=gha,scope=docker-prod
+          cache-to: type=gha,mode=max,scope=docker-prod
+
+      - name: Summarise pushed image
+        run: |
+          echo "### Docker image published" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Digest:** \`${{ steps.build.outputs.digest }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Tags:**" >> $GITHUB_STEP_SUMMARY
+          echo "${{ steps.meta.outputs.tags }}" | tr ',' '\n' | sed 's/^/- /' >> $GITHUB_STEP_SUMMARY
+
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: build-push
+    # The `production` environment adds an optional manual approval gate and
+    # scopes secrets (PORTAINER_WEBHOOK_URL, APP_URL) to this job only.
+    # Configure it under Settings → Environments.
+    environment: production
+
+    steps:
+      - name: Trigger Portainer stack redeploy
+        # Portainer stack webhooks pull the latest image and restart the stack.
+        # Enable it in Portainer under Stacks → <stack> → Webhooks, then store
+        # the generated URL as the PORTAINER_WEBHOOK_URL secret. The URL already
+        # contains an auth token so treat it as a secret.
+        run: |
+          curl -fsS -X POST "${{ secrets.PORTAINER_WEBHOOK_URL }}"
+
+      - name: Health check
+        # Waits for the container to pull, start, run migrations (via start.sh),
+        # and begin serving before declaring the deployment successful.
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+        run: |
+          echo "Waiting for stack to come up..."
+          sleep 20
+          for i in $(seq 1 8); do
+            if curl -fsS --max-time 10 "${APP_URL}/up"; then
+              echo ""
+              echo "Health check passed on attempt ${i}."
+              exit 0
+            fi
+            echo "Attempt ${i}/8 failed — retrying in 10s..."
+            sleep 10
+          done
+          echo "Health check failed after 8 attempts. Check the Portainer logs."
+          exit 1
+
+      - name: Summarise deployment
+        if: success()
+        run: |
+          echo "### Deployment successful" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Image:** \`${{ needs.build-push.outputs.image-tags }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Digest:** \`${{ needs.build-push.outputs.image-digest }}\`" >> $GITHUB_STEP_SUMMARY
