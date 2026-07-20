@@ -31,7 +31,7 @@ return [
         'min_hours' => env('TRAINING_MIN_HOURS', 25),
 
         // S3 rating change restriction (days)
-        's3_rating_change_days' => env('TRAINING_S3_RATING_CHANGE_DAYS', 90),
+        'rating_change_days' => env('TRAINING_RATING_CHANGE_DAYS', 90),
 
         'roster_inactivity_warning_days' => env('ROSTER_INACTIVITY_WARNING_DAYS', 330), // 11 months
         'roster_removal_grace_days' => env('ROSTER_REMOVAL_GRACE_DAYS', 35),

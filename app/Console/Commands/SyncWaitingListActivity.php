@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Log;
 class SyncWaitingListActivity extends Command
 {
     protected $signature = 'waitinglists:sync-activities';
-
+    
     protected $description = 'Sync waiting list activity from VATSIM for all entries';
 
     protected VatsimActivityService $activityService;
@@ -134,8 +134,8 @@ class SyncWaitingListActivity extends Command
 
             return match($position) {
                 'GND', 'TWR' => $this->calculateS1TowerHours($connections, $fir),
-                'APP' => $this->calculateAppHours($connections, $airport),
-                'CTR' => 10,
+                'APP' => $this->calculateS2TowerHours($connections, $airport),
+                'CTR' => -1,
                 default => -1
             };
 
@@ -210,10 +210,10 @@ class SyncWaitingListActivity extends Command
         }
     }
 
-    protected function calculateAppHours(array $connections, string $airport): float
+    protected function calculateS2TowerHours(array $connections, string $airport): float
     {
         $totalMinutes = 0;
-        
+
         foreach ($connections as $session) {
             $callsign = $session['callsign'] ?? '';
             $parts = explode('_', $callsign);
@@ -221,7 +221,7 @@ class SyncWaitingListActivity extends Command
             if (
                 count($parts) >= 2 &&
                 $parts[0] === $airport &&
-                in_array(end($parts), ['APP', 'DEP'], true)
+                end($parts) === 'TWR'
             ) {
                 $totalMinutes += floatval($session['minutes_online'] ?? 0);
             }

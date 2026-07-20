@@ -34,9 +34,9 @@ function callEqualStr(string $a, string $b): bool
     return $method->invoke(syncCommand(), $a, $b);
 }
 
-function callCalculateAppHours(array $connections, string $airport): float
+function callCalculateS2TowerHoursFeature(array $connections, string $airport): float
 {
-    $method = new ReflectionMethod(SyncWaitingListActivity::class, 'calculateAppHours');
+    $method = new ReflectionMethod(SyncWaitingListActivity::class, 'calculateS2TowerHours');
     $method->setAccessible(true);
     return $method->invoke(syncCommand(), $connections, $airport);
 }
@@ -99,71 +99,6 @@ test('equalStr: both empty strings evaluate as equal (explode quirk)', function 
 
 test('equalStr: single-segment callsign without underscore returns false against two-segment', function () {
     expect(callEqualStr('EDDL', 'EDDL_TWR'))->toBeFalse();
-});
-
-// ─── calculateAppHours ────────────────────────────────────────────────────────
-
-test('calculateAppHours: APP suffix for matching airport is counted', function () {
-    $connections = [['callsign' => 'EDDL_APP', 'minutes_online' => 120.0]];
-    expect(callCalculateAppHours($connections, 'EDDL'))->toBe(2.0);
-});
-
-test('calculateAppHours: DEP suffix for matching airport is counted', function () {
-    $connections = [['callsign' => 'EDDL_DEP', 'minutes_online' => 60.0]];
-    expect(callCalculateAppHours($connections, 'EDDL'))->toBe(1.0);
-});
-
-test('calculateAppHours: TWR suffix is NOT counted', function () {
-    $connections = [['callsign' => 'EDDL_TWR', 'minutes_online' => 60.0]];
-    expect(callCalculateAppHours($connections, 'EDDL'))->toBe(0.0);
-});
-
-test('calculateAppHours: GND suffix is NOT counted', function () {
-    $connections = [['callsign' => 'EDDL_GND', 'minutes_online' => 60.0]];
-    expect(callCalculateAppHours($connections, 'EDDL'))->toBe(0.0);
-});
-
-test('calculateAppHours: DEL suffix is NOT counted', function () {
-    $connections = [['callsign' => 'EDDL_DEL', 'minutes_online' => 60.0]];
-    expect(callCalculateAppHours($connections, 'EDDL'))->toBe(0.0);
-});
-
-test('calculateAppHours: CTR suffix is NOT counted', function () {
-    $connections = [['callsign' => 'EDDL_CTR', 'minutes_online' => 60.0]];
-    expect(callCalculateAppHours($connections, 'EDDL'))->toBe(0.0);
-});
-
-test('calculateAppHours: different airport APP is NOT counted', function () {
-    $connections = [['callsign' => 'EDDF_APP', 'minutes_online' => 60.0]];
-    expect(callCalculateAppHours($connections, 'EDDL'))->toBe(0.0);
-});
-
-test('calculateAppHours: multiple matching connections are summed', function () {
-    $connections = [
-        ['callsign' => 'EDDL_APP', 'minutes_online' => 60.0],
-        ['callsign' => 'EDDL_DEP', 'minutes_online' => 30.0],
-        ['callsign' => 'EDDL_APP', 'minutes_online' => 90.0],
-    ];
-    expect(callCalculateAppHours($connections, 'EDDL'))->toBe(3.0); // 180 min / 60
-});
-
-test('calculateAppHours: mix of matching and non-matching — only matching counted', function () {
-    $connections = [
-        ['callsign' => 'EDDL_APP', 'minutes_online' => 60.0],
-        ['callsign' => 'EDDL_TWR', 'minutes_online' => 120.0],
-        ['callsign' => 'EDDF_APP', 'minutes_online' => 60.0],
-        ['callsign' => 'EDDL_DEP', 'minutes_online' => 60.0],
-    ];
-    expect(callCalculateAppHours($connections, 'EDDL'))->toBe(2.0); // 120 min / 60
-});
-
-test('calculateAppHours: empty connections returns 0.0', function () {
-    expect(callCalculateAppHours([], 'EDDL'))->toBe(0.0);
-});
-
-test('calculateAppHours: minutes are correctly converted to hours', function () {
-    $connections = [['callsign' => 'EDDL_APP', 'minutes_online' => 90.0]];
-    expect(callCalculateAppHours($connections, 'EDDL'))->toBe(1.5);
 });
 
 // ─── calculateS1TowerHours ────────────────────────────────────────────────────
@@ -232,6 +167,46 @@ test('calculateS1TowerHours: equalStr matching allows middle-segment variation',
     // EDDL_1_TWR should match the EDDL_TWR station via equalStr
     $connections = [['callsign' => 'EDDL_1_TWR', 'minutes_online' => 60.0]];
     expect(callCalculateS1TowerHours($connections, 'EDGG'))->toBe(1.0);
+});
+
+// ─── calculateS2TowerHours ────────────────────────────────────────────────────
+
+test('calculateS2TowerHours: TWR session at matching airport is counted', function () {
+    $connections = [['callsign' => 'EDDL_TWR', 'minutes_online' => 120.0]];
+    expect(callCalculateS2TowerHoursFeature($connections, 'EDDL'))->toBe(2.0);
+});
+
+test('calculateS2TowerHours: multi-segment TWR callsign is counted', function () {
+    $connections = [['callsign' => 'EDDL_C_TWR', 'minutes_online' => 60.0]];
+    expect(callCalculateS2TowerHoursFeature($connections, 'EDDL'))->toBe(1.0);
+});
+
+test('calculateS2TowerHours: APP at same airport is NOT counted', function () {
+    $connections = [['callsign' => 'EDDL_APP', 'minutes_online' => 60.0]];
+    expect(callCalculateS2TowerHoursFeature($connections, 'EDDL'))->toBe(0.0);
+});
+
+test('calculateS2TowerHours: GND at same airport is NOT counted', function () {
+    $connections = [['callsign' => 'EDDL_GND', 'minutes_online' => 60.0]];
+    expect(callCalculateS2TowerHoursFeature($connections, 'EDDL'))->toBe(0.0);
+});
+
+test('calculateS2TowerHours: TWR at wrong airport is NOT counted', function () {
+    $connections = [['callsign' => 'EDDF_TWR', 'minutes_online' => 60.0]];
+    expect(callCalculateS2TowerHoursFeature($connections, 'EDDL'))->toBe(0.0);
+});
+
+test('calculateS2TowerHours: sums multiple matching sessions', function () {
+    $connections = [
+        ['callsign' => 'EDDL_TWR', 'minutes_online' => 60.0],
+        ['callsign' => 'EDDL_N_TWR', 'minutes_online' => 30.0],
+        ['callsign' => 'EDDF_TWR', 'minutes_online' => 60.0], // wrong airport
+    ];
+    expect(callCalculateS2TowerHoursFeature($connections, 'EDDL'))->toBe(1.5); // 90 / 60
+});
+
+test('calculateS2TowerHours: empty connections returns 0.0', function () {
+    expect(callCalculateS2TowerHoursFeature([], 'EDDL'))->toBe(0.0);
 });
 
 // ─── Command-level: no entries ───────────────────────────────────────────────
@@ -307,7 +282,7 @@ test('updates activity and hours_updated for an RTG entry via http response', fu
     Http::swap(new HttpFactory());
     Http::fake([
         'stats.vatsim-germany.org/*' => Http::response([
-            ['callsign' => 'EDDL_APP', 'minutes_online' => 120.0],
+            ['callsign' => 'EDDL_TWR', 'minutes_online' => 120.0],
         ], 200),
     ]);
 

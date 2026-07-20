@@ -357,7 +357,7 @@ export default function MentorWaitingLists({ courses, config }: PageProps) {
 
 												<div className="overflow-y-auto px-4 pb-4">
 													{selectedCourse &&
-													selectedCourse.waiting_list.length > 0 ? (
+														selectedCourse.waiting_list.length > 0 ? (
 														<div className="space-y-3">
 															{selectedCourse.waiting_list.map(
 																(entry, index) => (
@@ -387,16 +387,16 @@ export default function MentorWaitingLists({ courses, config }: PageProps) {
 																					<Badge
 																						className={cn(
 																							entry.activity >=
-																								config.min_activity &&
-																								"bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
+																							config.min_activity &&
+																							"bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
 																							entry.activity >=
-																								config.display_activity &&
-																								entry.activity <
-																									config.min_activity &&
-																								"bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300",
+																							config.display_activity &&
 																							entry.activity <
-																								config.display_activity &&
-																								"bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300",
+																							config.min_activity &&
+																							"bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300",
+																							entry.activity <
+																							config.display_activity &&
+																							"bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300",
 																						)}
 																					>
 																						{entry.activity}h
@@ -427,7 +427,7 @@ export default function MentorWaitingLists({ courses, config }: PageProps) {
 																										(selectedCourse.type ===
 																											"RTG" &&
 																											entry.activity <
-																												config.display_activity)
+																											config.display_activity)
 																									}
 																									onClick={() =>
 																										handleStartTrainingClick(
@@ -443,7 +443,7 @@ export default function MentorWaitingLists({ courses, config }: PageProps) {
 																						</TooltipTrigger>
 																						{selectedCourse.type === "RTG" &&
 																							entry.activity <
-																								config.display_activity && (
+																							config.display_activity && (
 																								<TooltipContent side="top">
 																									<p>
 																										Trainee needs at least{" "}
@@ -523,14 +523,14 @@ export default function MentorWaitingLists({ courses, config }: PageProps) {
 												</DialogHeader>
 
 												{selectedCourse &&
-												selectedCourse.waiting_list.length > 0 ? (
+													selectedCourse.waiting_list.length > 0 ? (
 													<div className="rounded-md border">
 														<Table>
 															<TableHeader>
 																<TableRow>
 																	<TableHead>Position</TableHead>
 																	<TableHead>Trainee</TableHead>
-																	{selectedCourse.type === "RTG" && (
+																	{selectedCourse.type === "RTG" && selectedCourse.position !== "CTR" && (
 																		<TableHead>Activity</TableHead>
 																	)}
 																	<TableHead>Waiting Time</TableHead>
@@ -565,28 +565,29 @@ export default function MentorWaitingLists({ courses, config }: PageProps) {
 																					</a>
 																				</div>
 																			</TableCell>
-																			{selectedCourse.type === "RTG" && (
-																				<TableCell>
-																					<span
-																						className={cn(
-																							"font-medium",
-																							entry.activity >=
+																			{selectedCourse.type === "RTG" &&
+																				selectedCourse.position !== "CTR" && (
+																					<TableCell>
+																						<span
+																							className={cn(
+																								"font-medium",
+																								entry.activity >=
 																								config.min_activity &&
 																								"text-green-600",
-																							entry.activity >=
+																								entry.activity >=
 																								config.display_activity &&
 																								entry.activity <
-																									config.min_activity &&
+																								config.min_activity &&
 																								"text-yellow-600",
-																							entry.activity <
+																								entry.activity <
 																								config.display_activity &&
 																								"text-red-600",
-																						)}
-																					>
-																						{entry.activity}h
-																					</span>
-																				</TableCell>
-																			)}
+																							)}
+																						>
+																							{entry.activity}h
+																						</span>
+																					</TableCell>
+																				)}
 																			<TableCell>
 																				<div className="flex items-center gap-1 text-sm text-muted-foreground">
 																					<Clock className="h-3 w-3" />
@@ -618,7 +619,7 @@ export default function MentorWaitingLists({ courses, config }: PageProps) {
 																											(selectedCourse.type ===
 																												"RTG" &&
 																												entry.activity <
-																													config.display_activity)
+																												config.display_activity)
 																										}
 																										onClick={() =>
 																											handleStartTrainingClick(
@@ -633,8 +634,10 @@ export default function MentorWaitingLists({ courses, config }: PageProps) {
 																								</div>
 																							</TooltipTrigger>
 																							{selectedCourse.type === "RTG" &&
+																								selectedCourse.position !==
+																								"CTR" &&
 																								entry.activity <
-																									config.display_activity && (
+																								config.display_activity && (
 																									<TooltipContent side="top">
 																										<p>
 																											Trainee needs at least{" "}
