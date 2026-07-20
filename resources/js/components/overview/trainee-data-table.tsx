@@ -129,13 +129,11 @@ function TraineeRowActions({
 		)
 	}
 
-	const handleMoveUp = (e: React.MouseEvent) => {
-		e.preventDefault()
+	const handleMoveUp = () => {
 		onMoveUp()
 	}
 
-	const handleMoveDown = (e: React.MouseEvent) => {
-		e.preventDefault()
+	const handleMoveDown = () => {
 		onMoveDown()
 	}
 
@@ -175,7 +173,7 @@ function TraineeRowActions({
 							disabled={isFirst}
 							onSelect={(e) => {
 								e.preventDefault()
-								handleMoveUp(e as any)
+								handleMoveUp()
 							}}
 						>
 							<ChevronUp className="h-4 w-4" />
@@ -185,7 +183,7 @@ function TraineeRowActions({
 							disabled={isLast}
 							onSelect={(e) => {
 								e.preventDefault()
-								handleMoveDown(e as any)
+								handleMoveDown()
 							}}
 						>
 							<ChevronDown className="h-4 w-4" />

@@ -46,7 +46,7 @@ export default function Tier1EndorsementsTable({
 							</TableCell>
 							<TableCell>
 								<ActivityProgress
-									current={endorsement.activity!}
+									current={endorsement.activity ?? 0}
 									status={endorsement.status}
 								/>
 							</TableCell>

@@ -1,8 +1,9 @@
 import { usePage } from "@inertiajs/react"
 import { Shield, User } from "lucide-react"
+import type { SharedData } from "@/types"
 
 export default function UserTypeIndicator() {
-	const { auth } = usePage().props as any
+	const { auth } = usePage<SharedData>().props
 	const user = auth.user
 
 	if (!user) return null

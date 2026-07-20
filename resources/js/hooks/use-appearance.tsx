@@ -16,6 +16,7 @@ const setCookie = (name: string, value: string, days = 365) => {
 	}
 
 	const maxAge = days * 24 * 60 * 60
+	// biome-ignore lint/suspicious/noDocumentCookie: theme persistence requires a cookie readable by SSR
 	document.cookie = `${name}=${value};path=/;max-age=${maxAge};SameSite=Lax`
 }
 

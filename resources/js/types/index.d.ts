@@ -1,5 +1,5 @@
-import { InertiaLinkProps } from "@inertiajs/react"
-import { LucideIcon } from "lucide-react"
+import type { InertiaLinkProps } from "@inertiajs/react"
+import type { LucideIcon } from "lucide-react"
 
 export interface Auth {
 	user: User
@@ -23,11 +23,17 @@ export interface NavItem {
 	external?: boolean
 }
 
+export interface FlashData {
+	success?: string
+	error?: string
+}
+
 export interface SharedData {
 	name: string
 	quote: { message: string; author: string }
 	auth: Auth
 	sidebarOpen: boolean
+	flash?: FlashData
 	[key: string]: unknown
 }
 

@@ -110,13 +110,17 @@ export function SoloModal({
 
 			setRequirements(response.data)
 			setRequirementsError(null)
-		} catch (err: any) {
+		} catch (err: unknown) {
 			console.error("Error fetching requirements:", err)
-			const errorMessage =
-				err.response?.data?.error ||
-				err.response?.data?.message ||
-				err.message ||
-				"Failed to load requirements"
+			const errorMessage = axios.isAxiosError<{
+				error?: string
+				message?: string
+			}>(err)
+				? (err.response?.data?.error ??
+					err.response?.data?.message ??
+					err.message ??
+					"Failed to load requirements")
+				: "Failed to load requirements"
 			setRequirementsError(errorMessage)
 
 			setRequirements({
@@ -146,12 +150,14 @@ export function SoloModal({
 			} else {
 				setError(response.data.message || "Failed to assign core theory test")
 			}
-		} catch (err: any) {
+		} catch (err: unknown) {
 			console.error("Error assigning core test:", err)
 			setError(
-				err.response?.data?.message ||
-					err.response?.data?.error ||
-					"An error occurred while assigning the core theory test",
+				axios.isAxiosError<{ message?: string; error?: string }>(err)
+					? (err.response?.data?.message ??
+							err.response?.data?.error ??
+							"An error occurred while assigning the core theory test")
+					: "An error occurred while assigning the core theory test",
 			)
 		} finally {
 			setIsAssigningTest(false)
