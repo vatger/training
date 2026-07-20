@@ -54,9 +54,6 @@ jobs:
       - name: Frontend lint & format (Biome)
         run: npx biome check --reporter=github .
 
-      - name: TypeScript type check
-        run: npm run types
-
   test:
     name: Tests
     runs-on: ubuntu-latest
@@ -92,7 +89,12 @@ jobs:
         run: npm ci
 
       - name: Build frontend assets
+        # Wayfinder generates @/routes/* during the Vite build; tsc must run
+        # after this step so those modules exist for type resolution.
         run: npm run build
+
+      - name: TypeScript type check
+        run: npm run types
 
       - name: Copy environment file
         run: cp .env.example .env

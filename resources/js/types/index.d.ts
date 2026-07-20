@@ -45,6 +45,9 @@ export interface User {
 	email_verified_at: string | null
 	created_at: string
 	updated_at: string
+	vatsim_id?: number | null
+	is_admin?: boolean
+	is_vatsim_user?: boolean
 	[key: string]: unknown
 }
 

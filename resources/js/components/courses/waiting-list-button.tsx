@@ -1,4 +1,18 @@
 import { router } from "@inertiajs/react"
+
+type WaitingListFlash = {
+	position?: number
+	activity?: number
+	success?: boolean
+	message?: string
+	flash?: {
+		position?: number
+		activity?: number
+		success?: boolean
+		message?: string
+	}
+}
+
 import { AlertCircle, CheckCircle, Clock, Loader2, X } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
@@ -67,7 +81,8 @@ export default function WaitingListButton({
 						preserveState: true,
 						preserveScroll: true,
 						onSuccess: (page) => {
-							const flashData = page.props.flash || {}
+							const flashData: WaitingListFlash =
+								(page.props as { flash?: WaitingListFlash }).flash ?? {}
 							const response = flashData.flash || flashData
 
 							const position = response?.position
@@ -151,7 +166,8 @@ export default function WaitingListButton({
 						preserveState: true,
 						preserveScroll: true,
 						onSuccess: (page) => {
-							const flashData = page.props.flash || {}
+							const flashData: WaitingListFlash =
+								(page.props as { flash?: WaitingListFlash }).flash ?? {}
 							const response = flashData.flash || flashData
 
 							if (response.success !== false) {

@@ -1,8 +1,14 @@
-export default function AppLogoIcon() {
+import type { SVGProps } from "react"
+
+export default function AppLogoIcon({
+	className = "size-6",
+	...props
+}: SVGProps<SVGSVGElement>) {
 	return (
 		// biome-ignore lint/a11y/noSvgWithoutTitle: not required
 		<svg
-			className="size-6"
+			className={className}
+			{...props}
 			data-name="Layer 2"
 			fill="#fafbfb"
 			id="Layer_2"
