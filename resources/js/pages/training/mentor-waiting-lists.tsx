@@ -426,6 +426,8 @@ export default function MentorWaitingLists({ courses, config }: PageProps) {
 																										isLoading ||
 																										(selectedCourse.type ===
 																											"RTG" &&
+																											selectedCourse.position !==
+																											"CTR" &&
 																											entry.activity <
 																											config.display_activity)
 																									}
@@ -618,6 +620,8 @@ export default function MentorWaitingLists({ courses, config }: PageProps) {
 																											isLoading ||
 																											(selectedCourse.type ===
 																												"RTG" &&
+																												selectedCourse.position !==
+																												"CTR" &&
 																												entry.activity <
 																												config.display_activity)
 																										}
