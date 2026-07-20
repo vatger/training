@@ -22,7 +22,7 @@ class SoloController extends Controller
             $soloEndorsements = $this->vatEudService->getSoloEndorsements();
 
             return response()->json([
-                'data' => $soloEndorsements
+                'data' => $soloEndorsements,
             ], 200);
 
         } catch (\Exception $e) {
@@ -32,7 +32,7 @@ class SoloController extends Controller
 
             return response()->json([
                 'error' => 'Failed to retrieve solo endorsements',
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 500);
         }
     }

@@ -24,9 +24,9 @@ class MarkEndorsementForRemoval
         }
 
         $endorsement = collect($this->vatEud->getTier1Endorsements())
-            ->first(fn($e) => $e->id === $activity->endorsement_id);
+            ->first(fn ($e) => $e->id === $activity->endorsement_id);
 
-        if (!$endorsement || $endorsement->createdAt->gt(now()->subMonths(6))) {
+        if (! $endorsement || $endorsement->createdAt->gt(now()->subMonths(6))) {
             throw ValidationException::withMessages([
                 'endorsement' => 'Endorsement must be at least 6 months old before it can be removed.',
             ]);

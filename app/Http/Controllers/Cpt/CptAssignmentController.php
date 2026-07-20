@@ -33,12 +33,12 @@ class CptAssignmentController extends Controller
             return back()->withErrors(['error' => 'You cannot be both examiner and local contact.']);
         }
 
-        if (!$user->examiner) {
+        if (! $user->examiner) {
             return back()->withErrors(['error' => 'You must have an examiner profile to join as examiner.']);
         }
 
-        if (!$user->examiner->hasPosition($cpt->course->position)) {
-            return back()->withErrors(['error' => 'You are not authorized to examine this position (' . $cpt->course->position . ').']);
+        if (! $user->examiner->hasPosition($cpt->course->position)) {
+            return back()->withErrors(['error' => 'You are not authorized to examine this position ('.$cpt->course->position.').']);
         }
 
         if ($cpt->course->mentors->contains($user->id) && $cpt->date->diffInHours(now()) > 36) {
@@ -76,7 +76,7 @@ class CptAssignmentController extends Controller
             return back()->withErrors(['error' => 'You cannot be both examiner and local contact.']);
         }
 
-        if (!$cpt->course->mentors->contains($user->id)) {
+        if (! $cpt->course->mentors->contains($user->id)) {
             return back()->withErrors(['error' => 'You must be a mentor of this course to join as local contact.']);
         }
 

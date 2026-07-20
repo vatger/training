@@ -22,7 +22,7 @@ class Tier1Controller extends Controller
             $tier1Endorsements = $this->vatEudService->getTier1Endorsements();
 
             return response()->json([
-                'data' => $tier1Endorsements
+                'data' => $tier1Endorsements,
             ], 200);
 
         } catch (\Exception $e) {
@@ -32,7 +32,7 @@ class Tier1Controller extends Controller
 
             return response()->json([
                 'error' => 'Failed to retrieve tier 1 endorsements',
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 500);
         }
     }

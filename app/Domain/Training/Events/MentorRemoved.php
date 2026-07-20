@@ -9,7 +9,7 @@ readonly class MentorRemoved
 {
     public function __construct(
         public Course $course,
-        public User   $removedMentor,
-        public User   $removingUser,
+        public User $removedMentor,
+        public User $removingUser,
     ) {}
 }

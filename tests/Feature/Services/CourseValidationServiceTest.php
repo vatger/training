@@ -23,7 +23,7 @@ beforeEach(function () {
 
 function fakeRosterWithIds(array $vatsimIds): void
 {
-    Http::swap(new HttpFactory());
+    Http::swap(new HttpFactory);
     Http::fake(['*' => Http::response(['data' => ['controllers' => $vatsimIds]], 200)]);
     Cache::flush();
 }
@@ -39,6 +39,7 @@ function gerUserOnRoster(array $attrs = []): User
 {
     $user = User::factory()->create(array_merge(['subdivision' => 'GER', 'rating' => 3], $attrs));
     fakeRosterWithIds([$user->vatsim_id]);
+
     return $user;
 }
 
@@ -46,6 +47,7 @@ function gerUserOffRoster(array $attrs = []): User
 {
     $user = User::factory()->create(array_merge(['subdivision' => 'GER', 'rating' => 3], $attrs));
     fakeRosterWithIds([9999999]); // someone else on roster
+
     return $user;
 }
 
@@ -53,6 +55,7 @@ function visitorOnRoster(array $attrs = []): User
 {
     $user = User::factory()->create(array_merge(['subdivision' => 'USA', 'rating' => 3], $attrs));
     fakeRosterWithIds([$user->vatsim_id]);
+
     return $user;
 }
 
@@ -60,6 +63,7 @@ function foreignOffRoster(array $attrs = []): User
 {
     $user = User::factory()->create(array_merge(['subdivision' => 'USA', 'rating' => 3], $attrs));
     fakeRosterWithIds([9999999]);
+
     return $user;
 }
 

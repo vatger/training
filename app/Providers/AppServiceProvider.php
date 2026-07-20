@@ -2,15 +2,15 @@
 
 namespace App\Providers;
 
-use App\Services\VatsimConnectService;
 use App\Integrations\VatEud\FakeVatEudClient;
 use App\Integrations\VatEud\VatEudClient;
 use App\Integrations\VatEud\VatEudClientInterface;
-use Illuminate\Support\ServiceProvider;
 use App\Models\TrainingLog;
 use App\Policies\EndorsementPolicy;
 use App\Policies\TrainingLogPolicy;
+use App\Services\VatsimConnectService;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -21,7 +21,7 @@ class AppServiceProvider extends ServiceProvider
     {
         // Register VATSIM Connect Service
         $this->app->singleton(VatsimConnectService::class, function ($app) {
-            return new VatsimConnectService();
+            return new VatsimConnectService;
         });
 
         $fake = $this->app->environment('testing', 'local');

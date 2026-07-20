@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\LeadingMentors\Schemas;
 
-use Filament\Schemas\Schema;
 use Filament\Forms;
+use Filament\Schemas\Schema;
 
 class LeadingMentorForm
 {
@@ -14,11 +14,11 @@ class LeadingMentorForm
                 Forms\Components\Select::make('user_id')
                     ->label('User')
                     ->relationship('user', 'first_name')
-                    ->getOptionLabelFromRecordUsing(fn ($record) => $record->name . ' (' . $record->vatsim_id . ')')
+                    ->getOptionLabelFromRecordUsing(fn ($record) => $record->name.' ('.$record->vatsim_id.')')
                     ->searchable(['first_name', 'last_name', 'vatsim_id'])
                     ->required()
                     ->helperText('Select the user who will be Leading Mentor for this FIR'),
-                
+
                 Forms\Components\Select::make('fir')
                     ->label('FIR')
                     ->options([

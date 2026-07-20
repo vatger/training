@@ -16,7 +16,7 @@ class ClaimTrainee
             ->where('user_id', $trainee->id)
             ->update([
                 'claimed_by_mentor_id' => $mentor->id,
-                'claimed_at'           => now(),
+                'claimed_at' => now(),
             ]);
 
         event(new TraineeClaimed($course, $trainee, $mentor));

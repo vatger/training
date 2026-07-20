@@ -2,19 +2,19 @@
 
 namespace App\Filament\Resources\TrainingLogs;
 
+use App\Filament\Resources\TrainingLogs\Pages\CreateTrainingLog;
 use App\Filament\Resources\TrainingLogs\Pages\EditTrainingLog;
 use App\Filament\Resources\TrainingLogs\Pages\ListTrainingLogs;
-use App\Filament\Resources\TrainingLogs\Pages\CreateTrainingLog;
 use App\Filament\Resources\TrainingLogs\Pages\ViewTrainingLog;
 use App\Filament\Resources\TrainingLogs\Schemas\TrainingLogForm;
 use App\Filament\Resources\TrainingLogs\Tables\TrainingLogsTable;
 use App\Models\TrainingLog;
 use BackedEnum;
+use Filament\Facades\Filament;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
-use Filament\Facades\Filament;
 
 class TrainingLogResource extends Resource
 {
@@ -68,7 +68,7 @@ class TrainingLogResource extends Resource
     {
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -83,7 +83,7 @@ class TrainingLogResource extends Resource
     {
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -98,7 +98,7 @@ class TrainingLogResource extends Resource
     {
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -113,7 +113,7 @@ class TrainingLogResource extends Resource
     {
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 

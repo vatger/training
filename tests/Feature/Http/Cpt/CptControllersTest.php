@@ -53,14 +53,15 @@ function cptHttpMentor(Course $course): User
     $user = User::factory()->create();
     $user->roles()->attach($role);
     $course->mentors()->attach($user);
+
     return $user;
 }
 
 function cptHttpTwrCourse(): Course
 {
     return Course::factory()->create([
-        'type'         => 'RTG',
-        'position'     => 'TWR',
+        'type' => 'RTG',
+        'position' => 'TWR',
         'solo_station' => 'EDDF_TWR',
     ]);
 }
@@ -68,8 +69,8 @@ function cptHttpTwrCourse(): Course
 function cptHttpMakeExaminerFor(User $user, string $position = 'TWR'): Examiner
 {
     return Examiner::create([
-        'user_id'   => $user->id,
-        'callsign'  => 'EX' . $user->id . 'X',
+        'user_id' => $user->id,
+        'callsign' => 'EX'.$user->id.'X',
         'positions' => [$position],
     ]);
 }
@@ -77,11 +78,11 @@ function cptHttpMakeExaminerFor(User $user, string $position = 'TWR'): Examiner
 function cptHttpRecord(Course $course, array $attrs = []): Cpt
 {
     return Cpt::create(array_merge([
-        'course_id'   => $course->id,
-        'trainee_id'  => User::factory()->create()->id,
-        'date'        => now()->addDays(3),
+        'course_id' => $course->id,
+        'trainee_id' => User::factory()->create()->id,
+        'date' => now()->addDays(3),
         'examiner_id' => null,
-        'local_id'    => null,
+        'local_id' => null,
     ], $attrs));
 }
 
@@ -133,40 +134,40 @@ test('store fails validation when required fields are missing', function () {
 });
 
 test('store fails validation when date is in the past', function () {
-    $course  = cptHttpTwrCourse();
+    $course = cptHttpTwrCourse();
     $trainee = User::factory()->create();
 
     $this->actingAs(cptHttpSuperuser())
         ->post(route('cpt.store'), [
-            'course_id'  => $course->id,
+            'course_id' => $course->id,
             'trainee_id' => $trainee->id,
-            'date'       => now()->subDay()->toDateTimeString(),
+            'date' => now()->subDay()->toDateTimeString(),
         ])
         ->assertSessionHasErrors('date');
 });
 
 test('superuser can create a cpt without examiner or local', function () {
-    $course  = cptHttpTwrCourse();
+    $course = cptHttpTwrCourse();
     $trainee = User::factory()->create();
 
     $this->actingAs(cptHttpSuperuser())
         ->post(route('cpt.store'), [
-            'course_id'  => $course->id,
+            'course_id' => $course->id,
             'trainee_id' => $trainee->id,
-            'date'       => now()->addDays(2)->toDateTimeString(),
+            'date' => now()->addDays(2)->toDateTimeString(),
         ])
         ->assertRedirect(route('cpt.index'));
 
     $this->assertDatabaseHas('cpts', [
-        'course_id'  => $course->id,
+        'course_id' => $course->id,
         'trainee_id' => $trainee->id,
-        'confirmed'  => false,
+        'confirmed' => false,
     ]);
 });
 
 test('creating a cpt with both examiner and local results in confirmed true', function () {
-    $course       = cptHttpTwrCourse();
-    $trainee      = User::factory()->create();
+    $course = cptHttpTwrCourse();
+    $trainee = User::factory()->create();
     $examinerUser = User::factory()->create();
     cptHttpMakeExaminerFor($examinerUser, 'TWR');
     $localUser = cptHttpMentor($course);
@@ -174,78 +175,78 @@ test('creating a cpt with both examiner and local results in confirmed true', fu
     // Date within 36h so a course mentor is allowed to be examiner too
     $this->actingAs(cptHttpSuperuser())
         ->post(route('cpt.store'), [
-            'course_id'   => $course->id,
-            'trainee_id'  => $trainee->id,
-            'date'        => now()->addHours(20)->toDateTimeString(),
+            'course_id' => $course->id,
+            'trainee_id' => $trainee->id,
+            'date' => now()->addHours(20)->toDateTimeString(),
             'examiner_id' => $examinerUser->id,
-            'local_id'    => $localUser->id,
+            'local_id' => $localUser->id,
         ])
         ->assertRedirect(route('cpt.index'));
 
     $this->assertDatabaseHas('cpts', [
-        'course_id'  => $course->id,
+        'course_id' => $course->id,
         'trainee_id' => $trainee->id,
-        'confirmed'  => true,
+        'confirmed' => true,
     ]);
 });
 
 test('store rejects when trainee and examiner are the same user', function () {
-    $course  = cptHttpTwrCourse();
+    $course = cptHttpTwrCourse();
     $trainee = User::factory()->create();
     cptHttpMakeExaminerFor($trainee, 'TWR');
 
     $this->actingAs(cptHttpSuperuser())
         ->post(route('cpt.store'), [
-            'course_id'   => $course->id,
-            'trainee_id'  => $trainee->id,
-            'date'        => now()->addDays(2)->toDateTimeString(),
+            'course_id' => $course->id,
+            'trainee_id' => $trainee->id,
+            'date' => now()->addDays(2)->toDateTimeString(),
             'examiner_id' => $trainee->id,
         ])
         ->assertSessionHasErrors('examiner_id');
 });
 
 test('store rejects when examiner user has no examiner profile', function () {
-    $course      = cptHttpTwrCourse();
-    $trainee     = User::factory()->create();
+    $course = cptHttpTwrCourse();
+    $trainee = User::factory()->create();
     $nonExaminer = User::factory()->create();
 
     $this->actingAs(cptHttpSuperuser())
         ->post(route('cpt.store'), [
-            'course_id'   => $course->id,
-            'trainee_id'  => $trainee->id,
-            'date'        => now()->addDays(2)->toDateTimeString(),
+            'course_id' => $course->id,
+            'trainee_id' => $trainee->id,
+            'date' => now()->addDays(2)->toDateTimeString(),
             'examiner_id' => $nonExaminer->id,
         ])
         ->assertSessionHasErrors('examiner_id');
 });
 
 test('store rejects when examiner is not authorized for the course position', function () {
-    $course       = cptHttpTwrCourse(); // TWR position
-    $trainee      = User::factory()->create();
+    $course = cptHttpTwrCourse(); // TWR position
+    $trainee = User::factory()->create();
     $examinerUser = User::factory()->create();
     cptHttpMakeExaminerFor($examinerUser, 'APP'); // APP examiner, not TWR
 
     $this->actingAs(cptHttpSuperuser())
         ->post(route('cpt.store'), [
-            'course_id'   => $course->id,
-            'trainee_id'  => $trainee->id,
-            'date'        => now()->addDays(2)->toDateTimeString(),
+            'course_id' => $course->id,
+            'trainee_id' => $trainee->id,
+            'date' => now()->addDays(2)->toDateTimeString(),
             'examiner_id' => $examinerUser->id,
         ])
         ->assertSessionHasErrors('examiner_id');
 });
 
 test('store rejects when local is not a mentor for the course', function () {
-    $course    = cptHttpTwrCourse();
-    $trainee   = User::factory()->create();
+    $course = cptHttpTwrCourse();
+    $trainee = User::factory()->create();
     $nonMentor = User::factory()->create();
 
     $this->actingAs(cptHttpSuperuser())
         ->post(route('cpt.store'), [
-            'course_id'  => $course->id,
+            'course_id' => $course->id,
             'trainee_id' => $trainee->id,
-            'date'       => now()->addDays(2)->toDateTimeString(),
-            'local_id'   => $nonMentor->id,
+            'date' => now()->addDays(2)->toDateTimeString(),
+            'local_id' => $nonMentor->id,
         ])
         ->assertSessionHasErrors('local_id');
 });
@@ -254,19 +255,19 @@ test('store rejects when local is not a mentor for the course', function () {
 
 test('unauthenticated user cannot delete a cpt', function () {
     $course = cptHttpTwrCourse();
-    $cpt    = cptHttpRecord($course);
+    $cpt = cptHttpRecord($course);
     $this->delete(route('cpt.destroy', $cpt))->assertRedirect();
 });
 
 test('non-mentor cannot delete a cpt', function () {
     $course = cptHttpTwrCourse();
-    $cpt    = cptHttpRecord($course);
+    $cpt = cptHttpRecord($course);
     $this->actingAs(User::factory()->create())->delete(route('cpt.destroy', $cpt))->assertForbidden();
 });
 
 test('superuser can delete a pending cpt', function () {
     $course = cptHttpTwrCourse();
-    $cpt    = cptHttpRecord($course);
+    $cpt = cptHttpRecord($course);
 
     $this->actingAs(cptHttpSuperuser())->delete(route('cpt.destroy', $cpt));
 
@@ -276,7 +277,7 @@ test('superuser can delete a pending cpt', function () {
 test('course mentor can delete a cpt for their course', function () {
     $course = cptHttpTwrCourse();
     $mentor = cptHttpMentor($course);
-    $cpt    = cptHttpRecord($course);
+    $cpt = cptHttpRecord($course);
 
     $this->actingAs($mentor)->delete(route('cpt.destroy', $cpt));
 
@@ -284,9 +285,9 @@ test('course mentor can delete a cpt for their course', function () {
 });
 
 test('mentor not assigned to the course cannot delete that cpt', function () {
-    $course      = cptHttpTwrCourse();
+    $course = cptHttpTwrCourse();
     $otherCourse = cptHttpTwrCourse();
-    $cpt         = cptHttpRecord($course);
+    $cpt = cptHttpRecord($course);
     $otherMentor = cptHttpMentor($otherCourse);
 
     $this->actingAs($otherMentor)
@@ -298,7 +299,7 @@ test('mentor not assigned to the course cannot delete that cpt', function () {
 
 test('cannot delete a graded cpt', function () {
     $course = cptHttpTwrCourse();
-    $cpt    = cptHttpRecord($course, ['passed' => true]);
+    $cpt = cptHttpRecord($course, ['passed' => true]);
 
     $this->actingAs(cptHttpSuperuser())
         ->delete(route('cpt.destroy', $cpt))
@@ -311,19 +312,19 @@ test('cannot delete a graded cpt', function () {
 
 test('unauthenticated user cannot join as examiner', function () {
     $course = cptHttpTwrCourse();
-    $cpt    = cptHttpRecord($course);
+    $cpt = cptHttpRecord($course);
     $this->post(route('cpt.join-examiner', $cpt))->assertRedirect();
 });
 
 test('non-mentor cannot join as examiner', function () {
     $course = cptHttpTwrCourse();
-    $cpt    = cptHttpRecord($course);
+    $cpt = cptHttpRecord($course);
     $this->actingAs(User::factory()->create())->post(route('cpt.join-examiner', $cpt))->assertForbidden();
 });
 
 test('user without examiner profile cannot join as examiner', function () {
     $course = cptHttpTwrCourse();
-    $cpt    = cptHttpRecord($course);
+    $cpt = cptHttpRecord($course);
 
     $this->actingAs(cptHttpSuperuser())
         ->post(route('cpt.join-examiner', $cpt))
@@ -331,8 +332,8 @@ test('user without examiner profile cannot join as examiner', function () {
 });
 
 test('examiner without the correct position cannot join as examiner', function () {
-    $course       = cptHttpTwrCourse();
-    $cpt          = cptHttpRecord($course);
+    $course = cptHttpTwrCourse();
+    $cpt = cptHttpRecord($course);
     $examinerUser = cptHttpSuperuser();
     cptHttpMakeExaminerFor($examinerUser, 'APP'); // wrong position
 
@@ -342,8 +343,8 @@ test('examiner without the correct position cannot join as examiner', function (
 });
 
 test('eligible examiner can join as examiner', function () {
-    $course       = cptHttpTwrCourse();
-    $cpt          = cptHttpRecord($course);
+    $course = cptHttpTwrCourse();
+    $cpt = cptHttpRecord($course);
     $examinerUser = cptHttpSuperuser();
     cptHttpMakeExaminerFor($examinerUser, 'TWR');
 
@@ -355,9 +356,9 @@ test('eligible examiner can join as examiner', function () {
 });
 
 test('joining as examiner confirms the cpt when a local is already assigned', function () {
-    $course       = cptHttpTwrCourse();
-    $localUser    = User::factory()->create();
-    $cpt          = cptHttpRecord($course, ['local_id' => $localUser->id]);
+    $course = cptHttpTwrCourse();
+    $localUser = User::factory()->create();
+    $cpt = cptHttpRecord($course, ['local_id' => $localUser->id]);
     $examinerUser = cptHttpSuperuser();
     cptHttpMakeExaminerFor($examinerUser, 'TWR');
 
@@ -367,7 +368,7 @@ test('joining as examiner confirms the cpt when a local is already assigned', fu
 });
 
 test('cannot join as examiner when already the examiner', function () {
-    $course       = cptHttpTwrCourse();
+    $course = cptHttpTwrCourse();
     $examinerUser = cptHttpSuperuser();
     cptHttpMakeExaminerFor($examinerUser, 'TWR');
     $cpt = cptHttpRecord($course, ['examiner_id' => $examinerUser->id]);
@@ -378,8 +379,8 @@ test('cannot join as examiner when already the examiner', function () {
 });
 
 test('cannot join as examiner when already the local contact', function () {
-    $course       = cptHttpTwrCourse();
-    $user         = cptHttpSuperuser();
+    $course = cptHttpTwrCourse();
+    $user = cptHttpSuperuser();
     cptHttpMakeExaminerFor($user, 'TWR');
     $cpt = cptHttpRecord($course, ['local_id' => $user->id]);
 
@@ -391,9 +392,9 @@ test('cannot join as examiner when already the local contact', function () {
 // ─── CptAssignmentController: leave-examiner ─────────────────────────────────
 
 test('examiner can leave their assignment', function () {
-    $course       = cptHttpTwrCourse();
+    $course = cptHttpTwrCourse();
     $examinerUser = cptHttpSuperuser();
-    $cpt          = cptHttpRecord($course, ['examiner_id' => $examinerUser->id]);
+    $cpt = cptHttpRecord($course, ['examiner_id' => $examinerUser->id]);
 
     $this->actingAs($examinerUser)
         ->post(route('cpt.leave-examiner', $cpt))
@@ -403,8 +404,8 @@ test('examiner can leave their assignment', function () {
 });
 
 test('non-examiner cannot leave as examiner', function () {
-    $course    = cptHttpTwrCourse();
-    $cpt       = cptHttpRecord($course);
+    $course = cptHttpTwrCourse();
+    $cpt = cptHttpRecord($course);
     $otherUser = cptHttpSuperuser();
 
     $this->actingAs($otherUser)
@@ -416,20 +417,20 @@ test('non-examiner cannot leave as examiner', function () {
 
 test('unauthenticated user cannot join as local contact', function () {
     $course = cptHttpTwrCourse();
-    $cpt    = cptHttpRecord($course);
+    $cpt = cptHttpRecord($course);
     $this->post(route('cpt.join-local', $cpt))->assertRedirect();
 });
 
 test('non-mentor cannot join as local contact', function () {
     $course = cptHttpTwrCourse();
-    $cpt    = cptHttpRecord($course);
+    $cpt = cptHttpRecord($course);
     $this->actingAs(User::factory()->create())->post(route('cpt.join-local', $cpt))->assertForbidden();
 });
 
 test('course mentor can join as local contact', function () {
     $course = cptHttpTwrCourse();
     $mentor = cptHttpMentor($course);
-    $cpt    = cptHttpRecord($course);
+    $cpt = cptHttpRecord($course);
 
     $this->actingAs($mentor)
         ->post(route('cpt.join-local', $cpt))
@@ -439,10 +440,10 @@ test('course mentor can join as local contact', function () {
 });
 
 test('joining as local confirms the cpt when an examiner is already assigned', function () {
-    $course       = cptHttpTwrCourse();
+    $course = cptHttpTwrCourse();
     $examinerUser = User::factory()->create();
-    $cpt          = cptHttpRecord($course, ['examiner_id' => $examinerUser->id]);
-    $mentor       = cptHttpMentor($course);
+    $cpt = cptHttpRecord($course, ['examiner_id' => $examinerUser->id]);
+    $mentor = cptHttpMentor($course);
 
     $this->actingAs($mentor)->post(route('cpt.join-local', $cpt));
 
@@ -451,8 +452,8 @@ test('joining as local confirms the cpt when an examiner is already assigned', f
 
 test('non-course-mentor superuser cannot join as local contact', function () {
     $course = cptHttpTwrCourse();
-    $cpt    = cptHttpRecord($course);
-    $super  = cptHttpSuperuser(); // not a course mentor
+    $cpt = cptHttpRecord($course);
+    $super = cptHttpSuperuser(); // not a course mentor
 
     $this->actingAs($super)
         ->post(route('cpt.join-local', $cpt))
@@ -462,7 +463,7 @@ test('non-course-mentor superuser cannot join as local contact', function () {
 test('cannot join as local contact when already the local contact', function () {
     $course = cptHttpTwrCourse();
     $mentor = cptHttpMentor($course);
-    $cpt    = cptHttpRecord($course, ['local_id' => $mentor->id]);
+    $cpt = cptHttpRecord($course, ['local_id' => $mentor->id]);
 
     $this->actingAs($mentor)
         ->post(route('cpt.join-local', $cpt))
@@ -472,7 +473,7 @@ test('cannot join as local contact when already the local contact', function () 
 test('cannot join as local contact when already the examiner', function () {
     $course = cptHttpTwrCourse();
     $mentor = cptHttpMentor($course);
-    $cpt    = cptHttpRecord($course, ['examiner_id' => $mentor->id]);
+    $cpt = cptHttpRecord($course, ['examiner_id' => $mentor->id]);
 
     $this->actingAs($mentor)
         ->post(route('cpt.join-local', $cpt))
@@ -484,7 +485,7 @@ test('cannot join as local contact when already the examiner', function () {
 test('local contact can leave their assignment', function () {
     $course = cptHttpTwrCourse();
     $mentor = cptHttpMentor($course);
-    $cpt    = cptHttpRecord($course, ['local_id' => $mentor->id]);
+    $cpt = cptHttpRecord($course, ['local_id' => $mentor->id]);
 
     $this->actingAs($mentor)
         ->post(route('cpt.leave-local', $cpt))
@@ -494,8 +495,8 @@ test('local contact can leave their assignment', function () {
 });
 
 test('non-local user cannot leave as local contact', function () {
-    $course    = cptHttpTwrCourse();
-    $cpt       = cptHttpRecord($course);
+    $course = cptHttpTwrCourse();
+    $cpt = cptHttpRecord($course);
     $otherUser = cptHttpSuperuser();
 
     $this->actingAs($otherUser)
@@ -507,13 +508,13 @@ test('non-local user cannot leave as local contact', function () {
 
 test('unauthenticated user cannot grade a cpt', function () {
     $course = cptHttpTwrCourse();
-    $cpt    = cptHttpRecord($course);
+    $cpt = cptHttpRecord($course);
     $this->post(route('cpt.grade', ['cpt' => $cpt, 'result' => 1]))->assertRedirect();
 });
 
 test('non-mentor cannot grade a cpt', function () {
     $course = cptHttpTwrCourse();
-    $cpt    = cptHttpRecord($course);
+    $cpt = cptHttpRecord($course);
     $this->actingAs(User::factory()->create())
         ->post(route('cpt.grade', ['cpt' => $cpt, 'result' => 1]))
         ->assertForbidden();
@@ -522,7 +523,7 @@ test('non-mentor cannot grade a cpt', function () {
 test('non-superuser mentor cannot grade a cpt', function () {
     $course = cptHttpTwrCourse();
     $mentor = cptHttpMentor($course);
-    $cpt    = cptHttpRecord($course);
+    $cpt = cptHttpRecord($course);
 
     $this->actingAs($mentor)
         ->post(route('cpt.grade', ['cpt' => $cpt, 'result' => 1]))
@@ -533,7 +534,7 @@ test('non-superuser mentor cannot grade a cpt', function () {
 
 test('superuser can grade a cpt as passed', function () {
     $course = cptHttpTwrCourse();
-    $cpt    = cptHttpRecord($course);
+    $cpt = cptHttpRecord($course);
 
     $this->actingAs(cptHttpSuperuser())
         ->post(route('cpt.grade', ['cpt' => $cpt, 'result' => 1]));
@@ -543,7 +544,7 @@ test('superuser can grade a cpt as passed', function () {
 
 test('superuser can grade a cpt as failed', function () {
     $course = cptHttpTwrCourse();
-    $cpt    = cptHttpRecord($course);
+    $cpt = cptHttpRecord($course);
 
     $this->actingAs(cptHttpSuperuser())
         ->post(route('cpt.grade', ['cpt' => $cpt, 'result' => 0]));
@@ -553,7 +554,7 @@ test('superuser can grade a cpt as failed', function () {
 
 test('invalid grade result value returns an error', function () {
     $course = cptHttpTwrCourse();
-    $cpt    = cptHttpRecord($course);
+    $cpt = cptHttpRecord($course);
 
     $this->actingAs(cptHttpSuperuser())
         ->post(route('cpt.grade', ['cpt' => $cpt, 'result' => 2]))
@@ -566,13 +567,13 @@ test('invalid grade result value returns an error', function () {
 
 test('unauthenticated user cannot view the log upload page', function () {
     $course = cptHttpTwrCourse();
-    $cpt    = cptHttpRecord($course);
+    $cpt = cptHttpRecord($course);
     $this->get(route('cpt.upload', $cpt))->assertRedirect();
 });
 
 test('course mentor who is not examiner or local is redirected from upload page', function () {
     $course = cptHttpTwrCourse();
-    $cpt    = cptHttpRecord($course); // no examiner/local assigned
+    $cpt = cptHttpRecord($course); // no examiner/local assigned
     $mentor = cptHttpMentor($course); // course mentor but not examiner/local for this cpt
 
     $this->actingAs($mentor)
@@ -582,7 +583,7 @@ test('course mentor who is not examiner or local is redirected from upload page'
 
 test('superuser can access the log upload page', function () {
     $course = cptHttpTwrCourse();
-    $cpt    = cptHttpRecord($course);
+    $cpt = cptHttpRecord($course);
 
     $this->actingAs(cptHttpSuperuser())
         ->get(route('cpt.upload', $cpt))
@@ -590,9 +591,9 @@ test('superuser can access the log upload page', function () {
 });
 
 test('assigned examiner can access the log upload page', function () {
-    $course       = cptHttpTwrCourse();
+    $course = cptHttpTwrCourse();
     $examinerUser = cptHttpSuperuser();
-    $cpt          = cptHttpRecord($course, ['examiner_id' => $examinerUser->id]);
+    $cpt = cptHttpRecord($course, ['examiner_id' => $examinerUser->id]);
 
     $this->actingAs($examinerUser)
         ->get(route('cpt.upload', $cpt))
@@ -600,9 +601,9 @@ test('assigned examiner can access the log upload page', function () {
 });
 
 test('assigned local contact can access the log upload page', function () {
-    $course    = cptHttpTwrCourse();
+    $course = cptHttpTwrCourse();
     $localUser = cptHttpSuperuser();
-    $cpt       = cptHttpRecord($course, ['local_id' => $localUser->id]);
+    $cpt = cptHttpRecord($course, ['local_id' => $localUser->id]);
 
     $this->actingAs($localUser)
         ->get(route('cpt.upload', $cpt))
@@ -613,22 +614,22 @@ test('assigned local contact can access the log upload page', function () {
 
 test('unauthenticated user cannot upload a log', function () {
     $course = cptHttpTwrCourse();
-    $cpt    = cptHttpRecord($course);
+    $cpt = cptHttpRecord($course);
     $this->post(route('cpt.upload.store', $cpt), [])->assertRedirect();
 });
 
 test('non-mentor cannot upload a log', function () {
     $course = cptHttpTwrCourse();
-    $cpt    = cptHttpRecord($course);
+    $cpt = cptHttpRecord($course);
     $this->actingAs(User::factory()->create())
         ->post(route('cpt.upload.store', $cpt), [])
         ->assertForbidden();
 });
 
 test('upload fails validation when no file is provided', function () {
-    $course       = cptHttpTwrCourse();
+    $course = cptHttpTwrCourse();
     $examinerUser = cptHttpSuperuser();
-    $cpt          = cptHttpRecord($course, ['examiner_id' => $examinerUser->id]);
+    $cpt = cptHttpRecord($course, ['examiner_id' => $examinerUser->id]);
 
     $this->actingAs($examinerUser)
         ->post(route('cpt.upload.store', $cpt), [])
@@ -636,10 +637,10 @@ test('upload fails validation when no file is provided', function () {
 });
 
 test('upload fails validation when file is not a pdf', function () {
-    $course       = cptHttpTwrCourse();
+    $course = cptHttpTwrCourse();
     $examinerUser = cptHttpSuperuser();
-    $cpt          = cptHttpRecord($course, ['examiner_id' => $examinerUser->id]);
-    $file         = UploadedFile::fake()->create('log.txt', 5);
+    $cpt = cptHttpRecord($course, ['examiner_id' => $examinerUser->id]);
+    $file = UploadedFile::fake()->create('log.txt', 5);
 
     $this->actingAs($examinerUser)
         ->post(route('cpt.upload.store', $cpt), ['log_file' => $file])
@@ -647,10 +648,10 @@ test('upload fails validation when file is not a pdf', function () {
 });
 
 test('examiner can upload a log for their cpt', function () {
-    $course       = cptHttpTwrCourse();
+    $course = cptHttpTwrCourse();
     $examinerUser = cptHttpSuperuser();
-    $cpt          = cptHttpRecord($course, ['examiner_id' => $examinerUser->id]);
-    $file         = UploadedFile::fake()->create('log.pdf', 100, 'application/pdf');
+    $cpt = cptHttpRecord($course, ['examiner_id' => $examinerUser->id]);
+    $file = UploadedFile::fake()->create('log.pdf', 100, 'application/pdf');
 
     $this->actingAs($examinerUser)
         ->post(route('cpt.upload.store', $cpt), ['log_file' => $file])
@@ -661,10 +662,10 @@ test('examiner can upload a log for their cpt', function () {
 });
 
 test('local contact can upload a log for their cpt', function () {
-    $course    = cptHttpTwrCourse();
+    $course = cptHttpTwrCourse();
     $localUser = cptHttpSuperuser();
-    $cpt       = cptHttpRecord($course, ['local_id' => $localUser->id]);
-    $file      = UploadedFile::fake()->create('log.pdf', 100, 'application/pdf');
+    $cpt = cptHttpRecord($course, ['local_id' => $localUser->id]);
+    $file = UploadedFile::fake()->create('log.pdf', 100, 'application/pdf');
 
     $this->actingAs($localUser)
         ->post(route('cpt.upload.store', $cpt), ['log_file' => $file])
@@ -674,10 +675,10 @@ test('local contact can upload a log for their cpt', function () {
 });
 
 test('superuser can upload a log for any cpt', function () {
-    $course    = cptHttpTwrCourse();
-    $cpt       = cptHttpRecord($course);
+    $course = cptHttpTwrCourse();
+    $cpt = cptHttpRecord($course);
     $superuser = cptHttpSuperuser();
-    $file      = UploadedFile::fake()->create('log.pdf', 100, 'application/pdf');
+    $file = UploadedFile::fake()->create('log.pdf', 100, 'application/pdf');
 
     $this->actingAs($superuser)
         ->post(route('cpt.upload.store', $cpt), ['log_file' => $file])
@@ -688,9 +689,9 @@ test('superuser can upload a log for any cpt', function () {
 
 test('course mentor not assigned as examiner or local cannot upload a log', function () {
     $course = cptHttpTwrCourse();
-    $cpt    = cptHttpRecord($course);
+    $cpt = cptHttpRecord($course);
     $mentor = cptHttpMentor($course); // course mentor but not examiner/local
-    $file   = UploadedFile::fake()->create('log.pdf', 100, 'application/pdf');
+    $file = UploadedFile::fake()->create('log.pdf', 100, 'application/pdf');
 
     $this->actingAs($mentor)
         ->post(route('cpt.upload.store', $cpt), ['log_file' => $file])

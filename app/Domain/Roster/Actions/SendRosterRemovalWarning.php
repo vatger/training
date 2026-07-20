@@ -14,9 +14,9 @@ class SendRosterRemovalWarning
     public function execute(int $vatsimId): void
     {
         $message =
-            'You have not controlled in the past 11 months. ' .
-            'To remain on the VATSIM Germany roster, please log in and control within the next 35 days. ' .
-            'Otherwise, your account will be removed from the roster. ' .
+            'You have not controlled in the past 11 months. '.
+            'To remain on the VATSIM Germany roster, please log in and control within the next 35 days. '.
+            'Otherwise, your account will be removed from the roster. '.
             'If you believe this is a mistake, please contact the ATD.';
 
         $result = $this->vatgerClient->sendNotification(

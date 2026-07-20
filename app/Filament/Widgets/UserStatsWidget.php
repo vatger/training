@@ -9,25 +9,25 @@ use Illuminate\Support\Facades\DB;
 class UserStatsWidget extends BaseWidget
 {
     protected static ?int $sort = 1;
-    
-    protected int | string | array $columnSpan = 'full';
+
+    protected int|string|array $columnSpan = 'full';
 
     public static function canView(): bool
     {
         $user = auth()->user();
-        
-        if (!$user) {
+
+        if (! $user) {
             return false;
         }
-        
-        return !$user->is_superuser && !$user->is_admin;
+
+        return ! $user->is_superuser && ! $user->is_admin;
     }
 
     protected function getStats(): array
     {
         $user = auth()->user();
-        
-        if (!$user) {
+
+        if (! $user) {
             return [];
         }
 
@@ -47,7 +47,7 @@ class UserStatsWidget extends BaseWidget
     protected function getLeadingMentorStats($user): array
     {
         $firs = $user->getLeadingMentorFirs();
-        
+
         $courseCount = DB::table('courses')
             ->join('roles', 'courses.mentor_group_id', '=', 'roles.id')
             ->where(function ($q) use ($firs) {
@@ -101,7 +101,7 @@ class UserStatsWidget extends BaseWidget
     protected function getGenericStats($user): array
     {
         $activeCourses = $user->activeCourses()->count();
-        
+
         $completedCourses = DB::table('course_trainees')
             ->where('user_id', $user->id)
             ->whereNotNull('completed_at')

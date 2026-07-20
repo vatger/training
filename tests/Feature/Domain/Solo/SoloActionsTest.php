@@ -36,7 +36,8 @@ beforeEach(function () {
  */
 function fakeClientWithPassingExam(int $examId): FakeVatEudClient
 {
-    return new class($examId) extends FakeVatEudClient {
+    return new class($examId) extends FakeVatEudClient
+    {
         public function __construct(private int $examId) {}
 
         public function getUserExams(int $vatsimId): UserExamsData
@@ -61,7 +62,8 @@ function fakeClientWithPassingExam(int $examId): FakeVatEudClient
  */
 function fakeClientWithExistingSolo(int $userCid, string $position, int $examId): FakeVatEudClient
 {
-    return new class($userCid, $position, $examId) extends FakeVatEudClient {
+    return new class($userCid, $position, $examId) extends FakeVatEudClient
+    {
         public function __construct(
             private int $userCid,
             private string $position,
@@ -72,14 +74,14 @@ function fakeClientWithExistingSolo(int $userCid, string $position, int $examId)
         {
             return [
                 SoloEndorsementData::fromApiResponse([
-                    'id'             => 99,
-                    'user_cid'       => $this->userCid,
-                    'position'       => $this->position,
-                    'facility'       => 9,
+                    'id' => 99,
+                    'user_cid' => $this->userCid,
+                    'position' => $this->position,
+                    'facility' => 9,
                     'instructor_cid' => 1441619,
-                    'position_days'  => 30,
-                    'expiry'         => now()->addDays(30)->toISOString(),
-                    'created_at'     => now()->subDays(5)->toISOString(),
+                    'position_days' => 30,
+                    'expiry' => now()->addDays(30)->toISOString(),
+                    'created_at' => now()->subDays(5)->toISOString(),
                 ]),
             ];
         }
@@ -106,12 +108,12 @@ test('GrantSoloEndorsement throws when moodle course not completed', function ()
     Event::fake();
 
     $trainee = User::factory()->create();
-    $mentor  = User::factory()->create();
+    $mentor = User::factory()->create();
 
     // FakeMoodleClient returns false for getCourseCompletion by default
     $course = Course::factory()->create([
-        'solo_station'     => 'EDDL_TWR',
-        'position'         => 'TWR',
+        'solo_station' => 'EDDL_TWR',
+        'position' => 'TWR',
         'moodle_course_ids' => [101],
     ]);
 
@@ -128,13 +130,13 @@ test('GrantSoloEndorsement throws when core theory not passed', function () {
     Event::fake();
 
     $trainee = User::factory()->create();
-    $mentor  = User::factory()->create();
+    $mentor = User::factory()->create();
 
     // No moodle requirement, but TWR position needs exam id 9
     // FakeVatEudClient returns empty exams by default
     $course = Course::factory()->create([
-        'solo_station'      => 'EDDL_TWR',
-        'position'          => 'TWR',
+        'solo_station' => 'EDDL_TWR',
+        'position' => 'TWR',
         'moodle_course_ids' => [],
     ]);
 
@@ -151,11 +153,11 @@ test('GrantSoloEndorsement throws when solo already exists for that position', f
     Event::fake();
 
     $trainee = User::factory()->create(['vatsim_id' => 1601613]);
-    $mentor  = User::factory()->create();
+    $mentor = User::factory()->create();
 
     $course = Course::factory()->create([
-        'solo_station'      => 'EDDL_TWR',
-        'position'          => 'TWR',
+        'solo_station' => 'EDDL_TWR',
+        'position' => 'TWR',
         'moodle_course_ids' => [],
     ]);
 
@@ -179,11 +181,11 @@ test('GrantSoloEndorsement succeeds with no moodle, passing exam, no existing so
     Event::fake();
 
     $trainee = User::factory()->create(['vatsim_id' => 9999997]);
-    $mentor  = User::factory()->create();
+    $mentor = User::factory()->create();
 
     $course = Course::factory()->create([
-        'solo_station'      => 'EDDF_TWR',
-        'position'          => 'TWR',
+        'solo_station' => 'EDDF_TWR',
+        'position' => 'TWR',
         'moodle_course_ids' => [],
     ]);
 
@@ -200,11 +202,11 @@ test('GrantSoloEndorsement fires SoloGranted with correct course and trainee', f
     Event::fake();
 
     $trainee = User::factory()->create(['vatsim_id' => 9999996]);
-    $mentor  = User::factory()->create();
+    $mentor = User::factory()->create();
 
     $course = Course::factory()->create([
-        'solo_station'      => 'EDDS_TWR',
-        'position'          => 'TWR',
+        'solo_station' => 'EDDS_TWR',
+        'position' => 'TWR',
         'moodle_course_ids' => [],
     ]);
 
@@ -223,11 +225,11 @@ test('GrantSoloEndorsement succeeds for GND position with passing core theory ex
     Event::fake();
 
     $trainee = User::factory()->create(['vatsim_id' => 9999993]);
-    $mentor  = User::factory()->create();
+    $mentor = User::factory()->create();
 
     $course = Course::factory()->create([
-        'solo_station'      => 'EDDF_GND',
-        'position'          => 'GND',
+        'solo_station' => 'EDDF_GND',
+        'position' => 'GND',
         'moodle_course_ids' => [],
     ]);
 
@@ -246,11 +248,11 @@ test('ExtendSoloEndorsement throws when no existing solo found', function () {
     Event::fake();
 
     $trainee = User::factory()->create(['vatsim_id' => 9999995]);
-    $mentor  = User::factory()->create();
+    $mentor = User::factory()->create();
 
     $course = Course::factory()->create([
-        'solo_station'      => 'EDDL_TWR',
-        'position'          => 'TWR',
+        'solo_station' => 'EDDL_TWR',
+        'position' => 'TWR',
         'moodle_course_ids' => [],
     ]);
 
@@ -268,29 +270,30 @@ test('ExtendSoloEndorsement succeeds when solo exists and fires SoloExtended', f
     Event::fake();
 
     $trainee = User::factory()->create(['vatsim_id' => 1601613]);
-    $mentor  = User::factory()->create();
+    $mentor = User::factory()->create();
 
     $course = Course::factory()->create([
-        'solo_station'      => 'EDDL_TWR',
-        'position'          => 'TWR',
+        'solo_station' => 'EDDL_TWR',
+        'position' => 'TWR',
         'moodle_course_ids' => [],
     ]);
 
     $this->app->bind(
         VatEudClientInterface::class,
-        fn () => new class extends FakeVatEudClient {
+        fn () => new class extends FakeVatEudClient
+        {
             public function getSoloEndorsements(): array
             {
                 return [
                     SoloEndorsementData::fromApiResponse([
-                        'id'             => 88,
-                        'user_cid'       => 1601613,
-                        'position'       => 'EDDL_TWR',
-                        'facility'       => 9,
+                        'id' => 88,
+                        'user_cid' => 1601613,
+                        'position' => 'EDDL_TWR',
+                        'facility' => 9,
                         'instructor_cid' => 1441619,
-                        'position_days'  => 30,
-                        'expiry'         => now()->addDays(10)->toISOString(),
-                        'created_at'     => now()->subDays(20)->toISOString(),
+                        'position_days' => 30,
+                        'expiry' => now()->addDays(10)->toISOString(),
+                        'created_at' => now()->subDays(20)->toISOString(),
                     ]),
                 ];
             }
@@ -307,29 +310,30 @@ test('ExtendSoloEndorsement fires SoloExtended with correct course and trainee',
     Event::fake();
 
     $trainee = User::factory()->create(['vatsim_id' => 1601613]);
-    $mentor  = User::factory()->create();
+    $mentor = User::factory()->create();
 
     $course = Course::factory()->create([
-        'solo_station'      => 'EDDL_TWR',
-        'position'          => 'TWR',
+        'solo_station' => 'EDDL_TWR',
+        'position' => 'TWR',
         'moodle_course_ids' => [],
     ]);
 
     $this->app->bind(
         VatEudClientInterface::class,
-        fn () => new class extends FakeVatEudClient {
+        fn () => new class extends FakeVatEudClient
+        {
             public function getSoloEndorsements(): array
             {
                 return [
                     SoloEndorsementData::fromApiResponse([
-                        'id'             => 88,
-                        'user_cid'       => 1601613,
-                        'position'       => 'EDDL_TWR',
-                        'facility'       => 9,
+                        'id' => 88,
+                        'user_cid' => 1601613,
+                        'position' => 'EDDL_TWR',
+                        'facility' => 9,
                         'instructor_cid' => 1441619,
-                        'position_days'  => 30,
-                        'expiry'         => now()->addDays(10)->toISOString(),
-                        'created_at'     => now()->subDays(20)->toISOString(),
+                        'position_days' => 30,
+                        'expiry' => now()->addDays(10)->toISOString(),
+                        'created_at' => now()->subDays(20)->toISOString(),
                     ]),
                 ];
             }
@@ -351,11 +355,11 @@ test('RemoveSoloEndorsement throws when no existing solo found', function () {
     Event::fake();
 
     $trainee = User::factory()->create(['vatsim_id' => 9999994]);
-    $mentor  = User::factory()->create();
+    $mentor = User::factory()->create();
 
     $course = Course::factory()->create([
-        'solo_station'      => 'EDDL_TWR',
-        'position'          => 'TWR',
+        'solo_station' => 'EDDL_TWR',
+        'position' => 'TWR',
         'moodle_course_ids' => [],
     ]);
 
@@ -373,29 +377,30 @@ test('RemoveSoloEndorsement throws when deleteSoloEndorsement returns false', fu
     Event::fake();
 
     $trainee = User::factory()->create(['vatsim_id' => 1601613]);
-    $mentor  = User::factory()->create();
+    $mentor = User::factory()->create();
 
     $course = Course::factory()->create([
-        'solo_station'      => 'EDDL_TWR',
-        'position'          => 'TWR',
+        'solo_station' => 'EDDL_TWR',
+        'position' => 'TWR',
         'moodle_course_ids' => [],
     ]);
 
     $this->app->bind(
         VatEudClientInterface::class,
-        fn () => new class extends FakeVatEudClient {
+        fn () => new class extends FakeVatEudClient
+        {
             public function getSoloEndorsements(): array
             {
                 return [
                     SoloEndorsementData::fromApiResponse([
-                        'id'             => 77,
-                        'user_cid'       => 1601613,
-                        'position'       => 'EDDL_TWR',
-                        'facility'       => 9,
+                        'id' => 77,
+                        'user_cid' => 1601613,
+                        'position' => 'EDDL_TWR',
+                        'facility' => 9,
                         'instructor_cid' => 1441619,
-                        'position_days'  => 30,
-                        'expiry'         => now()->addDays(5)->toISOString(),
-                        'created_at'     => now()->subDays(25)->toISOString(),
+                        'position_days' => 30,
+                        'expiry' => now()->addDays(5)->toISOString(),
+                        'created_at' => now()->subDays(25)->toISOString(),
                     ]),
                 ];
             }
@@ -421,29 +426,30 @@ test('RemoveSoloEndorsement succeeds and fires SoloRemoved', function () {
     Event::fake();
 
     $trainee = User::factory()->create(['vatsim_id' => 1601613]);
-    $mentor  = User::factory()->create();
+    $mentor = User::factory()->create();
 
     $course = Course::factory()->create([
-        'solo_station'      => 'EDDL_TWR',
-        'position'          => 'TWR',
+        'solo_station' => 'EDDL_TWR',
+        'position' => 'TWR',
         'moodle_course_ids' => [],
     ]);
 
     $this->app->bind(
         VatEudClientInterface::class,
-        fn () => new class extends FakeVatEudClient {
+        fn () => new class extends FakeVatEudClient
+        {
             public function getSoloEndorsements(): array
             {
                 return [
                     SoloEndorsementData::fromApiResponse([
-                        'id'             => 77,
-                        'user_cid'       => 1601613,
-                        'position'       => 'EDDL_TWR',
-                        'facility'       => 9,
+                        'id' => 77,
+                        'user_cid' => 1601613,
+                        'position' => 'EDDL_TWR',
+                        'facility' => 9,
                         'instructor_cid' => 1441619,
-                        'position_days'  => 30,
-                        'expiry'         => now()->addDays(5)->toISOString(),
-                        'created_at'     => now()->subDays(25)->toISOString(),
+                        'position_days' => 30,
+                        'expiry' => now()->addDays(5)->toISOString(),
+                        'created_at' => now()->subDays(25)->toISOString(),
                     ]),
                 ];
             }
@@ -460,29 +466,30 @@ test('RemoveSoloEndorsement fires SoloRemoved with correct course and trainee', 
     Event::fake();
 
     $trainee = User::factory()->create(['vatsim_id' => 1601613]);
-    $mentor  = User::factory()->create();
+    $mentor = User::factory()->create();
 
     $course = Course::factory()->create([
-        'solo_station'      => 'EDDL_TWR',
-        'position'          => 'TWR',
+        'solo_station' => 'EDDL_TWR',
+        'position' => 'TWR',
         'moodle_course_ids' => [],
     ]);
 
     $this->app->bind(
         VatEudClientInterface::class,
-        fn () => new class extends FakeVatEudClient {
+        fn () => new class extends FakeVatEudClient
+        {
             public function getSoloEndorsements(): array
             {
                 return [
                     SoloEndorsementData::fromApiResponse([
-                        'id'             => 77,
-                        'user_cid'       => 1601613,
-                        'position'       => 'EDDL_TWR',
-                        'facility'       => 9,
+                        'id' => 77,
+                        'user_cid' => 1601613,
+                        'position' => 'EDDL_TWR',
+                        'facility' => 9,
                         'instructor_cid' => 1441619,
-                        'position_days'  => 30,
-                        'expiry'         => now()->addDays(5)->toISOString(),
-                        'created_at'     => now()->subDays(25)->toISOString(),
+                        'position_days' => 30,
+                        'expiry' => now()->addDays(5)->toISOString(),
+                        'created_at' => now()->subDays(25)->toISOString(),
                     ]),
                 ];
             }

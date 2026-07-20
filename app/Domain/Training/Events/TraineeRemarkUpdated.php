@@ -8,9 +8,9 @@ use App\Models\User;
 readonly class TraineeRemarkUpdated
 {
     public function __construct(
-        public Course  $course,
-        public User    $trainee,
-        public User    $mentor,
-        public string  $newRemarks,
+        public Course $course,
+        public User $trainee,
+        public User $mentor,
+        public string $newRemarks,
     ) {}
 }

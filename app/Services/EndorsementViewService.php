@@ -2,15 +2,14 @@
 
 namespace App\Services;
 
-use App\Integrations\VatEud\DTOs\Tier1EndorsementData;
-use App\Integrations\VatEud\VatEudService;
 use App\Integrations\Moodle\MoodleClientInterface;
 use App\Integrations\VatEud\DTOs\SoloEndorsementData;
+use App\Integrations\VatEud\DTOs\Tier1EndorsementData;
+use App\Integrations\VatEud\VatEudService;
 use App\Models\Course;
 use App\Models\EndorsementActivity;
 use App\Models\Tier2Endorsement;
 use App\Models\User;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class EndorsementViewService
@@ -35,7 +34,7 @@ class EndorsementViewService
         $allTier1 = $this->vatEudService->getTier1Endorsements();
 
         $endorsementIds = collect($allTier1)->pluck('id')->toArray();
-        $vatsimIds = collect($allTier1)->map(fn($e) => $e->userCid)->unique()->toArray();
+        $vatsimIds = collect($allTier1)->map(fn ($e) => $e->userCid)->unique()->toArray();
 
         $activities = EndorsementActivity::whereIn('endorsement_id', $endorsementIds)
             ->get()
@@ -52,14 +51,14 @@ class EndorsementViewService
         $allowedPositions = $this->resolveAllowedPositions($user, $lmFirs);
 
         $endorsements = collect($allTier1)
-            ->map(fn($e) => $this->mapEndorsement($e, $activities, $users))
+            ->map(fn ($e) => $this->mapEndorsement($e, $activities, $users))
             ->filter()
-            ->filter(fn($e) => $this->isVisibleToUser($e, $user, $allowedPositions, $lmFirs))
+            ->filter(fn ($e) => $this->isVisibleToUser($e, $user, $allowedPositions, $lmFirs))
             ->values();
 
         $endorsementsByPosition = $endorsements
             ->groupBy('position')
-            ->map(fn($items, $position) => [
+            ->map(fn ($items, $position) => [
                 'position' => $position,
                 'position_name' => $this->getPositionFullName($position),
                 'airport_icao' => explode('_', $position)[0],
@@ -77,7 +76,7 @@ class EndorsementViewService
             'userPermissions' => [
                 'canRemoveForPositions' => $canRemovePositions,
                 'canRemoveAny' => ($user->is_superuser || $user->is_admin)
-                    || (!empty($canRemovePositions) && count($canRemovePositions) > 0),
+                    || (! empty($canRemovePositions) && count($canRemovePositions) > 0),
                 'isAdmin' => $user->is_superuser || $user->is_admin,
             ],
         ];
@@ -86,14 +85,14 @@ class EndorsementViewService
     private function mapEndorsement(Tier1EndorsementData $endorsement, $activities, $users): ?array
     {
         $activity = $activities->get($endorsement->id);
-        if (!$activity) {
+        if (! $activity) {
             return null;
         }
 
         $olderThanSixMonths = $endorsement->createdAt->lte(now()->subMonths(6));
         $hasGoodActivity = $activity->activity_hours >= 3;
 
-        if (!$hasGoodActivity && !$olderThanSixMonths) {
+        if (! $hasGoodActivity && ! $olderThanSixMonths) {
             return null;
         }
 
@@ -147,7 +146,7 @@ class EndorsementViewService
 
         $lmPositions = collect();
         foreach ($lmFirs as $fir) {
-            $firCourses = Course::whereHas('mentorGroup', fn($q) => $q->where('name', 'LIKE', "%{$fir}%"))->get();
+            $firCourses = Course::whereHas('mentorGroup', fn ($q) => $q->where('name', 'LIKE', "%{$fir}%"))->get();
             $lmPositions = $lmPositions->merge($this->coursePositionStrings($firCourses));
         }
 
@@ -178,7 +177,7 @@ class EndorsementViewService
 
                 if (! $hasAnyCoT) {
                     $isMentor = $courses->contains(
-                        fn($course) => $user->mentorCourses()->where('courses.id', $course->id)->exists()
+                        fn ($course) => $user->mentorCourses()->where('courses.id', $course->id)->exists()
                     );
 
                     if ($isMentor) {
@@ -249,7 +248,7 @@ class EndorsementViewService
     private function getUserTier1Endorsements(int $vatsimId): array
     {
         $tier1Endorsements = collect($this->vatEudService->getTier1Endorsements())
-            ->filter(fn($e) => $e->userCid === $vatsimId);
+            ->filter(fn ($e) => $e->userCid === $vatsimId);
 
         if ($tier1Endorsements->isEmpty()) {
             return [];
@@ -262,7 +261,7 @@ class EndorsementViewService
         return $tier1Endorsements
             ->map(function ($endorsement) use ($activities) {
                 $activity = $activities->get($endorsement->id);
-                if (!$activity) {
+                if (! $activity) {
                     return null;
                 }
 
@@ -287,7 +286,7 @@ class EndorsementViewService
     private function getUserTier2Endorsements(int $vatsimId): array
     {
         $activePositions = collect($this->vatEudService->getTier2Endorsements())
-            ->filter(fn($e) => $e->userCid === $vatsimId)
+            ->filter(fn ($e) => $e->userCid === $vatsimId)
             ->pluck('position')
             ->toArray();
 

@@ -2,10 +2,10 @@
 
 namespace App\Services;
 
+use App\Integrations\Vatger\VatgerClientInterface;
 use App\Models\Cpt;
 use App\Models\Examiner;
 use App\Models\User;
-use App\Integrations\Vatger\VatgerClientInterface;
 
 class CptNotificationService
 {
@@ -30,8 +30,8 @@ class CptNotificationService
         }
 
         $cptData = $cpts->map(fn ($cpt) => [
-            'trainee'  => $cpt->trainee->full_name,
-            'date'     => $cpt->date->format('d.m.y H:i') . 'lcl',
+            'trainee' => $cpt->trainee->full_name,
+            'date' => $cpt->date->format('d.m.y H:i').'lcl',
             'position' => $cpt->course->solo_station,
         ])->toArray();
 
@@ -42,14 +42,14 @@ class CptNotificationService
     {
         $notifyUsers = collect();
 
-        if (!$cpt->examiner_id) {
+        if (! $cpt->examiner_id) {
             Examiner::with('user')
                 ->whereJsonContains('positions', $cpt->course->position)
                 ->get()
                 ->each(fn ($e) => $notifyUsers->push($e->user));
         }
 
-        if (!$cpt->local_id) {
+        if (! $cpt->local_id) {
             $cpt->course->load('mentors');
             $cpt->course->mentors->each(fn ($m) => $notifyUsers->push($m));
         }
@@ -87,8 +87,8 @@ class CptNotificationService
             $notifyUsers->push($creator);
         }
 
-        $roleText  = $role === 'examiner' ? 'examiner' : 'local contact';
-        $message   = "{$unassignedUser->full_name} has unassigned themselves as {$roleText} from the CPT for {$cpt->trainee->full_name} at {$cpt->course->solo_station} on {$cpt->date->format('d.m.Y')} at {$cpt->date->format('H:i')}lcl";
+        $roleText = $role === 'examiner' ? 'examiner' : 'local contact';
+        $message = "{$unassignedUser->full_name} has unassigned themselves as {$roleText} from the CPT for {$cpt->trainee->full_name} at {$cpt->course->solo_station} on {$cpt->date->format('d.m.Y')} at {$cpt->date->format('H:i')}lcl";
 
         $notifyUsers->unique('id')->each(function (User $user) use ($message) {
             if ($user->vatsim_id) {

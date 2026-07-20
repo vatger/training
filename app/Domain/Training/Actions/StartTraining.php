@@ -32,9 +32,9 @@ class StartTraining
             return [true, 'Training started successfully.'];
         } catch (\Exception $e) {
             Log::error('Failed to start training', [
-                'entry_id'  => $entry->id,
+                'entry_id' => $entry->id,
                 'mentor_id' => $mentor->id,
-                'error'     => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
 
             return [false, 'Failed to start training. Please try again.'];
@@ -47,11 +47,12 @@ class StartTraining
             return;
         }
 
-        $apiKey     = config('services.vatger.api_key');
+        $apiKey = config('services.vatger.api_key');
         $apiBaseUrl = config('services.vatger.api_url');
 
-        if (!$apiKey) {
+        if (! $apiKey) {
             Log::warning('VATGER API key not configured, skipping Moodle enrollment');
+
             return;
         }
 
@@ -61,9 +62,9 @@ class StartTraining
                     ->get("{$apiBaseUrl}/moodle/course/{$courseId}/user/{$user->vatsim_id}/enrol");
             } catch (\Exception $e) {
                 Log::warning('Failed to enroll user in Moodle course', [
-                    'user_id'   => $user->id,
+                    'user_id' => $user->id,
                     'course_id' => $courseId,
-                    'error'     => $e->getMessage(),
+                    'error' => $e->getMessage(),
                 ]);
             }
         }
@@ -71,28 +72,29 @@ class StartTraining
 
     private function sendStartNotification(WaitingListEntry $entry): void
     {
-        $apiKey     = config('services.vatger.api_key');
+        $apiKey = config('services.vatger.api_key');
         $apiBaseUrl = config('services.vatger.api_url');
 
-        if (!$apiKey) {
+        if (! $apiKey) {
             Log::warning('VATGER API key not configured, skipping notification');
+
             return;
         }
 
         $response = \Http::withHeaders(['Authorization' => "Token {$apiKey}"])
             ->post("{$apiBaseUrl}/user/{$entry->user->vatsim_id}/send_notification", [
-                'title'       => 'Start of Training',
-                'message'     => "You have been enrolled in the {$entry->course->name} course. Check the training centre for moodle courses to start your training.",
+                'title' => 'Start of Training',
+                'message' => "You have been enrolled in the {$entry->course->name} course. Check the training centre for moodle courses to start your training.",
                 'source_name' => 'VATGER ATD',
-                'link_text'   => 'Training Centre',
-                'link_url'    => 'https://training.vatsim-germany.org',
-                'via'         => 'board.ping',
+                'link_text' => 'Training Centre',
+                'link_url' => 'https://training.vatsim-germany.org',
+                'via' => 'board.ping',
             ]);
 
-        if (!$response->successful()) {
+        if (! $response->successful()) {
             Log::warning('Failed to send training start notification', [
                 'trainee_id' => $entry->user_id,
-                'response'   => $response->body(),
+                'response' => $response->body(),
             ]);
         }
     }

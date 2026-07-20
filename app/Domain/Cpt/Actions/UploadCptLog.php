@@ -15,9 +15,9 @@ class UploadCptLog
         $path = $file->store('cpt_logs', 'private');
 
         $log = CptLog::create([
-            'cpt_id'         => $cpt->id,
+            'cpt_id' => $cpt->id,
             'uploaded_by_id' => $uploader->id,
-            'log_file'       => $path,
+            'log_file' => $path,
         ]);
 
         $cpt->update(['log_uploaded' => true]);

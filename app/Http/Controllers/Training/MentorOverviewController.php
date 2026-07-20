@@ -8,13 +8,13 @@ use App\Jobs\FetchMoodleStatus;
 use App\Models\Course;
 use App\Models\User;
 use App\Services\MentorCourseResponseBuilder;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
-use Carbon\Carbon;
 
 class MentorOverviewController extends Controller
 {
@@ -25,7 +25,7 @@ class MentorOverviewController extends Controller
 
     public function index(Request $request): Response
     {
-        $user                = $request->user();
+        $user = $request->user();
         $lastAccessedCourseId = $request->input('last_course_id');
 
         if ($user->is_superuser || $user->is_admin) {
@@ -37,9 +37,9 @@ class MentorOverviewController extends Controller
 
             if (empty($accessibleCourseIds)) {
                 return Inertia::render('training/mentor-overview', [
-                    'courses'         => [],
+                    'courses' => [],
                     'initialCourseId' => null,
-                    'statistics'      => [
+                    'statistics' => [
                         'activeTrainees' => 0,
                         'claimedTrainees' => 0,
                         'trainingSessions' => 0,
@@ -56,8 +56,8 @@ class MentorOverviewController extends Controller
 
         $positionOrder = ['GND' => 1, 'TWR' => 2, 'APP' => 3];
 
-        $nonCtr = $courses->filter(fn($c) => $c->position !== 'CTR')->sortBy(fn($c) => $positionOrder[$c->position] ?? 999)->sortBy('name');
-        $ctr     = $courses->filter(fn($c) => $c->position === 'CTR')->sortBy('name');
+        $nonCtr = $courses->filter(fn ($c) => $c->position !== 'CTR')->sortBy(fn ($c) => $positionOrder[$c->position] ?? 999)->sortBy('name');
+        $ctr = $courses->filter(fn ($c) => $c->position === 'CTR')->sortBy('name');
         $courses = $nonCtr->concat($ctr)->values();
 
         $courseIds = $courses->pluck('id')->toArray();
@@ -80,7 +80,7 @@ class MentorOverviewController extends Controller
 
         $coursesMetadata = $courses->map(function ($course) use ($user, $cotCourseIds, $lmFirs, $mentorGroups) {
             $isCoT = in_array($course->id, $cotCourseIds);
-            $isLM  = false;
+            $isLM = false;
 
             if ($course->mentor_group_id && isset($mentorGroups[$course->mentor_group_id])) {
                 $fir = $user->getFirFromMentorGroup($mentorGroups[$course->mentor_group_id]);
@@ -90,15 +90,15 @@ class MentorOverviewController extends Controller
             }
 
             return [
-                'id'             => $course->id,
-                'name'           => $course->name,
-                'position'       => $course->position,
-                'type'           => $course->type,
-                'soloStation'    => $course->solo_station,
+                'id' => $course->id,
+                'name' => $course->name,
+                'position' => $course->position,
+                'type' => $course->type,
+                'soloStation' => $course->solo_station,
                 'activeTrainees' => $course->active_trainees_count,
-                'trainees'       => [],
-                'loaded'         => false,
-                'permissions'    => [
+                'trainees' => [],
+                'loaded' => false,
+                'permissions' => [
                     'isChiefOfTraining' => $isCoT,
                     'isLeadingMentor' => $isLM,
                     'canEditAllLogs' => $isCoT || $isLM || $user->is_superuser || $user->is_admin,
@@ -125,15 +125,17 @@ class MentorOverviewController extends Controller
                     $coursesMetadata = $coursesMetadata->map(function ($meta) use ($loadedCourseData) {
                         if ($meta['id'] === $loadedCourseData['id']) {
                             $loadedCourseData['permissions'] = $meta['permissions'];
+
                             return $loadedCourseData;
                         }
+
                         return $meta;
                     });
                 }
             } catch (\Exception $e) {
                 Log::error('Failed to load initial course data', [
                     'course_id' => $courseToLoadId,
-                    'error'     => $e->getMessage(),
+                    'error' => $e->getMessage(),
                 ]);
             }
         }
@@ -141,10 +143,10 @@ class MentorOverviewController extends Controller
         $accessibleCourseIds = $courses->pluck('id')->toArray();
 
         return Inertia::render('training/mentor-overview', [
-            'courses'         => $coursesMetadata->values(),
+            'courses' => $coursesMetadata->values(),
             'initialCourseId' => $courseToLoadId,
-            'statistics'      => [
-                'activeTrainees' => $courses->sum(fn($c) => $c->active_trainees_count),
+            'statistics' => [
+                'activeTrainees' => $courses->sum(fn ($c) => $c->active_trainees_count),
                 'claimedTrainees' => DB::table('course_trainees')
                     ->whereIn('course_id', $accessibleCourseIds)
                     ->where('claimed_by_mentor_id', $user->id)
@@ -167,11 +169,11 @@ class MentorOverviewController extends Controller
         $user = $request->user();
         $course = Course::findOrFail($courseId);
 
-        if (!$user->isMentor() && !$user->is_superuser && !$user->isChiefOfTraining() && !$user->isLeadingMentor()) {
+        if (! $user->isMentor() && ! $user->is_superuser && ! $user->isChiefOfTraining() && ! $user->isLeadingMentor()) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        if (!$user->canViewCourse($course)) {
+        if (! $user->canViewCourse($course)) {
             return response()->json(['error' => 'Access denied'], 403);
         }
 
@@ -182,13 +184,13 @@ class MentorOverviewController extends Controller
     {
         $user = $request->user();
 
-        if (!$user->isMentor() && !$user->is_superuser) {
+        if (! $user->isMentor() && ! $user->is_superuser) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
         $validated = $request->validate([
-            'course_id'     => 'required|integer|exists:courses,id',
-            'trainee_ids'   => 'required|array|min:1|max:100',
+            'course_id' => 'required|integer|exists:courses,id',
+            'trainee_ids' => 'required|array|min:1|max:100',
             'trainee_ids.*' => 'integer|exists:users,id',
         ]);
 
@@ -203,14 +205,17 @@ class MentorOverviewController extends Controller
 
         foreach ($validated['trainee_ids'] as $traineeId) {
             $trainee = $trainees->get($traineeId);
-            if (!$trainee) continue;
+            if (! $trainee) {
+                continue;
+            }
 
-            $cacheKey   = FetchMoodleStatus::cacheKey($trainee->vatsim_id, $course->id);
+            $cacheKey = FetchMoodleStatus::cacheKey($trainee->vatsim_id, $course->id);
             $pendingKey = FetchMoodleStatus::pendingKey($trainee->vatsim_id, $course->id);
 
             $cached = Cache::get($cacheKey);
             if ($cached !== null) {
                 $statuses[$traineeId] = $cached;
+
                 continue;
             }
 
@@ -229,11 +234,11 @@ class MentorOverviewController extends Controller
         $user = $request->user();
         $course = Course::findOrFail($courseId);
 
-        if (!$user->isMentor() && !$user->isSuperuser()) {
+        if (! $user->isMentor() && ! $user->isSuperuser()) {
             return response()->json(['error' => 'Access denied'], 403);
         }
 
-        if (!$user->canViewCourse($course)) {
+        if (! $user->canViewCourse($course)) {
             return response()->json(['error' => 'Access denied'], 403);
         }
 
@@ -245,16 +250,17 @@ class MentorOverviewController extends Controller
                 ->select('users.id', 'users.vatsim_id', 'users.first_name', 'users.last_name', 'course_trainees.completed_at')
                 ->orderBy('course_trainees.completed_at', 'desc')
                 ->get()
-                ->map(fn($t) => [
-                    'id'           => $t->id,
-                    'vatsim_id'    => $t->vatsim_id,
-                    'name'         => $t->first_name . ' ' . $t->last_name,
+                ->map(fn ($t) => [
+                    'id' => $t->id,
+                    'vatsim_id' => $t->vatsim_id,
+                    'name' => $t->first_name.' '.$t->last_name,
                     'completed_at' => \Carbon\Carbon::parse($t->completed_at)->format('Y-m-d'),
                 ]);
 
             return response()->json(['success' => true, 'trainees' => $pastTrainees]);
         } catch (\Exception $e) {
             Log::error('Error fetching past trainees', ['course_id' => $courseId, 'error' => $e->getMessage()]);
+
             return response()->json(['error' => 'Failed to fetch past trainees'], 500);
         }
     }
@@ -264,16 +270,16 @@ class MentorOverviewController extends Controller
         $user = $request->user();
         $course = Course::findOrFail($courseId);
 
-        if (!$user->isMentor() && !$user->isSuperuser()) {
+        if (! $user->isMentor() && ! $user->isSuperuser()) {
             return response()->json(['error' => 'Access denied'], 403);
         }
 
-        if (!$user->canViewCourse($course)) {
+        if (! $user->canViewCourse($course)) {
             return response()->json(['error' => 'Access denied'], 403);
         }
 
         return response()->json(
-            $course->mentors()->get()->map(fn($mentor) => [
+            $course->mentors()->get()->map(fn ($mentor) => [
                 'id' => $mentor->id,
                 'name' => $mentor->name,
                 'vatsim_id' => $mentor->vatsim_id,
@@ -291,7 +297,7 @@ class MentorOverviewController extends Controller
             ->where('trainee_id', $traineeId)
             ->orderBy('session_date', 'desc');
 
-        if (!$user->is_superuser && !$user->is_admin) {
+        if (! $user->is_superuser && ! $user->is_admin) {
             $accessibleCourseIds = $user->getAccessibleCourseIds();
             $query->whereIn('course_id', $accessibleCourseIds);
         }
@@ -302,26 +308,26 @@ class MentorOverviewController extends Controller
 
         $typeDisplayMap = ['O' => 'Online', 'S' => 'Sim', 'L' => 'Lesson', 'C' => 'Custom'];
 
-        $logs = $query->get()->map(fn($log) => [
-            'id'               => $log->id,
-            'session_date'     => $log->session_date->format('Y-m-d'),
-            'position'         => $log->position,
-            'type'             => $log->type,
-            'type_display'     => $typeDisplayMap[$log->type] ?? $log->type,
-            'result'           => (bool) $log->result,
-            'average_rating'   => $log->average_rating,
+        $logs = $query->get()->map(fn ($log) => [
+            'id' => $log->id,
+            'session_date' => $log->session_date->format('Y-m-d'),
+            'position' => $log->position,
+            'type' => $log->type,
+            'type_display' => $typeDisplayMap[$log->type] ?? $log->type,
+            'result' => (bool) $log->result,
+            'average_rating' => $log->average_rating,
             'session_duration' => $log->session_duration,
-            'final_comment'    => $log->final_comment,
-            'next_step'        => $log->next_step,
-            'mentor'           => $log->mentor ? [
-                'id'   => $log->mentor->id,
+            'final_comment' => $log->final_comment,
+            'next_step' => $log->next_step,
+            'mentor' => $log->mentor ? [
+                'id' => $log->mentor->id,
                 'name' => $log->mentor->name,
             ] : null,
             'course' => $log->course ? [
-                'id'       => $log->course->id,
-                'name'     => $log->course->name,
+                'id' => $log->course->id,
+                'name' => $log->course->name,
                 'position' => $log->course->position,
-                'type'     => $log->course->type,
+                'type' => $log->course->type,
             ] : null,
         ]);
 
@@ -332,19 +338,19 @@ class MentorOverviewController extends Controller
     {
         $user = $request->user();
 
-        if (!$user->isMentor() && !$user->is_superuser) {
+        if (! $user->isMentor() && ! $user->is_superuser) {
             return back()->withErrors(['error' => 'Access denied']);
         }
 
         $validated = $request->validate([
             'trainee_id' => 'required|integer|exists:users,id',
-            'course_id'  => 'required|integer|exists:courses,id',
+            'course_id' => 'required|integer|exists:courses,id',
         ]);
 
-        $course  = Course::findOrFail($validated['course_id']);
+        $course = Course::findOrFail($validated['course_id']);
         $trainee = User::findOrFail($validated['trainee_id']);
 
-        if (!$user->canViewCourse($course)) {
+        if (! $user->canViewCourse($course)) {
             return back()->withErrors(['error' => 'Access denied to this course']);
         }
 
@@ -354,7 +360,7 @@ class MentorOverviewController extends Controller
             return back()->withErrors(['error' => 'This course has no endorsements configured']);
         }
 
-        if (!$trainee->isVatsimUser()) {
+        if (! $trainee->isVatsimUser()) {
             return back()->withErrors(['error' => 'Trainee does not have a VATSIM account']);
         }
 
@@ -367,23 +373,23 @@ class MentorOverviewController extends Controller
                     $user->vatsim_id,
                 );
 
-                if (!$granted) {
+                if (! $granted) {
                     $failed[] = $position;
                 }
             } catch (\Exception $e) {
                 Log::error('Failed to grant tier1 endorsement', [
-                    'mentor_id'  => $user->id,
+                    'mentor_id' => $user->id,
                     'trainee_id' => $trainee->id,
-                    'course_id'  => $course->id,
-                    'position'   => $position,
-                    'error'      => $e->getMessage(),
+                    'course_id' => $course->id,
+                    'position' => $position,
+                    'error' => $e->getMessage(),
                 ]);
                 $failed[] = $position;
             }
         }
 
-        if (!empty($failed)) {
-            return back()->withErrors(['error' => 'Failed to grant endorsements for: ' . implode(', ', $failed)]);
+        if (! empty($failed)) {
+            return back()->withErrors(['error' => 'Failed to grant endorsements for: '.implode(', ', $failed)]);
         }
 
         return redirect()->route('overview.index', ['last_course_id' => $course->id]);
@@ -392,9 +398,9 @@ class MentorOverviewController extends Controller
     private function buildEndorsementsMap(Course $course): array
     {
         $endorsementGroupPositions = $course->endorsementGroups()->toArray();
-        $hasSoloStation = !empty($course->solo_station);
+        $hasSoloStation = ! empty($course->solo_station);
 
-        if (!$hasSoloStation && empty($endorsementGroupPositions)) {
+        if (! $hasSoloStation && empty($endorsementGroupPositions)) {
             return [];
         }
 
@@ -407,13 +413,14 @@ class MentorOverviewController extends Controller
                     ->keyBy('userCid')
                 : collect();
 
-            $tier1 = !empty($endorsementGroupPositions)
+            $tier1 = ! empty($endorsementGroupPositions)
                 ? collect($allTier1)
-                    ->filter(fn($e) => in_array($e->position, $endorsementGroupPositions))
+                    ->filter(fn ($e) => in_array($e->position, $endorsementGroupPositions))
                     ->keyBy('userCid')
                 : collect();
         } catch (\Exception $e) {
             Log::error('buildEndorsementsMap exception', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+
             return [];
         }
 

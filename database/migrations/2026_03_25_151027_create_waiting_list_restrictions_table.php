@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('type');
             $table->date('expires_at')->nullable();
             $table->timestamps();
-        
+
             $table->unique(['user_id', 'type']); // prevent duplicates
         });
     }

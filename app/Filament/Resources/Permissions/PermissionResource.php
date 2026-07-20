@@ -5,11 +5,11 @@ namespace App\Filament\Resources\Permissions;
 use App\Filament\Resources\Permissions\Pages\ListPermissions;
 use App\Models\Permission;
 use BackedEnum;
+use Filament\Facades\Filament;
 use Filament\Resources\Resource;
 use Filament\Support\Icons\Heroicon;
-use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Facades\Filament;
+use Filament\Tables\Table;
 
 class PermissionResource extends Resource
 {
@@ -71,7 +71,7 @@ class PermissionResource extends Resource
     {
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 

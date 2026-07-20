@@ -8,11 +8,12 @@ use Illuminate\Support\Facades\Log;
 class MoodleClient implements MoodleClientInterface
 {
     private string $apiKey;
+
     private string $baseUrl;
 
     public function __construct()
     {
-        $this->apiKey  = config('services.vatger.api_key');
+        $this->apiKey = config('services.vatger.api_key');
         $this->baseUrl = config('services.vatger.api_url');
     }
 
@@ -53,7 +54,7 @@ class MoodleClient implements MoodleClientInterface
             Log::warning('Moodle completion check failed', [
                 'vatsim_id' => $vatsimId,
                 'course_id' => $courseId,
-                'status'    => $response->status(),
+                'status' => $response->status(),
             ]);
 
             return false;
@@ -95,7 +96,7 @@ class MoodleClient implements MoodleClientInterface
             Log::warning('Moodle enrollment failed', [
                 'vatsim_id' => $vatsimId,
                 'course_id' => $courseId,
-                'status'    => $response->status(),
+                'status' => $response->status(),
             ]);
 
             return false;
@@ -103,7 +104,7 @@ class MoodleClient implements MoodleClientInterface
             Log::error('Error enrolling user in Moodle course', [
                 'vatsim_id' => $vatsimId,
                 'course_id' => $courseId,
-                'error'     => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
 
             return false;

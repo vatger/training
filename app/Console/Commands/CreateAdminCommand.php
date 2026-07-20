@@ -49,14 +49,16 @@ class CreateAdminCommand extends Command
         if ($validator->fails()) {
             $this->error('Validation failed:');
             foreach ($validator->errors()->all() as $error) {
-                $this->error('- ' . $error);
+                $this->error('- '.$error);
             }
+
             return 1;
         }
 
         // Check if admin already exists
         if (User::where('email', $email)->exists()) {
             $this->error('User with this email already exists!');
+
             return 1;
         }
 
@@ -94,7 +96,7 @@ class CreateAdminCommand extends Command
         );
 
         $this->warn('⚠️  Remember to keep these credentials secure!');
-        $this->info('Admin login URL: ' . url('/admin/login'));
+        $this->info('Admin login URL: '.url('/admin/login'));
 
         return 0;
     }

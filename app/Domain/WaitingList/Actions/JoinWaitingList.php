@@ -22,7 +22,7 @@ class JoinWaitingList
     {
         [$canJoin, $reason] = $this->validationService->canUserJoinCourse($course, $user);
 
-        if (!$canJoin) {
+        if (! $canJoin) {
             return [false, $reason];
         }
 
@@ -30,7 +30,7 @@ class JoinWaitingList
             return [false, 'You are already on the waiting list for this course.'];
         }
 
-        if ($course->type === 'RTG' && WaitingListEntry::whereHas('course', fn($q) => $q->where('type', 'RTG'))->where('user_id', $user->id)->exists()) {
+        if ($course->type === 'RTG' && WaitingListEntry::whereHas('course', fn ($q) => $q->where('type', 'RTG'))->where('user_id', $user->id)->exists()) {
             return [false, 'You are already on the waiting list for a rating course. You can only join one rating course at a time.'];
         }
 
@@ -41,12 +41,12 @@ class JoinWaitingList
                 $settings = UserSetting::where('user_id', $user->id)->first();
 
                 $entry = WaitingListEntry::create([
-                    'user_id'       => $user->id,
-                    'course_id'     => $course->id,
-                    'date_added'    => now(),
-                    'activity'      => 0,
+                    'user_id' => $user->id,
+                    'course_id' => $course->id,
+                    'date_added' => now(),
+                    'activity' => 0,
                     'hours_updated' => Carbon::createFromDate(2000, 1, 1),
-                    'remarks'       => ($settings?->english_only) ? 'EN' : '',
+                    'remarks' => ($settings?->english_only) ? 'EN' : '',
                 ]);
             });
 
@@ -55,9 +55,9 @@ class JoinWaitingList
             return [true, 'Successfully joined waiting list.'];
         } catch (\Exception $e) {
             Log::error('Failed to join waiting list', [
-                'user_id'   => $user->id,
+                'user_id' => $user->id,
                 'course_id' => $course->id,
-                'error'     => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
 
             return [false, 'Failed to join waiting list. Please try again.'];

@@ -5,7 +5,6 @@ namespace App\Console\Commands;
 use App\Integrations\VatEud\VatEudClientInterface;
 use App\Integrations\Vatger\VatgerClientInterface;
 use App\Models\EndorsementActivity;
-use App\Models\User;
 use App\Services\VatsimActivityService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
@@ -14,6 +13,7 @@ use Illuminate\Support\Facades\Log;
 class RemoveEndorsements extends Command
 {
     protected $signature = 'endorsements:remove';
+
     protected $description = 'Remove endorsements that have passed their removal date and send pending notifications';
 
     public function __construct(
@@ -33,10 +33,12 @@ class RemoveEndorsements extends Command
             $this->processRemovals();
 
             $this->info('Endorsement removal process completed successfully.');
+
             return 0;
         } catch (\Exception $e) {
-            $this->error('Error during removal process: ' . $e->getMessage());
+            $this->error('Error during removal process: '.$e->getMessage());
             Log::error('Endorsement removal error', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+
             return 1;
         }
     }
@@ -49,6 +51,7 @@ class RemoveEndorsements extends Command
 
         if ($pending->isEmpty()) {
             $this->info('No pending removal notifications to send.');
+
             return;
         }
 
@@ -63,7 +66,7 @@ class RemoveEndorsements extends Command
 
                 $this->info("✓ Sent notification for {$endorsement->position} (ID: {$endorsement->endorsement_id})");
             } catch (\Exception $e) {
-                $this->error("✗ Failed to send notification for endorsement {$endorsement->id}: " . $e->getMessage());
+                $this->error("✗ Failed to send notification for endorsement {$endorsement->id}: ".$e->getMessage());
                 Log::error('Failed to send removal notification', [
                     'endorsement_id' => $endorsement->id,
                     'error' => $e->getMessage(),
@@ -81,6 +84,7 @@ class RemoveEndorsements extends Command
 
         if ($toRemove->isEmpty()) {
             $this->info('No endorsements ready for removal.');
+
             return;
         }
 
@@ -91,9 +95,10 @@ class RemoveEndorsements extends Command
                 $tier1Endorsements = $this->vatEudClient->getTier1Endorsements();
                 $tier1Entry = collect($tier1Endorsements)->firstWhere('id', $endorsement->endorsement_id);
 
-                if (!$tier1Entry) {
+                if (! $tier1Entry) {
                     $this->warn("Endorsement {$endorsement->endorsement_id} not found in VatEUD, removing local record");
                     $endorsement->delete();
+
                     continue;
                 }
 
@@ -113,6 +118,7 @@ class RemoveEndorsements extends Command
                     $endorsement->removal_date = null;
                     $endorsement->removal_notified = false;
                     $endorsement->save();
+
                     continue;
                 }
 
@@ -129,7 +135,7 @@ class RemoveEndorsements extends Command
                     $this->error("✗ Failed to remove endorsement {$endorsement->endorsement_id} via VatEUD API");
                 }
             } catch (\Exception $e) {
-                $this->error("Error processing endorsement {$endorsement->id}: " . $e->getMessage());
+                $this->error("Error processing endorsement {$endorsement->id}: ".$e->getMessage());
                 Log::error('Endorsement removal error', ['endorsement_id' => $endorsement->id, 'error' => $e->getMessage()]);
             }
         }
@@ -151,7 +157,7 @@ class RemoveEndorsements extends Command
             linkUrl: 'https://training.vatsim-germany.org',
         );
 
-        if (!$result['success']) {
+        if (! $result['success']) {
             throw new \RuntimeException("Failed to send notification to {$endorsement->vatsim_id}");
         }
     }

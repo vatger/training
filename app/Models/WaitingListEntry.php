@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -16,7 +15,7 @@ class WaitingListEntry extends Model
         'hours_updated',
         'remarks',
     ];
-    
+
     protected $casts = [
         'date_added' => 'datetime',
         'activity' => 'float',
@@ -34,69 +33,69 @@ class WaitingListEntry extends Model
     }
 
     public function getWaitingTimeAttribute(): string
-{
-    $now = now();
-    $diffInDays = (int) $this->date_added->diffInDays($now);
+    {
+        $now = now();
+        $diffInDays = (int) $this->date_added->diffInDays($now);
 
-    if ($diffInDays === 0) {
-        return 'Today';
-    } elseif ($diffInDays === 1) {
-        return '1 day';
-    } elseif ($diffInDays < 7) {
-        return "{$diffInDays} days";
-    } elseif ($diffInDays < 30) {
-        // Less than a month - show weeks
-        $weeks = intdiv($diffInDays, 7);
-        $remainingDays = $diffInDays % 7;
-        
-        if ($weeks === 1) {
-            $time = '1 week';
-            if ($remainingDays > 0) {
-                $time .= ", {$remainingDays}d";
+        if ($diffInDays === 0) {
+            return 'Today';
+        } elseif ($diffInDays === 1) {
+            return '1 day';
+        } elseif ($diffInDays < 7) {
+            return "{$diffInDays} days";
+        } elseif ($diffInDays < 30) {
+            // Less than a month - show weeks
+            $weeks = intdiv($diffInDays, 7);
+            $remainingDays = $diffInDays % 7;
+
+            if ($weeks === 1) {
+                $time = '1 week';
+                if ($remainingDays > 0) {
+                    $time .= ", {$remainingDays}d";
+                }
+            } else {
+                $time = "{$weeks} weeks";
+                if ($remainingDays > 0) {
+                    $time .= ", {$remainingDays}d";
+                }
             }
+
+            return $time;
+        } elseif ($diffInDays < 365) {
+            // Less than a year - show months
+            $months = intdiv($diffInDays, 30);
+            $remainingDays = $diffInDays % 30;
+
+            if ($months === 1) {
+                $time = '1 month';
+                if ($remainingDays > 0) {
+                    $time .= ", {$remainingDays}d";
+                }
+            } else {
+                $time = "{$months} months";
+                if ($remainingDays > 0) {
+                    $time .= ", {$remainingDays}d";
+                }
+            }
+
+            return $time;
         } else {
-            $time = "{$weeks} weeks";
-            if ($remainingDays > 0) {
-                $time .= ", {$remainingDays}d";
+            // A year or more - show years
+            $years = intdiv($diffInDays, 365);
+            $remainingMonths = intdiv($diffInDays % 365, 30);
+
+            if ($years === 1) {
+                $time = '1 year';
+                if ($remainingMonths > 0) {
+                    $time .= ", {$remainingMonths}mo";
+                }
+            } else {
+                $time = "{$years} years";
             }
+
+            return $time;
         }
-        
-        return $time;
-    } elseif ($diffInDays < 365) {
-        // Less than a year - show months
-        $months = intdiv($diffInDays, 30);
-        $remainingDays = $diffInDays % 30;
-        
-        if ($months === 1) {
-            $time = '1 month';
-            if ($remainingDays > 0) {
-                $time .= ", {$remainingDays}d";
-            }
-        } else {
-            $time = "{$months} months";
-            if ($remainingDays > 0) {
-                $time .= ", {$remainingDays}d";
-            }
-        }
-        
-        return $time;
-    } else {
-        // A year or more - show years
-        $years = intdiv($diffInDays, 365);
-        $remainingMonths = intdiv($diffInDays % 365, 30);
-        
-        if ($years === 1) {
-            $time = '1 year';
-            if ($remainingMonths > 0) {
-                $time .= ", {$remainingMonths}mo";
-            }
-        } else {
-            $time = "{$years} years";
-        }
-        
-        return $time;
     }
-}
 
     public function getPositionInQueueAttribute(): int
     {

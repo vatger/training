@@ -13,12 +13,12 @@ readonly class UserExamsData
     public static function fromApiResponse(array $data): self
     {
         $results = array_map(
-            fn(array $r) => ExamResultData::fromApiResponse($r),
+            fn (array $r) => ExamResultData::fromApiResponse($r),
             $data['results'] ?? [],
         );
 
         return new self(
-            results:     $results,
+            results: $results,
             assignments: $data['assignments'] ?? [],
         );
     }

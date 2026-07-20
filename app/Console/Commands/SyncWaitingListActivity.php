@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Log;
 class SyncWaitingListActivity extends Command
 {
     protected $signature = 'waitinglists:sync-activities';
-    
+
     protected $description = 'Sync waiting list activity from VATSIM for all entries';
 
     protected VatsimActivityService $activityService;
@@ -31,13 +31,15 @@ class SyncWaitingListActivity extends Command
             $this->updateAllActivities();
 
             $this->info('Waiting list activity sync completed successfully.');
+
             return 0;
         } catch (\Exception $e) {
-            $this->error('Error during sync: ' . $e->getMessage());
+            $this->error('Error during sync: '.$e->getMessage());
             Log::error('Waiting list activity sync error', [
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
+
             return 1;
         }
     }
@@ -50,6 +52,7 @@ class SyncWaitingListActivity extends Command
 
         if ($totalCount === 0) {
             $this->info('No RTG waiting list entries to update');
+
             return;
         }
 
@@ -57,18 +60,18 @@ class SyncWaitingListActivity extends Command
 
         $bar = $this->output->createProgressBar($totalCount);
         $bar->start();
-        
+
         $processedCount = 0;
 
         WaitingListEntry::whereHas('course', function ($query) {
             $query->where('type', 'RTG');
         })
-        ->orderBy('hours_updated', 'asc')
+            ->orderBy('hours_updated', 'asc')
             ->each(function ($entry) use (&$processedCount, &$bar) {
                 $this->updateEntryActivity($entry);
                 $processedCount++;
                 $bar->advance();
-        });
+            });
 
         $bar->finish();
         $this->newLine(2);
@@ -80,12 +83,13 @@ class SyncWaitingListActivity extends Command
         try {
             $course = $entry->course;
             $user = $entry->user;
-    
-            if (!$user->isVatsimUser()) {
+
+            if (! $user->isVatsimUser()) {
                 Log::info('User is not VATSIM user', ['entry_id' => $entry->id]);
+
                 return;
             }
-    
+
             $activityHours = $this->getActivityHours($course, $user);
 
             /* Log::info('Calculated activity hours', [
@@ -94,15 +98,15 @@ class SyncWaitingListActivity extends Command
                 'vatsim_id' => $user->vatsim_id,
                 'hours' => $activityHours
             ]); */
-    
+
             $entry->activity = $activityHours;
             $entry->hours_updated = now();
             $entry->save();
-    
+
         } catch (\Exception $e) {
             Log::error('Failed to update waiting list activity', [
                 'entry_id' => $entry->id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
     }
@@ -118,21 +122,22 @@ class SyncWaitingListActivity extends Command
 
         try {
             $response = Http::timeout(15)->retry(2, 1000)->get($apiUrl);
-            
-            if (!$response->successful()) {
+
+            if (! $response->successful()) {
                 Log::warning('VATSIM Germany API request failed for waiting list', [
                     'vatsim_id' => $user->vatsim_id,
-                    'status' => $response->status()
+                    'status' => $response->status(),
                 ]);
+
                 return -1;
             }
 
             $connections = $response->json();
-            if (!is_array($connections)) {
+            if (! is_array($connections)) {
                 $connections = [];
             }
 
-            return match($position) {
+            return match ($position) {
                 'GND', 'TWR' => $this->calculateS1TowerHours($connections, $fir),
                 'APP' => $this->calculateS2TowerHours($connections, $airport),
                 'CTR' => -1,
@@ -142,8 +147,9 @@ class SyncWaitingListActivity extends Command
         } catch (\Exception $e) {
             Log::error('Error fetching VATSIM connections from vatsim-germany.org for waiting list', [
                 'vatsim_id' => $user->vatsim_id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return -1;
         }
     }
@@ -155,8 +161,9 @@ class SyncWaitingListActivity extends Command
 
         try {
             $response = Http::get($url);
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 Log::warning("Failed to fetch datahub for {$fir}");
+
                 return 0;
             }
 
@@ -166,7 +173,7 @@ class SyncWaitingListActivity extends Command
                 ->filter(function ($station) {
                     return isset($station['s1_twr'])
                         && $station['s1_twr'] === true
-                        && !str_contains($station['logon'] ?? '', '_I_');
+                        && ! str_contains($station['logon'] ?? '', '_I_');
                 })
                 ->pluck('logon')
                 ->toArray();
@@ -204,8 +211,9 @@ class SyncWaitingListActivity extends Command
         } catch (\Exception $e) {
             Log::error('Error calculating S1 tower hours', [
                 'fir' => $fir,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return 0;
         }
     }
@@ -234,7 +242,7 @@ class SyncWaitingListActivity extends Command
     {
         $partsA = explode('_', $a);
         $partsB = explode('_', $b);
-        
+
         if (empty($partsA) || empty($partsB)) {
             return false;
         }

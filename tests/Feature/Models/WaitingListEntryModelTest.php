@@ -17,10 +17,10 @@ beforeEach(function () {
 function makeEntry(User $user, Course $course, array $overrides = []): WaitingListEntry
 {
     return WaitingListEntry::create(array_merge([
-        'user_id'       => $user->id,
-        'course_id'     => $course->id,
-        'date_added'    => now(),
-        'activity'      => 0,
+        'user_id' => $user->id,
+        'course_id' => $course->id,
+        'date_added' => now(),
+        'activity' => 0,
         'hours_updated' => now(),
     ], $overrides));
 }
@@ -103,9 +103,9 @@ test('waiting_time shows multiple months with remainder days', function () {
 
 test('position_in_queue reflects chronological order within the same course', function () {
     $course = Course::factory()->create();
-    $u1     = User::factory()->create();
-    $u2     = User::factory()->create();
-    $u3     = User::factory()->create();
+    $u1 = User::factory()->create();
+    $u2 = User::factory()->create();
+    $u3 = User::factory()->create();
 
     $entry1 = makeEntry($u1, $course, ['date_added' => now()->subDays(10)]);
     $entry2 = makeEntry($u2, $course, ['date_added' => now()->subDays(5)]);
@@ -125,8 +125,8 @@ test('position_in_queue is 1 for the only entry in a course', function () {
 test('position_in_queue is isolated per course', function () {
     $courseA = Course::factory()->create();
     $courseB = Course::factory()->create();
-    $u1      = User::factory()->create();
-    $u2      = User::factory()->create();
+    $u1 = User::factory()->create();
+    $u2 = User::factory()->create();
 
     $entryA = makeEntry($u1, $courseA, ['date_added' => now()->subDays(5)]);
     $entryB = makeEntry($u2, $courseB, ['date_added' => now()]);

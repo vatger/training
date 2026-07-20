@@ -12,19 +12,19 @@ trait LogsActivity
     public static function bootLogsActivity()
     {
         static::created(function ($model) {
-            if (!self::$logActivityDisabled) {
+            if (! self::$logActivityDisabled) {
                 $model->logActivity('created');
             }
         });
 
         static::updated(function ($model) {
-            if (!self::$logActivityDisabled && $model->isDirty()) {
+            if (! self::$logActivityDisabled && $model->isDirty()) {
                 $model->logActivity('updated');
             }
         });
 
         static::deleted(function ($model) {
-            if (!self::$logActivityDisabled) {
+            if (! self::$logActivityDisabled) {
                 $model->logActivity('deleted');
             }
         });
@@ -32,7 +32,7 @@ trait LogsActivity
 
     protected function logActivity(string $action)
     {
-        if (!$this->shouldLogActivity($action)) {
+        if (! $this->shouldLogActivity($action)) {
             return;
         }
 
@@ -62,10 +62,9 @@ trait LogsActivity
         );
     }
 
-
     protected function shouldLogActivity(string $action): bool
     {
-        if (property_exists($this, 'logOnly') && !in_array($action, $this->logOnly)) {
+        if (property_exists($this, 'logOnly') && ! in_array($action, $this->logOnly)) {
             return false;
         }
 
@@ -79,6 +78,7 @@ trait LogsActivity
     protected function getActivityAction(string $action): string
     {
         $modelName = strtolower(class_basename($this));
+
         return "{$modelName}.{$action}";
     }
 
@@ -87,6 +87,7 @@ trait LogsActivity
         self::$logActivityDisabled = true;
         $result = $callback();
         self::$logActivityDisabled = false;
+
         return $result;
     }
 

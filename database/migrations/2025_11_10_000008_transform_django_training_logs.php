@@ -1,19 +1,18 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
     public function up(): void
     {
-        if (!Schema::hasTable('logs_log')) {
+        if (! Schema::hasTable('logs_log')) {
             return;
         }
 
-        DB::statement("
+        DB::statement('
             INSERT INTO training_logs (
                 id, trainee_id, mentor_id, course_id, session_date, position, type,
                 traffic_level, traffic_complexity, runway_configuration, surrounding_stations,
@@ -92,10 +91,8 @@ return new class extends Migration
                 NOW() as updated_at
             FROM logs_log
             WHERE NOT EXISTS (SELECT 1 FROM training_logs WHERE training_logs.id = logs_log.id)
-        ");
+        ');
     }
 
-    public function down(): void
-    {
-    }
+    public function down(): void {}
 };

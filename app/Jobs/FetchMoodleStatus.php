@@ -15,6 +15,7 @@ class FetchMoodleStatus implements ShouldQueue
     use Queueable;
 
     public int $tries = 2;
+
     public int $timeout = 30;
 
     public function __construct(
@@ -35,9 +36,9 @@ class FetchMoodleStatus implements ShouldQueue
     public function handle(MoodleClient $moodleClient): void
     {
         $trainee = User::find($this->traineeId);
-        $course  = Course::find($this->courseId);
+        $course = Course::find($this->courseId);
 
-        if (!$trainee || !$course) {
+        if (! $trainee || ! $course) {
             return;
         }
 
@@ -48,8 +49,8 @@ class FetchMoodleStatus implements ShouldQueue
         } catch (\Exception $e) {
             Log::error('FetchMoodleStatus job failed', [
                 'trainee_id' => $this->traineeId,
-                'course_id'  => $this->courseId,
-                'error'      => $e->getMessage(),
+                'course_id' => $this->courseId,
+                'error' => $e->getMessage(),
             ]);
 
             Cache::forget($cacheKey);
@@ -58,12 +59,12 @@ class FetchMoodleStatus implements ShouldQueue
 
     private function resolveStatus(MoodleClient $moodleClient, int $vatsimId, array $moodleCourseIds): string
     {
-        if (!$moodleClient->userExists($vatsimId)) {
+        if (! $moodleClient->userExists($vatsimId)) {
             return 'not-started';
         }
 
         $allCompleted = collect($moodleCourseIds)->every(
-            fn($courseId) => $moodleClient->getCourseCompletion($vatsimId, $courseId)
+            fn ($courseId) => $moodleClient->getCourseCompletion($vatsimId, $courseId)
         );
 
         return $allCompleted ? 'completed' : 'in-progress';

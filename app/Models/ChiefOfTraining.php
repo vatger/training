@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ChiefOfTraining extends Model
 {
     use LogsActivity;
+
     protected $fillable = ['user_id', 'course_id'];
 
     public function user(): BelongsTo

@@ -48,6 +48,7 @@ function trainingHttpMentor(Course $course): User
     $user = User::factory()->create();
     $user->roles()->attach($role);
     $course->mentors()->attach($user->id);
+
     return $user;
 }
 
@@ -56,14 +57,15 @@ function trainingHttpMentorNoAccess(): User
     $role = Role::firstOrCreate(['name' => 'EDGG Mentor'], ['description' => 'Mentor']);
     $user = User::factory()->create();
     $user->roles()->attach($role);
+
     return $user;
 }
 
 function trainingHttpRtgCourse(): Course
 {
     return Course::factory()->create([
-        'type'         => 'RTG',
-        'position'     => 'TWR',
+        'type' => 'RTG',
+        'position' => 'TWR',
         'solo_station' => 'EDDF_TWR',
         'airport_icao' => 'EDDF',
     ]);
@@ -72,18 +74,18 @@ function trainingHttpRtgCourse(): Course
 function trainingHttpAttachTrainee(Course $course, User $trainee, array $attrs = []): void
 {
     DB::table('course_trainees')->insert(array_merge([
-        'course_id'            => $course->id,
-        'user_id'              => $trainee->id,
+        'course_id' => $course->id,
+        'user_id' => $trainee->id,
         'claimed_by_mentor_id' => null,
-        'claimed_at'           => null,
-        'completed_at'         => null,
-        'remarks'              => null,
-        'remark_author_id'     => null,
-        'remark_updated_at'    => null,
-        'custom_order'         => null,
-        'status'               => 'active',
-        'created_at'           => now(),
-        'updated_at'           => now(),
+        'claimed_at' => null,
+        'completed_at' => null,
+        'remarks' => null,
+        'remark_author_id' => null,
+        'remark_updated_at' => null,
+        'custom_order' => null,
+        'status' => 'active',
+        'created_at' => now(),
+        'updated_at' => now(),
     ], $attrs));
 }
 
@@ -95,24 +97,24 @@ function trainingHttpAttachCompletedTrainee(Course $course, User $trainee): void
 function trainingHttpLogData(User $trainee, Course $course): array
 {
     return [
-        'trainee_id'                      => $trainee->id,
-        'course_id'                       => $course->id,
-        'session_date'                    => now()->subDay()->format('Y-m-d'),
-        'position'                        => 'EDDF_TWR',
-        'type'                            => 'O',
-        'theory'                          => 3,
-        'phraseology'                     => 3,
-        'coordination'                    => 3,
-        'tag_management'                  => 3,
-        'situational_awareness'           => 3,
-        'problem_recognition'             => 3,
-        'traffic_planning'                => 3,
-        'reaction'                        => 3,
-        'separation'                      => 3,
-        'efficiency'                      => 3,
-        'ability_to_work_under_pressure'  => 3,
-        'motivation'                      => 3,
-        'result'                          => true,
+        'trainee_id' => $trainee->id,
+        'course_id' => $course->id,
+        'session_date' => now()->subDay()->format('Y-m-d'),
+        'position' => 'EDDF_TWR',
+        'type' => 'O',
+        'theory' => 3,
+        'phraseology' => 3,
+        'coordination' => 3,
+        'tag_management' => 3,
+        'situational_awareness' => 3,
+        'problem_recognition' => 3,
+        'traffic_planning' => 3,
+        'reaction' => 3,
+        'separation' => 3,
+        'efficiency' => 3,
+        'ability_to_work_under_pressure' => 3,
+        'motivation' => 3,
+        'result' => true,
     ];
 }
 
@@ -137,58 +139,58 @@ test('non-mentor cannot add trainee to course', function () {
 });
 
 test('mentor without course access cannot add trainee', function () {
-    $course  = trainingHttpRtgCourse();
+    $course = trainingHttpRtgCourse();
     $trainee = User::factory()->create();
-    $mentor  = trainingHttpMentorNoAccess();
+    $mentor = trainingHttpMentorNoAccess();
 
     $this->actingAs($mentor)
         ->post(route('overview.add-trainee-to-course'), [
             'course_id' => $course->id,
-            'user_id'   => $trainee->id,
+            'user_id' => $trainee->id,
         ])
         ->assertSessionHasErrors('error');
 });
 
 test('mentor can add a trainee to their course', function () {
-    $course  = trainingHttpRtgCourse();
-    $mentor  = trainingHttpMentor($course);
+    $course = trainingHttpRtgCourse();
+    $mentor = trainingHttpMentor($course);
     $trainee = User::factory()->create();
 
     $this->actingAs($mentor)
         ->post(route('overview.add-trainee-to-course'), [
             'course_id' => $course->id,
-            'user_id'   => $trainee->id,
+            'user_id' => $trainee->id,
         ])
         ->assertRedirect(route('overview.index', ['last_course_id' => $course->id]));
 
     $this->assertDatabaseHas('course_trainees', [
         'course_id' => $course->id,
-        'user_id'   => $trainee->id,
+        'user_id' => $trainee->id,
     ]);
 });
 
 test('superuser can add trainee to any course', function () {
-    $course  = trainingHttpRtgCourse();
+    $course = trainingHttpRtgCourse();
     $trainee = User::factory()->create();
 
     $this->actingAs(trainingHttpSuperuser())
         ->post(route('overview.add-trainee-to-course'), [
             'course_id' => $course->id,
-            'user_id'   => $trainee->id,
+            'user_id' => $trainee->id,
         ])
         ->assertRedirect(route('overview.index', ['last_course_id' => $course->id]));
 });
 
 test('cannot add trainee who is already active in course', function () {
-    $course  = trainingHttpRtgCourse();
-    $mentor  = trainingHttpMentor($course);
+    $course = trainingHttpRtgCourse();
+    $mentor = trainingHttpMentor($course);
     $trainee = User::factory()->create();
     trainingHttpAttachTrainee($course, $trainee);
 
     $this->actingAs($mentor)
         ->post(route('overview.add-trainee-to-course'), [
             'course_id' => $course->id,
-            'user_id'   => $trainee->id,
+            'user_id' => $trainee->id,
         ])
         ->assertSessionHasErrors('error');
 });
@@ -212,41 +214,41 @@ test('non-mentor cannot remove trainee', function () {
 });
 
 test('mentor without course access cannot remove trainee', function () {
-    $course  = trainingHttpRtgCourse();
+    $course = trainingHttpRtgCourse();
     $trainee = User::factory()->create();
     trainingHttpAttachTrainee($course, $trainee);
     $mentor = trainingHttpMentorNoAccess();
 
     $this->actingAs($mentor)
         ->post(route('overview.remove-trainee'), [
-            'course_id'  => $course->id,
+            'course_id' => $course->id,
             'trainee_id' => $trainee->id,
         ])
         ->assertSessionHasErrors('error');
 });
 
 test('mentor can remove trainee from their course', function () {
-    $course  = trainingHttpRtgCourse();
-    $mentor  = trainingHttpMentor($course);
+    $course = trainingHttpRtgCourse();
+    $mentor = trainingHttpMentor($course);
     $trainee = User::factory()->create();
     trainingHttpAttachTrainee($course, $trainee);
 
     $this->actingAs($mentor)
         ->post(route('overview.remove-trainee'), [
-            'course_id'  => $course->id,
+            'course_id' => $course->id,
             'trainee_id' => $trainee->id,
         ])
         ->assertRedirect(route('overview.index', ['last_course_id' => $course->id]));
 });
 
 test('superuser can remove trainee from any course', function () {
-    $course  = trainingHttpRtgCourse();
+    $course = trainingHttpRtgCourse();
     $trainee = User::factory()->create();
     trainingHttpAttachTrainee($course, $trainee);
 
     $this->actingAs(trainingHttpSuperuser())
         ->post(route('overview.remove-trainee'), [
-            'course_id'  => $course->id,
+            'course_id' => $course->id,
             'trainee_id' => $trainee->id,
         ])
         ->assertRedirect();
@@ -265,48 +267,48 @@ test('non-mentor cannot claim a trainee', function () {
 });
 
 test('mentor without course access cannot claim a trainee', function () {
-    $course  = trainingHttpRtgCourse();
+    $course = trainingHttpRtgCourse();
     $trainee = User::factory()->create();
     trainingHttpAttachTrainee($course, $trainee);
     $mentor = trainingHttpMentorNoAccess();
 
     $this->actingAs($mentor)
         ->post(route('overview.claim-trainee'), [
-            'course_id'  => $course->id,
+            'course_id' => $course->id,
             'trainee_id' => $trainee->id,
         ])
         ->assertSessionHasErrors('error');
 });
 
 test('mentor cannot claim trainee not in their course', function () {
-    $course  = trainingHttpRtgCourse();
-    $mentor  = trainingHttpMentor($course);
+    $course = trainingHttpRtgCourse();
+    $mentor = trainingHttpMentor($course);
     $trainee = User::factory()->create();
 
     $this->actingAs($mentor)
         ->post(route('overview.claim-trainee'), [
-            'course_id'  => $course->id,
+            'course_id' => $course->id,
             'trainee_id' => $trainee->id,
         ])
         ->assertSessionHasErrors('error');
 });
 
 test('mentor can claim a trainee in their course', function () {
-    $course  = trainingHttpRtgCourse();
-    $mentor  = trainingHttpMentor($course);
+    $course = trainingHttpRtgCourse();
+    $mentor = trainingHttpMentor($course);
     $trainee = User::factory()->create();
     trainingHttpAttachTrainee($course, $trainee);
 
     $this->actingAs($mentor)
         ->post(route('overview.claim-trainee'), [
-            'course_id'  => $course->id,
+            'course_id' => $course->id,
             'trainee_id' => $trainee->id,
         ])
         ->assertRedirect(route('overview.index', ['last_course_id' => $course->id]));
 
     $this->assertDatabaseHas('course_trainees', [
-        'course_id'            => $course->id,
-        'user_id'              => $trainee->id,
+        'course_id' => $course->id,
+        'user_id' => $trainee->id,
         'claimed_by_mentor_id' => $mentor->id,
     ]);
 });
@@ -330,35 +332,35 @@ test('non-mentor cannot unclaim a trainee', function () {
 });
 
 test('mentor without course access cannot unclaim a trainee', function () {
-    $course  = trainingHttpRtgCourse();
+    $course = trainingHttpRtgCourse();
     $trainee = User::factory()->create();
     trainingHttpAttachTrainee($course, $trainee);
     $mentor = trainingHttpMentorNoAccess();
 
     $this->actingAs($mentor)
         ->post(route('overview.unclaim-trainee'), [
-            'course_id'  => $course->id,
+            'course_id' => $course->id,
             'trainee_id' => $trainee->id,
         ])
         ->assertSessionHasErrors('error');
 });
 
 test('mentor can unclaim a trainee in their course', function () {
-    $course  = trainingHttpRtgCourse();
-    $mentor  = trainingHttpMentor($course);
+    $course = trainingHttpRtgCourse();
+    $mentor = trainingHttpMentor($course);
     $trainee = User::factory()->create();
     trainingHttpAttachTrainee($course, $trainee, ['claimed_by_mentor_id' => $mentor->id]);
 
     $this->actingAs($mentor)
         ->post(route('overview.unclaim-trainee'), [
-            'course_id'  => $course->id,
+            'course_id' => $course->id,
             'trainee_id' => $trainee->id,
         ])
         ->assertRedirect(route('overview.index', ['last_course_id' => $course->id]));
 
     $this->assertDatabaseHas('course_trainees', [
-        'course_id'            => $course->id,
-        'user_id'              => $trainee->id,
+        'course_id' => $course->id,
+        'user_id' => $trainee->id,
         'claimed_by_mentor_id' => null,
     ]);
 });
@@ -376,39 +378,39 @@ test('non-mentor cannot assign a trainee', function () {
 });
 
 test('mentor can assign a trainee to another mentor in the same course', function () {
-    $course     = trainingHttpRtgCourse();
-    $mentor     = trainingHttpMentor($course);
-    $newMentor  = trainingHttpMentor($course);
-    $trainee    = User::factory()->create();
+    $course = trainingHttpRtgCourse();
+    $mentor = trainingHttpMentor($course);
+    $newMentor = trainingHttpMentor($course);
+    $trainee = User::factory()->create();
     trainingHttpAttachTrainee($course, $trainee);
 
     $this->actingAs($mentor)
         ->post(route('overview.assign-trainee'), [
-            'course_id'  => $course->id,
+            'course_id' => $course->id,
             'trainee_id' => $trainee->id,
-            'mentor_id'  => $newMentor->id,
+            'mentor_id' => $newMentor->id,
         ])
         ->assertRedirect(route('overview.index', ['last_course_id' => $course->id]));
 
     $this->assertDatabaseHas('course_trainees', [
-        'course_id'            => $course->id,
-        'user_id'              => $trainee->id,
+        'course_id' => $course->id,
+        'user_id' => $trainee->id,
         'claimed_by_mentor_id' => $newMentor->id,
     ]);
 });
 
 test('cannot assign trainee to a user who is not a mentor for that course', function () {
-    $course      = trainingHttpRtgCourse();
-    $mentor      = trainingHttpMentor($course);
-    $trainee     = User::factory()->create();
-    $nonMentor   = User::factory()->create();
+    $course = trainingHttpRtgCourse();
+    $mentor = trainingHttpMentor($course);
+    $trainee = User::factory()->create();
+    $nonMentor = User::factory()->create();
     trainingHttpAttachTrainee($course, $trainee);
 
     $this->actingAs($mentor)
         ->post(route('overview.assign-trainee'), [
-            'course_id'  => $course->id,
+            'course_id' => $course->id,
             'trainee_id' => $trainee->id,
-            'mentor_id'  => $nonMentor->id,
+            'mentor_id' => $nonMentor->id,
         ])
         ->assertSessionHasErrors('error');
 });
@@ -432,34 +434,34 @@ test('non-mentor cannot reactivate a trainee', function () {
 });
 
 test('mentor can reactivate a completed trainee in their course', function () {
-    $course  = trainingHttpRtgCourse();
-    $mentor  = trainingHttpMentor($course);
+    $course = trainingHttpRtgCourse();
+    $mentor = trainingHttpMentor($course);
     $trainee = User::factory()->create();
     trainingHttpAttachCompletedTrainee($course, $trainee);
 
     $this->actingAs($mentor)
         ->post(route('overview.reactivate-trainee'), [
-            'course_id'  => $course->id,
+            'course_id' => $course->id,
             'trainee_id' => $trainee->id,
         ])
         ->assertRedirect(route('overview.index', ['last_course_id' => $course->id]));
 
     $this->assertDatabaseHas('course_trainees', [
-        'course_id'    => $course->id,
-        'user_id'      => $trainee->id,
+        'course_id' => $course->id,
+        'user_id' => $trainee->id,
         'completed_at' => null,
     ]);
 });
 
 test('cannot reactivate a trainee who has not completed the course', function () {
-    $course  = trainingHttpRtgCourse();
-    $mentor  = trainingHttpMentor($course);
+    $course = trainingHttpRtgCourse();
+    $mentor = trainingHttpMentor($course);
     $trainee = User::factory()->create();
     trainingHttpAttachTrainee($course, $trainee);
 
     $this->actingAs($mentor)
         ->post(route('overview.reactivate-trainee'), [
-            'course_id'  => $course->id,
+            'course_id' => $course->id,
             'trainee_id' => $trainee->id,
         ])
         ->assertSessionHasErrors('error');
@@ -478,33 +480,33 @@ test('non-mentor cannot finish a trainee course', function () {
 });
 
 test('mentor can finish an active trainee in their course', function () {
-    $course  = trainingHttpRtgCourse();
-    $mentor  = trainingHttpMentor($course);
+    $course = trainingHttpRtgCourse();
+    $mentor = trainingHttpMentor($course);
     $trainee = User::factory()->create();
     trainingHttpAttachTrainee($course, $trainee);
 
     $this->actingAs($mentor)
         ->post(route('overview.finish-trainee'), [
-            'course_id'  => $course->id,
+            'course_id' => $course->id,
             'trainee_id' => $trainee->id,
         ])
         ->assertRedirect(route('overview.index', ['last_course_id' => $course->id]));
 
     $this->assertDatabaseMissing('course_trainees', [
-        'course_id'    => $course->id,
-        'user_id'      => $trainee->id,
+        'course_id' => $course->id,
+        'user_id' => $trainee->id,
         'completed_at' => null,
     ]);
 });
 
 test('cannot finish a trainee who is not in the course', function () {
-    $course  = trainingHttpRtgCourse();
-    $mentor  = trainingHttpMentor($course);
+    $course = trainingHttpRtgCourse();
+    $mentor = trainingHttpMentor($course);
     $trainee = User::factory()->create();
 
     $this->actingAs($mentor)
         ->post(route('overview.finish-trainee'), [
-            'course_id'  => $course->id,
+            'course_id' => $course->id,
             'trainee_id' => $trainee->id,
         ])
         ->assertSessionHasErrors('error');
@@ -523,38 +525,38 @@ test('non-mentor cannot update a remark', function () {
 });
 
 test('mentor without course access cannot update a remark', function () {
-    $course  = trainingHttpRtgCourse();
+    $course = trainingHttpRtgCourse();
     $trainee = User::factory()->create();
     trainingHttpAttachTrainee($course, $trainee);
     $mentor = trainingHttpMentorNoAccess();
 
     $this->actingAs($mentor)
         ->post(route('overview.update-remark'), [
-            'course_id'  => $course->id,
+            'course_id' => $course->id,
             'trainee_id' => $trainee->id,
-            'remark'     => 'Good progress.',
+            'remark' => 'Good progress.',
         ])
         ->assertSessionHasErrors('error');
 });
 
 test('mentor can update a trainee remark in their course', function () {
-    $course  = trainingHttpRtgCourse();
-    $mentor  = trainingHttpMentor($course);
+    $course = trainingHttpRtgCourse();
+    $mentor = trainingHttpMentor($course);
     $trainee = User::factory()->create();
     trainingHttpAttachTrainee($course, $trainee);
 
     $this->actingAs($mentor)
         ->post(route('overview.update-remark'), [
-            'course_id'  => $course->id,
+            'course_id' => $course->id,
             'trainee_id' => $trainee->id,
-            'remark'     => 'Good progress.',
+            'remark' => 'Good progress.',
         ])
         ->assertRedirect(route('overview.index', ['last_course_id' => $course->id]));
 
     $this->assertDatabaseHas('course_trainees', [
         'course_id' => $course->id,
-        'user_id'   => $trainee->id,
-        'remarks'   => 'Good progress.',
+        'user_id' => $trainee->id,
+        'remarks' => 'Good progress.',
     ]);
 });
 
@@ -565,22 +567,22 @@ test('remark update fails validation when trainee or course are missing', functi
 });
 
 test('remark can be set to null', function () {
-    $course  = trainingHttpRtgCourse();
-    $mentor  = trainingHttpMentor($course);
+    $course = trainingHttpRtgCourse();
+    $mentor = trainingHttpMentor($course);
     $trainee = User::factory()->create();
     trainingHttpAttachTrainee($course, $trainee, ['remarks' => 'Old remark']);
 
     $this->actingAs($mentor)
         ->post(route('overview.update-remark'), [
-            'course_id'  => $course->id,
+            'course_id' => $course->id,
             'trainee_id' => $trainee->id,
         ])
         ->assertRedirect();
 
     $this->assertDatabaseHas('course_trainees', [
         'course_id' => $course->id,
-        'user_id'   => $trainee->id,
-        'remarks'   => '',
+        'user_id' => $trainee->id,
+        'remarks' => '',
     ]);
 });
 
@@ -597,57 +599,57 @@ test('non-mentor cannot add a mentor', function () {
 });
 
 test('mentor without course access cannot add a mentor', function () {
-    $course       = trainingHttpRtgCourse();
-    $mentor       = trainingHttpMentorNoAccess();
-    $mentorToAdd  = trainingHttpMentor($course);
+    $course = trainingHttpRtgCourse();
+    $mentor = trainingHttpMentorNoAccess();
+    $mentorToAdd = trainingHttpMentor($course);
 
     $this->actingAs($mentor)
         ->post(route('overview.add-mentor'), [
             'course_id' => $course->id,
-            'user_id'   => $mentorToAdd->id,
+            'user_id' => $mentorToAdd->id,
         ])
         ->assertSessionHasErrors('error');
 });
 
 test('mentor can add another mentor to their course', function () {
-    $course      = trainingHttpRtgCourse();
-    $mentor      = trainingHttpMentor($course);
-    $newMentor   = trainingHttpMentorNoAccess();
+    $course = trainingHttpRtgCourse();
+    $mentor = trainingHttpMentor($course);
+    $newMentor = trainingHttpMentorNoAccess();
 
     $this->actingAs($mentor)
         ->post(route('overview.add-mentor'), [
             'course_id' => $course->id,
-            'user_id'   => $newMentor->id,
+            'user_id' => $newMentor->id,
         ])
         ->assertRedirect();
 
     $this->assertDatabaseHas('course_mentors', [
         'course_id' => $course->id,
-        'user_id'   => $newMentor->id,
+        'user_id' => $newMentor->id,
     ]);
 });
 
 test('cannot add a user without mentor privileges as a course mentor', function () {
-    $course     = trainingHttpRtgCourse();
-    $mentor     = trainingHttpMentor($course);
-    $plainUser  = User::factory()->create();
+    $course = trainingHttpRtgCourse();
+    $mentor = trainingHttpMentor($course);
+    $plainUser = User::factory()->create();
 
     $this->actingAs($mentor)
         ->post(route('overview.add-mentor'), [
             'course_id' => $course->id,
-            'user_id'   => $plainUser->id,
+            'user_id' => $plainUser->id,
         ])
         ->assertSessionHasErrors('error');
 });
 
 test('cannot add a mentor who is already a mentor for the course', function () {
-    $course  = trainingHttpRtgCourse();
-    $mentor  = trainingHttpMentor($course);
+    $course = trainingHttpRtgCourse();
+    $mentor = trainingHttpMentor($course);
 
     $this->actingAs(trainingHttpSuperuser())
         ->post(route('overview.add-mentor'), [
             'course_id' => $course->id,
-            'user_id'   => $mentor->id,
+            'user_id' => $mentor->id,
         ])
         ->assertSessionHasErrors('error');
 });
@@ -671,8 +673,8 @@ test('non-mentor cannot remove a mentor', function () {
 });
 
 test('mentor without course access cannot remove a mentor', function () {
-    $course        = trainingHttpRtgCourse();
-    $mentor        = trainingHttpMentor($course);
+    $course = trainingHttpRtgCourse();
+    $mentor = trainingHttpMentor($course);
     $outsideMentor = trainingHttpMentorNoAccess();
 
     $this->actingAs($outsideMentor)
@@ -684,8 +686,8 @@ test('mentor without course access cannot remove a mentor', function () {
 });
 
 test('mentor can remove another mentor from their course', function () {
-    $course        = trainingHttpRtgCourse();
-    $mentor        = trainingHttpMentor($course);
+    $course = trainingHttpRtgCourse();
+    $mentor = trainingHttpMentor($course);
     $mentorToRemove = trainingHttpMentor($course);
 
     $this->actingAs(trainingHttpSuperuser())
@@ -697,7 +699,7 @@ test('mentor can remove another mentor from their course', function () {
 
     $this->assertDatabaseMissing('course_mentors', [
         'course_id' => $course->id,
-        'user_id'   => $mentorToRemove->id,
+        'user_id' => $mentorToRemove->id,
     ]);
 });
 
@@ -714,13 +716,13 @@ test('cannot remove the last mentor from a course', function () {
 
     $this->assertDatabaseHas('course_mentors', [
         'course_id' => $course->id,
-        'user_id'   => $mentor->id,
+        'user_id' => $mentor->id,
     ]);
 });
 
 test('cannot remove a user who is not a mentor for the course', function () {
-    $course   = trainingHttpRtgCourse();
-    $mentor   = trainingHttpMentor($course);
+    $course = trainingHttpRtgCourse();
+    $mentor = trainingHttpMentor($course);
     $notMentor = User::factory()->create();
 
     $this->actingAs(trainingHttpSuperuser())
@@ -734,25 +736,25 @@ test('cannot remove a user who is not a mentor for the course', function () {
 // ─── WaitingListController: startTraining ────────────────────────────────────
 
 test('unauthenticated user is redirected from start-training', function () {
-    $course  = trainingHttpRtgCourse();
+    $course = trainingHttpRtgCourse();
     $trainee = User::factory()->create();
-    $entry   = WaitingListEntry::create([
-        'course_id'  => $course->id,
-        'user_id'    => $trainee->id,
+    $entry = WaitingListEntry::create([
+        'course_id' => $course->id,
+        'user_id' => $trainee->id,
         'date_added' => now(),
-        'activity'   => 0,
+        'activity' => 0,
     ]);
     $this->post(route('waiting-lists.start-training', $entry))->assertRedirect();
 });
 
 test('non-mentor cannot start training', function () {
-    $course  = trainingHttpRtgCourse();
+    $course = trainingHttpRtgCourse();
     $trainee = User::factory()->create();
-    $entry   = WaitingListEntry::create([
-        'course_id'  => $course->id,
-        'user_id'    => $trainee->id,
+    $entry = WaitingListEntry::create([
+        'course_id' => $course->id,
+        'user_id' => $trainee->id,
         'date_added' => now(),
-        'activity'   => 0,
+        'activity' => 0,
     ]);
     $this->actingAs(User::factory()->create())
         ->post(route('waiting-lists.start-training', $entry))
@@ -760,13 +762,13 @@ test('non-mentor cannot start training', function () {
 });
 
 test('mentor without access to the course cannot start training', function () {
-    $course  = trainingHttpRtgCourse();
+    $course = trainingHttpRtgCourse();
     $trainee = User::factory()->create();
-    $entry   = WaitingListEntry::create([
-        'course_id'  => $course->id,
-        'user_id'    => $trainee->id,
+    $entry = WaitingListEntry::create([
+        'course_id' => $course->id,
+        'user_id' => $trainee->id,
         'date_added' => now(),
-        'activity'   => 0,
+        'activity' => 0,
     ]);
     $outsideMentor = trainingHttpMentorNoAccess();
 
@@ -777,14 +779,14 @@ test('mentor without access to the course cannot start training', function () {
 });
 
 test('course mentor can start training for a waiting list entry', function () {
-    $course  = trainingHttpRtgCourse();
-    $mentor  = trainingHttpMentor($course);
+    $course = trainingHttpRtgCourse();
+    $mentor = trainingHttpMentor($course);
     $trainee = User::factory()->create();
-    $entry   = WaitingListEntry::create([
-        'course_id'  => $course->id,
-        'user_id'    => $trainee->id,
+    $entry = WaitingListEntry::create([
+        'course_id' => $course->id,
+        'user_id' => $trainee->id,
         'date_added' => now(),
-        'activity'   => 10,
+        'activity' => 10,
     ]);
 
     $this->actingAs($mentor)
@@ -793,7 +795,7 @@ test('course mentor can start training for a waiting list entry', function () {
 
     $this->assertDatabaseHas('course_trainees', [
         'course_id' => $course->id,
-        'user_id'   => $trainee->id,
+        'user_id' => $trainee->id,
     ]);
 });
 
@@ -810,44 +812,44 @@ test('non-mentor cannot update waiting-list remarks', function () {
 });
 
 test('mentor can update remarks on a waiting list entry they manage', function () {
-    $course  = trainingHttpRtgCourse();
-    $mentor  = trainingHttpMentor($course);
+    $course = trainingHttpRtgCourse();
+    $mentor = trainingHttpMentor($course);
     $trainee = User::factory()->create();
-    $entry   = WaitingListEntry::create([
-        'course_id'  => $course->id,
-        'user_id'    => $trainee->id,
+    $entry = WaitingListEntry::create([
+        'course_id' => $course->id,
+        'user_id' => $trainee->id,
         'date_added' => now(),
-        'activity'   => 0,
+        'activity' => 0,
     ]);
 
     $this->actingAs($mentor)
         ->post(route('waiting-lists.update-remarks'), [
             'entry_id' => $entry->id,
-            'remarks'  => 'Very active student.',
+            'remarks' => 'Very active student.',
         ])
         ->assertRedirect();
 
     $this->assertDatabaseHas('waiting_list_entries', [
-        'id'      => $entry->id,
+        'id' => $entry->id,
         'remarks' => 'Very active student.',
     ]);
 });
 
 test('mentor without course access cannot update waiting list remarks', function () {
-    $course  = trainingHttpRtgCourse();
+    $course = trainingHttpRtgCourse();
     $trainee = User::factory()->create();
-    $entry   = WaitingListEntry::create([
-        'course_id'  => $course->id,
-        'user_id'    => $trainee->id,
+    $entry = WaitingListEntry::create([
+        'course_id' => $course->id,
+        'user_id' => $trainee->id,
         'date_added' => now(),
-        'activity'   => 0,
+        'activity' => 0,
     ]);
     $outsideMentor = trainingHttpMentorNoAccess();
 
     $this->actingAs($outsideMentor)
         ->post(route('waiting-lists.update-remarks'), [
             'entry_id' => $entry->id,
-            'remarks'  => 'Changed.',
+            'remarks' => 'Changed.',
         ])
         ->assertSessionHasErrors('error');
 });
@@ -861,8 +863,8 @@ test('update remarks fails validation when entry_id is missing', function () {
 // ─── TrainingLogController: show ──────────────────────────────────────────────
 
 test('unauthenticated user is redirected from training log show', function () {
-    $course  = trainingHttpRtgCourse();
-    $mentor  = trainingHttpMentor($course);
+    $course = trainingHttpRtgCourse();
+    $mentor = trainingHttpMentor($course);
     $trainee = User::factory()->create();
     trainingHttpAttachTrainee($course, $trainee);
     $log = trainingHttpCreateLog($mentor, $trainee, $course);
@@ -871,8 +873,8 @@ test('unauthenticated user is redirected from training log show', function () {
 });
 
 test('trainee can view their own training log', function () {
-    $course  = trainingHttpRtgCourse();
-    $mentor  = trainingHttpMentor($course);
+    $course = trainingHttpRtgCourse();
+    $mentor = trainingHttpMentor($course);
     $trainee = User::factory()->create();
     trainingHttpAttachTrainee($course, $trainee);
     $log = trainingHttpCreateLog($mentor, $trainee, $course);
@@ -883,8 +885,8 @@ test('trainee can view their own training log', function () {
 });
 
 test('course mentor can view a training log for their course', function () {
-    $course  = trainingHttpRtgCourse();
-    $mentor  = trainingHttpMentor($course);
+    $course = trainingHttpRtgCourse();
+    $mentor = trainingHttpMentor($course);
     $trainee = User::factory()->create();
     trainingHttpAttachTrainee($course, $trainee);
     $log = trainingHttpCreateLog($mentor, $trainee, $course);
@@ -895,12 +897,12 @@ test('course mentor can view a training log for their course', function () {
 });
 
 test('unrelated user cannot view a training log', function () {
-    $course  = trainingHttpRtgCourse();
-    $mentor  = trainingHttpMentor($course);
+    $course = trainingHttpRtgCourse();
+    $mentor = trainingHttpMentor($course);
     $trainee = User::factory()->create();
     trainingHttpAttachTrainee($course, $trainee);
-    $log     = trainingHttpCreateLog($mentor, $trainee, $course);
-    $other   = User::factory()->create();
+    $log = trainingHttpCreateLog($mentor, $trainee, $course);
+    $other = User::factory()->create();
 
     $this->actingAs($other)
         ->get(route('training-logs.show', $log))
@@ -908,8 +910,8 @@ test('unrelated user cannot view a training log', function () {
 });
 
 test('superuser can view any training log', function () {
-    $course  = trainingHttpRtgCourse();
-    $mentor  = trainingHttpMentor($course);
+    $course = trainingHttpRtgCourse();
+    $mentor = trainingHttpMentor($course);
     $trainee = User::factory()->create();
     trainingHttpAttachTrainee($course, $trainee);
     $log = trainingHttpCreateLog($mentor, $trainee, $course);
@@ -932,8 +934,8 @@ test('non-mentor cannot store a training log', function () {
 });
 
 test('mentor can store a training log for a trainee in their course', function () {
-    $course  = trainingHttpRtgCourse();
-    $mentor  = trainingHttpMentor($course);
+    $course = trainingHttpRtgCourse();
+    $mentor = trainingHttpMentor($course);
     $trainee = User::factory()->create();
     trainingHttpAttachTrainee($course, $trainee);
 
@@ -942,15 +944,15 @@ test('mentor can store a training log for a trainee in their course', function (
         ->assertRedirect();
 
     $this->assertDatabaseHas('training_logs', [
-        'mentor_id'  => $mentor->id,
+        'mentor_id' => $mentor->id,
         'trainee_id' => $trainee->id,
-        'course_id'  => $course->id,
+        'course_id' => $course->id,
     ]);
 });
 
 test('superuser can store a training log for any course', function () {
-    $super   = trainingHttpSuperuser();
-    $course  = trainingHttpRtgCourse();
+    $super = trainingHttpSuperuser();
+    $course = trainingHttpRtgCourse();
     $trainee = User::factory()->create();
 
     $this->actingAs($super)
@@ -965,9 +967,9 @@ test('store training log fails validation when required fields are missing', fun
 });
 
 test('store training log fails validation with future session date', function () {
-    $course  = trainingHttpRtgCourse();
+    $course = trainingHttpRtgCourse();
     $trainee = User::factory()->create();
-    $data    = array_merge(trainingHttpLogData($trainee, $course), [
+    $data = array_merge(trainingHttpLogData($trainee, $course), [
         'session_date' => now()->addDay()->format('Y-m-d'),
     ]);
 
@@ -977,9 +979,9 @@ test('store training log fails validation with future session date', function ()
 });
 
 test('store training log fails validation with invalid session type', function () {
-    $course  = trainingHttpRtgCourse();
+    $course = trainingHttpRtgCourse();
     $trainee = User::factory()->create();
-    $data    = array_merge(trainingHttpLogData($trainee, $course), ['type' => 'Z']);
+    $data = array_merge(trainingHttpLogData($trainee, $course), ['type' => 'Z']);
 
     $this->actingAs(trainingHttpSuperuser())
         ->post(route('training-logs.store'), $data)
@@ -987,10 +989,10 @@ test('store training log fails validation with invalid session type', function (
 });
 
 test('mentor cannot store a log for a course they are not a mentor of', function () {
-    $course        = trainingHttpRtgCourse();
-    $otherCourse   = trainingHttpRtgCourse();
-    $mentor        = trainingHttpMentor($otherCourse);
-    $trainee       = User::factory()->create();
+    $course = trainingHttpRtgCourse();
+    $otherCourse = trainingHttpRtgCourse();
+    $mentor = trainingHttpMentor($otherCourse);
+    $trainee = User::factory()->create();
 
     $this->actingAs($mentor)
         ->post(route('training-logs.store'), trainingHttpLogData($trainee, $course))
@@ -1000,8 +1002,8 @@ test('mentor cannot store a log for a course they are not a mentor of', function
 // ─── TrainingLogController: update ────────────────────────────────────────────
 
 test('unauthenticated user cannot update a training log', function () {
-    $course  = trainingHttpRtgCourse();
-    $mentor  = trainingHttpMentor($course);
+    $course = trainingHttpRtgCourse();
+    $mentor = trainingHttpMentor($course);
     $trainee = User::factory()->create();
     trainingHttpAttachTrainee($course, $trainee);
     $log = trainingHttpCreateLog($mentor, $trainee, $course);
@@ -1010,8 +1012,8 @@ test('unauthenticated user cannot update a training log', function () {
 });
 
 test('non-mentor cannot update a training log', function () {
-    $course  = trainingHttpRtgCourse();
-    $mentor  = trainingHttpMentor($course);
+    $course = trainingHttpRtgCourse();
+    $mentor = trainingHttpMentor($course);
     $trainee = User::factory()->create();
     trainingHttpAttachTrainee($course, $trainee);
     $log = trainingHttpCreateLog($mentor, $trainee, $course);
@@ -1022,11 +1024,11 @@ test('non-mentor cannot update a training log', function () {
 });
 
 test('mentor who created the log can update it', function () {
-    $course  = trainingHttpRtgCourse();
-    $mentor  = trainingHttpMentor($course);
+    $course = trainingHttpRtgCourse();
+    $mentor = trainingHttpMentor($course);
     $trainee = User::factory()->create();
     trainingHttpAttachTrainee($course, $trainee);
-    $log  = trainingHttpCreateLog($mentor, $trainee, $course);
+    $log = trainingHttpCreateLog($mentor, $trainee, $course);
     $data = trainingHttpLogData($trainee, $course);
     unset($data['trainee_id'], $data['course_id']);
 
@@ -1038,12 +1040,12 @@ test('mentor who created the log can update it', function () {
 });
 
 test('a different mentor cannot update a log they did not create', function () {
-    $course       = trainingHttpRtgCourse();
-    $mentor       = trainingHttpMentor($course);
-    $otherMentor  = trainingHttpMentor($course);
-    $trainee      = User::factory()->create();
+    $course = trainingHttpRtgCourse();
+    $mentor = trainingHttpMentor($course);
+    $otherMentor = trainingHttpMentor($course);
+    $trainee = User::factory()->create();
     trainingHttpAttachTrainee($course, $trainee);
-    $log  = trainingHttpCreateLog($mentor, $trainee, $course);
+    $log = trainingHttpCreateLog($mentor, $trainee, $course);
     $data = trainingHttpLogData($trainee, $course);
     unset($data['trainee_id'], $data['course_id']);
 
@@ -1053,11 +1055,11 @@ test('a different mentor cannot update a log they did not create', function () {
 });
 
 test('superuser can update any training log', function () {
-    $course  = trainingHttpRtgCourse();
-    $mentor  = trainingHttpMentor($course);
+    $course = trainingHttpRtgCourse();
+    $mentor = trainingHttpMentor($course);
     $trainee = User::factory()->create();
     trainingHttpAttachTrainee($course, $trainee);
-    $log  = trainingHttpCreateLog($mentor, $trainee, $course);
+    $log = trainingHttpCreateLog($mentor, $trainee, $course);
     $data = trainingHttpLogData($trainee, $course);
     unset($data['trainee_id'], $data['course_id']);
 
@@ -1079,42 +1081,42 @@ test('non-mentor cannot grant solo endorsement', function () {
 });
 
 test('mentor without course access cannot grant solo', function () {
-    $course  = trainingHttpRtgCourse();
+    $course = trainingHttpRtgCourse();
     $trainee = User::factory()->create();
-    $mentor  = trainingHttpMentorNoAccess();
+    $mentor = trainingHttpMentorNoAccess();
 
     $this->actingAs($mentor)
         ->post(route('overview.add-solo'), [
-            'trainee_id'  => $trainee->id,
-            'course_id'   => $course->id,
+            'trainee_id' => $trainee->id,
+            'course_id' => $course->id,
             'expiry_date' => now()->addDays(14)->format('Y-m-d'),
         ])
         ->assertSessionHasErrors('error');
 });
 
 test('solo endorsement cannot be granted for non-RTG courses', function () {
-    $course  = Course::factory()->create(['type' => 'EDMT', 'solo_station' => null]);
-    $mentor  = trainingHttpMentor($course);
+    $course = Course::factory()->create(['type' => 'EDMT', 'solo_station' => null]);
+    $mentor = trainingHttpMentor($course);
     $trainee = User::factory()->create();
 
     $this->actingAs($mentor)
         ->post(route('overview.add-solo'), [
-            'trainee_id'  => $trainee->id,
-            'course_id'   => $course->id,
+            'trainee_id' => $trainee->id,
+            'course_id' => $course->id,
             'expiry_date' => now()->addDays(14)->format('Y-m-d'),
         ])
         ->assertSessionHasErrors('error');
 });
 
 test('solo endorsement expiry cannot exceed 31 days', function () {
-    $course  = trainingHttpRtgCourse();
-    $mentor  = trainingHttpMentor($course);
+    $course = trainingHttpRtgCourse();
+    $mentor = trainingHttpMentor($course);
     $trainee = User::factory()->create();
 
     $this->actingAs($mentor)
         ->post(route('overview.add-solo'), [
-            'trainee_id'  => $trainee->id,
-            'course_id'   => $course->id,
+            'trainee_id' => $trainee->id,
+            'course_id' => $course->id,
             'expiry_date' => now()->addDays(32)->format('Y-m-d'),
         ])
         ->assertSessionHasErrors('error');
@@ -1127,24 +1129,25 @@ test('add solo fails validation when required fields are missing', function () {
 });
 
 test('add solo fails validation when expiry date is within 6 days', function () {
-    $course  = trainingHttpRtgCourse();
+    $course = trainingHttpRtgCourse();
     $trainee = User::factory()->create();
 
     $this->actingAs(trainingHttpSuperuser())
         ->post(route('overview.add-solo'), [
-            'trainee_id'  => $trainee->id,
-            'course_id'   => $course->id,
+            'trainee_id' => $trainee->id,
+            'course_id' => $course->id,
             'expiry_date' => now()->addDays(3)->format('Y-m-d'),
         ])
         ->assertSessionHasErrors('expiry_date');
 });
 
 test('mentor can grant solo endorsement when prerequisites are met', function () {
-    $course  = trainingHttpRtgCourse();
-    $mentor  = trainingHttpMentor($course);
+    $course = trainingHttpRtgCourse();
+    $mentor = trainingHttpMentor($course);
     $trainee = User::factory()->create();
 
-    $passingClient = new class extends FakeVatEudClient {
+    $passingClient = new class extends FakeVatEudClient
+    {
         public function getUserExams(int $vatsimId): UserExamsData
         {
             return new UserExamsData(
@@ -1159,8 +1162,8 @@ test('mentor can grant solo endorsement when prerequisites are met', function ()
 
     $this->actingAs($mentor)
         ->post(route('overview.add-solo'), [
-            'trainee_id'  => $trainee->id,
-            'course_id'   => $course->id,
+            'trainee_id' => $trainee->id,
+            'course_id' => $course->id,
             'expiry_date' => now()->addDays(14)->format('Y-m-d'),
         ])
         ->assertRedirect(route('overview.index', ['last_course_id' => $course->id]));
@@ -1185,28 +1188,28 @@ test('extend solo fails validation when required fields are missing', function (
 });
 
 test('extend solo endorsement expiry cannot exceed 31 days', function () {
-    $course  = trainingHttpRtgCourse();
-    $mentor  = trainingHttpMentor($course);
+    $course = trainingHttpRtgCourse();
+    $mentor = trainingHttpMentor($course);
     $trainee = User::factory()->create();
 
     $this->actingAs($mentor)
         ->post(route('overview.extend-solo'), [
-            'trainee_id'  => $trainee->id,
-            'course_id'   => $course->id,
+            'trainee_id' => $trainee->id,
+            'course_id' => $course->id,
             'expiry_date' => now()->addDays(32)->format('Y-m-d'),
         ])
         ->assertSessionHasErrors('error');
 });
 
 test('mentor without course access cannot extend solo', function () {
-    $course  = trainingHttpRtgCourse();
+    $course = trainingHttpRtgCourse();
     $trainee = User::factory()->create();
-    $mentor  = trainingHttpMentorNoAccess();
+    $mentor = trainingHttpMentorNoAccess();
 
     $this->actingAs($mentor)
         ->post(route('overview.extend-solo'), [
-            'trainee_id'  => $trainee->id,
-            'course_id'   => $course->id,
+            'trainee_id' => $trainee->id,
+            'course_id' => $course->id,
             'expiry_date' => now()->addDays(14)->format('Y-m-d'),
         ])
         ->assertSessionHasErrors('error');
@@ -1231,23 +1234,24 @@ test('remove solo fails validation when required fields are missing', function (
 });
 
 test('mentor without course access cannot remove solo', function () {
-    $course  = trainingHttpRtgCourse();
+    $course = trainingHttpRtgCourse();
     $trainee = User::factory()->create();
-    $mentor  = trainingHttpMentorNoAccess();
+    $mentor = trainingHttpMentorNoAccess();
 
     $this->actingAs($mentor)
         ->post(route('overview.remove-solo'), [
             'trainee_id' => $trainee->id,
-            'course_id'  => $course->id,
+            'course_id' => $course->id,
         ])
         ->assertSessionHasErrors('error');
 });
 
 test('superuser can remove a solo endorsement', function () {
-    $course  = trainingHttpRtgCourse();
+    $course = trainingHttpRtgCourse();
     $trainee = User::factory()->create();
 
-    $clientWithSolo = new class($course->solo_station, $trainee->vatsim_id) extends FakeVatEudClient {
+    $clientWithSolo = new class($course->solo_station, $trainee->vatsim_id) extends FakeVatEudClient
+    {
         public function __construct(private string $position, private int $vatsimId) {}
 
         public function getSoloEndorsements(): array
@@ -1269,7 +1273,7 @@ test('superuser can remove a solo endorsement', function () {
     $this->actingAs(trainingHttpSuperuser())
         ->post(route('overview.remove-solo'), [
             'trainee_id' => $trainee->id,
-            'course_id'  => $course->id,
+            'course_id' => $course->id,
         ])
         ->assertRedirect(route('overview.index', ['last_course_id' => $course->id]));
 });
@@ -1278,11 +1282,11 @@ test('superuser can remove a solo endorsement', function () {
 
 test('unauthenticated user is redirected from tier1 removal', function () {
     $activity = EndorsementActivity::create([
-        'endorsement_id'   => 1,
-        'vatsim_id'        => 1601613,
-        'position'         => 'EDDL_TWR',
+        'endorsement_id' => 1,
+        'vatsim_id' => 1601613,
+        'position' => 'EDDL_TWR',
         'activity_minutes' => 100,
-        'last_updated'     => now(),
+        'last_updated' => now(),
     ]);
 
     $this->delete(route('endorsements.tier1.remove', $activity->endorsement_id))->assertRedirect();
@@ -1290,11 +1294,11 @@ test('unauthenticated user is redirected from tier1 removal', function () {
 
 test('non-mentor cannot remove a tier1 endorsement', function () {
     $activity = EndorsementActivity::create([
-        'endorsement_id'   => 1,
-        'vatsim_id'        => 1601613,
-        'position'         => 'EDDL_TWR',
+        'endorsement_id' => 1,
+        'vatsim_id' => 1601613,
+        'position' => 'EDDL_TWR',
         'activity_minutes' => 100,
-        'last_updated'     => now(),
+        'last_updated' => now(),
     ]);
 
     $this->actingAs(User::factory()->create())
@@ -1304,11 +1308,11 @@ test('non-mentor cannot remove a tier1 endorsement', function () {
 
 test('superuser can mark an endorsement for removal', function () {
     $activity = EndorsementActivity::create([
-        'endorsement_id'   => 1,
-        'vatsim_id'        => 1601613,
-        'position'         => 'EDDL_TWR',
+        'endorsement_id' => 1,
+        'vatsim_id' => 1601613,
+        'position' => 'EDDL_TWR',
         'activity_minutes' => 100,
-        'last_updated'     => now(),
+        'last_updated' => now(),
     ]);
 
     $this->actingAs(trainingHttpSuperuser())
@@ -1334,7 +1338,7 @@ test('unauthenticated user is redirected from tier2 request', function () {
 
 test('authenticated vatsim user can request a tier2 endorsement', function () {
     $tier2 = Tier2Endorsement::create(['name' => 'Test Tier2 B', 'position' => 'EDXX_NEW1', 'moodle_course_id' => 0]);
-    $user  = User::factory()->create(['vatsim_id' => 1234567]);
+    $user = User::factory()->create(['vatsim_id' => 1234567]);
 
     $this->actingAs($user)
         ->post(route('endorsements.tier2.request', $tier2->id))
@@ -1343,7 +1347,7 @@ test('authenticated vatsim user can request a tier2 endorsement', function () {
 
 test('tier2 request fails when user already has the endorsement', function () {
     $tier2 = Tier2Endorsement::create(['name' => 'Test Tier2', 'position' => 'EDXX_AFIS', 'moodle_course_id' => 0]);
-    $user  = User::factory()->create(['vatsim_id' => 1441619]);
+    $user = User::factory()->create(['vatsim_id' => 1441619]);
 
     $this->actingAs($user)
         ->post(route('endorsements.tier2.request', $tier2->id))
@@ -1358,20 +1362,20 @@ test('unauthenticated user is redirected from courses index', function () {
 
 test('courses index hides courses outside the user rating range', function () {
     $eligibleCourse = Course::factory()->create([
-        'type'       => 'RTG',
-        'position'   => 'TWR',
+        'type' => 'RTG',
+        'position' => 'TWR',
         'min_rating' => 2,
         'max_rating' => 3,
     ]);
     $ineligibleCourse = Course::factory()->create([
-        'type'       => 'RTG',
-        'position'   => 'APP',
+        'type' => 'RTG',
+        'position' => 'APP',
         'min_rating' => 4,
         'max_rating' => 5,
     ]);
 
     $user = User::factory()->create(['subdivision' => 'GER', 'rating' => 3]);
-    Http::swap(new \Illuminate\Http\Client\Factory());
+    Http::swap(new \Illuminate\Http\Client\Factory);
     Http::fake(['*' => Http::response(['data' => ['controllers' => [$user->vatsim_id]]], 200)]);
     Cache::flush();
 
@@ -1381,17 +1385,16 @@ test('courses index hides courses outside the user rating range', function () {
         ->assertInertia(fn ($page) => $page
             ->component('training/courses')
             ->where('courses', fn ($courses) => collect($courses)->pluck('id')->contains($eligibleCourse->id)
-                && !collect($courses)->pluck('id')->contains($ineligibleCourse->id))
+                && ! collect($courses)->pluck('id')->contains($ineligibleCourse->id))
         );
 });
-
 
 test('admin user sees all courses regardless of eligibility', function () {
     $lowRatingCourse = Course::factory()->create(['type' => 'RTG', 'position' => 'TWR', 'min_rating' => 2, 'max_rating' => 3]);
     $highRatingCourse = Course::factory()->create(['type' => 'RTG', 'position' => 'APP', 'min_rating' => 4, 'max_rating' => 5]);
 
     $admin = User::factory()->superuser()->create(['subdivision' => 'GER', 'rating' => 2]);
-    Http::swap(new \Illuminate\Http\Client\Factory());
+    Http::swap(new \Illuminate\Http\Client\Factory);
     Http::fake(['*' => Http::response(['data' => ['controllers' => [$admin->vatsim_id]]], 200)]);
     Cache::flush();
 
@@ -1406,11 +1409,11 @@ test('admin user sees all courses regardless of eligibility', function () {
 });
 
 test('courses index hides all RTG courses when user is actively enrolled in one', function () {
-    $enrolledCourse    = Course::factory()->create(['type' => 'RTG', 'position' => 'TWR', 'min_rating' => 2, 'max_rating' => 3]);
+    $enrolledCourse = Course::factory()->create(['type' => 'RTG', 'position' => 'TWR', 'min_rating' => 2, 'max_rating' => 3]);
     $alternativeCourse = Course::factory()->create(['type' => 'RTG', 'position' => 'APP', 'min_rating' => 2, 'max_rating' => 3]);
 
     $user = User::factory()->create(['subdivision' => 'GER', 'rating' => 3]);
-    Http::swap(new \Illuminate\Http\Client\Factory());
+    Http::swap(new \Illuminate\Http\Client\Factory);
     Http::fake(['*' => Http::response(['data' => ['controllers' => [$user->vatsim_id]]], 200)]);
     Cache::flush();
 
@@ -1421,18 +1424,18 @@ test('courses index hides all RTG courses when user is actively enrolled in one'
         ->assertOk()
         ->assertInertia(fn ($page) => $page
             ->component('training/courses')
-            ->where('courses', fn ($courses) => !collect($courses)->pluck('id')->contains($enrolledCourse->id)
-                && !collect($courses)->pluck('id')->contains($alternativeCourse->id))
+            ->where('courses', fn ($courses) => ! collect($courses)->pluck('id')->contains($enrolledCourse->id)
+                && ! collect($courses)->pluck('id')->contains($alternativeCourse->id))
         );
 });
 
 test('courses index sets rtgRatingPending true when user has rating upgrade pending', function () {
     $user = User::factory()->create([
-        'subdivision'            => 'GER',
-        'rating'                 => 3,
+        'subdivision' => 'GER',
+        'rating' => 3,
         'rating_upgrade_pending' => true,
     ]);
-    Http::swap(new \Illuminate\Http\Client\Factory());
+    Http::swap(new \Illuminate\Http\Client\Factory);
     Http::fake(['*' => Http::response(['data' => ['controllers' => [$user->vatsim_id]]], 200)]);
     Cache::flush();
 
@@ -1447,11 +1450,11 @@ test('courses index sets rtgRatingPending true when user has rating upgrade pend
 
 test('courses index sets rtgRatingPending false when user has no rating upgrade pending', function () {
     $user = User::factory()->create([
-        'subdivision'            => 'GER',
-        'rating'                 => 3,
+        'subdivision' => 'GER',
+        'rating' => 3,
         'rating_upgrade_pending' => false,
     ]);
-    Http::swap(new \Illuminate\Http\Client\Factory());
+    Http::swap(new \Illuminate\Http\Client\Factory);
     Http::fake(['*' => Http::response(['data' => ['controllers' => [$user->vatsim_id]]], 200)]);
     Cache::flush();
 
@@ -1471,14 +1474,14 @@ test('courses index hides EDMT course when user already holds all required endor
 
     $user = User::factory()->create(['subdivision' => 'GER', 'rating' => 3]);
     \App\Models\EndorsementActivity::create([
-        'endorsement_id'   => 1,
-        'vatsim_id'        => $user->vatsim_id,
-        'position'         => 'EDDF_TWR',
+        'endorsement_id' => 1,
+        'vatsim_id' => $user->vatsim_id,
+        'position' => 'EDDF_TWR',
         'activity_minutes' => 0,
-        'last_updated'     => now(),
+        'last_updated' => now(),
     ]);
 
-    Http::swap(new \Illuminate\Http\Client\Factory());
+    Http::swap(new \Illuminate\Http\Client\Factory);
     Http::fake(['*' => Http::response(['data' => ['controllers' => [$user->vatsim_id]]], 200)]);
     Cache::flush();
 
@@ -1487,7 +1490,7 @@ test('courses index hides EDMT course when user already holds all required endor
         ->assertOk()
         ->assertInertia(fn ($page) => $page
             ->component('training/courses')
-            ->where('courses', fn ($courses) => !collect($courses)->pluck('id')->contains($course->id))
+            ->where('courses', fn ($courses) => ! collect($courses)->pluck('id')->contains($course->id))
         );
 });
 
@@ -1498,7 +1501,7 @@ test('courses index hides FAM course when user already has the familiarisation',
     $user = User::factory()->create(['subdivision' => 'GER', 'rating' => 3]);
     \App\Models\Familiarisation::create(['user_id' => $user->id, 'familiarisation_sector_id' => $sector->id]);
 
-    Http::swap(new \Illuminate\Http\Client\Factory());
+    Http::swap(new \Illuminate\Http\Client\Factory);
     Http::fake(['*' => Http::response(['data' => ['controllers' => [$user->vatsim_id]]], 200)]);
     Cache::flush();
 
@@ -1507,7 +1510,7 @@ test('courses index hides FAM course when user already has the familiarisation',
         ->assertOk()
         ->assertInertia(fn ($page) => $page
             ->component('training/courses')
-            ->where('courses', fn ($courses) => !collect($courses)->pluck('id')->contains($course->id))
+            ->where('courses', fn ($courses) => ! collect($courses)->pluck('id')->contains($course->id))
         );
 });
 
@@ -1517,7 +1520,7 @@ test('courses index includes FAM course when user has no familiarisation for its
 
     $user = User::factory()->create(['subdivision' => 'GER', 'rating' => 3]);
 
-    Http::swap(new \Illuminate\Http\Client\Factory());
+    Http::swap(new \Illuminate\Http\Client\Factory);
     Http::fake(['*' => Http::response(['data' => ['controllers' => [$user->vatsim_id]]], 200)]);
     Cache::flush();
 
@@ -1532,8 +1535,8 @@ test('courses index includes FAM course when user has no familiarisation for its
 
 test('courses index includes courses the user is already on the waiting list for', function () {
     $course = Course::factory()->create([
-        'type'       => 'RTG',
-        'position'   => 'TWR',
+        'type' => 'RTG',
+        'position' => 'TWR',
         'min_rating' => 2,
         'max_rating' => 3,
     ]);
@@ -1543,10 +1546,10 @@ test('courses index includes courses the user is already on the waiting list for
     Cache::flush();
 
     WaitingListEntry::create([
-        'course_id'  => $course->id,
-        'user_id'    => $user->id,
+        'course_id' => $course->id,
+        'user_id' => $user->id,
         'date_added' => now(),
-        'activity'   => 0,
+        'activity' => 0,
     ]);
 
     $this->actingAs($user)

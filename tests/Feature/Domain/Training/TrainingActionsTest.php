@@ -46,18 +46,18 @@ beforeEach(function () {
 function attachTraineeToCourse(Course $course, User $trainee, array $attributes = []): void
 {
     DB::table('course_trainees')->insert(array_merge([
-        'course_id'            => $course->id,
-        'user_id'              => $trainee->id,
+        'course_id' => $course->id,
+        'user_id' => $trainee->id,
         'claimed_by_mentor_id' => null,
-        'claimed_at'           => null,
-        'completed_at'         => null,
-        'remarks'              => null,
-        'remark_author_id'     => null,
-        'remark_updated_at'    => null,
-        'custom_order'         => null,
-        'status'               => 'active',
-        'created_at'           => now(),
-        'updated_at'           => now(),
+        'claimed_at' => null,
+        'completed_at' => null,
+        'remarks' => null,
+        'remark_author_id' => null,
+        'remark_updated_at' => null,
+        'custom_order' => null,
+        'status' => 'active',
+        'created_at' => now(),
+        'updated_at' => now(),
     ], $attributes));
 }
 
@@ -67,7 +67,7 @@ test('AddMentorToCourse attaches mentor to course', function () {
     Event::fake();
     $course = Course::factory()->create();
     $mentor = User::factory()->create();
-    $admin  = User::factory()->admin()->create();
+    $admin = User::factory()->admin()->create();
 
     app(AddMentorToCourse::class)->execute($course, $mentor, $admin);
 
@@ -78,7 +78,7 @@ test('AddMentorToCourse fires MentorAdded event', function () {
     Event::fake();
     $course = Course::factory()->create();
     $mentor = User::factory()->create();
-    $admin  = User::factory()->admin()->create();
+    $admin = User::factory()->admin()->create();
 
     app(AddMentorToCourse::class)->execute($course, $mentor, $admin);
 
@@ -91,7 +91,7 @@ test('RemoveMentorFromCourse detaches mentor from course', function () {
     Event::fake();
     $course = Course::factory()->create();
     $mentor = User::factory()->create();
-    $admin  = User::factory()->admin()->create();
+    $admin = User::factory()->admin()->create();
     $course->mentors()->attach($mentor->id);
 
     app(RemoveMentorFromCourse::class)->execute($course, $mentor, $admin);
@@ -101,15 +101,15 @@ test('RemoveMentorFromCourse detaches mentor from course', function () {
 
 test('RemoveMentorFromCourse unsets claimed_by_mentor_id for trainees claimed by that mentor', function () {
     Event::fake();
-    $course  = Course::factory()->create();
-    $mentor  = User::factory()->create();
+    $course = Course::factory()->create();
+    $mentor = User::factory()->create();
     $trainee = User::factory()->create();
-    $admin   = User::factory()->admin()->create();
+    $admin = User::factory()->admin()->create();
 
     $course->mentors()->attach($mentor->id);
     attachTraineeToCourse($course, $trainee, [
         'claimed_by_mentor_id' => $mentor->id,
-        'claimed_at'           => now(),
+        'claimed_at' => now(),
     ]);
 
     app(RemoveMentorFromCourse::class)->execute($course, $mentor, $admin);
@@ -125,16 +125,16 @@ test('RemoveMentorFromCourse unsets claimed_by_mentor_id for trainees claimed by
 
 test('RemoveMentorFromCourse does not unclaim trainees belonging to other mentors', function () {
     Event::fake();
-    $course      = Course::factory()->create();
-    $mentor      = User::factory()->create();
+    $course = Course::factory()->create();
+    $mentor = User::factory()->create();
     $otherMentor = User::factory()->create();
-    $trainee     = User::factory()->create();
-    $admin       = User::factory()->admin()->create();
+    $trainee = User::factory()->create();
+    $admin = User::factory()->admin()->create();
 
     $course->mentors()->attach($mentor->id);
     attachTraineeToCourse($course, $trainee, [
         'claimed_by_mentor_id' => $otherMentor->id,
-        'claimed_at'           => now(),
+        'claimed_at' => now(),
     ]);
 
     app(RemoveMentorFromCourse::class)->execute($course, $mentor, $admin);
@@ -151,7 +151,7 @@ test('RemoveMentorFromCourse fires MentorRemoved event', function () {
     Event::fake();
     $course = Course::factory()->create();
     $mentor = User::factory()->create();
-    $admin  = User::factory()->admin()->create();
+    $admin = User::factory()->admin()->create();
     $course->mentors()->attach($mentor->id);
 
     app(RemoveMentorFromCourse::class)->execute($course, $mentor, $admin);
@@ -163,9 +163,9 @@ test('RemoveMentorFromCourse fires MentorRemoved event', function () {
 
 test('AddTraineeToCourse adds new trainee to course_trainees', function () {
     Event::fake();
-    $course  = Course::factory()->create();
+    $course = Course::factory()->create();
     $trainee = User::factory()->create();
-    $mentor  = User::factory()->create();
+    $mentor = User::factory()->create();
 
     app(AddTraineeToCourse::class)->execute($course, $trainee, $mentor);
 
@@ -174,9 +174,9 @@ test('AddTraineeToCourse adds new trainee to course_trainees', function () {
 
 test('AddTraineeToCourse sets claim on newly added trainee', function () {
     Event::fake();
-    $course  = Course::factory()->create();
+    $course = Course::factory()->create();
     $trainee = User::factory()->create();
-    $mentor  = User::factory()->create();
+    $mentor = User::factory()->create();
 
     app(AddTraineeToCourse::class)->execute($course, $trainee, $mentor);
 
@@ -191,15 +191,15 @@ test('AddTraineeToCourse sets claim on newly added trainee', function () {
 
 test('AddTraineeToCourse removes an existing waiting list entry', function () {
     Event::fake();
-    $course  = Course::factory()->create();
+    $course = Course::factory()->create();
     $trainee = User::factory()->create();
-    $mentor  = User::factory()->create();
+    $mentor = User::factory()->create();
 
     WaitingListEntry::create([
-        'user_id'    => $trainee->id,
-        'course_id'  => $course->id,
+        'user_id' => $trainee->id,
+        'course_id' => $course->id,
         'date_added' => now(),
-        'activity'   => 5,
+        'activity' => 5,
     ]);
 
     app(AddTraineeToCourse::class)->execute($course, $trainee, $mentor);
@@ -211,13 +211,13 @@ test('AddTraineeToCourse removes an existing waiting list entry', function () {
 
 test('AddTraineeToCourse reactivates a completed trainee instead of adding a duplicate row', function () {
     Event::fake();
-    $course  = Course::factory()->create();
+    $course = Course::factory()->create();
     $trainee = User::factory()->create();
-    $mentor  = User::factory()->create();
+    $mentor = User::factory()->create();
 
     attachTraineeToCourse($course, $trainee, [
         'completed_at' => now()->subDay(),
-        'status'       => 'removed',
+        'status' => 'removed',
     ]);
 
     app(AddTraineeToCourse::class)->execute($course, $trainee, $mentor);
@@ -237,9 +237,9 @@ test('AddTraineeToCourse reactivates a completed trainee instead of adding a dup
 
 test('AddTraineeToCourse fires TraineeAddedToCourse with wasReactivated=false for a new trainee', function () {
     Event::fake();
-    $course  = Course::factory()->create();
+    $course = Course::factory()->create();
     $trainee = User::factory()->create();
-    $mentor  = User::factory()->create();
+    $mentor = User::factory()->create();
 
     app(AddTraineeToCourse::class)->execute($course, $trainee, $mentor);
 
@@ -250,13 +250,13 @@ test('AddTraineeToCourse fires TraineeAddedToCourse with wasReactivated=false fo
 
 test('AddTraineeToCourse fires TraineeAddedToCourse with wasReactivated=true for a reactivated trainee', function () {
     Event::fake();
-    $course  = Course::factory()->create();
+    $course = Course::factory()->create();
     $trainee = User::factory()->create();
-    $mentor  = User::factory()->create();
+    $mentor = User::factory()->create();
 
     attachTraineeToCourse($course, $trainee, [
         'completed_at' => now()->subDay(),
-        'status'       => 'removed',
+        'status' => 'removed',
     ]);
 
     app(AddTraineeToCourse::class)->execute($course, $trainee, $mentor);
@@ -268,9 +268,9 @@ test('AddTraineeToCourse fires TraineeAddedToCourse with wasReactivated=true for
 
 test('AddTraineeToCourse calls Moodle enrollment when course has moodle_course_ids', function () {
     Event::fake();
-    $course  = Course::factory()->create(['moodle_course_ids' => [101, 102]]);
+    $course = Course::factory()->create(['moodle_course_ids' => [101, 102]]);
     $trainee = User::factory()->create();
-    $mentor  = User::factory()->create();
+    $mentor = User::factory()->create();
 
     // FakeMoodleClient is bound; enrollment succeeds silently
     app(AddTraineeToCourse::class)->execute($course, $trainee, $mentor);
@@ -280,9 +280,9 @@ test('AddTraineeToCourse calls Moodle enrollment when course has moodle_course_i
 
 test('AddTraineeToCourse skips Moodle enrollment when course has no moodle_course_ids', function () {
     Event::fake();
-    $course  = Course::factory()->create(['moodle_course_ids' => []]);
+    $course = Course::factory()->create(['moodle_course_ids' => []]);
     $trainee = User::factory()->create();
-    $mentor  = User::factory()->create();
+    $mentor = User::factory()->create();
 
     app(AddTraineeToCourse::class)->execute($course, $trainee, $mentor);
 
@@ -293,9 +293,9 @@ test('AddTraineeToCourse skips Moodle enrollment when course has no moodle_cours
 
 test('ClaimTrainee sets claimed_by_mentor_id and claimed_at on the pivot', function () {
     Event::fake();
-    $course  = Course::factory()->create();
+    $course = Course::factory()->create();
     $trainee = User::factory()->create();
-    $mentor  = User::factory()->create();
+    $mentor = User::factory()->create();
 
     attachTraineeToCourse($course, $trainee);
 
@@ -312,9 +312,9 @@ test('ClaimTrainee sets claimed_by_mentor_id and claimed_at on the pivot', funct
 
 test('ClaimTrainee fires TraineeClaimed event', function () {
     Event::fake();
-    $course  = Course::factory()->create();
+    $course = Course::factory()->create();
     $trainee = User::factory()->create();
-    $mentor  = User::factory()->create();
+    $mentor = User::factory()->create();
 
     attachTraineeToCourse($course, $trainee);
 
@@ -327,13 +327,13 @@ test('ClaimTrainee fires TraineeClaimed event', function () {
 
 test('UnclaimTrainee clears claimed_by_mentor_id and claimed_at', function () {
     Event::fake();
-    $course  = Course::factory()->create();
+    $course = Course::factory()->create();
     $trainee = User::factory()->create();
-    $mentor  = User::factory()->create();
+    $mentor = User::factory()->create();
 
     attachTraineeToCourse($course, $trainee, [
         'claimed_by_mentor_id' => $mentor->id,
-        'claimed_at'           => now(),
+        'claimed_at' => now(),
     ]);
 
     app(UnclaimTrainee::class)->execute($course, $trainee, $mentor);
@@ -349,13 +349,13 @@ test('UnclaimTrainee clears claimed_by_mentor_id and claimed_at', function () {
 
 test('UnclaimTrainee fires TraineeUnclaimed event', function () {
     Event::fake();
-    $course  = Course::factory()->create();
+    $course = Course::factory()->create();
     $trainee = User::factory()->create();
-    $mentor  = User::factory()->create();
+    $mentor = User::factory()->create();
 
     attachTraineeToCourse($course, $trainee, [
         'claimed_by_mentor_id' => $mentor->id,
-        'claimed_at'           => now(),
+        'claimed_at' => now(),
     ]);
 
     app(UnclaimTrainee::class)->execute($course, $trainee, $mentor);
@@ -367,15 +367,15 @@ test('UnclaimTrainee fires TraineeUnclaimed event', function () {
 
 test('AssignTrainee updates claimed_by_mentor_id to the new mentor', function () {
     Event::fake();
-    $course          = Course::factory()->create();
-    $trainee         = User::factory()->create();
-    $oldMentor       = User::factory()->create();
-    $newMentor       = User::factory()->create();
+    $course = Course::factory()->create();
+    $trainee = User::factory()->create();
+    $oldMentor = User::factory()->create();
+    $newMentor = User::factory()->create();
     $assigningMentor = User::factory()->admin()->create();
 
     attachTraineeToCourse($course, $trainee, [
         'claimed_by_mentor_id' => $oldMentor->id,
-        'claimed_at'           => now()->subHour(),
+        'claimed_at' => now()->subHour(),
     ]);
 
     app(AssignTrainee::class)->execute($course, $trainee, $newMentor, $assigningMentor);
@@ -391,9 +391,9 @@ test('AssignTrainee updates claimed_by_mentor_id to the new mentor', function ()
 
 test('AssignTrainee fires TraineeAssigned event', function () {
     Event::fake();
-    $course          = Course::factory()->create();
-    $trainee         = User::factory()->create();
-    $newMentor       = User::factory()->create();
+    $course = Course::factory()->create();
+    $trainee = User::factory()->create();
+    $newMentor = User::factory()->create();
     $assigningMentor = User::factory()->admin()->create();
 
     attachTraineeToCourse($course, $trainee);
@@ -407,9 +407,9 @@ test('AssignTrainee fires TraineeAssigned event', function () {
 
 test('UpdateTraineeRemark writes remark, author, and timestamp to pivot', function () {
     Event::fake();
-    $course  = Course::factory()->create();
+    $course = Course::factory()->create();
     $trainee = User::factory()->create();
-    $mentor  = User::factory()->create();
+    $mentor = User::factory()->create();
 
     attachTraineeToCourse($course, $trainee);
 
@@ -427,9 +427,9 @@ test('UpdateTraineeRemark writes remark, author, and timestamp to pivot', functi
 
 test('UpdateTraineeRemark overwrites a previous remark', function () {
     Event::fake();
-    $course  = Course::factory()->create();
+    $course = Course::factory()->create();
     $trainee = User::factory()->create();
-    $mentor  = User::factory()->create();
+    $mentor = User::factory()->create();
 
     attachTraineeToCourse($course, $trainee, ['remarks' => 'Old remark']);
 
@@ -445,9 +445,9 @@ test('UpdateTraineeRemark overwrites a previous remark', function () {
 
 test('UpdateTraineeRemark fires TraineeRemarkUpdated event', function () {
     Event::fake();
-    $course  = Course::factory()->create();
+    $course = Course::factory()->create();
     $trainee = User::factory()->create();
-    $mentor  = User::factory()->create();
+    $mentor = User::factory()->create();
 
     attachTraineeToCourse($course, $trainee);
 
@@ -460,13 +460,13 @@ test('UpdateTraineeRemark fires TraineeRemarkUpdated event', function () {
 
 test('ReactivateTrainee clears completed_at, sets status to active, and claims the trainee', function () {
     Event::fake();
-    $course  = Course::factory()->create();
+    $course = Course::factory()->create();
     $trainee = User::factory()->create();
-    $mentor  = User::factory()->create();
+    $mentor = User::factory()->create();
 
     attachTraineeToCourse($course, $trainee, [
         'completed_at' => now()->subDays(10),
-        'status'       => 'removed',
+        'status' => 'removed',
     ]);
 
     app(ReactivateTrainee::class)->execute($course, $trainee, $mentor);
@@ -484,13 +484,13 @@ test('ReactivateTrainee clears completed_at, sets status to active, and claims t
 
 test('ReactivateTrainee fires TraineeReactivated event', function () {
     Event::fake();
-    $course  = Course::factory()->create();
+    $course = Course::factory()->create();
     $trainee = User::factory()->create();
-    $mentor  = User::factory()->create();
+    $mentor = User::factory()->create();
 
     attachTraineeToCourse($course, $trainee, [
         'completed_at' => now()->subDays(10),
-        'status'       => 'removed',
+        'status' => 'removed',
     ]);
 
     app(ReactivateTrainee::class)->execute($course, $trainee, $mentor);
@@ -502,13 +502,13 @@ test('ReactivateTrainee fires TraineeReactivated event', function () {
 
 test('RemoveTrainee sets completed_at, status=removed, and clears the claim', function () {
     Event::fake();
-    $course  = Course::factory()->create();
+    $course = Course::factory()->create();
     $trainee = User::factory()->create();
-    $mentor  = User::factory()->create();
+    $mentor = User::factory()->create();
 
     attachTraineeToCourse($course, $trainee, [
         'claimed_by_mentor_id' => $mentor->id,
-        'claimed_at'           => now(),
+        'claimed_at' => now(),
     ]);
 
     app(RemoveTrainee::class)->execute($course, $trainee, $mentor);
@@ -526,9 +526,9 @@ test('RemoveTrainee sets completed_at, status=removed, and clears the claim', fu
 
 test('RemoveTrainee fires TraineeRemoved event', function () {
     Event::fake();
-    $course  = Course::factory()->create();
+    $course = Course::factory()->create();
     $trainee = User::factory()->create();
-    $mentor  = User::factory()->create();
+    $mentor = User::factory()->create();
 
     attachTraineeToCourse($course, $trainee);
 
@@ -542,17 +542,17 @@ test('RemoveTrainee fires TraineeRemoved event', function () {
 test('StartTraining returns false when RTG course trainee has insufficient activity', function () {
     Event::fake();
     Http::fake();
-    $course  = Course::factory()->rtg()->create();
+    $course = Course::factory()->rtg()->create();
     $trainee = User::factory()->create();
-    $mentor  = User::factory()->create();
+    $mentor = User::factory()->create();
 
     config(['services.training.display_activity' => 8]);
 
     $entry = WaitingListEntry::create([
-        'user_id'    => $trainee->id,
-        'course_id'  => $course->id,
+        'user_id' => $trainee->id,
+        'course_id' => $course->id,
         'date_added' => now(),
-        'activity'   => 3,
+        'activity' => 3,
     ]);
 
     [$success, $message] = app(StartTraining::class)->execute($entry, $mentor);
@@ -564,17 +564,17 @@ test('StartTraining returns false when RTG course trainee has insufficient activ
 test('StartTraining does not remove the waiting list entry when activity check fails', function () {
     Event::fake();
     Http::fake();
-    $course  = Course::factory()->rtg()->create();
+    $course = Course::factory()->rtg()->create();
     $trainee = User::factory()->create();
-    $mentor  = User::factory()->create();
+    $mentor = User::factory()->create();
 
     config(['services.training.display_activity' => 8]);
 
     $entry = WaitingListEntry::create([
-        'user_id'    => $trainee->id,
-        'course_id'  => $course->id,
+        'user_id' => $trainee->id,
+        'course_id' => $course->id,
         'date_added' => now(),
-        'activity'   => 3,
+        'activity' => 3,
     ]);
 
     app(StartTraining::class)->execute($entry, $mentor);
@@ -585,17 +585,17 @@ test('StartTraining does not remove the waiting list entry when activity check f
 test('StartTraining returns true and attaches trainee when RTG activity meets the threshold', function () {
     Event::fake();
     Http::fake();
-    $course  = Course::factory()->rtg()->create();
+    $course = Course::factory()->rtg()->create();
     $trainee = User::factory()->create();
-    $mentor  = User::factory()->create();
+    $mentor = User::factory()->create();
 
     config(['services.training.display_activity' => 8]);
 
     $entry = WaitingListEntry::create([
-        'user_id'    => $trainee->id,
-        'course_id'  => $course->id,
+        'user_id' => $trainee->id,
+        'course_id' => $course->id,
         'date_added' => now(),
-        'activity'   => 10,
+        'activity' => 10,
     ]);
 
     [$success, $message] = app(StartTraining::class)->execute($entry, $mentor);
@@ -608,17 +608,17 @@ test('StartTraining returns true and attaches trainee when RTG activity meets th
 test('StartTraining deletes the waiting list entry on success', function () {
     Event::fake();
     Http::fake();
-    $course  = Course::factory()->rtg()->create();
+    $course = Course::factory()->rtg()->create();
     $trainee = User::factory()->create();
-    $mentor  = User::factory()->create();
+    $mentor = User::factory()->create();
 
     config(['services.training.display_activity' => 8]);
 
     $entry = WaitingListEntry::create([
-        'user_id'    => $trainee->id,
-        'course_id'  => $course->id,
+        'user_id' => $trainee->id,
+        'course_id' => $course->id,
         'date_added' => now(),
-        'activity'   => 10,
+        'activity' => 10,
     ]);
 
     $entryId = $entry->id;
@@ -631,17 +631,17 @@ test('StartTraining deletes the waiting list entry on success', function () {
 test('StartTraining fires TrainingStarted event on success', function () {
     Event::fake();
     Http::fake();
-    $course  = Course::factory()->rtg()->create();
+    $course = Course::factory()->rtg()->create();
     $trainee = User::factory()->create();
-    $mentor  = User::factory()->create();
+    $mentor = User::factory()->create();
 
     config(['services.training.display_activity' => 8]);
 
     $entry = WaitingListEntry::create([
-        'user_id'    => $trainee->id,
-        'course_id'  => $course->id,
+        'user_id' => $trainee->id,
+        'course_id' => $course->id,
         'date_added' => now(),
-        'activity'   => 10,
+        'activity' => 10,
     ]);
 
     app(StartTraining::class)->execute($entry, $mentor);
@@ -652,17 +652,17 @@ test('StartTraining fires TrainingStarted event on success', function () {
 test('StartTraining allows non-RTG courses regardless of activity level', function () {
     Event::fake();
     Http::fake();
-    $course  = Course::factory()->edmt()->create();
+    $course = Course::factory()->edmt()->create();
     $trainee = User::factory()->create();
-    $mentor  = User::factory()->create();
+    $mentor = User::factory()->create();
 
     config(['services.training.display_activity' => 8]);
 
     $entry = WaitingListEntry::create([
-        'user_id'    => $trainee->id,
-        'course_id'  => $course->id,
+        'user_id' => $trainee->id,
+        'course_id' => $course->id,
         'date_added' => now(),
-        'activity'   => 0,
+        'activity' => 0,
     ]);
 
     [$success] = app(StartTraining::class)->execute($entry, $mentor);
@@ -674,17 +674,17 @@ test('StartTraining allows non-RTG courses regardless of activity level', functi
 test('StartTraining treats RTG trainee with activity exactly at threshold as sufficient', function () {
     Event::fake();
     Http::fake();
-    $course  = Course::factory()->rtg()->create();
+    $course = Course::factory()->rtg()->create();
     $trainee = User::factory()->create();
-    $mentor  = User::factory()->create();
+    $mentor = User::factory()->create();
 
     config(['services.training.display_activity' => 8]);
 
     $entry = WaitingListEntry::create([
-        'user_id'    => $trainee->id,
-        'course_id'  => $course->id,
+        'user_id' => $trainee->id,
+        'course_id' => $course->id,
         'date_added' => now(),
-        'activity'   => 8,
+        'activity' => 8,
     ]);
 
     [$success] = app(StartTraining::class)->execute($entry, $mentor);

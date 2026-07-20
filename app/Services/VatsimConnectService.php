@@ -4,19 +4,25 @@ namespace App\Services;
 
 use App\Models\Role;
 use App\Models\User;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class VatsimConnectService
 {
     protected $clientId;
+
     protected $clientSecret;
+
     protected $redirectUri;
+
     protected $authUrl;
+
     protected $tokenUrl;
+
     protected $apiBaseUrl;
+
     protected $mentorGroups = ['EDGG Mentor', 'EDMM Mentor', 'EDWW Mentor'];
 
     public function __construct()
@@ -32,8 +38,8 @@ class VatsimConnectService
     public function getAuthorizationUrl(): string
     {
         $state = Str::random(40);
-        
-        Cache::put('oauth_state_' . $state, true, now()->addMinutes(10));
+
+        Cache::put('oauth_state_'.$state, true, now()->addMinutes(10));
 
         $params = [
             'client_id' => $this->clientId,
@@ -43,17 +49,17 @@ class VatsimConnectService
             'state' => $state,
         ];
 
-        return $this->authUrl . '?' . http_build_query($params);
+        return $this->authUrl.'?'.http_build_query($params);
     }
 
     public function getAccessToken(string $code, ?string $state = null): array
     {
-        if ($state && !Cache::get('oauth_state_' . $state)) {
+        if ($state && ! Cache::get('oauth_state_'.$state)) {
             throw new \Exception('Invalid OAuth state parameter');
         }
 
         if ($state) {
-            Cache::forget('oauth_state_' . $state);
+            Cache::forget('oauth_state_'.$state);
         }
 
         $response = Http::asForm()->post($this->tokenUrl, [
@@ -64,8 +70,8 @@ class VatsimConnectService
             'code' => $code,
         ]);
 
-        if (!$response->successful()) {
-            throw new \Exception('Failed to obtain access token: ' . $response->body());
+        if (! $response->successful()) {
+            throw new \Exception('Failed to obtain access token: '.$response->body());
         }
 
         return $response->json();
@@ -74,19 +80,19 @@ class VatsimConnectService
     public function getUserProfile(string $accessToken): array
     {
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $accessToken,
+            'Authorization' => 'Bearer '.$accessToken,
             'Accept' => 'application/json',
-        ])->get($this->apiBaseUrl . '/userinfo');
+        ])->get($this->apiBaseUrl.'/userinfo');
 
-        if (!$response->successful()) {
-            throw new \Exception('Failed to fetch user profile: ' . $response->body());
+        if (! $response->successful()) {
+            throw new \Exception('Failed to fetch user profile: '.$response->body());
         }
 
         $profile = $response->json();
 
         /* Log::info('VATGER OAuth response', ['response' => $profile]); */
 
-        if (!isset($profile['id'])) {
+        if (! isset($profile['id'])) {
             throw new \Exception('Could not extract user ID from response');
         }
 

@@ -3,10 +3,10 @@
 namespace App\Filament\Resources\TrainingLogs\Schemas;
 
 use App\Models\TrainingLog;
-use Filament\Schemas\Schema;
 use Filament\Forms;
-use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 
 class TrainingLogForm
 {

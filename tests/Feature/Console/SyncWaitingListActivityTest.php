@@ -5,7 +5,6 @@ use App\Models\Course;
 use App\Models\Role;
 use App\Models\User;
 use App\Models\WaitingListEntry;
-use App\Services\VatsimActivityService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Factory as HttpFactory;
 use Illuminate\Support\Facades\Cache;
@@ -31,6 +30,7 @@ function callEqualStr(string $a, string $b): bool
 {
     $method = new ReflectionMethod(SyncWaitingListActivity::class, 'equalStr');
     $method->setAccessible(true);
+
     return $method->invoke(syncCommand(), $a, $b);
 }
 
@@ -38,6 +38,7 @@ function callCalculateS2TowerHoursFeature(array $connections, string $airport): 
 {
     $method = new ReflectionMethod(SyncWaitingListActivity::class, 'calculateS2TowerHours');
     $method->setAccessible(true);
+
     return $method->invoke(syncCommand(), $connections, $airport);
 }
 
@@ -45,6 +46,7 @@ function callCalculateS1TowerHours(array $connections, string $fir): float
 {
     $method = new ReflectionMethod(SyncWaitingListActivity::class, 'calculateS1TowerHours');
     $method->setAccessible(true);
+
     return $method->invoke(syncCommand(), $connections, $fir);
 }
 
@@ -104,7 +106,7 @@ test('equalStr: single-segment callsign without underscore returns false against
 // ─── calculateS1TowerHours ────────────────────────────────────────────────────
 
 test('calculateS1TowerHours: returns 0 when datahub fetch fails', function () {
-    Http::swap(new HttpFactory());
+    Http::swap(new HttpFactory);
     Http::fake(['*' => Http::response('Not Found', 404)]);
 
     $connections = [['callsign' => 'EDDL_TWR', 'minutes_online' => 60.0]];
@@ -112,7 +114,7 @@ test('calculateS1TowerHours: returns 0 when datahub fetch fails', function () {
 });
 
 test('calculateS1TowerHours: counts only s1_twr=true stations', function () {
-    Http::swap(new HttpFactory());
+    Http::swap(new HttpFactory);
     Http::fake([
         '*' => Http::response([
             ['logon' => 'EDDL_TWR', 's1_twr' => true],
@@ -129,7 +131,7 @@ test('calculateS1TowerHours: counts only s1_twr=true stations', function () {
 });
 
 test('calculateS1TowerHours: excludes stations with _I_ in logon callsign', function () {
-    Http::swap(new HttpFactory());
+    Http::swap(new HttpFactory);
     Http::fake([
         '*' => Http::response([
             ['logon' => 'EDDL_I_TWR', 's1_twr' => true],
@@ -146,7 +148,7 @@ test('calculateS1TowerHours: excludes stations with _I_ in logon callsign', func
 });
 
 test('calculateS1TowerHours: sums minutes across multiple matching sessions', function () {
-    Http::swap(new HttpFactory());
+    Http::swap(new HttpFactory);
     Http::fake([
         '*' => Http::response([['logon' => 'EDDL_TWR', 's1_twr' => true]], 200),
     ]);
@@ -159,7 +161,7 @@ test('calculateS1TowerHours: sums minutes across multiple matching sessions', fu
 });
 
 test('calculateS1TowerHours: equalStr matching allows middle-segment variation', function () {
-    Http::swap(new HttpFactory());
+    Http::swap(new HttpFactory);
     Http::fake([
         '*' => Http::response([['logon' => 'EDDL_TWR', 's1_twr' => true]], 200),
     ]);
@@ -223,14 +225,14 @@ test('does NOT skip when RTG entries exist', function () {
     $user = User::factory()->create(['vatsim_id' => 1234567, 'rating' => 3, 'last_known_rating' => 3]);
 
     WaitingListEntry::create([
-        'user_id'      => $user->id,
-        'course_id'    => $course->id,
-        'date_added'   => now(),
-        'activity'     => 0,
-        'hours_updated'=> now(),
+        'user_id' => $user->id,
+        'course_id' => $course->id,
+        'date_added' => now(),
+        'activity' => 0,
+        'hours_updated' => now(),
     ]);
 
-    Http::swap(new HttpFactory());
+    Http::swap(new HttpFactory);
     Http::fake(['*' => Http::response([], 200)]);
 
     $this->artisan('waitinglists:sync-activities')
@@ -246,14 +248,14 @@ test('skips non-VATSIM users and does not attempt an API call', function () {
     $user = User::factory()->create(['vatsim_id' => 0, 'rating' => 3, 'last_known_rating' => 3]);
 
     WaitingListEntry::create([
-        'user_id'      => $user->id,
-        'course_id'    => $course->id,
-        'date_added'   => now(),
-        'activity'     => 5.0,
-        'hours_updated'=> now(),
+        'user_id' => $user->id,
+        'course_id' => $course->id,
+        'date_added' => now(),
+        'activity' => 5.0,
+        'hours_updated' => now(),
     ]);
 
-    Http::swap(new HttpFactory());
+    Http::swap(new HttpFactory);
     Http::fake(['*' => Http::response([], 200)]);
 
     $entry = WaitingListEntry::first();
@@ -272,14 +274,14 @@ test('updates activity and hours_updated for an RTG entry via http response', fu
     $user = User::factory()->create(['vatsim_id' => 1234567, 'rating' => 3, 'last_known_rating' => 3]);
 
     $entry = WaitingListEntry::create([
-        'user_id'      => $user->id,
-        'course_id'    => $course->id,
-        'date_added'   => now(),
-        'activity'     => 0.0,
-        'hours_updated'=> now()->subHour(),
+        'user_id' => $user->id,
+        'course_id' => $course->id,
+        'date_added' => now(),
+        'activity' => 0.0,
+        'hours_updated' => now()->subHour(),
     ]);
 
-    Http::swap(new HttpFactory());
+    Http::swap(new HttpFactory);
     Http::fake([
         'stats.vatsim-germany.org/*' => Http::response([
             ['callsign' => 'EDDL_TWR', 'minutes_online' => 120.0],
@@ -302,11 +304,11 @@ test('non-RTG waiting list entries are ignored when counting entries to process'
 
     // GST entry should not count as an RTG entry
     WaitingListEntry::create([
-        'user_id'      => $user->id,
-        'course_id'    => $gstCourse->id,
-        'date_added'   => now(),
-        'activity'     => 0.0,
-        'hours_updated'=> now(),
+        'user_id' => $user->id,
+        'course_id' => $gstCourse->id,
+        'date_added' => now(),
+        'activity' => 0.0,
+        'hours_updated' => now(),
     ]);
 
     $this->artisan('waitinglists:sync-activities')

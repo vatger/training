@@ -32,20 +32,21 @@ test('GrantTier2Endorsement throws if trainee already has that position', functi
     $trainee = User::factory()->create(['vatsim_id' => 1601613]);
 
     $tier2 = Tier2Endorsement::create([
-        'name'             => 'Test Endorsement',
-        'position'         => 'EDDF_TWR',
+        'name' => 'Test Endorsement',
+        'position' => 'EDDF_TWR',
         'moodle_course_id' => 0,
     ]);
 
-    $this->app->bind(VatEudClientInterface::class, fn () => new class extends FakeVatEudClient {
+    $this->app->bind(VatEudClientInterface::class, fn () => new class extends FakeVatEudClient
+    {
         public function getTier2Endorsements(): array
         {
             return [
                 Tier2EndorsementData::fromApiResponse([
-                    'id'         => 99,
-                    'user_cid'   => 1601613,
-                    'position'   => 'EDDF_TWR',
-                    'facility'   => 9,
+                    'id' => 99,
+                    'user_cid' => 1601613,
+                    'position' => 'EDDF_TWR',
+                    'facility' => 9,
                     'created_at' => now()->subYear()->toISOString(),
                 ]),
             ];
@@ -62,20 +63,21 @@ test('GrantTier2Endorsement validation message says already have endorsement', f
     $trainee = User::factory()->create(['vatsim_id' => 1601613]);
 
     $tier2 = Tier2Endorsement::create([
-        'name'             => 'Test Endorsement',
-        'position'         => 'EDDF_TWR',
+        'name' => 'Test Endorsement',
+        'position' => 'EDDF_TWR',
         'moodle_course_id' => 0,
     ]);
 
-    $this->app->bind(VatEudClientInterface::class, fn () => new class extends FakeVatEudClient {
+    $this->app->bind(VatEudClientInterface::class, fn () => new class extends FakeVatEudClient
+    {
         public function getTier2Endorsements(): array
         {
             return [
                 Tier2EndorsementData::fromApiResponse([
-                    'id'         => 99,
-                    'user_cid'   => 1601613,
-                    'position'   => 'EDDF_TWR',
-                    'facility'   => 9,
+                    'id' => 99,
+                    'user_cid' => 1601613,
+                    'position' => 'EDDF_TWR',
+                    'facility' => 9,
                     'created_at' => now()->subYear()->toISOString(),
                 ]),
             ];
@@ -96,8 +98,8 @@ test('GrantTier2Endorsement throws if moodle_course_id set and course not comple
     $trainee = User::factory()->create();
 
     $tier2 = Tier2Endorsement::create([
-        'name'             => 'Moodle Required Endorsement',
-        'position'         => 'EDDF_GND',
+        'name' => 'Moodle Required Endorsement',
+        'position' => 'EDDF_GND',
         'moodle_course_id' => 42,
     ]);
 
@@ -117,8 +119,8 @@ test('GrantTier2Endorsement succeeds when no moodle requirement and creates endo
     $trainee = User::factory()->create(['vatsim_id' => 9999999]);
 
     $tier2 = Tier2Endorsement::create([
-        'name'             => 'No Moodle Endorsement',
-        'position'         => 'EDDD_APP',
+        'name' => 'No Moodle Endorsement',
+        'position' => 'EDDD_APP',
         'moodle_course_id' => 0,
     ]);
 
@@ -134,8 +136,8 @@ test('GrantTier2Endorsement fires Tier2EndorsementGranted with correct models', 
     $trainee = User::factory()->create(['vatsim_id' => 9999998]);
 
     $tier2 = Tier2Endorsement::create([
-        'name'             => 'Fire Event Endorsement',
-        'position'         => 'EDDD_TWR',
+        'name' => 'Fire Event Endorsement',
+        'position' => 'EDDD_TWR',
         'moodle_course_id' => 0,
     ]);
 
@@ -150,16 +152,16 @@ test('GrantTier2Endorsement fires Tier2EndorsementGranted with correct models', 
 // ─── MarkEndorsementForRemoval ────────────────────────────────────────────────
 
 test('MarkEndorsementForRemoval throws if removal_date already set', function () {
-    $actor   = User::factory()->create();
+    $actor = User::factory()->create();
     $trainee = User::factory()->create(['vatsim_id' => 1601613]);
 
     $activity = EndorsementActivity::create([
-        'endorsement_id'   => 1,
-        'vatsim_id'        => $trainee->vatsim_id,
-        'position'         => 'EDDL_TWR',
+        'endorsement_id' => 1,
+        'vatsim_id' => $trainee->vatsim_id,
+        'position' => 'EDDL_TWR',
         'activity_minutes' => 0,
-        'last_updated'     => now(),
-        'removal_date'     => now()->addDays(10),
+        'last_updated' => now(),
+        'removal_date' => now()->addDays(10),
     ]);
 
     try {
@@ -172,15 +174,15 @@ test('MarkEndorsementForRemoval throws if removal_date already set', function ()
 });
 
 test('MarkEndorsementForRemoval throws if endorsement not found in VatEud', function () {
-    $actor   = User::factory()->create();
+    $actor = User::factory()->create();
     $trainee = User::factory()->create(['vatsim_id' => 1601613]);
 
     $activity = EndorsementActivity::create([
-        'endorsement_id'   => 999, // ID not returned by FakeVatEudClient
-        'vatsim_id'        => $trainee->vatsim_id,
-        'position'         => 'EDDL_TWR',
+        'endorsement_id' => 999, // ID not returned by FakeVatEudClient
+        'vatsim_id' => $trainee->vatsim_id,
+        'position' => 'EDDL_TWR',
         'activity_minutes' => 0,
-        'last_updated'     => now(),
+        'last_updated' => now(),
     ]);
 
     try {
@@ -193,29 +195,30 @@ test('MarkEndorsementForRemoval throws if endorsement not found in VatEud', func
 });
 
 test('MarkEndorsementForRemoval throws if endorsement younger than 6 months', function () {
-    $actor   = User::factory()->create();
+    $actor = User::factory()->create();
     $trainee = User::factory()->create(['vatsim_id' => 1601613]);
 
     $activity = EndorsementActivity::create([
-        'endorsement_id'   => 1,
-        'vatsim_id'        => $trainee->vatsim_id,
-        'position'         => 'EDDL_TWR',
+        'endorsement_id' => 1,
+        'vatsim_id' => $trainee->vatsim_id,
+        'position' => 'EDDL_TWR',
         'activity_minutes' => 0,
-        'last_updated'     => now(),
+        'last_updated' => now(),
     ]);
 
     // FakeVatEudClient default returns endorsement id=1 with created_at in April 2025,
     // which is less than 6 months ago from today (2026-07-10).
     // Override to return one created TODAY so it's definitely too young.
-    $this->app->bind(VatEudClientInterface::class, fn () => new class extends FakeVatEudClient {
+    $this->app->bind(VatEudClientInterface::class, fn () => new class extends FakeVatEudClient
+    {
         public function getTier1Endorsements(): array
         {
             return [
                 Tier1EndorsementData::fromApiResponse([
-                    'id'         => 1,
-                    'user_cid'   => 1601613,
-                    'position'   => 'EDDL_TWR',
-                    'facility'   => 9,
+                    'id' => 1,
+                    'user_cid' => 1601613,
+                    'position' => 'EDDL_TWR',
+                    'facility' => 9,
                     'created_at' => now()->toISOString(),
                 ]),
             ];
@@ -234,27 +237,28 @@ test('MarkEndorsementForRemoval throws if endorsement younger than 6 months', fu
 });
 
 test('MarkEndorsementForRemoval throws if activity_minutes meets minimum', function () {
-    $actor   = User::factory()->create();
+    $actor = User::factory()->create();
     $trainee = User::factory()->create(['vatsim_id' => 1601613]);
 
     $activity = EndorsementActivity::create([
-        'endorsement_id'   => 1,
-        'vatsim_id'        => $trainee->vatsim_id,
-        'position'         => 'EDDL_TWR',
+        'endorsement_id' => 1,
+        'vatsim_id' => $trainee->vatsim_id,
+        'position' => 'EDDL_TWR',
         'activity_minutes' => 180,
-        'last_updated'     => now(),
+        'last_updated' => now(),
     ]);
 
     // Endorsement must be old enough — override to 7 months ago
-    $this->app->bind(VatEudClientInterface::class, fn () => new class extends FakeVatEudClient {
+    $this->app->bind(VatEudClientInterface::class, fn () => new class extends FakeVatEudClient
+    {
         public function getTier1Endorsements(): array
         {
             return [
                 Tier1EndorsementData::fromApiResponse([
-                    'id'         => 1,
-                    'user_cid'   => 1601613,
-                    'position'   => 'EDDL_TWR',
-                    'facility'   => 9,
+                    'id' => 1,
+                    'user_cid' => 1601613,
+                    'position' => 'EDDL_TWR',
+                    'facility' => 9,
                     'created_at' => now()->subMonths(7)->toISOString(),
                 ]),
             ];
@@ -275,26 +279,27 @@ test('MarkEndorsementForRemoval throws if activity_minutes meets minimum', funct
 test('MarkEndorsementForRemoval success: sets removal_date 31 days from now', function () {
     Event::fake();
 
-    $actor   = User::factory()->create();
+    $actor = User::factory()->create();
     $trainee = User::factory()->create(['vatsim_id' => 1601613]);
 
     $activity = EndorsementActivity::create([
-        'endorsement_id'   => 1,
-        'vatsim_id'        => $trainee->vatsim_id,
-        'position'         => 'EDDL_TWR',
+        'endorsement_id' => 1,
+        'vatsim_id' => $trainee->vatsim_id,
+        'position' => 'EDDL_TWR',
         'activity_minutes' => 0,
-        'last_updated'     => now(),
+        'last_updated' => now(),
     ]);
 
-    $this->app->bind(VatEudClientInterface::class, fn () => new class extends FakeVatEudClient {
+    $this->app->bind(VatEudClientInterface::class, fn () => new class extends FakeVatEudClient
+    {
         public function getTier1Endorsements(): array
         {
             return [
                 Tier1EndorsementData::fromApiResponse([
-                    'id'         => 1,
-                    'user_cid'   => 1601613,
-                    'position'   => 'EDDL_TWR',
-                    'facility'   => 9,
+                    'id' => 1,
+                    'user_cid' => 1601613,
+                    'position' => 'EDDL_TWR',
+                    'facility' => 9,
                     'created_at' => now()->subMonths(7)->toISOString(),
                 ]),
             ];
@@ -317,26 +322,27 @@ test('MarkEndorsementForRemoval success: sets removal_date 31 days from now', fu
 test('MarkEndorsementForRemoval success: fires EndorsementMarkedForRemoval event', function () {
     Event::fake();
 
-    $actor   = User::factory()->create();
+    $actor = User::factory()->create();
     $trainee = User::factory()->create(['vatsim_id' => 1601613]);
 
     $activity = EndorsementActivity::create([
-        'endorsement_id'   => 1,
-        'vatsim_id'        => $trainee->vatsim_id,
-        'position'         => 'EDDL_TWR',
+        'endorsement_id' => 1,
+        'vatsim_id' => $trainee->vatsim_id,
+        'position' => 'EDDL_TWR',
         'activity_minutes' => 0,
-        'last_updated'     => now(),
+        'last_updated' => now(),
     ]);
 
-    $this->app->bind(VatEudClientInterface::class, fn () => new class extends FakeVatEudClient {
+    $this->app->bind(VatEudClientInterface::class, fn () => new class extends FakeVatEudClient
+    {
         public function getTier1Endorsements(): array
         {
             return [
                 Tier1EndorsementData::fromApiResponse([
-                    'id'         => 1,
-                    'user_cid'   => 1601613,
-                    'position'   => 'EDDL_TWR',
-                    'facility'   => 9,
+                    'id' => 1,
+                    'user_cid' => 1601613,
+                    'position' => 'EDDL_TWR',
+                    'facility' => 9,
                     'created_at' => now()->subMonths(7)->toISOString(),
                 ]),
             ];

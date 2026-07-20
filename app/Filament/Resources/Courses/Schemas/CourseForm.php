@@ -2,11 +2,9 @@
 
 namespace App\Filament\Resources\Courses\Schemas;
 
-use Filament\Schemas\Schema;
 use Filament\Forms;
 use Filament\Schemas\Components\Section;
-use App\Models\Role;
-use App\Models\FamiliarisationSector;
+use Filament\Schemas\Schema;
 
 class CourseForm
 {
@@ -20,13 +18,13 @@ class CourseForm
                             ->required()
                             ->maxLength(100)
                             ->helperText('Full course name (e.g., "Frankfurt Tower S2")'),
-                        
+
                         Forms\Components\TextInput::make('trainee_display_name')
                             ->label('Display Name for Trainees')
                             ->required()
                             ->maxLength(100)
                             ->helperText('How this course appears to trainees'),
-                        
+
                         Forms\Components\Textarea::make('description')
                             ->rows(3)
                             ->columnSpanFull(),
@@ -38,14 +36,14 @@ class CourseForm
                             ->required()
                             ->maxLength(100)
                             ->helperText('Full airport name (e.g., "Frankfurt")'),
-                        
+
                         Forms\Components\TextInput::make('airport_icao')
                             ->label('Airport ICAO Code')
                             ->required()
                             ->maxLength(4)
                             ->placeholder('EDDF')
                             ->helperText('4-letter ICAO code'),
-                        
+
                         Forms\Components\TextInput::make('solo_station')
                             ->label('Solo Station Callsign')
                             ->maxLength(15)
@@ -66,7 +64,7 @@ class CourseForm
                                 'RST' => 'Roster Reentry (RST)',
                             ])
                             ->helperText('Type of training provided'),
-                        
+
                         Forms\Components\Select::make('position')
                             ->required()
                             ->options([
@@ -76,14 +74,14 @@ class CourseForm
                                 'CTR' => 'Centre',
                             ])
                             ->helperText('ATC position level'),
-                        
+
                         Forms\Components\Select::make('mentor_group_id')
                             ->label('Mentor Group')
                             ->relationship('mentorGroup', 'name')
                             ->searchable()
                             ->preload()
                             ->helperText('Which mentor group manages this course'),
-                        
+
                         Forms\Components\Select::make('familiarisation_sector_id')
                             ->label('Familiarisation Sector')
                             ->relationship('familiarisationSector', 'name')
@@ -110,7 +108,7 @@ class CourseForm
                                 1000 => 'Unlimited',
                             ])
                             ->default(2),
-                        
+
                         Forms\Components\Select::make('max_rating')
                             ->label('Maximum Rating')
                             ->required()

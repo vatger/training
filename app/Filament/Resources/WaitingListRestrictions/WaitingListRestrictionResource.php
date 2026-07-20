@@ -9,11 +9,11 @@ use App\Filament\Resources\WaitingListRestrictions\Schemas\WaitingListRestrictio
 use App\Filament\Resources\WaitingListRestrictions\Tables\WaitingListRestrictionsTable;
 use App\Models\WaitingListRestriction;
 use BackedEnum;
+use Filament\Facades\Filament;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
-use Filament\Facades\Filament;
 
 class WaitingListRestrictionResource extends Resource
 {
@@ -44,7 +44,7 @@ class WaitingListRestrictionResource extends Resource
     {
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 

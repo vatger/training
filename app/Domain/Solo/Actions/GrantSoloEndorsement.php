@@ -34,7 +34,7 @@ class GrantSoloEndorsement
             $mentor->vatsim_id,
         );
 
-        if (!$result['success']) {
+        if (! $result['success']) {
             throw ValidationException::withMessages([
                 'error' => $result['message'] ?? 'Failed to grant solo endorsement',
             ]);
@@ -52,7 +52,7 @@ class GrantSoloEndorsement
         }
 
         foreach ($course->moodle_course_ids as $moodleCourseId) {
-            if (!$this->moodle->getCourseCompletion($trainee->vatsim_id, $moodleCourseId)) {
+            if (! $this->moodle->getCourseCompletion($trainee->vatsim_id, $moodleCourseId)) {
                 throw ValidationException::withMessages([
                     'error' => 'Trainee has not completed all required Moodle courses',
                 ]);
@@ -62,17 +62,17 @@ class GrantSoloEndorsement
 
     private function assertCoreTheoryPassed(User $trainee, Course $course): void
     {
-        if (!isset(self::CORE_THEORY_IDS[$course->position])) {
+        if (! isset(self::CORE_THEORY_IDS[$course->position])) {
             return;
         }
 
         $examId = self::CORE_THEORY_IDS[$course->position];
         $exams = $this->vatEud->getUserExams($trainee->vatsim_id);
         $passed = collect($exams->results)
-            ->filter(fn($r) => $r->examId === $examId && $r->passed && $r->expiry->isFuture())
+            ->filter(fn ($r) => $r->examId === $examId && $r->passed && $r->expiry->isFuture())
             ->isNotEmpty();
 
-        if (!$passed) {
+        if (! $passed) {
             throw ValidationException::withMessages([
                 'error' => 'Trainee has not passed the required core theory test',
             ]);
@@ -82,7 +82,7 @@ class GrantSoloEndorsement
     private function assertNoExistingSolo(User $trainee, Course $course): void
     {
         $existing = collect($this->vatEud->getSoloEndorsements())->first(
-            fn($s) => $s->userCid === $trainee->vatsim_id && $s->position === $course->solo_station,
+            fn ($s) => $s->userCid === $trainee->vatsim_id && $s->position === $course->solo_station,
         );
 
         if ($existing) {

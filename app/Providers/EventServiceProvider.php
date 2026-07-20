@@ -3,7 +3,6 @@
 namespace App\Providers;
 
 use App\Domain\Cpt\Events\CptCreated;
-use App\Domain\Gdpr\Events\UserDeleted;
 use App\Domain\Cpt\Events\CptDeleted;
 use App\Domain\Cpt\Events\CptExaminerJoined;
 use App\Domain\Cpt\Events\CptExaminerLeft;
@@ -14,6 +13,7 @@ use App\Domain\Cpt\Events\CptLogUploaded;
 use App\Domain\Endorsement\Events\EndorsementMarkedForRemoval;
 use App\Domain\Endorsement\Events\EndorsementRemoved;
 use App\Domain\Endorsement\Events\Tier2EndorsementGranted;
+use App\Domain\Gdpr\Events\UserDeleted;
 use App\Domain\Roster\Events\RosterRemovalWarningIssued;
 use App\Domain\Roster\Events\UserRemovedFromRoster;
 use App\Domain\Solo\Events\SoloExtended;

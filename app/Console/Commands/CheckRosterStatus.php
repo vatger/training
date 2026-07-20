@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Log;
 class CheckRosterStatus extends Command
 {
     protected $signature = 'roster:check';
+
     protected $description = 'Check roster status and remove inactive users';
 
     public function __construct(
@@ -28,10 +29,11 @@ class CheckRosterStatus extends Command
 
             if (empty($roster)) {
                 $this->error('Failed to fetch roster from VatEUD');
+
                 return 1;
             }
 
-            $this->info('Found ' . count($roster) . ' users on roster');
+            $this->info('Found '.count($roster).' users on roster');
 
             foreach ($roster as $vatsimId) {
                 try {
@@ -45,11 +47,13 @@ class CheckRosterStatus extends Command
             }
 
             $this->info('Roster check completed successfully.');
+
             return 0;
 
         } catch (\Exception $e) {
-            $this->error('Error during roster check: ' . $e->getMessage());
+            $this->error('Error during roster check: '.$e->getMessage());
             Log::error('Roster check error', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+
             return 1;
         }
     }

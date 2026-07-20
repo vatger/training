@@ -10,7 +10,7 @@ readonly class CptLogUploaded
 {
     public function __construct(
         public CptLog $log,
-        public Cpt    $cpt,
-        public User   $uploader,
+        public Cpt $cpt,
+        public User $uploader,
     ) {}
 }

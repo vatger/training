@@ -3,12 +3,11 @@
 namespace App\Models;
 
 use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Filament\Panel;
-
 
 class User extends Authenticatable implements FilamentUser
 {
@@ -51,7 +50,9 @@ class User extends Authenticatable implements FilamentUser
     ];
 
     private $permissionCache = null;
+
     private $cotCourseIdsCache = null;
+
     private $lmFirsCache = null;
 
     public function getRouteKeyName()
@@ -86,7 +87,7 @@ class User extends Authenticatable implements FilamentUser
 
     public function hasAnyRole(array $roles): bool
     {
-        if (!$this->relationLoaded('roles')) {
+        if (! $this->relationLoaded('roles')) {
             $this->load('roles');
         }
 
@@ -119,7 +120,7 @@ class User extends Authenticatable implements FilamentUser
 
     public function isVatsimUser(): bool
     {
-        return !empty($this->vatsim_id);
+        return ! empty($this->vatsim_id);
     }
 
     public function scopeAdmins($query)
@@ -139,7 +140,7 @@ class User extends Authenticatable implements FilamentUser
 
     public function hasActiveTier1Endorsements(): bool
     {
-        if (!$this->isVatsimUser()) {
+        if (! $this->isVatsimUser()) {
             return false;
         }
 
@@ -150,7 +151,7 @@ class User extends Authenticatable implements FilamentUser
 
     public function getEndorsementSummary(): array
     {
-        if (!$this->isVatsimUser()) {
+        if (! $this->isVatsimUser()) {
             return [
                 'tier1_count' => 0,
                 'tier2_count' => 0,
@@ -175,7 +176,7 @@ class User extends Authenticatable implements FilamentUser
 
     public function needsEndorsementAttention(): bool
     {
-        if (!$this->isVatsimUser()) {
+        if (! $this->isVatsimUser()) {
             return false;
         }
 
@@ -248,6 +249,7 @@ class User extends Authenticatable implements FilamentUser
         }
 
         $permissionName = "admin.{$resource}.view";
+
         return $this->hasPermission($permissionName);
     }
 
@@ -262,6 +264,7 @@ class User extends Authenticatable implements FilamentUser
         }
 
         $permissionName = "admin.{$resource}.edit";
+
         return $this->hasPermission($permissionName);
     }
 
@@ -316,10 +319,10 @@ class User extends Authenticatable implements FilamentUser
             return;
         }
 
-        if (!$this->relationLoaded('permissions')) {
+        if (! $this->relationLoaded('permissions')) {
             $this->load('permissions');
         }
-        if (!$this->relationLoaded('roles')) {
+        if (! $this->relationLoaded('roles')) {
             $this->load('roles.permissions');
         }
 
@@ -331,6 +334,7 @@ class User extends Authenticatable implements FilamentUser
     public function hasPermission(string $permissionName): bool
     {
         $this->loadPermissionsOnce();
+
         return in_array($permissionName, $this->permissionCache);
     }
 
@@ -342,17 +346,19 @@ class User extends Authenticatable implements FilamentUser
                 ->pluck('course_id')
                 ->all();
         }
+
         return $this->cotCourseIdsCache;
     }
 
     public function getLeadingMentorFirs(): array
     {
         if ($this->lmFirsCache === null) {
-            if (!$this->relationLoaded('leadingMentorFirs')) {
+            if (! $this->relationLoaded('leadingMentorFirs')) {
                 $this->load('leadingMentorFirs');
             }
             $this->lmFirsCache = $this->leadingMentorFirs->pluck('fir')->all();
         }
+
         return $this->lmFirsCache;
     }
 
@@ -385,7 +391,7 @@ class User extends Authenticatable implements FilamentUser
             ->where('position', $positionType)
             ->first();
     }
-    
+
     public function canRemoveEndorsementForPosition(string $position): bool
     {
         if ($this->is_superuser || $this->is_admin) {
@@ -397,10 +403,12 @@ class User extends Authenticatable implements FilamentUser
         if ($allRelatedCourses->isEmpty()) {
 
             $lmFirs = $this->getLeadingMentorFirs();
-            if (!empty($lmFirs)) {
+            if (! empty($lmFirs)) {
                 $result = $this->endorsementMatchesLeadingMentorFir($position, $lmFirs);
+
                 return $result;
             }
+
             return false;
         }
 
@@ -422,7 +430,7 @@ class User extends Authenticatable implements FilamentUser
             ->whereIn('course_id', $allRelatedCourses->pluck('id'))
             ->exists();
 
-        if (!$hasAnyCoT) {
+        if (! $hasAnyCoT) {
             $isMentorForAnyCourse = $allRelatedCourses->contains(function ($course) {
                 $isMentor = $this->mentorCourses()->where('courses.id', $course->id)->exists();
 
@@ -434,8 +442,9 @@ class User extends Authenticatable implements FilamentUser
             }
         }
         $lmFirs = $this->getLeadingMentorFirs();
-        if (!empty($lmFirs)) {
+        if (! empty($lmFirs)) {
             $result = $this->endorsementMatchesLeadingMentorFir($position, $lmFirs);
+
             return $result;
         }
 
@@ -467,22 +476,25 @@ class User extends Authenticatable implements FilamentUser
                 }
             }
         }
-        
+
         return false;
     }
 
     public function getFirFromMentorGroup(?string $groupName): ?string
     {
-        if (!$groupName) {
+        if (! $groupName) {
             return null;
         }
 
-        if (str_contains($groupName, 'EDGG'))
+        if (str_contains($groupName, 'EDGG')) {
             return 'EDGG';
-        if (str_contains($groupName, 'EDMM'))
+        }
+        if (str_contains($groupName, 'EDMM')) {
             return 'EDMM';
-        if (str_contains($groupName, 'EDWW'))
+        }
+        if (str_contains($groupName, 'EDWW')) {
             return 'EDWW';
+        }
 
         return null;
     }
@@ -506,7 +518,7 @@ class User extends Authenticatable implements FilamentUser
 
         $lmFirs = $this->getLeadingMentorFirs();
 
-        if (!empty($lmFirs)) {
+        if (! empty($lmFirs)) {
             $lmCourseIds = \DB::table('courses')
                 ->join('roles', 'courses.mentor_group_id', '=', 'roles.id')
                 ->where(function ($query) use ($lmFirs) {
@@ -559,7 +571,7 @@ class User extends Authenticatable implements FilamentUser
             return true;
         }
 
-        if (!$log->course_id) {
+        if (! $log->course_id) {
             return false;
         }
 
@@ -568,17 +580,17 @@ class User extends Authenticatable implements FilamentUser
         }
 
         $course = $log->course;
-        if (!$course || !$course->mentor_group_id) {
+        if (! $course || ! $course->mentor_group_id) {
             return false;
         }
 
         $mentorGroupName = $course->mentorGroup?->name;
-        if (!$mentorGroupName) {
+        if (! $mentorGroupName) {
             return false;
         }
 
         $fir = $this->getFirFromMentorGroup($mentorGroupName);
-        if (!$fir) {
+        if (! $fir) {
             return false;
         }
 
@@ -595,17 +607,17 @@ class User extends Authenticatable implements FilamentUser
             return true;
         }
 
-        if (!$course->mentor_group_id) {
+        if (! $course->mentor_group_id) {
             return false;
         }
 
         $mentorGroupName = $course->mentorGroup?->name;
-        if (!$mentorGroupName) {
+        if (! $mentorGroupName) {
             return false;
         }
 
         $fir = $this->getFirFromMentorGroup($mentorGroupName);
-        if (!$fir) {
+        if (! $fir) {
             return false;
         }
 
@@ -634,12 +646,12 @@ class User extends Authenticatable implements FilamentUser
 
     public function isChiefOfTraining(): bool
     {
-        return !empty($this->getChiefOfTrainingCourseIds());
+        return ! empty($this->getChiefOfTrainingCourseIds());
     }
 
     public function isLeadingMentor(): bool
     {
-        return !empty($this->getLeadingMentorFirs());
+        return ! empty($this->getLeadingMentorFirs());
     }
 
     public function waitingListRestrictions()

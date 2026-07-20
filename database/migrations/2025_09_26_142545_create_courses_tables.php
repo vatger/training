@@ -13,7 +13,7 @@ return new class extends Migration
             $table->string('name', 4);
             $table->enum('fir', ['EDGG', 'EDMM', 'EDWW']);
             $table->timestamps();
-            
+
             $table->index(['fir', 'name']);
         });
 
@@ -43,7 +43,7 @@ return new class extends Migration
             $table->json('moodle_course_ids');
             $table->foreignId('familiarisation_sector_id')->nullable()->constrained()->onDelete('set null');
             $table->timestamps();
-            
+
             $table->index(['type', 'position']);
             $table->index(['min_rating', 'max_rating']);
             $table->index('airport_icao');
@@ -121,7 +121,7 @@ return new class extends Migration
             $table->dateTime('last_session')->default('1970-01-01 00:00:00');
             $table->dateTime('removal_date')->nullable();
             $table->timestamps();
-            
+
             $table->unique('user_id');
             $table->index(['last_session', 'removal_date']);
         });

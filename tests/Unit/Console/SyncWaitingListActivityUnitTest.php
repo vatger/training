@@ -12,7 +12,6 @@ use App\Models\Course;
 use App\Models\Role;
 use App\Models\User;
 use App\Models\WaitingListEntry;
-use App\Services\VatsimActivityService;
 use Illuminate\Console\OutputStyle;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
@@ -37,10 +36,11 @@ function wlMakeCommand(): SyncWaitingListActivity
 
 function wlSetIO(object $command): BufferedOutput
 {
-    $buffered = new BufferedOutput();
+    $buffered = new BufferedOutput;
     $prop = new ReflectionProperty($command, 'output');
     $prop->setAccessible(true);
     $prop->setValue($command, new OutputStyle(new ArrayInput([]), $buffered));
+
     return $buffered;
 }
 
@@ -48,6 +48,7 @@ function wlCallMethod(object $command, string $method, mixed ...$args): mixed
 {
     $m = new ReflectionMethod($command, $method);
     $m->setAccessible(true);
+
     return $m->invoke($command, ...$args);
 }
 
@@ -135,7 +136,7 @@ test('CTR position returns -1 (no activity requirement)', function () {
     Http::fake(['stats.vatsim-germany.org/*' => Http::response([], 200)]);
 
     $user = User::factory()->create(['vatsim_id' => 1234567]);
-    $course = (object)['position' => 'CTR', 'airport_icao' => 'EDGG', 'mentorGroup' => (object)['name' => 'EDGG Mentor']];
+    $course = (object) ['position' => 'CTR', 'airport_icao' => 'EDGG', 'mentorGroup' => (object) ['name' => 'EDGG Mentor']];
 
     $cmd = wlMakeCommand();
     wlSetIO($cmd);
@@ -150,7 +151,7 @@ test('unknown position returns -1', function () {
     Http::fake(['stats.vatsim-germany.org/*' => Http::response([], 200)]);
 
     $user = User::factory()->create(['vatsim_id' => 1234567]);
-    $course = (object)['position' => 'XYZ', 'airport_icao' => 'EDDL', 'mentorGroup' => (object)['name' => 'EDGG Mentor']];
+    $course = (object) ['position' => 'XYZ', 'airport_icao' => 'EDDL', 'mentorGroup' => (object) ['name' => 'EDGG Mentor']];
 
     $cmd = wlMakeCommand();
     wlSetIO($cmd);
@@ -189,11 +190,11 @@ test('updateEntryActivity writes calculated hours and updates hours_updated', fu
     $user = User::factory()->create(['vatsim_id' => 1234567, 'rating' => 3, 'last_known_rating' => 3]);
 
     $entry = WaitingListEntry::create([
-        'user_id'      => $user->id,
-        'course_id'    => $course->id,
-        'date_added'   => now(),
-        'activity'     => 0.0,
-        'hours_updated'=> now()->subDay(),
+        'user_id' => $user->id,
+        'course_id' => $course->id,
+        'date_added' => now(),
+        'activity' => 0.0,
+        'hours_updated' => now()->subDay(),
     ]);
 
     $oldUpdated = $entry->hours_updated->copy();
@@ -213,11 +214,11 @@ test('updateEntryActivity does not update a non-VATSIM user entry', function () 
     $user = User::factory()->create(['vatsim_id' => 0, 'rating' => 3, 'last_known_rating' => 3]);
 
     $entry = WaitingListEntry::create([
-        'user_id'      => $user->id,
-        'course_id'    => $course->id,
-        'date_added'   => now(),
-        'activity'     => 7.5,
-        'hours_updated'=> now()->subDay(),
+        'user_id' => $user->id,
+        'course_id' => $course->id,
+        'date_added' => now(),
+        'activity' => 7.5,
+        'hours_updated' => now()->subDay(),
     ]);
 
     $cmd = wlMakeCommand();
@@ -234,6 +235,7 @@ function callCalculateS2TowerHours(array $connections, string $airport): float
 {
     $method = new ReflectionMethod(SyncWaitingListActivity::class, 'calculateS2TowerHours');
     $method->setAccessible(true);
+
     return $method->invoke(wlMakeCommand(), $connections, $airport);
 }
 
@@ -278,18 +280,18 @@ test('calculateS2TowerHours: empty connections returns 0.0', function () {
 // ─── updateEntryActivity: DB side-effects ─────────────────────────────────────
 
 test('updateEntryActivity handles API exception without crashing', function () {
-    Http::fake(['*' => fn() => throw new \Exception('Connection refused')]);
+    Http::fake(['*' => fn () => throw new \Exception('Connection refused')]);
 
     $role = Role::create(['name' => 'EDGG Mentor']);
     $course = Course::factory()->create(['type' => 'RTG', 'position' => 'APP', 'mentor_group_id' => $role->id, 'airport_icao' => 'EDDL']);
     $user = User::factory()->create(['vatsim_id' => 1234567, 'rating' => 3, 'last_known_rating' => 3]);
 
     $entry = WaitingListEntry::create([
-        'user_id'      => $user->id,
-        'course_id'    => $course->id,
-        'date_added'   => now(),
-        'activity'     => 5.0,
-        'hours_updated'=> now(),
+        'user_id' => $user->id,
+        'course_id' => $course->id,
+        'date_added' => now(),
+        'activity' => 5.0,
+        'hours_updated' => now(),
     ]);
 
     $cmd = wlMakeCommand();

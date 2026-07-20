@@ -32,7 +32,7 @@ class ApiKey extends Model
 
     public static function generateKey(): string
     {
-        return 'tc_' . Str::random(60);
+        return 'tc_'.Str::random(60);
     }
 
     public function hasPermission(string $permission): bool
@@ -42,7 +42,7 @@ class ApiKey extends Model
 
     public function isValid(): bool
     {
-        if (!$this->is_active) {
+        if (! $this->is_active) {
             return false;
         }
 
@@ -63,13 +63,13 @@ class ApiKey extends Model
 
     public function getMaskedKeyAttribute(): string
     {
-        return 'tc_' . str_repeat('*', 60);
+        return 'tc_'.str_repeat('*', 60);
     }
 
     protected static function booted()
     {
         static::creating(function ($apiKey) {
-            if (!$apiKey->key) {
+            if (! $apiKey->key) {
                 $plainKey = self::generateKey();
                 $apiKey->plainKey = $plainKey;
                 $apiKey->key = hash('sha256', $plainKey);
@@ -83,6 +83,7 @@ class ApiKey extends Model
     public static function findByPlainKey(string $plainKey): ?self
     {
         $hashedKey = hash('sha256', $plainKey);
+
         return self::where('key', $hashedKey)->first();
     }
 }

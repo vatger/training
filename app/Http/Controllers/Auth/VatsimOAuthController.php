@@ -3,15 +3,15 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use App\Models\Role;
+use App\Models\User;
 use App\Services\VatsimConnectService;
-use Illuminate\Http\Request;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Cache;
 use Carbon\Carbon;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class VatsimOAuthController extends Controller
 {
@@ -26,11 +26,13 @@ class VatsimOAuthController extends Controller
     {
         try {
             $authUrl = $this->vatsimConnect->getAuthorizationUrl();
+
             return redirect()->away($authUrl);
         } catch (\Exception $e) {
-            Log::error('Failed to generate OAuth URL: ' . $e->getMessage());
+            Log::error('Failed to generate OAuth URL: '.$e->getMessage());
+
             return redirect()->route('login')->withErrors([
-                'oauth' => 'Failed to connect to VATSIM. Please try again.'
+                'oauth' => 'Failed to connect to VATSIM. Please try again.',
             ]);
         }
     }
@@ -43,22 +45,23 @@ class VatsimOAuthController extends Controller
             $error = $request->input('error');
 
             if ($error) {
-                Log::warning('OAuth error from VATSIM Connect: ' . $error);
+                Log::warning('OAuth error from VATSIM Connect: '.$error);
+
                 return redirect()->route('login')->withErrors([
-                    'oauth' => 'Authorization was denied or failed. Please try again.'
+                    'oauth' => 'Authorization was denied or failed. Please try again.',
                 ]);
             }
 
-            if (!$code) {
+            if (! $code) {
                 return redirect()->route('login')->withErrors([
-                    'oauth' => 'Authorization code not received. Please try again.'
+                    'oauth' => 'Authorization code not received. Please try again.',
                 ]);
             }
 
-            $cacheKey = 'oauth_code_processed_' . hash('sha256', $code);
+            $cacheKey = 'oauth_code_processed_'.hash('sha256', $code);
             if (Cache::has($cacheKey)) {
                 return redirect()->route('login')->withErrors([
-                    'oauth' => 'This authorization code has already been used.'
+                    'oauth' => 'This authorization code has already been used.',
                 ]);
             }
             Cache::put($cacheKey, true, 600);
@@ -81,12 +84,12 @@ class VatsimOAuthController extends Controller
             }
 
         } catch (\Exception $e) {
-            Log::error('OAuth callback error: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString()
+            Log::error('OAuth callback error: '.$e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return redirect()->route('login')->withErrors([
-                'oauth' => 'Authentication failed. Please try again.'
+                'oauth' => 'Authentication failed. Please try again.',
             ]);
         }
     }
@@ -95,16 +98,16 @@ class VatsimOAuthController extends Controller
     {
         $mentorGroups = ['EDGG Mentor', 'EDMM Mentor', 'EDWW Mentor'];
         $teams = $profile['teams'] ?? [];
-        
-        $isStaff = !empty(array_intersect($mentorGroups, $teams)) ||
+
+        $isStaff = ! empty(array_intersect($mentorGroups, $teams)) ||
                    in_array('ATD Leitung', $teams) ||
                    in_array('VATGER Leitung', $teams);
-        
-        $isSuperuser = in_array('ATD Leitung', $teams) || 
+
+        $isSuperuser = in_array('ATD Leitung', $teams) ||
                        in_array('VATGER Leitung', $teams);
 
         $lastRatingChange = null;
-        if (!empty($profile['last_rating_change_at'])) {
+        if (! empty($profile['last_rating_change_at'])) {
             try {
                 $lastRatingChange = Carbon::createFromFormat('Y-m-d H:i:s', $profile['last_rating_change_at']);
             } catch (\Exception $e) {
@@ -143,7 +146,7 @@ class VatsimOAuthController extends Controller
     protected function assignRoles(User $user, array $teams): void
     {
         $user->roles()->detach();
-        
+
         foreach ($teams as $team) {
             $role = Role::where('name', $team)->first();
             if ($role) {

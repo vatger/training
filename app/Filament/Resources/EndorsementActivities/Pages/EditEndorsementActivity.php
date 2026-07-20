@@ -4,8 +4,8 @@ namespace App\Filament\Resources\EndorsementActivities\Pages;
 
 use App\Filament\Resources\EndorsementActivities\EndorsementActivityResource;
 use App\Filament\Resources\EndorsementActivities\Schemas\EndorsementActivityForm;
-use Filament\Actions\DeleteAction;
 use Filament\Actions\Action;
+use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 use Filament\Schemas\Schema;
 
@@ -33,14 +33,14 @@ class EditEndorsementActivity extends EditRecord
                         'removal_date' => null,
                         'removal_notified' => false,
                     ]);
-                    
+
                     \Filament\Notifications\Notification::make()
                         ->success()
                         ->title('Removal process stopped successfully.')
                         ->send();
                 })
                 ->visible(fn () => $this->record->removal_date !== null),
-            
+
             DeleteAction::make(),
         ];
     }

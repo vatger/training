@@ -48,7 +48,8 @@ test('CheckUserRosterStatus sends warning and sets removal_date for user inactiv
 
     $vatsimId = 7654321;
 
-    $this->app->bind(VatEudClientInterface::class, fn () => new class extends FakeVatEudClient {
+    $this->app->bind(VatEudClientInterface::class, fn () => new class extends FakeVatEudClient
+    {
         public function getLastGermanSession(int $vatsimId): ?Carbon
         {
             return Carbon::now()->subDays(340);
@@ -74,12 +75,13 @@ test('CheckUserRosterStatus removes user when inactive 366 days and removal_date
     $vatsimId = 9876543;
 
     RosterEntry::create([
-        'user_id'      => $vatsimId,
+        'user_id' => $vatsimId,
         'last_session' => now()->subDays(366),
         'removal_date' => now()->subDay(),
     ]);
 
-    $this->app->bind(VatEudClientInterface::class, fn () => new class extends FakeVatEudClient {
+    $this->app->bind(VatEudClientInterface::class, fn () => new class extends FakeVatEudClient
+    {
         public function getLastGermanSession(int $vatsimId): ?Carbon
         {
             return Carbon::now()->subDays(366);
@@ -99,7 +101,7 @@ test('CheckUserRosterStatus clears removal_date when user becomes active again',
     $vatsimId = 1122334;
 
     RosterEntry::create([
-        'user_id'      => $vatsimId,
+        'user_id' => $vatsimId,
         'last_session' => now()->subDays(340),
         'removal_date' => now()->addDays(10),
     ]);
@@ -118,14 +120,14 @@ test('CheckUserRosterStatus clears removal_date when user becomes active again',
 test('RemoveUserFromRoster success: waiting list entries deleted and event fired', function () {
     Event::fake();
 
-    $user   = User::factory()->create();
+    $user = User::factory()->create();
     $course = Course::factory()->create(['type' => 'RTG']);
 
     WaitingListEntry::create([
-        'user_id'       => $user->id,
-        'course_id'     => $course->id,
-        'date_added'    => now(),
-        'activity'      => 0,
+        'user_id' => $user->id,
+        'course_id' => $course->id,
+        'date_added' => now(),
+        'activity' => 0,
         'hours_updated' => now(),
     ]);
 
@@ -141,18 +143,19 @@ test('RemoveUserFromRoster success: waiting list entries deleted and event fired
 test('RemoveUserFromRoster failure: entries not deleted and event not fired when API call fails', function () {
     Event::fake();
 
-    $user   = User::factory()->create();
+    $user = User::factory()->create();
     $course = Course::factory()->create(['type' => 'RTG']);
 
     WaitingListEntry::create([
-        'user_id'       => $user->id,
-        'course_id'     => $course->id,
-        'date_added'    => now(),
-        'activity'      => 0,
+        'user_id' => $user->id,
+        'course_id' => $course->id,
+        'date_added' => now(),
+        'activity' => 0,
         'hours_updated' => now(),
     ]);
 
-    $this->app->bind(VatEudClientInterface::class, fn () => new class extends FakeVatEudClient {
+    $this->app->bind(VatEudClientInterface::class, fn () => new class extends FakeVatEudClient
+    {
         public function removeRosterAndEndorsements(int $vatsimId): bool
         {
             return false;

@@ -9,9 +9,9 @@ use App\Models\WaitingListEntry;
 readonly class TrainingStarted
 {
     public function __construct(
-        public Course           $course,
-        public User             $trainee,
-        public User             $mentor,
+        public Course $course,
+        public User $trainee,
+        public User $mentor,
         public WaitingListEntry $entry,
     ) {}
 }

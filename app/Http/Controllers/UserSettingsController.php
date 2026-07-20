@@ -12,7 +12,7 @@ class UserSettingsController extends Controller
     public function index(Request $request): Response
     {
         $user = $request->user();
-        
+
         $settings = UserSetting::firstOrCreate(
             ['user_id' => $user->id],
             [

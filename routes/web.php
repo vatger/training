@@ -1,26 +1,26 @@
 <?php
 
-use App\Http\Controllers\Training\MentorOverviewController;
+use App\Http\Controllers\Cpt\CptAssignmentController;
+use App\Http\Controllers\Cpt\CptController;
+use App\Http\Controllers\Cpt\CptGradingController;
+use App\Http\Controllers\Cpt\CptLogController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Endorsement\EndorsementController;
+use App\Http\Controllers\FamiliarisationController;
+use App\Http\Controllers\Solo\SoloController;
+use App\Http\Controllers\TraineeOrderController;
 use App\Http\Controllers\Training\MentorManagementController;
+use App\Http\Controllers\Training\MentorOverviewController;
 use App\Http\Controllers\Training\TraineeManagementController;
 use App\Http\Controllers\Training\TrainingRemarkController;
 use App\Http\Controllers\Training\WaitingListController;
-use App\Http\Controllers\Endorsement\EndorsementController;
-use App\Http\Controllers\FamiliarisationController;
-use App\Http\Controllers\UserSearchController;
-use App\Http\Controllers\TraineeOrderController;
-use App\Http\Controllers\Solo\SoloController;
 use App\Http\Controllers\TrainingLogController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\Cpt\CptController;
-use App\Http\Controllers\Cpt\CptAssignmentController;
-use App\Http\Controllers\Cpt\CptGradingController;
-use App\Http\Controllers\Cpt\CptLogController;
+use App\Http\Controllers\UserSearchController;
 use App\Http\Controllers\UserSettingsController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return redirect("/dashboard");
+    return redirect('/dashboard');
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -167,4 +167,4 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 });
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';

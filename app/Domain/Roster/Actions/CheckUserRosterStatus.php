@@ -3,17 +3,17 @@
 namespace App\Domain\Roster\Actions;
 
 use App\Domain\Roster\Events\RosterRemovalWarningIssued;
-use App\Domain\Roster\Events\UserRemovedFromRoster;
-use App\Models\RosterEntry;
-use App\Models\WaitingListEntry;
 use App\Integrations\VatEud\VatEudClientInterface;
+use App\Models\RosterEntry;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
 class CheckUserRosterStatus
 {
     private const WARNING_THRESHOLD = 330;
+
     private const REMOVAL_THRESHOLD = 365;
+
     private const GRACE_DAYS = 35;
 
     public function __construct(

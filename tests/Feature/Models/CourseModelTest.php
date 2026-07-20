@@ -142,24 +142,24 @@ test('mentors relationship returns attached mentors', function () {
 });
 
 test('activeTrainees returns only trainees without completed_at', function () {
-    $course   = Course::factory()->create();
-    $active   = User::factory()->create();
+    $course = Course::factory()->create();
+    $active = User::factory()->create();
     $completed = User::factory()->create();
 
     DB::table('course_trainees')->insert([
-        'course_id'    => $course->id,
-        'user_id'      => $active->id,
+        'course_id' => $course->id,
+        'user_id' => $active->id,
         'completed_at' => null,
-        'created_at'   => now(),
-        'updated_at'   => now(),
+        'created_at' => now(),
+        'updated_at' => now(),
     ]);
 
     DB::table('course_trainees')->insert([
-        'course_id'    => $course->id,
-        'user_id'      => $completed->id,
+        'course_id' => $course->id,
+        'user_id' => $completed->id,
         'completed_at' => now()->subDay(),
-        'created_at'   => now(),
-        'updated_at'   => now(),
+        'created_at' => now(),
+        'updated_at' => now(),
     ]);
 
     $result = $course->activeTrainees()->get();
@@ -169,24 +169,24 @@ test('activeTrainees returns only trainees without completed_at', function () {
 });
 
 test('completedTrainees returns only trainees with completed_at set', function () {
-    $course    = Course::factory()->create();
-    $active    = User::factory()->create();
+    $course = Course::factory()->create();
+    $active = User::factory()->create();
     $completed = User::factory()->create();
 
     DB::table('course_trainees')->insert([
-        'course_id'    => $course->id,
-        'user_id'      => $active->id,
+        'course_id' => $course->id,
+        'user_id' => $active->id,
         'completed_at' => null,
-        'created_at'   => now(),
-        'updated_at'   => now(),
+        'created_at' => now(),
+        'updated_at' => now(),
     ]);
 
     DB::table('course_trainees')->insert([
-        'course_id'    => $course->id,
-        'user_id'      => $completed->id,
+        'course_id' => $course->id,
+        'user_id' => $completed->id,
         'completed_at' => now()->subDay(),
-        'created_at'   => now(),
-        'updated_at'   => now(),
+        'created_at' => now(),
+        'updated_at' => now(),
     ]);
 
     $result = $course->completedTrainees()->get();

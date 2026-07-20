@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources\WaitingListRestrictions\Schemas;
 
-use Filament\Schemas\Schema;
-use Filament\Forms\Components\Select;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
+use Filament\Schemas\Schema;
 
 class WaitingListRestrictionForm
 {
@@ -15,7 +15,7 @@ class WaitingListRestrictionForm
                 Select::make('user_id')
                     ->label('User')
                     ->relationship('user', 'first_name')
-                    ->getOptionLabelFromRecordUsing(fn ($record) => $record->name . ' (' . $record->vatsim_id . ')')
+                    ->getOptionLabelFromRecordUsing(fn ($record) => $record->name.' ('.$record->vatsim_id.')')
                     ->searchable(['first_name', 'last_name', 'vatsim_id'])
                     ->required(),
 

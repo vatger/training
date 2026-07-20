@@ -3,7 +3,6 @@
 namespace Database\Factories;
 
 use App\Models\Course;
-use App\Models\Role;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class CourseFactory extends Factory
@@ -13,11 +12,11 @@ class CourseFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->words(3, true) . ' Training',
+            'name' => fake()->words(3, true).' Training',
             'trainee_display_name' => fake()->words(3, true),
             'description' => fake()->sentence(),
             'airport_name' => fake()->city(),
-            'airport_icao' => 'ED' . fake()->randomLetter() . fake()->randomLetter(),
+            'airport_icao' => 'ED'.fake()->randomLetter().fake()->randomLetter(),
             'solo_station' => null,
             'mentor_group_id' => null,
             'min_rating' => 2,

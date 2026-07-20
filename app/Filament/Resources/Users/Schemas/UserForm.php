@@ -2,10 +2,10 @@
 
 namespace App\Filament\Resources\Users\Schemas;
 
-use Filament\Schemas\Schema;
+use App\Models\Permission;
 use Filament\Forms;
 use Filament\Schemas\Components\Section;
-use App\Models\Permission;
+use Filament\Schemas\Schema;
 
 class UserForm
 {
@@ -80,7 +80,7 @@ class UserForm
                         Forms\Components\TextInput::make('solo_days_used')
                             ->label('Used Solo Days')
                             ->integer()
-                            ->suffix('days')
+                            ->suffix('days'),
                     ])->columns(2),
 
                 Section::make('System Permissions')
@@ -119,6 +119,7 @@ class UserForm
                                         $label = $permission->group
                                             ? "[{$permission->group}] {$permission->name}"
                                             : $permission->name;
+
                                         return [$permission->id => $label];
                                     });
                             })

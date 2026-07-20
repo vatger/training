@@ -8,12 +8,11 @@ use Illuminate\Support\Facades\Log;
 
 class TraineeOrderController extends Controller
 {
-
     public function updateOrder(Request $request)
     {
         $user = $request->user();
 
-        if (!$user->isMentor() && !$user->is_superuser) {
+        if (! $user->isMentor() && ! $user->is_superuser) {
             return response()->json(['error' => 'Access denied'], 403);
         }
 
@@ -25,7 +24,7 @@ class TraineeOrderController extends Controller
 
         $course = \App\Models\Course::findOrFail($request->course_id);
 
-        if (!$user->is_superuser && !$user->is_admin && !$user->mentorCourses()->where('courses.id', $course->id)->exists()) {
+        if (! $user->is_superuser && ! $user->is_admin && ! $user->mentorCourses()->where('courses.id', $course->id)->exists()) {
             return response()->json(['error' => 'You cannot modify this course'], 403);
         }
 
@@ -61,7 +60,7 @@ class TraineeOrderController extends Controller
     {
         $user = $request->user();
 
-        if (!$user->isMentor() && !$user->is_superuser) {
+        if (! $user->isMentor() && ! $user->is_superuser) {
             return response()->json(['error' => 'Access denied'], 403);
         }
 
@@ -71,7 +70,7 @@ class TraineeOrderController extends Controller
 
         $course = \App\Models\Course::findOrFail($request->course_id);
 
-        if (!$user->is_superuser && !$user->is_admin && !$user->mentorCourses()->where('courses.id', $course->id)->exists()) {
+        if (! $user->is_superuser && ! $user->is_admin && ! $user->mentorCourses()->where('courses.id', $course->id)->exists()) {
             return response()->json(['error' => 'You cannot modify this course'], 403);
         }
 

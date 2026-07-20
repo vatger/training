@@ -16,18 +16,18 @@ class LogTraineeAddedToCourse
         }
 
         ActivityLog::create([
-            'action'      => 'trainee.added_to_course',
-            'model_type'  => $event->course::class,
-            'model_id'    => $event->course->id,
+            'action' => 'trainee.added_to_course',
+            'model_type' => $event->course::class,
+            'model_id' => $event->course->id,
             'description' => $description,
-            'user_id'     => $event->mentor->id,
-            'properties'  => [
-                'trainee_id'      => $event->trainee->id,
-                'trainee_name'    => $event->trainee->name,
-                'course_id'       => $event->course->id,
-                'course_name'     => $event->course->name,
-                'mentor_id'       => $event->mentor->id,
-                'mentor_name'     => $event->mentor->name,
+            'user_id' => $event->mentor->id,
+            'properties' => [
+                'trainee_id' => $event->trainee->id,
+                'trainee_name' => $event->trainee->name,
+                'course_id' => $event->course->id,
+                'course_name' => $event->course->name,
+                'mentor_id' => $event->mentor->id,
+                'mentor_name' => $event->mentor->name,
                 'was_reactivated' => $event->wasReactivated,
             ],
             'ip_address' => Request::ip(),

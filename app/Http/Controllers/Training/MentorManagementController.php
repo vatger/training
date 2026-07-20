@@ -9,13 +9,13 @@ use App\Models\Course;
 use App\Models\User;
 use App\Services\CourseValidationService;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 use Illuminate\Support\Facades\Log;
+use Inertia\Inertia;
 
 class MentorManagementController extends Controller
 {
     public function __construct(
-        private AddMentorToCourse      $addMentorToCourse,
+        private AddMentorToCourse $addMentorToCourse,
         private RemoveMentorFromCourse $removeMentorFromCourse,
         private CourseValidationService $courseValidationService,
     ) {}
@@ -30,7 +30,7 @@ class MentorManagementController extends Controller
         $isAdmin = $user->is_admin || $user->is_superuser;
         $isOnRoster = $this->courseValidationService->isUserOnRoster($user->vatsim_id);
         $isGerSubdivision = $user->subdivision === 'GER';
-        $isVisitor = !$isGerSubdivision && $isOnRoster;
+        $isVisitor = ! $isGerSubdivision && $isOnRoster;
 
         $userEndorsements = $this->courseValidationService->getUserEndorsements($user->vatsim_id);
         $userFamSectorIds = \App\Models\Familiarisation::where('user_id', $user->id)
@@ -53,7 +53,7 @@ class MentorManagementController extends Controller
                     ->count();
             }
 
-            if (!$isAdmin && !$isOnWaitingList && !$this->isCourseVisibleToUser($course, $isGerSubdivision, $isOnRoster, $isVisitor, $user->rating, $userEndorsements, $userFamSectorIds, $userHasActiveRtgEnrollment)) {
+            if (! $isAdmin && ! $isOnWaitingList && ! $this->isCourseVisibleToUser($course, $isGerSubdivision, $isOnRoster, $isVisitor, $user->rating, $userEndorsements, $userFamSectorIds, $userHasActiveRtgEnrollment)) {
                 return null;
             }
 
@@ -82,7 +82,7 @@ class MentorManagementController extends Controller
         })->filter();
 
         $userHasActiveRtgCourse = \App\Models\WaitingListEntry::where('user_id', $user->id)
-            ->whereHas('course', fn($q) => $q->where('type', 'RTG'))
+            ->whereHas('course', fn ($q) => $q->where('type', 'RTG'))
             ->exists();
 
         return Inertia::render('training/courses', [
@@ -104,12 +104,13 @@ class MentorManagementController extends Controller
 
         if ($existing) {
             $existing->delete();
+
             return back()->with('success', 'Removed from waiting list.');
         }
 
         [$canJoin, $error] = $this->courseValidationService->canUserJoinCourse($course, $user);
 
-        if (!$canJoin) {
+        if (! $canJoin) {
             return back()->withErrors(['join' => $error]);
         }
 
@@ -127,23 +128,23 @@ class MentorManagementController extends Controller
     {
         $user = $request->user();
 
-        if (!$user->isMentor() && !$user->is_superuser) {
+        if (! $user->isMentor() && ! $user->is_superuser) {
             return back()->withErrors(['error' => 'Access denied']);
         }
 
         $validated = $request->validate([
             'course_id' => 'required|integer|exists:courses,id',
-            'user_id'   => 'required|integer|exists:users,id',
+            'user_id' => 'required|integer|exists:users,id',
         ]);
 
-        $course      = Course::findOrFail($validated['course_id']);
+        $course = Course::findOrFail($validated['course_id']);
         $mentorToAdd = User::findOrFail($validated['user_id']);
 
-        if (!$user->canViewCourse($course)) {
+        if (! $user->canViewCourse($course)) {
             return back()->withErrors(['error' => 'You cannot modify this course']);
         }
 
-        if (!$mentorToAdd->isMentor() && !$mentorToAdd->is_superuser && !$mentorToAdd->is_admin) {
+        if (! $mentorToAdd->isMentor() && ! $mentorToAdd->is_superuser && ! $mentorToAdd->is_admin) {
             return back()->withErrors(['error' => 'This user does not have mentor privileges']);
         }
 
@@ -153,9 +154,11 @@ class MentorManagementController extends Controller
 
         try {
             $this->addMentorToCourse->execute($course, $mentorToAdd, $user);
+
             return back()->with('success', "Successfully added {$mentorToAdd->name} as a mentor");
         } catch (\Exception $e) {
             Log::error('Error adding mentor to course', ['admin_id' => $user->id, 'new_mentor_id' => $validated['user_id'], 'course_id' => $course->id, 'error' => $e->getMessage()]);
+
             return back()->withErrors(['error' => 'An error occurred while adding the mentor.']);
         }
     }
@@ -178,7 +181,7 @@ class MentorManagementController extends Controller
             if ($course->type === 'RST' || $course->type === 'GST') {
                 return false;
             }
-        } elseif ($isGerSubdivision && !$isOnRoster) {
+        } elseif ($isGerSubdivision && ! $isOnRoster) {
             if ($course->type !== 'RST') {
                 return false;
             }
@@ -192,7 +195,7 @@ class MentorManagementController extends Controller
             }
         }
 
-        if ($course->type !== 'GST' && !($course->min_rating <= $userRating && $userRating <= $course->max_rating)) {
+        if ($course->type !== 'GST' && ! ($course->min_rating <= $userRating && $userRating <= $course->max_rating)) {
             return false;
         }
 
@@ -214,7 +217,7 @@ class MentorManagementController extends Controller
     {
         $user = $request->user();
 
-        if (!$user->isMentor() && !$user->is_superuser) {
+        if (! $user->isMentor() && ! $user->is_superuser) {
             return back()->withErrors(['error' => 'Access denied']);
         }
 
@@ -223,10 +226,10 @@ class MentorManagementController extends Controller
             'mentor_id' => 'required|integer|exists:users,id',
         ]);
 
-        $course         = Course::findOrFail($validated['course_id']);
+        $course = Course::findOrFail($validated['course_id']);
         $mentorToRemove = User::findOrFail($validated['mentor_id']);
 
-        if (!$user->canViewCourse($course)) {
+        if (! $user->canViewCourse($course)) {
             return back()->withErrors(['error' => 'You cannot modify this course']);
         }
 
@@ -234,15 +237,17 @@ class MentorManagementController extends Controller
             return back()->withErrors(['error' => 'Cannot remove the last mentor from a course']);
         }
 
-        if (!$course->mentors()->where('user_id', $mentorToRemove->id)->exists()) {
+        if (! $course->mentors()->where('user_id', $mentorToRemove->id)->exists()) {
             return back()->withErrors(['error' => 'This user is not a mentor for this course']);
         }
 
         try {
             $this->removeMentorFromCourse->execute($course, $mentorToRemove, $user);
+
             return back()->with('success', "Successfully removed {$mentorToRemove->name} as a mentor");
         } catch (\Exception $e) {
             Log::error('Error removing mentor from course', ['admin_id' => $user->id, 'mentor_id' => $validated['mentor_id'], 'course_id' => $course->id, 'error' => $e->getMessage()]);
+
             return back()->withErrors(['error' => 'An error occurred while removing the mentor.']);
         }
     }

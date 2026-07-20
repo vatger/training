@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Log;
 class SyncSoloDays extends Command
 {
     protected $signature = 'solo:sync-days';
+
     protected $description = 'Sync solo days used from VatEUD for all users with active solos';
 
     public function __construct(
@@ -29,14 +30,15 @@ class SyncSoloDays extends Command
 
             if (empty($soloEndorsements)) {
                 $this->info('No solo endorsements found in VatEUD');
+
                 return 0;
             }
 
-            $this->info('Found ' . count($soloEndorsements) . ' solo endorsements');
+            $this->info('Found '.count($soloEndorsements).' solo endorsements');
 
             $userSoloDays = collect($soloEndorsements)
                 ->groupBy('userCid')
-                ->map(fn($userSolos) => $userSolos->max('positionDays') ?? 0);
+                ->map(fn ($userSolos) => $userSolos->max('positionDays') ?? 0);
 
             $bar = $this->output->createProgressBar($userSoloDays->count());
             $bar->start();
@@ -63,7 +65,7 @@ class SyncSoloDays extends Command
                         $this->warn("\nUser with VATSIM ID {$vatsimId} not found in database");
                     }
                 } catch (\Exception $e) {
-                    $this->error("\nFailed to update user {$vatsimId}: " . $e->getMessage());
+                    $this->error("\nFailed to update user {$vatsimId}: ".$e->getMessage());
                     Log::error('Failed to update solo days for user', ['vatsim_id' => $vatsimId, 'error' => $e->getMessage()]);
                 }
 
@@ -77,8 +79,9 @@ class SyncSoloDays extends Command
             return 0;
 
         } catch (\Exception $e) {
-            $this->error('Error during solo days sync: ' . $e->getMessage());
+            $this->error('Error during solo days sync: '.$e->getMessage());
             Log::error('Solo days sync error', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+
             return 1;
         }
     }

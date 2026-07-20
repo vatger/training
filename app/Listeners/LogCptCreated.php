@@ -20,33 +20,33 @@ class LogCptCreated
         }
 
         $properties = [
-            'cpt_id'       => $event->cpt->id,
-            'trainee_id'   => $event->trainee->id,
+            'cpt_id' => $event->cpt->id,
+            'trainee_id' => $event->trainee->id,
             'trainee_name' => $event->trainee->name,
-            'course_id'    => $event->course->id,
-            'course_name'  => $event->course->name,
-            'position'     => $event->course->position,
-            'date'         => $event->cpt->date?->toIso8601String(),
-            'creator_id'   => $event->creator->id,
+            'course_id' => $event->course->id,
+            'course_name' => $event->course->name,
+            'position' => $event->course->position,
+            'date' => $event->cpt->date?->toIso8601String(),
+            'creator_id' => $event->creator->id,
             'creator_name' => $event->creator->name,
         ];
 
         if ($event->examiner) {
-            $properties['examiner_id']   = $event->examiner->id;
+            $properties['examiner_id'] = $event->examiner->id;
             $properties['examiner_name'] = $event->examiner->name;
         }
 
         if ($event->local) {
-            $properties['local_id']   = $event->local->id;
+            $properties['local_id'] = $event->local->id;
             $properties['local_name'] = $event->local->name;
         }
 
         ActivityLog::create([
-            'action'     => 'cpt.created',
+            'action' => 'cpt.created',
             'model_type' => $event->cpt::class,
-            'model_id'   => $event->cpt->id,
+            'model_id' => $event->cpt->id,
             'description' => $description,
-            'user_id'    => $event->creator->id,
+            'user_id' => $event->creator->id,
             'properties' => $properties,
         ]);
     }

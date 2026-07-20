@@ -2,7 +2,6 @@
 
 namespace App\Filament\Widgets;
 
-use App\Models\Course;
 use Filament\Widgets\ChartWidget;
 use Illuminate\Support\Facades\DB;
 
@@ -10,7 +9,7 @@ class TraineeDistributionChart extends ChartWidget
 {
     protected ?string $heading = 'Trainee Distribution by Position';
 
-    protected int | string | array $columnSpan = 'full';
+    protected int|string|array $columnSpan = 'full';
 
     protected static ?int $sort = 4;
 
@@ -27,7 +26,7 @@ class TraineeDistributionChart extends ChartWidget
         $data = [];
 
         foreach ($distribution as $item) {
-            $labels[] = match($item->position) {
+            $labels[] = match ($item->position) {
                 'GND' => 'Ground',
                 'TWR' => 'Tower',
                 'APP' => 'Approach',

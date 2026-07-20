@@ -37,9 +37,9 @@ beforeEach(function () {
 function apiCreateKey(array $permissions = [], string $plainKey = 'test-api-key'): ApiKey
 {
     return ApiKey::create([
-        'name'        => 'Test Key',
-        'key'         => $plainKey,
-        'is_active'   => true,
+        'name' => 'Test Key',
+        'key' => $plainKey,
+        'is_active' => true,
         'permissions' => $permissions,
     ]);
 }
@@ -67,9 +67,9 @@ describe('API authentication', function () {
 
     test('returns 401 when api key is inactive', function () {
         ApiKey::create([
-            'name'        => 'Inactive',
-            'key'         => 'inactive-key',
-            'is_active'   => false,
+            'name' => 'Inactive',
+            'key' => 'inactive-key',
+            'is_active' => false,
             'permissions' => ['users.read'],
         ]);
 
@@ -81,10 +81,10 @@ describe('API authentication', function () {
 
     test('returns 401 when api key is expired', function () {
         ApiKey::create([
-            'name'        => 'Expired',
-            'key'         => 'expired-key',
-            'is_active'   => true,
-            'expires_at'  => now()->subDay(),
+            'name' => 'Expired',
+            'key' => 'expired-key',
+            'is_active' => true,
+            'expires_at' => now()->subDay(),
             'permissions' => ['users.read'],
         ]);
 
@@ -180,18 +180,18 @@ describe('CptController', function () {
     test('returns upcoming pending cpts with correct structure and values', function () {
         apiCreateKey(['cpts.read']);
 
-        $trainee  = User::factory()->create(['vatsim_id' => 1111111]);
+        $trainee = User::factory()->create(['vatsim_id' => 1111111]);
         $examiner = User::factory()->create(['vatsim_id' => 2222222]);
-        $local    = User::factory()->create(['vatsim_id' => 3333333]);
-        $course   = Course::factory()->create(['name' => 'EDDF TWR', 'solo_station' => 'EDDF_TWR']);
+        $local = User::factory()->create(['vatsim_id' => 3333333]);
+        $course = Course::factory()->create(['name' => 'EDDF TWR', 'solo_station' => 'EDDF_TWR']);
 
         Cpt::create([
-            'trainee_id'  => $trainee->id,
+            'trainee_id' => $trainee->id,
             'examiner_id' => $examiner->id,
-            'local_id'    => $local->id,
-            'course_id'   => $course->id,
-            'date'        => now()->addDays(5),
-            'passed'      => null,
+            'local_id' => $local->id,
+            'course_id' => $course->id,
+            'date' => now()->addDays(5),
+            'passed' => null,
         ]);
 
         $response = $this->withHeaders(apiAuthHeaders())
@@ -200,12 +200,12 @@ describe('CptController', function () {
         $response->assertOk()
             ->assertJsonStructure(['data' => [['id', 'trainee_vatsim_id', 'trainee_name', 'examiner_vatsim_id', 'examiner_name', 'local_vatsim_id', 'local_name', 'course_name', 'position', 'date', 'confirmed']]])
             ->assertJsonFragment([
-                'trainee_vatsim_id'  => 1111111,
+                'trainee_vatsim_id' => 1111111,
                 'examiner_vatsim_id' => 2222222,
-                'local_vatsim_id'    => 3333333,
-                'course_name'        => 'EDDF TWR',
-                'position'           => 'EDDF_TWR',
-                'confirmed'          => true,
+                'local_vatsim_id' => 3333333,
+                'course_name' => 'EDDF TWR',
+                'position' => 'EDDF_TWR',
+                'confirmed' => true,
             ]);
     });
 
@@ -213,13 +213,13 @@ describe('CptController', function () {
         apiCreateKey(['cpts.read']);
 
         $trainee = User::factory()->create();
-        $course  = Course::factory()->create(['solo_station' => 'EDDF_TWR']);
+        $course = Course::factory()->create(['solo_station' => 'EDDF_TWR']);
 
         Cpt::create([
             'trainee_id' => $trainee->id,
-            'course_id'  => $course->id,
-            'date'       => now()->subDay(),
-            'passed'     => null,
+            'course_id' => $course->id,
+            'date' => now()->subDay(),
+            'passed' => null,
         ]);
 
         $this->withHeaders(apiAuthHeaders())
@@ -232,13 +232,13 @@ describe('CptController', function () {
         apiCreateKey(['cpts.read']);
 
         $trainee = User::factory()->create();
-        $course  = Course::factory()->create(['solo_station' => 'EDDF_TWR']);
+        $course = Course::factory()->create(['solo_station' => 'EDDF_TWR']);
 
         Cpt::create([
             'trainee_id' => $trainee->id,
-            'course_id'  => $course->id,
-            'date'       => now()->addDays(3),
-            'passed'     => true,
+            'course_id' => $course->id,
+            'date' => now()->addDays(3),
+            'passed' => true,
         ]);
 
         $this->withHeaders(apiAuthHeaders())
@@ -251,7 +251,7 @@ describe('CptController', function () {
         apiCreateKey(['cpts.read']);
 
         $trainee = User::factory()->create();
-        $course  = Course::factory()->create(['solo_station' => 'EDDF_TWR']);
+        $course = Course::factory()->create(['solo_station' => 'EDDF_TWR']);
 
         Cpt::create(['trainee_id' => $trainee->id, 'course_id' => $course->id, 'date' => now()->addDays(10), 'passed' => null]);
         Cpt::create(['trainee_id' => $trainee->id, 'course_id' => $course->id, 'date' => now()->addDays(2), 'passed' => null]);
@@ -271,15 +271,15 @@ describe('CptController', function () {
         apiCreateKey(['cpts.read']);
 
         $trainee = User::factory()->create();
-        $course  = Course::factory()->create(['solo_station' => 'EDDF_APP']);
+        $course = Course::factory()->create(['solo_station' => 'EDDF_APP']);
 
         Cpt::create([
-            'trainee_id'  => $trainee->id,
+            'trainee_id' => $trainee->id,
             'examiner_id' => null,
-            'local_id'    => null,
-            'course_id'   => $course->id,
-            'date'        => now()->addDays(3),
-            'passed'      => null,
+            'local_id' => null,
+            'course_id' => $course->id,
+            'date' => now()->addDays(3),
+            'passed' => null,
         ]);
 
         $response = $this->withHeaders(apiAuthHeaders())
@@ -350,7 +350,7 @@ describe('Tier1Controller', function () {
                 'id', 'userCid', 'position', 'facility', 'createdAt',
             ]]])
             ->assertJsonFragment([
-                'userCid'  => 1601613,
+                'userCid' => 1601613,
                 'position' => 'EDDL_TWR',
                 'facility' => 9,
             ]);
@@ -359,8 +359,12 @@ describe('Tier1Controller', function () {
     test('returns data key with empty array when no endorsements exist', function () {
         // Override the fake client to return nothing for this one test
         $this->app->bind(VatEudClientInterface::class, function () {
-            return new class extends FakeVatEudClient {
-                public function getTier1Endorsements(): array { return []; }
+            return new class extends FakeVatEudClient
+            {
+                public function getTier1Endorsements(): array
+                {
+                    return [];
+                }
             };
         });
 
@@ -401,7 +405,7 @@ describe('FamiliarisationController', function () {
     test('returns familiarisation data with vatsim id, sector name, and fir', function () {
         apiCreateKey(['familiarisations.read']);
 
-        $user   = User::factory()->create(['vatsim_id' => 5555555]);
+        $user = User::factory()->create(['vatsim_id' => 5555555]);
         $sector = FamiliarisationSector::create(['name' => 'EDGG North', 'fir' => 'EDGG']);
         Familiarisation::create(['user_id' => $user->id, 'familiarisation_sector_id' => $sector->id]);
 
@@ -412,16 +416,16 @@ describe('FamiliarisationController', function () {
             ->assertJsonStructure(['data' => [['vatsim_id', 'sector', 'fir']]])
             ->assertJsonFragment([
                 'vatsim_id' => 5555555,
-                'sector'    => 'EDGG North',
-                'fir'       => 'EDGG',
+                'sector' => 'EDGG North',
+                'fir' => 'EDGG',
             ]);
     });
 
     test('returns all familiarisations across multiple users and sectors', function () {
         apiCreateKey(['familiarisations.read']);
 
-        $userA   = User::factory()->create(['vatsim_id' => 6666666]);
-        $userB   = User::factory()->create(['vatsim_id' => 7777777]);
+        $userA = User::factory()->create(['vatsim_id' => 6666666]);
+        $userB = User::factory()->create(['vatsim_id' => 7777777]);
         $sectorA = FamiliarisationSector::create(['name' => 'EDGG North', 'fir' => 'EDGG']);
         $sectorB = FamiliarisationSector::create(['name' => 'EDMM South', 'fir' => 'EDMM']);
 
@@ -434,7 +438,7 @@ describe('FamiliarisationController', function () {
         $response->assertOk();
         expect($response->json('data'))->toHaveCount(2);
         $response->assertJsonFragment(['vatsim_id' => 6666666, 'fir' => 'EDGG'])
-                 ->assertJsonFragment(['vatsim_id' => 7777777, 'fir' => 'EDMM']);
+            ->assertJsonFragment(['vatsim_id' => 7777777, 'fir' => 'EDMM']);
     });
 });
 
@@ -477,7 +481,7 @@ describe('GdprController', function () {
         $user = User::factory()->create(['vatsim_id' => 7654321]);
 
         $this->withHeaders(apiAuthHeaders())
-            ->deleteJson('/api/gdpr-removal/' . $user->vatsim_id)
+            ->deleteJson('/api/gdpr-removal/'.$user->vatsim_id)
             ->assertOk()
             ->assertJson(['message' => 'User deleted successfully']);
 

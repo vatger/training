@@ -23,7 +23,7 @@ class FamiliarisationController extends Controller
                 });
 
             return response()->json([
-                'data' => $familiarisations
+                'data' => $familiarisations,
             ], 200);
 
         } catch (\Exception $e) {
@@ -33,7 +33,7 @@ class FamiliarisationController extends Controller
 
             return response()->json([
                 'error' => 'Failed to retrieve familiarisations',
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 500);
         }
     }

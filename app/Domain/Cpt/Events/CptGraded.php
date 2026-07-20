@@ -8,7 +8,7 @@ use App\Models\User;
 readonly class CptGraded
 {
     public function __construct(
-        public Cpt  $cpt,
+        public Cpt $cpt,
         public bool $passed,
         public User $grader,
     ) {}

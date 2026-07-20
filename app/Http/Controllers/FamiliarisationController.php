@@ -25,7 +25,7 @@ class FamiliarisationController extends Controller
             $familiarisations = \App\Models\Familiarisation::query()
                 ->with(['user:id,vatsim_id', 'sector:id,name'])
                 ->get()
-                ->groupBy(fn($fam) => $fam->user->vatsim_id)
+                ->groupBy(fn ($fam) => $fam->user->vatsim_id)
                 ->map(function ($userFams, $cid) {
                     return [
                         'cid' => (int) $cid,
@@ -34,7 +34,7 @@ class FamiliarisationController extends Controller
                             ->sort()
                             ->values()
                             ->all(),
-                ];
+                    ];
                 })
                 ->sortBy('cid')
                 ->values()

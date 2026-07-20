@@ -1,15 +1,14 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
     public function up(): void
     {
-        if (!Schema::hasTable('cpt_examiner')) {
+        if (! Schema::hasTable('cpt_examiner')) {
             return;
         }
 
@@ -30,7 +29,7 @@ return new class extends Migration
         ');
 
         if (Schema::hasTable('cpt_examiner_positions') && Schema::hasTable('cpt_examinerposition')) {
-            DB::statement("
+            DB::statement('
                 UPDATE examiners e
                 SET positions = (
                     SELECT JSON_ARRAYAGG(ep.position)
@@ -43,11 +42,9 @@ return new class extends Migration
                     FROM cpt_examiner_positions cep
                     WHERE cep.examiner_id = e.id
                 )
-            ");
+            ');
         }
     }
 
-    public function down(): void
-    {
-    }
+    public function down(): void {}
 };

@@ -2,18 +2,18 @@
 
 namespace App\Filament\Resources\EndorsementActivities;
 
+use App\Filament\Resources\EndorsementActivities\Pages\EditEndorsementActivity;
 use App\Filament\Resources\EndorsementActivities\Pages\ListEndorsementActivities;
 use App\Filament\Resources\EndorsementActivities\Pages\ViewEndorsementActivity;
-use App\Filament\Resources\EndorsementActivities\Pages\EditEndorsementActivity;
 use App\Filament\Resources\EndorsementActivities\Schemas\EndorsementActivityForm;
 use App\Filament\Resources\EndorsementActivities\Tables\EndorsementActivitiesTable;
 use App\Models\EndorsementActivity;
 use BackedEnum;
+use Filament\Facades\Filament;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
-use Filament\Facades\Filament;
 
 class EndorsementActivityResource extends Resource
 {
@@ -66,7 +66,7 @@ class EndorsementActivityResource extends Resource
     {
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -86,7 +86,7 @@ class EndorsementActivityResource extends Resource
     {
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -101,7 +101,7 @@ class EndorsementActivityResource extends Resource
     {
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 

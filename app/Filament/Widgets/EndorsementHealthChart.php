@@ -9,7 +9,7 @@ class EndorsementHealthChart extends ChartWidget
 {
     protected ?string $heading = 'Endorsement Activity Health';
 
-    protected int | string | array $columnSpan = 1;
+    protected int|string|array $columnSpan = 1;
 
     protected ?string $maxHeight = '300px';
 
@@ -49,7 +49,7 @@ class EndorsementHealthChart extends ChartWidget
                 ],
             ],
             'labels' => [
-                'Active (≥' . ($minActivityMinutes / 60) . 'h)',
+                'Active (≥'.($minActivityMinutes / 60).'h)',
                 'Warning (50-100%)',
                 'Critical (<50%)',
                 'In Removal Process',

@@ -61,22 +61,22 @@ beforeEach(function () {
  */
 function makeCpt(array $attributes = []): Cpt
 {
-    $course  = Course::factory()->create(['solo_station' => 'EDDF_TWR']);
+    $course = Course::factory()->create(['solo_station' => 'EDDF_TWR']);
     $trainee = User::factory()->create();
 
     return Cpt::create(array_merge([
-        'course_id'   => $course->id,
-        'trainee_id'  => $trainee->id,
-        'date'        => now()->addDays(7),
+        'course_id' => $course->id,
+        'trainee_id' => $trainee->id,
+        'date' => now()->addDays(7),
         'examiner_id' => null,
-        'local_id'    => null,
+        'local_id' => null,
     ], $attributes));
 }
 
 // ─── CreateCpt ────────────────────────────────────────────────────────────────
 
 test('CreateCpt creates a cpt without examiner or local', function () {
-    $course  = Course::factory()->create(['solo_station' => 'EDDF_TWR']);
+    $course = Course::factory()->create(['solo_station' => 'EDDF_TWR']);
     $trainee = User::factory()->create();
     $creator = User::factory()->create();
 
@@ -92,11 +92,11 @@ test('CreateCpt creates a cpt without examiner or local', function () {
 });
 
 test('CreateCpt creates a confirmed cpt when both examiner and local are provided', function () {
-    $course   = Course::factory()->create(['solo_station' => 'EDDF_TWR']);
-    $trainee  = User::factory()->create();
-    $creator  = User::factory()->create();
+    $course = Course::factory()->create(['solo_station' => 'EDDF_TWR']);
+    $trainee = User::factory()->create();
+    $creator = User::factory()->create();
     $examiner = User::factory()->create();
-    $local    = User::factory()->create();
+    $local = User::factory()->create();
 
     $cpt = app(CreateCpt::class)->execute($course, $trainee, now()->addDays(7)->toDateString(), $creator, $examiner, $local);
 
@@ -106,7 +106,7 @@ test('CreateCpt creates a confirmed cpt when both examiner and local are provide
 });
 
 test('CreateCpt fires CptCreated event', function () {
-    $course  = Course::factory()->create(['solo_station' => 'EDDF_TWR']);
+    $course = Course::factory()->create(['solo_station' => 'EDDF_TWR']);
     $trainee = User::factory()->create();
     $creator = User::factory()->create();
 
@@ -116,7 +116,7 @@ test('CreateCpt fires CptCreated event', function () {
 });
 
 test('CreateCpt returns the created Cpt instance', function () {
-    $course  = Course::factory()->create(['solo_station' => 'EDDF_TWR']);
+    $course = Course::factory()->create(['solo_station' => 'EDDF_TWR']);
     $trainee = User::factory()->create();
     $creator = User::factory()->create();
 
@@ -129,7 +129,7 @@ test('CreateCpt returns the created Cpt instance', function () {
 // ─── JoinCptAsExaminer ────────────────────────────────────────────────────────
 
 test('JoinCptAsExaminer sets examiner_id on the cpt', function () {
-    $cpt      = makeCpt();
+    $cpt = makeCpt();
     $examiner = User::factory()->create();
 
     app(JoinCptAsExaminer::class)->execute($cpt, $examiner);
@@ -140,7 +140,7 @@ test('JoinCptAsExaminer sets examiner_id on the cpt', function () {
 
 test('JoinCptAsExaminer confirms the cpt when local is already assigned', function () {
     $local = User::factory()->create();
-    $cpt   = makeCpt(['local_id' => $local->id]);
+    $cpt = makeCpt(['local_id' => $local->id]);
 
     expect($cpt->local_id)->toBe($local->id);
     expect($cpt->examiner_id)->toBeNull();
@@ -153,7 +153,7 @@ test('JoinCptAsExaminer confirms the cpt when local is already assigned', functi
 });
 
 test('JoinCptAsExaminer does not set confirmed when local is not assigned', function () {
-    $cpt      = makeCpt();
+    $cpt = makeCpt();
     $examiner = User::factory()->create();
 
     app(JoinCptAsExaminer::class)->execute($cpt, $examiner);
@@ -162,7 +162,7 @@ test('JoinCptAsExaminer does not set confirmed when local is not assigned', func
 });
 
 test('JoinCptAsExaminer fires CptExaminerJoined event', function () {
-    $cpt      = makeCpt();
+    $cpt = makeCpt();
     $examiner = User::factory()->create();
 
     app(JoinCptAsExaminer::class)->execute($cpt, $examiner);
@@ -173,7 +173,7 @@ test('JoinCptAsExaminer fires CptExaminerJoined event', function () {
 // ─── JoinCptAsLocal ───────────────────────────────────────────────────────────
 
 test('JoinCptAsLocal sets local_id on the cpt', function () {
-    $cpt   = makeCpt();
+    $cpt = makeCpt();
     $local = User::factory()->create();
 
     app(JoinCptAsLocal::class)->execute($cpt, $local);
@@ -184,7 +184,7 @@ test('JoinCptAsLocal sets local_id on the cpt', function () {
 
 test('JoinCptAsLocal confirms the cpt when examiner is already assigned', function () {
     $examiner = User::factory()->create();
-    $cpt      = makeCpt(['examiner_id' => $examiner->id]);
+    $cpt = makeCpt(['examiner_id' => $examiner->id]);
 
     expect($cpt->examiner_id)->toBe($examiner->id);
     expect($cpt->local_id)->toBeNull();
@@ -197,7 +197,7 @@ test('JoinCptAsLocal confirms the cpt when examiner is already assigned', functi
 });
 
 test('JoinCptAsLocal does not set confirmed when examiner is not assigned', function () {
-    $cpt   = makeCpt();
+    $cpt = makeCpt();
     $local = User::factory()->create();
 
     app(JoinCptAsLocal::class)->execute($cpt, $local);
@@ -206,7 +206,7 @@ test('JoinCptAsLocal does not set confirmed when examiner is not assigned', func
 });
 
 test('JoinCptAsLocal fires CptLocalJoined event', function () {
-    $cpt   = makeCpt();
+    $cpt = makeCpt();
     $local = User::factory()->create();
 
     app(JoinCptAsLocal::class)->execute($cpt, $local);
@@ -218,7 +218,7 @@ test('JoinCptAsLocal fires CptLocalJoined event', function () {
 
 test('LeaveCptAsExaminer clears examiner_id', function () {
     $examiner = User::factory()->create();
-    $cpt      = makeCpt(['examiner_id' => $examiner->id]);
+    $cpt = makeCpt(['examiner_id' => $examiner->id]);
 
     app(LeaveCptAsExaminer::class)->execute($cpt, $examiner);
 
@@ -228,8 +228,8 @@ test('LeaveCptAsExaminer clears examiner_id', function () {
 
 test('LeaveCptAsExaminer sets confirmed to false when cpt was confirmed', function () {
     $examiner = User::factory()->create();
-    $local    = User::factory()->create();
-    $cpt      = makeCpt(['examiner_id' => $examiner->id, 'local_id' => $local->id]);
+    $local = User::factory()->create();
+    $cpt = makeCpt(['examiner_id' => $examiner->id, 'local_id' => $local->id]);
 
     expect($cpt->fresh()->confirmed)->toBeTrue();
 
@@ -240,7 +240,7 @@ test('LeaveCptAsExaminer sets confirmed to false when cpt was confirmed', functi
 
 test('LeaveCptAsExaminer fires CptExaminerLeft event', function () {
     $examiner = User::factory()->create();
-    $cpt      = makeCpt(['examiner_id' => $examiner->id]);
+    $cpt = makeCpt(['examiner_id' => $examiner->id]);
 
     app(LeaveCptAsExaminer::class)->execute($cpt, $examiner);
 
@@ -251,7 +251,7 @@ test('LeaveCptAsExaminer fires CptExaminerLeft event', function () {
 
 test('LeaveCptAsLocal clears local_id', function () {
     $local = User::factory()->create();
-    $cpt   = makeCpt(['local_id' => $local->id]);
+    $cpt = makeCpt(['local_id' => $local->id]);
 
     app(LeaveCptAsLocal::class)->execute($cpt, $local);
 
@@ -261,8 +261,8 @@ test('LeaveCptAsLocal clears local_id', function () {
 
 test('LeaveCptAsLocal sets confirmed to false when cpt was confirmed', function () {
     $examiner = User::factory()->create();
-    $local    = User::factory()->create();
-    $cpt      = makeCpt(['examiner_id' => $examiner->id, 'local_id' => $local->id]);
+    $local = User::factory()->create();
+    $cpt = makeCpt(['examiner_id' => $examiner->id, 'local_id' => $local->id]);
 
     expect($cpt->fresh()->confirmed)->toBeTrue();
 
@@ -273,7 +273,7 @@ test('LeaveCptAsLocal sets confirmed to false when cpt was confirmed', function 
 
 test('LeaveCptAsLocal fires CptLocalLeft event', function () {
     $local = User::factory()->create();
-    $cpt   = makeCpt(['local_id' => $local->id]);
+    $cpt = makeCpt(['local_id' => $local->id]);
 
     app(LeaveCptAsLocal::class)->execute($cpt, $local);
 
@@ -285,9 +285,9 @@ test('LeaveCptAsLocal fires CptLocalLeft event', function () {
 test('UploadCptLog stores the file on the private disk', function () {
     Storage::fake('private');
 
-    $cpt      = makeCpt();
+    $cpt = makeCpt();
     $uploader = User::factory()->create();
-    $file     = UploadedFile::fake()->create('log.txt', 10);
+    $file = UploadedFile::fake()->create('log.txt', 10);
 
     $log = app(UploadCptLog::class)->execute($cpt, $uploader, $file);
 
@@ -297,16 +297,16 @@ test('UploadCptLog stores the file on the private disk', function () {
 test('UploadCptLog creates a CptLog record in the database', function () {
     Storage::fake('private');
 
-    $cpt      = makeCpt();
+    $cpt = makeCpt();
     $uploader = User::factory()->create();
-    $file     = UploadedFile::fake()->create('log.txt', 10);
+    $file = UploadedFile::fake()->create('log.txt', 10);
 
     $log = app(UploadCptLog::class)->execute($cpt, $uploader, $file);
 
     expect($log)->toBeInstanceOf(CptLog::class);
     $this->assertDatabaseHas('cpt_logs', [
-        'id'             => $log->id,
-        'cpt_id'         => $cpt->id,
+        'id' => $log->id,
+        'cpt_id' => $cpt->id,
         'uploaded_by_id' => $uploader->id,
     ]);
 });
@@ -314,9 +314,9 @@ test('UploadCptLog creates a CptLog record in the database', function () {
 test('UploadCptLog sets log_uploaded to true on the cpt', function () {
     Storage::fake('private');
 
-    $cpt      = makeCpt();
+    $cpt = makeCpt();
     $uploader = User::factory()->create();
-    $file     = UploadedFile::fake()->create('log.txt', 10);
+    $file = UploadedFile::fake()->create('log.txt', 10);
 
     expect($cpt->fresh()->log_uploaded)->toBeFalse();
 
@@ -328,9 +328,9 @@ test('UploadCptLog sets log_uploaded to true on the cpt', function () {
 test('UploadCptLog fires CptLogUploaded event', function () {
     Storage::fake('private');
 
-    $cpt      = makeCpt();
+    $cpt = makeCpt();
     $uploader = User::factory()->create();
-    $file     = UploadedFile::fake()->create('log.txt', 10);
+    $file = UploadedFile::fake()->create('log.txt', 10);
 
     app(UploadCptLog::class)->execute($cpt, $uploader, $file);
 
@@ -340,9 +340,9 @@ test('UploadCptLog fires CptLogUploaded event', function () {
 test('UploadCptLog returns the created CptLog', function () {
     Storage::fake('private');
 
-    $cpt      = makeCpt();
+    $cpt = makeCpt();
     $uploader = User::factory()->create();
-    $file     = UploadedFile::fake()->create('log.txt', 10);
+    $file = UploadedFile::fake()->create('log.txt', 10);
 
     $result = app(UploadCptLog::class)->execute($cpt, $uploader, $file);
 
@@ -355,7 +355,7 @@ test('UploadCptLog returns the created CptLog', function () {
 // ─── GradeCpt ─────────────────────────────────────────────────────────────────
 
 test('GradeCpt sets passed to true', function () {
-    $cpt    = makeCpt();
+    $cpt = makeCpt();
     $grader = User::factory()->create();
 
     app(GradeCpt::class)->execute($cpt, true, $grader);
@@ -365,7 +365,7 @@ test('GradeCpt sets passed to true', function () {
 });
 
 test('GradeCpt sets passed to false', function () {
-    $cpt    = makeCpt();
+    $cpt = makeCpt();
     $grader = User::factory()->create();
 
     app(GradeCpt::class)->execute($cpt, false, $grader);
@@ -375,7 +375,7 @@ test('GradeCpt sets passed to false', function () {
 });
 
 test('GradeCpt fires CptGraded event', function () {
-    $cpt    = makeCpt();
+    $cpt = makeCpt();
     $grader = User::factory()->create();
 
     app(GradeCpt::class)->execute($cpt, true, $grader);
@@ -387,16 +387,16 @@ test('GradeCpt calls VatEud uploadCptLog when log is uploaded and logs exist', f
     Storage::fake('private');
 
     $examiner = User::factory()->create(['vatsim_id' => 1111111]);
-    $trainee  = User::factory()->create(['vatsim_id' => 2222222]);
-    $grader   = User::factory()->create();
-    $course   = Course::factory()->create(['solo_station' => 'EDDF_TWR']);
+    $trainee = User::factory()->create(['vatsim_id' => 2222222]);
+    $grader = User::factory()->create();
+    $course = Course::factory()->create(['solo_station' => 'EDDF_TWR']);
 
     $cpt = Cpt::create([
-        'course_id'   => $course->id,
-        'trainee_id'  => $trainee->id,
+        'course_id' => $course->id,
+        'trainee_id' => $trainee->id,
         'examiner_id' => $examiner->id,
-        'local_id'    => null,
-        'date'        => now()->addDays(7),
+        'local_id' => null,
+        'date' => now()->addDays(7),
     ]);
 
     app(UploadCptLog::class)->execute($cpt, User::factory()->create(), UploadedFile::fake()->create('log.txt', 10));
@@ -410,7 +410,7 @@ test('GradeCpt calls VatEud uploadCptLog when log is uploaded and logs exist', f
 });
 
 test('GradeCpt does not call VatEud when log_uploaded is false', function () {
-    $cpt    = makeCpt();
+    $cpt = makeCpt();
     $grader = User::factory()->create();
 
     $vatEudMock = Mockery::mock(VatEudClientInterface::class);
@@ -421,7 +421,7 @@ test('GradeCpt does not call VatEud when log_uploaded is false', function () {
 });
 
 test('GradeCpt does not call VatEud when no logs exist even if log_uploaded is true', function () {
-    $cpt    = makeCpt(['log_uploaded' => true]);
+    $cpt = makeCpt(['log_uploaded' => true]);
     $grader = User::factory()->create();
 
     $vatEudMock = Mockery::mock(VatEudClientInterface::class);
@@ -435,16 +435,16 @@ test('GradeCpt sets rating_upgrade_pending to true when upgrade is requested', f
     Storage::fake('private');
 
     $examiner = User::factory()->create(['vatsim_id' => 1111111]);
-    $trainee  = User::factory()->create(['vatsim_id' => 2222222, 'rating' => 3, 'rating_upgrade_pending' => false]);
-    $grader   = User::factory()->create();
-    $course   = Course::factory()->create(['solo_station' => 'EDDF_TWR']);
+    $trainee = User::factory()->create(['vatsim_id' => 2222222, 'rating' => 3, 'rating_upgrade_pending' => false]);
+    $grader = User::factory()->create();
+    $course = Course::factory()->create(['solo_station' => 'EDDF_TWR']);
 
     $cpt = Cpt::create([
-        'course_id'   => $course->id,
-        'trainee_id'  => $trainee->id,
+        'course_id' => $course->id,
+        'trainee_id' => $trainee->id,
         'examiner_id' => $examiner->id,
-        'local_id'    => null,
-        'date'        => now()->addDays(7),
+        'local_id' => null,
+        'date' => now()->addDays(7),
     ]);
 
     app(UploadCptLog::class)->execute($cpt, User::factory()->create(), UploadedFile::fake()->create('log.txt', 10));
@@ -463,16 +463,16 @@ test('GradeCpt does not request upgrade when cpt is not passed', function () {
     Storage::fake('private');
 
     $examiner = User::factory()->create(['vatsim_id' => 1111111]);
-    $trainee  = User::factory()->create(['vatsim_id' => 2222222]);
-    $grader   = User::factory()->create();
-    $course   = Course::factory()->create(['solo_station' => 'EDDF_TWR']);
+    $trainee = User::factory()->create(['vatsim_id' => 2222222]);
+    $grader = User::factory()->create();
+    $course = Course::factory()->create(['solo_station' => 'EDDF_TWR']);
 
     $cpt = Cpt::create([
-        'course_id'   => $course->id,
-        'trainee_id'  => $trainee->id,
+        'course_id' => $course->id,
+        'trainee_id' => $trainee->id,
         'examiner_id' => $examiner->id,
-        'local_id'    => null,
-        'date'        => now()->addDays(7),
+        'local_id' => null,
+        'date' => now()->addDays(7),
     ]);
 
     app(UploadCptLog::class)->execute($cpt, User::factory()->create(), UploadedFile::fake()->create('log.txt', 10));

@@ -27,7 +27,7 @@ class FinishCourse
                 ->pluck('endorsement_group_name')
                 ->toArray();
 
-            if (!empty($endorsementGroups)) {
+            if (! empty($endorsementGroups)) {
                 $this->grantEndorsements($trainee, $endorsementGroups, $mentor);
             }
 
@@ -63,8 +63,8 @@ class FinishCourse
                 } else {
                     Log::warning('Failed to grant Tier 1 endorsement on course completion', [
                         'trainee_id' => $trainee->id,
-                        'position'   => $position,
-                        'error'      => $result['message'] ?? 'Unknown error',
+                        'position' => $position,
+                        'error' => $result['message'] ?? 'Unknown error',
                     ]);
                 }
             }
@@ -72,27 +72,29 @@ class FinishCourse
             $vatEudService->refreshEndorsementCache();
         } catch (\Exception $e) {
             Log::error('Error granting endorsements on course finish', [
-                'trainee_id'         => $trainee->id,
+                'trainee_id' => $trainee->id,
                 'endorsement_groups' => $endorsementGroups,
-                'error'              => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
         }
     }
 
     private function addFirFamiliarisations(User $trainee, Course $course, User $mentor): void
     {
-        if (!$course->mentor_group_id) {
+        if (! $course->mentor_group_id) {
             Log::warning('No mentor group for CTR course, cannot determine FIR', ['course_id' => $course->id]);
+
             return;
         }
 
         $mentorGroup = Role::find($course->mentor_group_id);
-        if (!$mentorGroup) {
+        if (! $mentorGroup) {
             Log::warning('Mentor group not found', ['mentor_group_id' => $course->mentor_group_id]);
+
             return;
         }
 
-        $fir     = substr($mentorGroup->name, 0, 4);
+        $fir = substr($mentorGroup->name, 0, 4);
         $sectors = FamiliarisationSector::where('fir', $fir)->get();
 
         foreach ($sectors as $sector) {
@@ -101,7 +103,7 @@ class FinishCourse
             }
 
             Familiarisation::create([
-                'user_id'                   => $trainee->id,
+                'user_id' => $trainee->id,
                 'familiarisation_sector_id' => $sector->id,
             ]);
 
@@ -112,7 +114,7 @@ class FinishCourse
     private function addSingleFamiliarisation(User $trainee, Course $course, User $mentor): void
     {
         $familiarisation = Familiarisation::firstOrCreate([
-            'user_id'                   => $trainee->id,
+            'user_id' => $trainee->id,
             'familiarisation_sector_id' => $course->familiarisation_sector_id,
         ]);
 

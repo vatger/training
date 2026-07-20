@@ -38,12 +38,14 @@ class ActivityLog extends Model
     public function getActionLabel(): string
     {
         $enum = ActivityAction::fromString($this->action);
+
         return $enum ? $enum->getLabel() : $this->action;
     }
 
     public function getActionColor(): string
     {
         $enum = ActivityAction::fromString($this->action);
+
         return $enum ? $enum->getColor() : 'info';
     }
 

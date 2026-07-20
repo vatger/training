@@ -32,7 +32,7 @@ beforeEach(function () {
 // before any URL-pattern stubs added in the test, so a full swap is needed.
 function fakeRosterWith(array $vatsimIds): void
 {
-    Http::swap(new HttpFactory());
+    Http::swap(new HttpFactory);
     Http::fake(['*' => Http::response(['data' => ['controllers' => $vatsimIds]], 200)]);
     Cache::flush();
 }
@@ -53,9 +53,9 @@ test('JoinWaitingList success: entry created and event fired', function () {
     expect($message)->toBe('Successfully joined waiting list.');
 
     $this->assertDatabaseHas('waiting_list_entries', [
-        'user_id'   => $user->id,
+        'user_id' => $user->id,
         'course_id' => $course->id,
-        'activity'  => 0,
+        'activity' => 0,
     ]);
 
     Event::assertDispatched(WaitingListJoined::class, function ($event) use ($user, $course) {
@@ -72,10 +72,10 @@ test('JoinWaitingList fails if user is already on waiting list for that course',
     $course = Course::factory()->create(['type' => 'RTG', 'min_rating' => 2, 'max_rating' => 3]);
 
     WaitingListEntry::create([
-        'user_id'       => $user->id,
-        'course_id'     => $course->id,
-        'date_added'    => now(),
-        'activity'      => 0,
+        'user_id' => $user->id,
+        'course_id' => $course->id,
+        'date_added' => now(),
+        'activity' => 0,
         'hours_updated' => now(),
     ]);
 
@@ -95,10 +95,10 @@ test('JoinWaitingList fails if user is already on waiting list for a different R
     $courseB = Course::factory()->create(['type' => 'RTG', 'min_rating' => 2, 'max_rating' => 3]);
 
     WaitingListEntry::create([
-        'user_id'       => $user->id,
-        'course_id'     => $courseB->id,
-        'date_added'    => now(),
-        'activity'      => 0,
+        'user_id' => $user->id,
+        'course_id' => $courseB->id,
+        'date_added' => now(),
+        'activity' => 0,
         'hours_updated' => now(),
     ]);
 
@@ -117,8 +117,8 @@ test('JoinWaitingList fails if user is restricted from joining that course type'
     $course = Course::factory()->create(['type' => 'RTG', 'min_rating' => 2, 'max_rating' => 3]);
 
     WaitingListRestriction::create([
-        'user_id'    => $user->id,
-        'type'       => 'RTG',
+        'user_id' => $user->id,
+        'type' => 'RTG',
         'expires_at' => now()->addDays(30),
     ]);
 
@@ -133,14 +133,14 @@ test('JoinWaitingList fails if user is restricted from joining that course type'
 test('LeaveWaitingList success: entry deleted and event fired', function () {
     Event::fake();
 
-    $user   = User::factory()->create();
+    $user = User::factory()->create();
     $course = Course::factory()->create(['type' => 'RTG']);
 
     $entry = WaitingListEntry::create([
-        'user_id'       => $user->id,
-        'course_id'     => $course->id,
-        'date_added'    => now(),
-        'activity'      => 0,
+        'user_id' => $user->id,
+        'course_id' => $course->id,
+        'date_added' => now(),
+        'activity' => 0,
         'hours_updated' => now(),
     ]);
 
@@ -159,7 +159,7 @@ test('LeaveWaitingList success: entry deleted and event fired', function () {
 test('LeaveWaitingList fails if user is not on the waiting list', function () {
     Event::fake();
 
-    $user   = User::factory()->create();
+    $user = User::factory()->create();
     $course = Course::factory()->create(['type' => 'RTG']);
 
     [$success, $message] = app(LeaveWaitingList::class)->execute($course, $user);

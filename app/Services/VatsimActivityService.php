@@ -2,10 +2,10 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class VatsimActivityService
 {
@@ -44,25 +44,26 @@ class VatsimActivityService
     {
         $vatsimId = $endorsement['user_cid'];
         $position = $endorsement['position'];
-        
+
         $maxRetries = 3;
         $attempt = 0;
-        
+
         while ($attempt < $maxRetries) {
             try {
                 $connections = $this->getVatsimConnections($vatsimId);
+
                 return $this->calculateActivity($endorsement, $connections);
             } catch (\Exception $e) {
                 $attempt++;
-                
+
                 Log::warning('VATSIM API attempt failed', [
                     'vatsim_id' => $vatsimId,
                     'position' => $position,
                     'attempt' => $attempt,
                     'max_retries' => $maxRetries,
-                    'error' => $e->getMessage()
+                    'error' => $e->getMessage(),
                 ]);
-                
+
                 if ($attempt < $maxRetries) {
                     Log::info('Waiting 15 seconds before retry...');
                     sleep(15);
@@ -70,11 +71,12 @@ class VatsimActivityService
                     Log::error('All VATSIM API attempts failed', [
                         'vatsim_id' => $vatsimId,
                         'position' => $position,
-                        'final_error' => $e->getMessage()
+                        'final_error' => $e->getMessage(),
                     ]);
+
                     return [
                         'minutes' => 0.0,
-                        'last_activity_date' => null
+                        'last_activity_date' => null,
                     ];
                 }
             }
@@ -82,49 +84,52 @@ class VatsimActivityService
 
         return [
             'minutes' => 0.0,
-            'last_activity_date' => null
+            'last_activity_date' => null,
         ];
     }
 
     protected function getVatsimConnections(int $vatsimId): array
     {
         $cacheKey = "vatsim_activity:{$vatsimId}";
-        
+
         return Cache::remember($cacheKey, now()->addHours(1), function () use ($vatsimId) {
             $start = Carbon::now()->subDays(180)->format('Y-m-d');
             $apiUrl = "http://stats.vatsim-germany.org/api/atc/{$vatsimId}/sessions/?start_date={$start}";
-            
+
             try {
                 $response = Http::timeout(15)
                     ->retry(2, 1000)
                     ->get($apiUrl);
-                
-                if (!$response->successful()) {
+
+                if (! $response->successful()) {
                     Log::warning('VATSIM Germany API request failed', [
                         'vatsim_id' => $vatsimId,
                         'status' => $response->status(),
-                        'body' => $response->body()
+                        'body' => $response->body(),
                     ]);
+
                     return [];
                 }
 
                 $data = $response->json();
-                if (!is_array($data)) {
+                if (! is_array($data)) {
                     Log::warning('Unexpected VATSIM Germany API response format', [
                         'vatsim_id' => $vatsimId,
-                        'data_type' => gettype($data)
+                        'data_type' => gettype($data),
                     ]);
+
                     return [];
                 }
 
                 return $data;
-                
+
             } catch (\Exception $e) {
                 Log::error('Error fetching VATSIM connections from vatsim-germany.org', [
                     'vatsim_id' => $vatsimId,
                     'error' => $e->getMessage(),
-                    'url' => $apiUrl
+                    'url' => $apiUrl,
                 ]);
+
                 return [];
             }
         });
@@ -136,14 +141,14 @@ class VatsimActivityService
         $position = $endorsement['position'];
         $lastActivityDate = null;
         $inTransition = Carbon::now()->lessThan(Carbon::parse($this->transitionEndDate));
-        
+
         if (str_ends_with($position, '_CTR')) {
             $ctrlPrefix = substr($position, 0, 6);
-            
+
             foreach ($connections as $connection) {
                 $callsign = $connection['callsign'] ?? '';
-                
-                if (str_starts_with($callsign, $ctrlPrefix) || 
+
+                if (str_starts_with($callsign, $ctrlPrefix) ||
                     ($position === 'EDWW_W_CTR' && $callsign === 'EDWW_CTR')) {
                     $minutes = floatval($connection['minutes_online'] ?? 0);
                     $activityMinutes += $minutes;
@@ -183,7 +188,7 @@ class VatsimActivityService
                         }
 
                         // APP combined sectors cover TWR and GNDDEL topdown as well
-                        if (!$matchesCtr && $station !== 'APP') {
+                        if (! $matchesCtr && $station !== 'APP') {
                             foreach ($appStations as $appStation) {
                                 if (str_starts_with($callsign, $appStation)) {
                                     $matchesCtr = true;
@@ -194,7 +199,7 @@ class VatsimActivityService
                     }
 
                     // APP endorsement: also match combined APP sectors
-                    if (!$matchesCtr && $station === 'APP') {
+                    if (! $matchesCtr && $station === 'APP') {
                         foreach ($appStations as $appStation) {
                             if (str_starts_with($callsign, $appStation)) {
                                 $matchesCtr = true;
@@ -203,7 +208,7 @@ class VatsimActivityService
                         }
                     }
 
-                    if (!$matchesCtr && !$matchesSuffix) {
+                    if (! $matchesCtr && ! $matchesSuffix) {
                         continue;
                     }
 
@@ -219,7 +224,7 @@ class VatsimActivityService
 
         return [
             'minutes' => $activityMinutes,
-            'last_activity_date' => $lastActivityDate
+            'last_activity_date' => $lastActivityDate,
         ];
     }
 
@@ -231,7 +236,7 @@ class VatsimActivityService
             } catch (\Exception $e) {
                 Log::warning('Failed to parse disconnected_at date', [
                     'disconnected_at' => $connection['disconnected_at'],
-                    'error' => $e->getMessage()
+                    'error' => $e->getMessage(),
                 ]);
             }
         }
@@ -251,7 +256,7 @@ class VatsimActivityService
 
     protected function suffixCondition(string $endorsementApt, string $endorsementStation, string $callsign): bool
     {
-        if (!str_starts_with($callsign, $endorsementApt . '_')) {
+        if (! str_starts_with($callsign, $endorsementApt.'_')) {
             return false;
         }
 
@@ -265,7 +270,7 @@ class VatsimActivityService
     public function getActivityStatus(float $activityMinutes): string
     {
         $minRequiredMinutes = config('services.vateud.min_activity_minutes', 180);
-        
+
         if ($activityMinutes >= $minRequiredMinutes) {
             return 'active';
         } elseif ($activityMinutes >= $minRequiredMinutes * 0.5) {
@@ -278,27 +283,29 @@ class VatsimActivityService
     public function getActivityProgress(float $activityMinutes): float
     {
         $minRequiredMinutes = config('services.vateud.min_activity_minutes', 180);
+
         return min(($activityMinutes / $minRequiredMinutes) * 100, 100);
     }
 
     protected function getVatsimConnectionsTwoYears(int $vatsimId): array
     {
         $cacheKey = "vatsim_activity_2y:{$vatsimId}";
-        
+
         return Cache::remember($cacheKey, now()->addHours(6), function () use ($vatsimId) {
             $start = Carbon::now()->subYears(2)->format('Y-m-d');
             $apiUrl = "http://stats.vatsim-germany.org/api/atc/{$vatsimId}/sessions/?start_date={$start}";
-            
+
             try {
                 $response = Http::timeout(15)
                     ->retry(2, 1000)
                     ->get($apiUrl);
 
-                if (!$response->successful()) {
+                if (! $response->successful()) {
                     return [];
                 }
 
                 $data = $response->json();
+
                 return is_array($data) ? $data : [];
 
             } catch (\Exception $e) {
@@ -306,6 +313,7 @@ class VatsimActivityService
                     'vatsim_id' => $vatsimId,
                     'error' => $e->getMessage(),
                 ]);
+
                 return [];
             }
         });
@@ -322,7 +330,7 @@ class VatsimActivityService
             $minutes = floatval($connection['minutes_online'] ?? 0);
             $date = $this->parseConnectionDate($connection);
 
-            if (!$date || $minutes <= 0) {
+            if (! $date || $minutes <= 0) {
                 continue;
             }
 
@@ -331,7 +339,7 @@ class VatsimActivityService
             if (str_ends_with($position, '_CTR')) {
                 $ctrlPrefix = substr($position, 0, 6);
 
-                if (str_starts_with($callsign, $ctrlPrefix) || 
+                if (str_starts_with($callsign, $ctrlPrefix) ||
                     ($position === 'EDWW_W_CTR' && $callsign === 'EDWW_CTR')) {
                     $matches = true;
                 }
@@ -361,7 +369,7 @@ class VatsimActivityService
                             }
                         }
 
-                        if (!$matchesCtr && $station !== 'APP') {
+                        if (! $matchesCtr && $station !== 'APP') {
                             foreach ($appStations as $appStation) {
                                 if (str_starts_with($callsign, $appStation)) {
                                     $matchesCtr = true;
@@ -371,7 +379,7 @@ class VatsimActivityService
                         }
                     }
 
-                    if (!$matchesCtr && $station === 'APP') {
+                    if (! $matchesCtr && $station === 'APP') {
                         foreach ($appStations as $appStation) {
                             if (str_starts_with($callsign, $appStation)) {
                                 $matchesCtr = true;
@@ -392,7 +400,7 @@ class VatsimActivityService
             }
         }
 
-        usort($sessions, fn($a, $b) => $a['date']->lt($b['date']) ? -1 : 1);
+        usort($sessions, fn ($a, $b) => $a['date']->lt($b['date']) ? -1 : 1);
 
         return $sessions;
     }

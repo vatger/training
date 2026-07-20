@@ -3,12 +3,11 @@
 namespace App\Filament\Resources\CptLogs\Tables;
 
 use App\Filament\Resources\Users\UserResource;
-use App\Filament\Resources\Cpts\CptResource;
-use Filament\Actions\ViewAction;
 use Filament\Actions\DeleteAction;
+use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Storage;
 
@@ -27,8 +26,8 @@ class CptLogsTable
                     ->label('Trainee')
                     ->searchable(['first_name', 'last_name'])
                     ->sortable()
-                    ->url(fn ($record) => $record->cpt?->trainee 
-                        ? UserResource::getUrl('edit', ['record' => $record->cpt->trainee]) 
+                    ->url(fn ($record) => $record->cpt?->trainee
+                        ? UserResource::getUrl('edit', ['record' => $record->cpt->trainee])
                         : null
                     ),
 
@@ -49,8 +48,8 @@ class CptLogsTable
                     ->label('Uploaded By')
                     ->searchable(['first_name', 'last_name'])
                     ->sortable()
-                    ->url(fn ($record) => $record->uploadedBy 
-                        ? UserResource::getUrl('edit', ['record' => $record->uploadedBy]) 
+                    ->url(fn ($record) => $record->uploadedBy
+                        ? UserResource::getUrl('edit', ['record' => $record->uploadedBy])
                         : null
                     ),
 
@@ -74,12 +73,12 @@ class CptLogsTable
                 TextColumn::make('cpt.passed')
                     ->label('CPT Result')
                     ->badge()
-                    ->formatStateUsing(fn ($state) => match($state) {
+                    ->formatStateUsing(fn ($state) => match ($state) {
                         true => 'Passed',
                         false => 'Failed',
                         null => 'Pending',
                     })
-                    ->color(fn ($state) => match($state) {
+                    ->color(fn ($state) => match ($state) {
                         true => 'success',
                         false => 'danger',
                         null => 'warning',
@@ -150,7 +149,7 @@ class CptLogsTable
                         } elseif (Storage::disk('public')->exists($record->log_file)) {
                             Storage::disk('public')->delete($record->log_file);
                         }
-                        
+
                         $cpt = $record->cpt;
                         if ($cpt && $cpt->logs()->count() === 1) {
                             $cpt->update(['log_uploaded' => false]);

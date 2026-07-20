@@ -2,10 +2,10 @@
 
 namespace App\Filament\Resources\Roles\Schemas;
 
-use Filament\Schemas\Schema;
+use App\Models\Permission;
 use Filament\Forms;
 use Filament\Schemas\Components\Section;
-use App\Models\Permission;
+use Filament\Schemas\Schema;
 
 class RoleForm
 {
@@ -39,6 +39,7 @@ class RoleForm
                                         $label = $permission->group
                                             ? "[{$permission->group}] {$permission->name}"
                                             : $permission->name;
+
                                         return [$permission->id => $label];
                                     });
                             })

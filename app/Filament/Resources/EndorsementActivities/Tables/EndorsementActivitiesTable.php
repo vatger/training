@@ -2,12 +2,12 @@
 
 namespace App\Filament\Resources\EndorsementActivities\Tables;
 
-use Filament\Actions\ViewAction;
 use Filament\Actions\EditAction;
-use Filament\Tables\Table;
+use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Table;
 
 class EndorsementActivitiesTable
 {
@@ -34,7 +34,7 @@ class EndorsementActivitiesTable
                     ->suffix('h')
                     ->numeric(decimalPlaces: 1)
                     ->sortable()
-                    ->color(fn ($record) => match($record->status) {
+                    ->color(fn ($record) => match ($record->status) {
                         'active' => 'success',
                         'warning' => 'warning',
                         'removal' => 'danger',
@@ -97,9 +97,9 @@ class EndorsementActivitiesTable
                         'removal' => 'In Removal',
                     ])
                     ->query(function ($query, array $data) use ($minActivityMinutes) {
-                        if (!empty($data['value'])) {
+                        if (! empty($data['value'])) {
                             $status = $data['value'];
-                            
+
                             if ($status === 'active') {
                                 $query->where('activity_minutes', '>=', $minActivityMinutes)
                                     ->whereNull('removal_date');

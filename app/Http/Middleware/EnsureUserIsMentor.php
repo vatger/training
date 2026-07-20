@@ -11,8 +11,8 @@ class EnsureUserIsMentor
     public function handle(Request $request, Closure $next): Response
     {
         $user = $request->user();
-        
-        if (!$user) {
+
+        if (! $user) {
             abort(403, 'Authentication required.');
         }
 
@@ -20,11 +20,11 @@ class EnsureUserIsMentor
             return $next($request);
         }
 
-        if (!$user->relationLoaded('roles')) {
+        if (! $user->relationLoaded('roles')) {
             $user->load('roles');
         }
 
-        if (!$user->isMentor()) {
+        if (! $user->isMentor()) {
             abort(403, 'This action requires mentor permissions.');
         }
 

@@ -15,7 +15,7 @@ class CptGradingController extends Controller
 
     public function grade(Request $request, Cpt $cpt, int $result)
     {
-        if (!$request->user()->isSuperuser()) {
+        if (! $request->user()->isSuperuser()) {
             return back()->withErrors(['error' => 'Only ATD can grade CPTs.']);
         }
 

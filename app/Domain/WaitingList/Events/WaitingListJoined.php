@@ -10,7 +10,7 @@ readonly class WaitingListJoined
 {
     public function __construct(
         public WaitingListEntry $entry,
-        public Course           $course,
-        public User             $user,
+        public Course $course,
+        public User $user,
     ) {}
 }

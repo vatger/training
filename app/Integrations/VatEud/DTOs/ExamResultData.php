@@ -7,8 +7,8 @@ use Carbon\Carbon;
 readonly class ExamResultData
 {
     public function __construct(
-        public int    $examId,
-        public bool   $passed,
+        public int $examId,
+        public bool $passed,
         public Carbon $expiry,
     ) {}
 

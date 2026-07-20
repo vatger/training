@@ -56,6 +56,7 @@ class Course extends Model
     {
         if ($value === null || $value === '') {
             $this->attributes['moodle_course_ids'] = json_encode([]);
+
             return;
         }
 
@@ -64,6 +65,7 @@ class Course extends Model
                 return is_numeric($item);
             }));
             $this->attributes['moodle_course_ids'] = json_encode(array_values($integers));
+
             return;
         }
 
@@ -77,7 +79,7 @@ class Course extends Model
         }
 
         $decoded = json_decode($value, true);
-        if (!is_array($decoded)) {
+        if (! is_array($decoded)) {
             return [];
         }
 
@@ -115,7 +117,7 @@ class Course extends Model
 
     public function getTypeDisplayAttribute(): string
     {
-        return match($this->type) {
+        return match ($this->type) {
             'EDMT' => 'Endorsement',
             'RTG' => 'Rating',
             'GST' => 'Visitor',
@@ -126,7 +128,7 @@ class Course extends Model
 
     public function getPositionDisplayAttribute(): string
     {
-        return match($this->position) {
+        return match ($this->position) {
             'GND' => 'Ground',
             'TWR' => 'Tower',
             'APP' => 'Approach',
@@ -142,7 +144,7 @@ class Course extends Model
     public function scopeForRating($query, int $rating)
     {
         return $query->where('min_rating', '<=', $rating)
-                    ->where('max_rating', '>=', $rating);
+            ->where('max_rating', '>=', $rating);
     }
 
     public function scopeByType($query, string $type)

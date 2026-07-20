@@ -4,8 +4,8 @@ namespace App\Filament\Resources\EndorsementActivities\Pages;
 
 use App\Filament\Resources\EndorsementActivities\EndorsementActivityResource;
 use App\Filament\Resources\EndorsementActivities\Schemas\EndorsementActivityInfolist;
-use Filament\Actions\EditAction;
 use Filament\Actions\Action;
+use Filament\Actions\EditAction;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Schemas\Schema;
 
@@ -34,7 +34,7 @@ class ViewEndorsementActivity extends ViewRecord
                         ->title('Removal process stopped successfully.')
                         ->send();
                 })
-                ->visible(fn() => $this->record->removal_date !== null),
+                ->visible(fn () => $this->record->removal_date !== null),
 
             EditAction::make(),
         ];

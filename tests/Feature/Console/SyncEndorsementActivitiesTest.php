@@ -19,10 +19,10 @@ beforeEach(function () {
 function makeTier1(int $id, int $userCid, string $position, string $createdAt = '2025-01-01T00:00:00Z'): Tier1EndorsementData
 {
     return Tier1EndorsementData::fromApiResponse([
-        'id'         => $id,
-        'user_cid'   => $userCid,
-        'position'   => $position,
-        'facility'   => 9,
+        'id' => $id,
+        'user_cid' => $userCid,
+        'position' => $position,
+        'facility' => 9,
         'created_at' => $createdAt,
     ]);
 }
@@ -52,8 +52,8 @@ test('creates an EndorsementActivity record for a new endorsement', function () 
 
     $this->assertDatabaseHas('endorsement_activities', [
         'endorsement_id' => 42,
-        'vatsim_id'      => 1234567,
-        'position'       => 'EDDL_TWR',
+        'vatsim_id' => 1234567,
+        'position' => 'EDDL_TWR',
     ]);
 });
 
@@ -76,12 +76,12 @@ test('creates records for multiple new endorsements', function () {
 
 test('skips creating a record when endorsement_id already exists in DB', function () {
     EndorsementActivity::create([
-        'endorsement_id'  => 42,
-        'vatsim_id'       => 1234567,
-        'position'        => 'EDDL_TWR',
-        'activity_minutes'=> 0.0,
+        'endorsement_id' => 42,
+        'vatsim_id' => 1234567,
+        'position' => 'EDDL_TWR',
+        'activity_minutes' => 0.0,
         'created_at_vateud' => now(),
-        'last_updated'    => now(),
+        'last_updated' => now(),
     ]);
 
     $client = Mockery::mock(VatEudClientInterface::class);
@@ -98,12 +98,12 @@ test('skips creating a record when endorsement_id already exists in DB', functio
 
 test('deletes orphaned records no longer present in VatEUD', function () {
     EndorsementActivity::create([
-        'endorsement_id'   => 99,
-        'vatsim_id'        => 9999999,
-        'position'         => 'EDDH_TWR',
+        'endorsement_id' => 99,
+        'vatsim_id' => 9999999,
+        'position' => 'EDDH_TWR',
         'activity_minutes' => 0.0,
-        'created_at_vateud'=> now(),
-        'last_updated'     => now(),
+        'created_at_vateud' => now(),
+        'last_updated' => now(),
     ]);
 
     $client = Mockery::mock(VatEudClientInterface::class);
@@ -119,12 +119,12 @@ test('deletes orphaned records no longer present in VatEUD', function () {
 
 test('preserves records that are still present in VatEUD', function () {
     EndorsementActivity::create([
-        'endorsement_id'   => 1,
-        'vatsim_id'        => 1234567,
-        'position'         => 'EDDL_TWR',
+        'endorsement_id' => 1,
+        'vatsim_id' => 1234567,
+        'position' => 'EDDL_TWR',
         'activity_minutes' => 50.0,
-        'created_at_vateud'=> now(),
-        'last_updated'     => now(),
+        'created_at_vateud' => now(),
+        'last_updated' => now(),
     ]);
 
     $client = Mockery::mock(VatEudClientInterface::class);
@@ -143,12 +143,12 @@ test('updates activity_minutes and last_activity_date from the activity service'
     $lastDate = Carbon::parse('2025-10-15');
 
     $rec = EndorsementActivity::create([
-        'endorsement_id'   => 7,
-        'vatsim_id'        => 1234567,
-        'position'         => 'EDDL_TWR',
+        'endorsement_id' => 7,
+        'vatsim_id' => 1234567,
+        'position' => 'EDDL_TWR',
         'activity_minutes' => 0.0,
-        'created_at_vateud'=> now(),
-        'last_updated'     => now()->subHour(),
+        'created_at_vateud' => now(),
+        'last_updated' => now()->subHour(),
     ]);
 
     $client = Mockery::mock(VatEudClientInterface::class);
@@ -165,14 +165,14 @@ test('updates activity_minutes and last_activity_date from the activity service'
 
 test('clears removal_date when activity reaches the minimum threshold', function () {
     $rec = EndorsementActivity::create([
-        'endorsement_id'   => 8,
-        'vatsim_id'        => 1234567,
-        'position'         => 'EDDL_TWR',
+        'endorsement_id' => 8,
+        'vatsim_id' => 1234567,
+        'position' => 'EDDL_TWR',
         'activity_minutes' => 50.0,
-        'removal_date'     => now()->addDays(10),
+        'removal_date' => now()->addDays(10),
         'removal_notified' => true,
-        'created_at_vateud'=> now(),
-        'last_updated'     => now(),
+        'created_at_vateud' => now(),
+        'last_updated' => now(),
     ]);
 
     $client = Mockery::mock(VatEudClientInterface::class);
@@ -191,14 +191,14 @@ test('does NOT clear removal_date when activity is still below threshold', funct
     $removalDate = now()->addDays(10);
 
     $rec = EndorsementActivity::create([
-        'endorsement_id'   => 9,
-        'vatsim_id'        => 1234567,
-        'position'         => 'EDDL_TWR',
+        'endorsement_id' => 9,
+        'vatsim_id' => 1234567,
+        'position' => 'EDDL_TWR',
         'activity_minutes' => 50.0,
-        'removal_date'     => $removalDate,
+        'removal_date' => $removalDate,
         'removal_notified' => true,
-        'created_at_vateud'=> now(),
-        'last_updated'     => now(),
+        'created_at_vateud' => now(),
+        'last_updated' => now(),
     ]);
 
     $client = Mockery::mock(VatEudClientInterface::class);
@@ -215,13 +215,13 @@ test('does NOT clear removal_date when activity is still below threshold', funct
 
 test('does not clear removal_date when there is no removal_date set', function () {
     $rec = EndorsementActivity::create([
-        'endorsement_id'   => 10,
-        'vatsim_id'        => 1234567,
-        'position'         => 'EDDL_TWR',
+        'endorsement_id' => 10,
+        'vatsim_id' => 1234567,
+        'position' => 'EDDL_TWR',
         'activity_minutes' => 0.0,
-        'removal_date'     => null,
-        'created_at_vateud'=> now(),
-        'last_updated'     => now(),
+        'removal_date' => null,
+        'created_at_vateud' => now(),
+        'last_updated' => now(),
     ]);
 
     $client = Mockery::mock(VatEudClientInterface::class);

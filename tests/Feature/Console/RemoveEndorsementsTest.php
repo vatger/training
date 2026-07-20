@@ -21,10 +21,10 @@ beforeEach(function () {
 function makeTier1Entry(int $id, int $userCid, string $position): Tier1EndorsementData
 {
     return Tier1EndorsementData::fromApiResponse([
-        'id'         => $id,
-        'user_cid'   => $userCid,
-        'position'   => $position,
-        'facility'   => 9,
+        'id' => $id,
+        'user_cid' => $userCid,
+        'position' => $position,
+        'facility' => 9,
         'created_at' => '2025-01-01T00:00:00Z',
     ]);
 }
@@ -32,28 +32,28 @@ function makeTier1Entry(int $id, int $userCid, string $position): Tier1Endorseme
 function pendingNotificationRecord(array $override = []): EndorsementActivity
 {
     return EndorsementActivity::create(array_merge([
-        'endorsement_id'   => 1,
-        'vatsim_id'        => 1234567,
-        'position'         => 'EDDL_TWR',
+        'endorsement_id' => 1,
+        'vatsim_id' => 1234567,
+        'position' => 'EDDL_TWR',
         'activity_minutes' => 0.0,
-        'removal_date'     => now()->addDays(10),
+        'removal_date' => now()->addDays(10),
         'removal_notified' => false,
-        'created_at_vateud'=> now(),
-        'last_updated'     => now(),
+        'created_at_vateud' => now(),
+        'last_updated' => now(),
     ], $override));
 }
 
 function readyForRemovalRecord(array $override = []): EndorsementActivity
 {
     return EndorsementActivity::create(array_merge([
-        'endorsement_id'   => 2,
-        'vatsim_id'        => 1234567,
-        'position'         => 'EDDL_TWR',
+        'endorsement_id' => 2,
+        'vatsim_id' => 1234567,
+        'position' => 'EDDL_TWR',
         'activity_minutes' => 0.0,
-        'removal_date'     => now()->subDay(),
+        'removal_date' => now()->subDay(),
         'removal_notified' => true,
-        'created_at_vateud'=> now(),
-        'last_updated'     => now(),
+        'created_at_vateud' => now(),
+        'last_updated' => now(),
     ], $override));
 }
 
@@ -116,8 +116,8 @@ test('notification message includes position and removal date', function () {
     $removalDate = now()->addDays(31);
     pendingNotificationRecord([
         'endorsement_id' => 5,
-        'position'       => 'EDDF_APP',
-        'removal_date'   => $removalDate,
+        'position' => 'EDDF_APP',
+        'removal_date' => $removalDate,
         'removal_notified' => false,
     ]);
 

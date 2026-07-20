@@ -20,7 +20,7 @@ class LeaveCptAsLocal
         $cpt->update(['local_id' => null]);
         $cpt->refresh();
 
-        if ($wasConfirmed && !$cpt->confirmed) {
+        if ($wasConfirmed && ! $cpt->confirmed) {
             $this->notifications->broadcastConfirmedCpts();
         }
 

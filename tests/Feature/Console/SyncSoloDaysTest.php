@@ -17,14 +17,14 @@ beforeEach(function () {
 function makeSolo(int $id, int $userCid, int $positionDays, string $position = 'EDDL_TWR'): SoloEndorsementData
 {
     return SoloEndorsementData::fromApiResponse([
-        'id'             => $id,
-        'user_cid'       => $userCid,
-        'position'       => $position,
-        'facility'       => 9,
+        'id' => $id,
+        'user_cid' => $userCid,
+        'position' => $position,
+        'facility' => 9,
         'instructor_cid' => 1000000,
-        'position_days'  => $positionDays,
-        'expiry'         => now()->addDays(30)->toIso8601String(),
-        'created_at'     => now()->toIso8601String(),
+        'position_days' => $positionDays,
+        'expiry' => now()->addDays(30)->toIso8601String(),
+        'created_at' => now()->toIso8601String(),
     ]);
 }
 
@@ -49,9 +49,9 @@ test('returns 0 and outputs info when there are no solo endorsements', function 
 
 test('resets solo_days_used to 0 for users whose rating increased', function () {
     $user = User::factory()->create([
-        'rating'                 => 4,
-        'last_known_rating'      => 3,
-        'solo_days_used'         => 15,
+        'rating' => 4,
+        'last_known_rating' => 3,
+        'solo_days_used' => 15,
         'rating_upgrade_pending' => true,
     ]);
 
@@ -81,9 +81,9 @@ test('resets multiple upgraded users before syncing', function () {
 
 test('does NOT reset solo_days_used when rating has not changed', function () {
     $user = User::factory()->create([
-        'rating'          => 3,
+        'rating' => 3,
         'last_known_rating' => 3,
-        'solo_days_used'  => 12,
+        'solo_days_used' => 12,
     ]);
 
     bindSoloClient([]);
@@ -97,9 +97,9 @@ test('does NOT reset solo_days_used when rating has not changed', function () {
 test('does NOT reset user whose rating is lower than last_known_rating', function () {
     // Edge case: rating downgrade should not trigger a reset
     $user = User::factory()->create([
-        'rating'          => 2,
+        'rating' => 2,
         'last_known_rating' => 3,
-        'solo_days_used'  => 8,
+        'solo_days_used' => 8,
     ]);
 
     bindSoloClient([]);
@@ -114,9 +114,9 @@ test('does NOT reset user whose rating is lower than last_known_rating', functio
 
 test('updates solo_days_used when new days exceed current', function () {
     $user = User::factory()->create([
-        'vatsim_id'      => 1234567,
+        'vatsim_id' => 1234567,
         'solo_days_used' => 5,
-        'rating'         => 3,
+        'rating' => 3,
         'last_known_rating' => 3,
     ]);
 
@@ -130,9 +130,9 @@ test('updates solo_days_used when new days exceed current', function () {
 
 test('does NOT update solo_days_used when new days equal current', function () {
     $user = User::factory()->create([
-        'vatsim_id'      => 1234567,
+        'vatsim_id' => 1234567,
         'solo_days_used' => 10,
-        'rating'         => 3,
+        'rating' => 3,
         'last_known_rating' => 3,
     ]);
 
@@ -146,9 +146,9 @@ test('does NOT update solo_days_used when new days equal current', function () {
 
 test('does NOT update solo_days_used when new days are less than current', function () {
     $user = User::factory()->create([
-        'vatsim_id'      => 1234567,
+        'vatsim_id' => 1234567,
         'solo_days_used' => 25,
-        'rating'         => 3,
+        'rating' => 3,
         'last_known_rating' => 3,
     ]);
 
@@ -162,16 +162,16 @@ test('does NOT update solo_days_used when new days are less than current', funct
 
 test('uses the maximum position_days across multiple solos for the same user', function () {
     $user = User::factory()->create([
-        'vatsim_id'      => 1234567,
+        'vatsim_id' => 1234567,
         'solo_days_used' => 0,
-        'rating'         => 3,
+        'rating' => 3,
         'last_known_rating' => 3,
     ]);
 
     bindSoloClient([
-        makeSolo(1, 1234567, 8,  'EDDL_TWR'),
+        makeSolo(1, 1234567, 8, 'EDDL_TWR'),
         makeSolo(2, 1234567, 20, 'EDDF_APP'),
-        makeSolo(3, 1234567, 3,  'EDDH_GND'),
+        makeSolo(3, 1234567, 3, 'EDDH_GND'),
     ]);
 
     $this->artisan('solo:sync-days')->assertExitCode(0);

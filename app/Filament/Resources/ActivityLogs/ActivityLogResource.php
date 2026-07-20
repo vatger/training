@@ -7,9 +7,9 @@ use App\Filament\Resources\ActivityLogs\Pages\ViewActivityLog;
 use App\Filament\Resources\ActivityLogs\Tables\ActivityLogsTable;
 use App\Models\ActivityLog;
 use BackedEnum;
+use Filament\Facades\Filament;
 use Filament\Resources\Resource;
 use Filament\Support\Icons\Heroicon;
-use Filament\Facades\Filament;
 use Filament\Tables\Table;
 
 class ActivityLogResource extends Resource
@@ -57,7 +57,7 @@ class ActivityLogResource extends Resource
     {
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 

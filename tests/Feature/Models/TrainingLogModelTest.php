@@ -17,30 +17,30 @@ beforeEach(function () {
 function makeLog(array $overrides = []): TrainingLog
 {
     $trainee = User::factory()->create();
-    $mentor  = User::factory()->create();
-    $course  = Course::factory()->create();
+    $mentor = User::factory()->create();
+    $course = Course::factory()->create();
 
     // All rating columns are NOT NULL in the DB; default to 0 (not rated).
     return TrainingLog::create(array_merge([
-        'trainee_id'                    => $trainee->id,
-        'mentor_id'                     => $mentor->id,
-        'course_id'                     => $course->id,
-        'session_date'                  => now(),
-        'position'                      => 'EDDL_TWR',
-        'type'                          => TrainingLog::TYPE_ONLINE,
-        'theory'                        => 0,
-        'phraseology'                   => 0,
-        'coordination'                  => 0,
-        'tag_management'                => 0,
-        'situational_awareness'         => 0,
-        'problem_recognition'           => 0,
-        'traffic_planning'              => 0,
-        'reaction'                      => 0,
-        'separation'                    => 0,
-        'efficiency'                    => 0,
+        'trainee_id' => $trainee->id,
+        'mentor_id' => $mentor->id,
+        'course_id' => $course->id,
+        'session_date' => now(),
+        'position' => 'EDDL_TWR',
+        'type' => TrainingLog::TYPE_ONLINE,
+        'theory' => 0,
+        'phraseology' => 0,
+        'coordination' => 0,
+        'tag_management' => 0,
+        'situational_awareness' => 0,
+        'problem_recognition' => 0,
+        'traffic_planning' => 0,
+        'reaction' => 0,
+        'separation' => 0,
+        'efficiency' => 0,
         'ability_to_work_under_pressure' => 0,
-        'motivation'                    => 0,
-        'result'                        => false,
+        'motivation' => 0,
+        'result' => false,
     ], $overrides));
 }
 
@@ -78,7 +78,7 @@ test('average_rating is 0.0 when all categories are zero', function () {
 
 test('average_rating uses all non-zero categories', function () {
     $log = makeLog([
-        'theory'      => 2,
+        'theory' => 2,
         'phraseology' => 4,
         'coordination' => 3,
     ]);
@@ -101,8 +101,8 @@ test('hasRatings returns false when all categories are zero', function () {
 });
 
 test('hasRatings returns true when any category is non-zero', function () {
-    $log          = makeLog();
-    $log->theory  = 2;
+    $log = makeLog();
+    $log->theory = 2;
 
     expect($log->hasRatings())->toBeTrue();
 });
@@ -132,21 +132,21 @@ test('getRatingDisplay returns Requirements Exceeded for 4', function () {
 // ─── traffic_level_display ────────────────────────────────────────────────────
 
 test('traffic_level_display returns Low for L', function () {
-    $log                = makeLog();
+    $log = makeLog();
     $log->traffic_level = 'L';
 
     expect($log->traffic_level_display)->toBe('Low');
 });
 
 test('traffic_level_display returns Medium for M', function () {
-    $log                = makeLog();
+    $log = makeLog();
     $log->traffic_level = 'M';
 
     expect($log->traffic_level_display)->toBe('Medium');
 });
 
 test('traffic_level_display returns High for H', function () {
-    $log                = makeLog();
+    $log = makeLog();
     $log->traffic_level = 'H';
 
     expect($log->traffic_level_display)->toBe('High');
@@ -162,9 +162,9 @@ test('traffic_level_display returns null when traffic_level is not set', functio
 
 test('forTrainee scope returns only logs for the given trainee', function () {
     $trainee = User::factory()->create();
-    $other   = User::factory()->create();
-    $mentor  = User::factory()->create();
-    $course  = Course::factory()->create();
+    $other = User::factory()->create();
+    $mentor = User::factory()->create();
+    $course = Course::factory()->create();
 
     makeLog(['trainee_id' => $trainee->id, 'mentor_id' => $mentor->id, 'course_id' => $course->id]);
     makeLog(['trainee_id' => $other->id,   'mentor_id' => $mentor->id, 'course_id' => $course->id]);
@@ -177,9 +177,9 @@ test('forTrainee scope returns only logs for the given trainee', function () {
 
 test('byMentor scope returns only logs created by the given mentor', function () {
     $trainee = User::factory()->create();
-    $mentor  = User::factory()->create();
-    $otherM  = User::factory()->create();
-    $course  = Course::factory()->create();
+    $mentor = User::factory()->create();
+    $otherM = User::factory()->create();
+    $course = Course::factory()->create();
 
     makeLog(['trainee_id' => $trainee->id, 'mentor_id' => $mentor->id, 'course_id' => $course->id]);
     makeLog(['trainee_id' => $trainee->id, 'mentor_id' => $otherM->id, 'course_id' => $course->id]);
@@ -191,9 +191,9 @@ test('byMentor scope returns only logs created by the given mentor', function ()
 });
 
 test('forCourse scope returns only logs for the given course', function () {
-    $trainee     = User::factory()->create();
-    $mentor      = User::factory()->create();
-    $course      = Course::factory()->create();
+    $trainee = User::factory()->create();
+    $mentor = User::factory()->create();
+    $course = Course::factory()->create();
     $otherCourse = Course::factory()->create();
 
     makeLog(['trainee_id' => $trainee->id, 'mentor_id' => $mentor->id, 'course_id' => $course->id]);
@@ -207,20 +207,20 @@ test('forCourse scope returns only logs for the given course', function () {
 
 test('recent scope orders logs by session_date descending', function () {
     $trainee = User::factory()->create();
-    $mentor  = User::factory()->create();
-    $course  = Course::factory()->create();
+    $mentor = User::factory()->create();
+    $course = Course::factory()->create();
 
     $older = makeLog([
-        'trainee_id'   => $trainee->id,
-        'mentor_id'    => $mentor->id,
-        'course_id'    => $course->id,
+        'trainee_id' => $trainee->id,
+        'mentor_id' => $mentor->id,
+        'course_id' => $course->id,
         'session_date' => now()->subDays(5),
     ]);
 
     $newer = makeLog([
-        'trainee_id'   => $trainee->id,
-        'mentor_id'    => $mentor->id,
-        'course_id'    => $course->id,
+        'trainee_id' => $trainee->id,
+        'mentor_id' => $mentor->id,
+        'course_id' => $course->id,
         'session_date' => now(),
     ]);
 

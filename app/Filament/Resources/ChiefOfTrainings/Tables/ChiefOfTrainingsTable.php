@@ -17,22 +17,22 @@ class ChiefOfTrainingsTable
                     ->label('User')
                     ->searchable(['first_name', 'last_name'])
                     ->sortable(),
-                
+
                 TextColumn::make('user.vatsim_id')
                     ->label('VATSIM ID')
                     ->searchable()
                     ->sortable(),
-                
+
                 TextColumn::make('course.name')
                     ->label('Course')
                     ->searchable()
                     ->sortable(),
-                
+
                 TextColumn::make('course.position')
                     ->label('Position')
                     ->badge()
                     ->color('primary'),
-                
+
                 TextColumn::make('created_at')
                     ->label('Assigned At')
                     ->dateTime()

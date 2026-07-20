@@ -8,8 +8,8 @@ use App\Integrations\VatEud\VatEudService;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class GdprController extends Controller
 {
@@ -25,8 +25,9 @@ class GdprController extends Controller
         try {
             $user = User::where('vatsim_id', $vatsimId)->first();
 
-            if (!$user) {
+            if (! $user) {
                 Log::info('GDPR deletion - user not found', ['vatsim_id' => $vatsimId]);
+
                 return response()->json(['error' => 'User not found'], 200);
             }
 
@@ -40,7 +41,7 @@ class GdprController extends Controller
 
             try {
                 $this->vatEudService->removeRosterAndEndorsements($vatsimId);
-                
+
                 $this->deleteVisitorFromVatEUD($vatsimId);
 
                 event(new UserDeleted($user, $request->ip()));
@@ -67,7 +68,7 @@ class GdprController extends Controller
 
             return response()->json([
                 'error' => 'Failed to delete user',
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 500);
         }
     }
@@ -75,11 +76,12 @@ class GdprController extends Controller
     protected function deleteVisitorFromVatEUD(int $vatsimId): void
     {
         $eudToken = config('services.vateud.token');
-        
-        if (!$eudToken) {
+
+        if (! $eudToken) {
             Log::warning('VatEUD token not configured, skipping VatEUD visitor deletion', [
-                'vatsim_id' => $vatsimId
+                'vatsim_id' => $vatsimId,
             ]);
+
             return;
         }
 
@@ -90,8 +92,8 @@ class GdprController extends Controller
                 'X-API-KEY' => $eudToken,
                 'Accept' => 'application/json',
             ])
-            ->timeout(10)
-            ->delete("https://core.vateud.net/api/facility/visitors/{$vatsimId}/delete");
+                ->timeout(10)
+                ->delete("https://core.vateud.net/api/facility/visitors/{$vatsimId}/delete");
 
             if ($response->successful()) {
                 Log::info('Successfully deleted visitor from VatEUD', [

@@ -2,18 +2,18 @@
 
 namespace App\Filament\Resources\LeadingMentors;
 
+use App\Filament\Resources\LeadingMentors\Pages\CreateLeadingMentor;
 use App\Filament\Resources\LeadingMentors\Pages\EditLeadingMentor;
 use App\Filament\Resources\LeadingMentors\Pages\ListLeadingMentors;
-use App\Filament\Resources\LeadingMentors\Pages\CreateLeadingMentor;
 use App\Filament\Resources\LeadingMentors\Schemas\LeadingMentorForm;
 use App\Filament\Resources\LeadingMentors\Tables\LeadingMentorsTable;
 use App\Models\LeadingMentor;
 use BackedEnum;
+use Filament\Facades\Filament;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
-use Filament\Facades\Filament;
 
 class LeadingMentorResource extends Resource
 {
@@ -56,7 +56,7 @@ class LeadingMentorResource extends Resource
     {
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -71,7 +71,7 @@ class LeadingMentorResource extends Resource
     {
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -86,7 +86,7 @@ class LeadingMentorResource extends Resource
     {
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -101,7 +101,7 @@ class LeadingMentorResource extends Resource
     {
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 

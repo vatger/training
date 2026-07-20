@@ -32,10 +32,11 @@ function soloDaysMakeCommand(VatEudClientInterface $client): SyncSoloDays
 
 function soloDaysSetIO(object $command): BufferedOutput
 {
-    $buffered = new BufferedOutput();
+    $buffered = new BufferedOutput;
     $prop = new ReflectionProperty($command, 'output');
     $prop->setAccessible(true);
     $prop->setValue($command, new OutputStyle(new ArrayInput([]), $buffered));
+
     return $buffered;
 }
 
@@ -43,6 +44,7 @@ function soloDaysCall(object $cmd, string $method, mixed ...$args): mixed
 {
     $m = new ReflectionMethod($cmd, $method);
     $m->setAccessible(true);
+
     return $m->invoke($cmd, ...$args);
 }
 
@@ -163,7 +165,7 @@ function soloDaysRun(SyncSoloDays $cmd): void
     $cmd->setLaravel(app());
     $cmd->run(
         new \Symfony\Component\Console\Input\ArrayInput([]),
-        new \Symfony\Component\Console\Output\NullOutput(),
+        new \Symfony\Component\Console\Output\NullOutput,
     );
 }
 
@@ -196,9 +198,9 @@ test('handle takes maximum across multiple solos for the same user', function ()
 
     $client = Mockery::mock(VatEudClientInterface::class);
     $client->shouldReceive('getSoloEndorsements')->andReturn([
-        soloDaysMakeSolo(1, 1234567, 5,  'EDDL_TWR'),
+        soloDaysMakeSolo(1, 1234567, 5, 'EDDL_TWR'),
         soloDaysMakeSolo(2, 1234567, 22, 'EDDF_APP'),
-        soloDaysMakeSolo(3, 1234567, 9,  'EDDH_GND'),
+        soloDaysMakeSolo(3, 1234567, 9, 'EDDH_GND'),
     ]);
 
     soloDaysRun(soloDaysMakeCommand($client));
@@ -209,10 +211,10 @@ test('handle takes maximum across multiple solos for the same user', function ()
 
 test('handle resets upgraded user before processing solos', function () {
     $user = User::factory()->create([
-        'vatsim_id'         => 1234567,
-        'rating'            => 4,
+        'vatsim_id' => 1234567,
+        'rating' => 4,
         'last_known_rating' => 3,
-        'solo_days_used'    => 20,
+        'solo_days_used' => 20,
     ]);
 
     $client = Mockery::mock(VatEudClientInterface::class);

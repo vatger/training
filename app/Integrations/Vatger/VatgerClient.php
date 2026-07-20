@@ -8,11 +8,12 @@ use Illuminate\Support\Facades\Log;
 class VatgerClient implements VatgerClientInterface
 {
     private ?string $apiKey;
+
     private string $baseUrl;
 
     public function __construct()
     {
-        $this->apiKey  = config('services.vatger.api_key');
+        $this->apiKey = config('services.vatger.api_key');
         $this->baseUrl = config('services.vatger.api_url');
     }
 
@@ -25,11 +26,11 @@ class VatgerClient implements VatgerClientInterface
         try {
             $response = Http::withHeaders([
                 'Authorization' => "Token {$this->apiKey}",
-                'Accept'        => 'application/json',
+                'Accept' => 'application/json',
             ])
                 ->timeout(10)
                 ->post("{$this->baseUrl}/board/post/cpt", [
-                    'text_data'  => 'The above CPTs have been confirmed.',
+                    'text_data' => 'The above CPTs have been confirmed.',
                     'table_data' => $cpts,
                 ]);
 
@@ -60,12 +61,12 @@ class VatgerClient implements VatgerClientInterface
             $response = Http::withHeaders(['Authorization' => "Token {$this->apiKey}"])
                 ->timeout(10)
                 ->post("{$this->baseUrl}/user/{$vatsimId}/send_notification", [
-                    'title'       => $title,
-                    'message'     => $message,
+                    'title' => $title,
+                    'message' => $message,
                     'source_name' => $sourceName,
-                    'link_text'   => $linkText,
-                    'link_url'    => $linkUrl,
-                    'via'         => 'board.ping',
+                    'link_text' => $linkText,
+                    'link_url' => $linkUrl,
+                    'via' => 'board.ping',
                 ]);
 
             if ($response->successful()) {

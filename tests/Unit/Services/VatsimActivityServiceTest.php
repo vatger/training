@@ -20,6 +20,7 @@ function invokeCalculateActivity(array $endorsement, array $connections): array
     $service = activityService();
     $method = new ReflectionMethod($service, 'calculateActivity');
     $method->setAccessible(true);
+
     return $method->invoke($service, $endorsement, $connections);
 }
 

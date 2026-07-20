@@ -7,9 +7,9 @@ use App\Domain\Solo\Actions\GrantSoloEndorsement;
 use App\Domain\Solo\Actions\RemoveSoloEndorsement;
 use App\Http\Controllers\Controller;
 use App\Integrations\Moodle\MoodleClient;
+use App\Integrations\VatEud\VatEudService;
 use App\Models\Course;
 use App\Models\User;
-use App\Integrations\VatEud\VatEudService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -29,29 +29,29 @@ class SoloController extends Controller
     {
         $user = $request->user();
 
-        if (!$user->isMentor() && !$user->is_superuser) {
+        if (! $user->isMentor() && ! $user->is_superuser) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
         $validated = $request->validate([
             'trainee_id' => 'required|integer|exists:users,id',
-            'course_id'  => 'required|integer|exists:courses,id',
+            'course_id' => 'required|integer|exists:courses,id',
         ]);
 
         $trainee = User::findOrFail($validated['trainee_id']);
         $course = Course::findOrFail($validated['course_id']);
 
-        if (!$user->is_superuser && !$user->is_admin && !$user->mentorCourses()->where('courses.id', $course->id)->exists()) {
+        if (! $user->is_superuser && ! $user->is_admin && ! $user->mentorCourses()->where('courses.id', $course->id)->exists()) {
             return response()->json(['error' => 'Access denied'], 403);
         }
 
-        $moodleStatus     = $this->checkMoodleCompletion($trainee, $course);
+        $moodleStatus = $this->checkMoodleCompletion($trainee, $course);
         $coreTheoryStatus = $this->checkCoreTheoryStatus($trainee, $course);
 
         return response()->json([
-            'trainee_id'     => $trainee->id,
-            'moodle'         => $moodleStatus,
-            'core_theory'    => $coreTheoryStatus,
+            'trainee_id' => $trainee->id,
+            'moodle' => $moodleStatus,
+            'core_theory' => $coreTheoryStatus,
             'can_grant_solo' => $moodleStatus['completed'] &&
                 in_array($coreTheoryStatus['status'], ['passed', 'not_required']),
         ]);
@@ -61,19 +61,19 @@ class SoloController extends Controller
     {
         $user = $request->user();
 
-        if (!$user->isMentor() && !$user->is_superuser) {
+        if (! $user->isMentor() && ! $user->is_superuser) {
             return response()->json(['error' => 'Access denied'], 403);
         }
 
         $validated = $request->validate([
             'trainee_id' => 'required|integer|exists:users,id',
-            'course_id'  => 'required|integer|exists:courses,id',
+            'course_id' => 'required|integer|exists:courses,id',
         ]);
 
         $trainee = User::findOrFail($validated['trainee_id']);
         $course = Course::findOrFail($validated['course_id']);
 
-        if (!$user->is_superuser && !$user->is_admin && !$user->mentorCourses()->where('courses.id', $course->id)->exists()) {
+        if (! $user->is_superuser && ! $user->is_admin && ! $user->mentorCourses()->where('courses.id', $course->id)->exists()) {
             return response()->json(['error' => 'Access denied'], 403);
         }
 
@@ -101,10 +101,10 @@ class SoloController extends Controller
             return response()->json(['success' => false, 'message' => $result['message'] ?? 'Failed to assign core theory test']);
         } catch (\Exception $e) {
             Log::error('Error assigning core theory test', [
-                'mentor_id'  => $user->id,
+                'mentor_id' => $user->id,
                 'trainee_id' => $trainee->id,
-                'course_id'  => $course->id,
-                'error'      => $e->getMessage(),
+                'course_id' => $course->id,
+                'error' => $e->getMessage(),
             ]);
 
             return response()->json(['success' => false, 'message' => 'An error occurred while assigning the core theory test'], 500);
@@ -115,21 +115,21 @@ class SoloController extends Controller
     {
         $user = $request->user();
 
-        if (!$user->isMentor() && !$user->is_superuser) {
+        if (! $user->isMentor() && ! $user->is_superuser) {
             return back()->withErrors(['error' => 'Access denied']);
         }
 
         $validated = $request->validate([
-            'trainee_id'  => 'required|integer|exists:users,id',
-            'course_id'   => 'required|integer|exists:courses,id',
-            'expiry_date' => ['required', 'date', 'after:' . now()->addDays(6)->format('Y-m-d')],
+            'trainee_id' => 'required|integer|exists:users,id',
+            'course_id' => 'required|integer|exists:courses,id',
+            'expiry_date' => ['required', 'date', 'after:'.now()->addDays(6)->format('Y-m-d')],
         ]);
 
         $trainee = User::findOrFail($validated['trainee_id']);
         $course = Course::findOrFail($validated['course_id']);
         $expiryDate = Carbon::parse($validated['expiry_date']);
 
-        if (!$user->is_superuser && !$user->is_admin && !$user->mentorCourses()->where('courses.id', $course->id)->exists()) {
+        if (! $user->is_superuser && ! $user->is_admin && ! $user->mentorCourses()->where('courses.id', $course->id)->exists()) {
             return back()->withErrors(['error' => 'You cannot manage this course']);
         }
 
@@ -153,9 +153,9 @@ class SoloController extends Controller
             return back()->withErrors($e->errors());
         } catch (\Exception $e) {
             Log::error('Error granting solo endorsement', [
-                'mentor_id'  => $user->id,
+                'mentor_id' => $user->id,
                 'trainee_id' => $trainee->id,
-                'course_id'  => $course->id,
+                'course_id' => $course->id,
                 'error' => $e->getMessage(),
             ]);
 
@@ -167,21 +167,21 @@ class SoloController extends Controller
     {
         $user = $request->user();
 
-        if (!$user->isMentor() && !$user->is_superuser) {
+        if (! $user->isMentor() && ! $user->is_superuser) {
             return back()->withErrors(['error' => 'Access denied']);
         }
 
         $validated = $request->validate([
-            'trainee_id'  => 'required|integer|exists:users,id',
-            'course_id'   => 'required|integer|exists:courses,id',
-            'expiry_date' => ['required', 'date', 'after:' . now()->addDays(6)->format('Y-m-d')],
+            'trainee_id' => 'required|integer|exists:users,id',
+            'course_id' => 'required|integer|exists:courses,id',
+            'expiry_date' => ['required', 'date', 'after:'.now()->addDays(6)->format('Y-m-d')],
         ]);
 
         $trainee = User::findOrFail($validated['trainee_id']);
         $course = Course::findOrFail($validated['course_id']);
         $expiryDate = Carbon::parse($validated['expiry_date']);
 
-        if (!$user->is_superuser && !$user->is_admin && !$user->mentorCourses()->where('courses.id', $course->id)->exists()) {
+        if (! $user->is_superuser && ! $user->is_admin && ! $user->mentorCourses()->where('courses.id', $course->id)->exists()) {
             return back()->withErrors(['error' => 'You cannot manage this course']);
         }
 
@@ -197,10 +197,10 @@ class SoloController extends Controller
             return back()->withErrors($e->errors());
         } catch (\Exception $e) {
             Log::error('Error extending solo endorsement', [
-                'mentor_id'  => $user->id,
+                'mentor_id' => $user->id,
                 'trainee_id' => $trainee->id,
-                'course_id'  => $course->id,
-                'error'      => $e->getMessage(),
+                'course_id' => $course->id,
+                'error' => $e->getMessage(),
             ]);
 
             return back()->withErrors(['error' => 'An error occurred while extending the solo endorsement']);
@@ -211,19 +211,19 @@ class SoloController extends Controller
     {
         $user = $request->user();
 
-        if (!$user->isMentor() && !$user->is_superuser) {
+        if (! $user->isMentor() && ! $user->is_superuser) {
             return back()->withErrors(['error' => 'Access denied']);
         }
 
         $validated = $request->validate([
             'trainee_id' => 'required|integer|exists:users,id',
-            'course_id'  => 'required|integer|exists:courses,id',
+            'course_id' => 'required|integer|exists:courses,id',
         ]);
 
         $trainee = User::findOrFail($validated['trainee_id']);
         $course = Course::findOrFail($validated['course_id']);
 
-        if (!$user->is_superuser && !$user->is_admin && !$user->mentorCourses()->where('courses.id', $course->id)->exists()) {
+        if (! $user->is_superuser && ! $user->is_admin && ! $user->mentorCourses()->where('courses.id', $course->id)->exists()) {
             return back()->withErrors(['error' => 'You cannot manage this course']);
         }
 
@@ -259,7 +259,7 @@ class SoloController extends Controller
                 $completed = $this->moodleClient->getCourseCompletion($trainee->vatsim_id, $moodleCourseId);
                 $details[] = ['course_id' => $moodleCourseId, 'completed' => $completed];
 
-                if (!$completed) {
+                if (! $completed) {
                     $allCompleted = false;
                 }
             }
@@ -281,7 +281,7 @@ class SoloController extends Controller
         try {
             $coreTheoryIds = ['GND' => 6, 'TWR' => 9, 'APP' => 10, 'CTR' => 11];
 
-            if (!isset($coreTheoryIds[$course->position])) {
+            if (! isset($coreTheoryIds[$course->position])) {
                 return ['status' => 'not_required', 'message' => 'Core theory test not required for this position'];
             }
 
@@ -289,7 +289,7 @@ class SoloController extends Controller
             $exams = $this->vatEudService->getUserExams($trainee->vatsim_id);
 
             $passed = collect($exams->results)
-                ->filter(fn($r) => $r->examId === $examId && $r->passed && $r->expiry->isFuture());
+                ->filter(fn ($r) => $r->examId === $examId && $r->passed && $r->expiry->isFuture());
 
             if ($passed->isNotEmpty()) {
                 return ['status' => 'passed', 'exam_id' => $examId];
@@ -297,7 +297,7 @@ class SoloController extends Controller
 
             $assigned = collect($exams->assignments)
                 ->where('exam_id', $examId)
-                ->filter(fn($a) => Carbon::parse($a['expires'])->isFuture());
+                ->filter(fn ($a) => Carbon::parse($a['expires'])->isFuture());
 
             if ($assigned->isNotEmpty()) {
                 return ['status' => 'assigned', 'exam_id' => $examId];
@@ -307,8 +307,8 @@ class SoloController extends Controller
         } catch (\Exception $e) {
             Log::error('Failed to check core theory status for solo', [
                 'trainee_id' => $trainee->id,
-                'course_id'  => $course->id,
-                'error'      => $e->getMessage(),
+                'course_id' => $course->id,
+                'error' => $e->getMessage(),
             ]);
 
             return ['status' => 'error', 'message' => 'Unable to verify core theory test status'];

@@ -26,7 +26,7 @@ class CptLogController extends Controller
             || $cpt->examiner_id === $user->id
             || $cpt->local_id === $user->id;
 
-        if (!$canAccess) {
+        if (! $canAccess) {
             return redirect()->route('cpt.index')
                 ->withErrors(['error' => 'You do not have permission to view logs for this CPT.']);
         }
@@ -37,38 +37,38 @@ class CptLogController extends Controller
 
         return Inertia::render('cpt/upload', [
             'cpt' => [
-                'id'      => $cpt->id,
+                'id' => $cpt->id,
                 'trainee' => [
-                    'id'        => $cpt->trainee->id,
-                    'name'      => $cpt->trainee->full_name,
+                    'id' => $cpt->trainee->id,
+                    'name' => $cpt->trainee->full_name,
                     'vatsim_id' => $cpt->trainee->vatsim_id,
                 ],
                 'examiner' => $cpt->examiner ? [
-                    'id'   => $cpt->examiner->id,
+                    'id' => $cpt->examiner->id,
                     'name' => $cpt->examiner->full_name,
                 ] : null,
                 'local' => $cpt->local ? [
-                    'id'   => $cpt->local->id,
+                    'id' => $cpt->local->id,
                     'name' => $cpt->local->full_name,
                 ] : null,
                 'course' => [
-                    'id'           => $cpt->course->id,
-                    'name'         => $cpt->course->name,
+                    'id' => $cpt->course->id,
+                    'name' => $cpt->course->name,
                     'solo_station' => $cpt->course->solo_station,
                 ],
-                'date'           => $cpt->date->toIso8601String(),
+                'date' => $cpt->date->toIso8601String(),
                 'date_formatted' => $cpt->date->format('d M Y, H:i'),
-                'confirmed'      => $cpt->confirmed,
-                'log_uploaded'   => $cpt->log_uploaded,
+                'confirmed' => $cpt->confirmed,
+                'log_uploaded' => $cpt->log_uploaded,
             ],
             'logs' => $cpt->logs->map(fn ($log) => [
-                'id'                  => $log->id,
-                'file_name'           => $log->file_name,
-                'file_url'            => $log->file_url,
-                'uploaded_at'         => $log->created_at->toIso8601String(),
+                'id' => $log->id,
+                'file_name' => $log->file_name,
+                'file_url' => $log->file_url,
+                'uploaded_at' => $log->created_at->toIso8601String(),
                 'uploaded_at_formatted' => $log->created_at->format('d M Y, H:i'),
                 'uploaded_by' => [
-                    'id'   => $log->uploadedBy->id,
+                    'id' => $log->uploadedBy->id,
                     'name' => $log->uploadedBy->full_name,
                 ],
             ]),
@@ -85,7 +85,7 @@ class CptLogController extends Controller
 
         $user = $request->user();
 
-        if (!$user->isSuperuser() && $cpt->examiner_id !== $user->id && $cpt->local_id !== $user->id) {
+        if (! $user->isSuperuser() && $cpt->examiner_id !== $user->id && $cpt->local_id !== $user->id) {
             return back()->withErrors(['error' => 'You do not have permission to upload logs for this CPT.']);
         }
 
@@ -97,20 +97,20 @@ class CptLogController extends Controller
     public function viewLog(CptLog $log)
     {
         $user = auth()->user();
-        $cpt  = $log->cpt()->first();
+        $cpt = $log->cpt()->first();
 
         $canView = $user->isSuperuser()
             || $user->isLeadership()
             || $cpt->examiner_id === $user->id
             || $cpt->local_id === $user->id;
 
-        if (!$canView) {
+        if (! $canView) {
             abort(403, 'Unauthorized access to CPT log.');
         }
 
         $headers = [
-            'Content-Type'        => 'application/pdf',
-            'Content-Disposition' => 'inline; filename="' . $log->file_name . '"',
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="'.$log->file_name.'"',
         ];
 
         if (Storage::disk('private')->exists($log->log_file)) {

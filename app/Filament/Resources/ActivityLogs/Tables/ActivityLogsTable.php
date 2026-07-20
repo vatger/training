@@ -72,13 +72,14 @@ class ActivityLogsTable
                             ->multiple(),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
-                        if (!empty($data['action'])) {
+                        if (! empty($data['action'])) {
                             return $query->where(function (Builder $q) use ($data) {
                                 foreach ($data['action'] as $action) {
-                                    $q->orWhere('action', 'like', '%' . $action . '%');
+                                    $q->orWhere('action', 'like', '%'.$action.'%');
                                 }
                             });
                         }
+
                         return $query;
                     }),
 

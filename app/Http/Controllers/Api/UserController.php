@@ -15,13 +15,14 @@ class UserController extends Controller
         try {
             $user = User::where('vatsim_id', $vatsimId)->first();
 
-            if (!$user) {
+            if (! $user) {
                 Log::info('User retrieval - user not found', ['vatsim_id' => $vatsimId]);
+
                 return response()->json(['error' => 'User not found'], 200);
             }
 
             $userData = [];
-            
+
             foreach ($user->getAttributes() as $key => $value) {
                 $userData[$key] = $value;
             }
@@ -36,7 +37,7 @@ class UserController extends Controller
 
             return response()->json([
                 'error' => 'Failed to retrieve user data',
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 500);
         }
     }
