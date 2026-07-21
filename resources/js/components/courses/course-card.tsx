@@ -88,7 +88,7 @@ export default function CourseCard({
 								<Clock className="h-4 w-4" />
 								<span>
 									Queue Position #{course.waiting_list_position}
-									{course.type === "RTG" &&
+									{course.type === "RTG" && course.position !== "CTR" &&
 										course.waiting_list_activity !== undefined &&
 										course.waiting_list_activity !== null &&
 										` • ${course.waiting_list_activity.toFixed(2)}h activity`}
