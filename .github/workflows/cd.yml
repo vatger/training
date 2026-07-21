@@ -96,7 +96,7 @@ jobs:
           APP_URL: ${{ secrets.APP_URL }}
         run: |
           echo "Waiting for stack to come up..."
-          sleep 20
+          sleep 90
           for i in $(seq 1 8); do
             if curl -fsS --max-time 10 "${APP_URL}/up"; then
               echo ""
