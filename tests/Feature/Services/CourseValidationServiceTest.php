@@ -259,6 +259,35 @@ test('user with no last_rating_change can join rtg course without waiting period
     expect($canJoin)->toBeTrue();
 });
 
+test('user cannot join rtg course at exactly 89 days after rating change', function () {
+    $user = gerUserOnRoster(['rating' => 3, 'last_rating_change' => now()->subDays(89)]);
+    $course = Course::factory()->create(['type' => 'RTG', 'position' => 'GND', 'min_rating' => 2, 'max_rating' => 4]);
+
+    [$canJoin, $reason] = makeService()->canUserJoinCourse($course, $user);
+
+    expect($canJoin)->toBeFalse()
+        ->and($reason)->toBe('Your last rating change was less than 3 months ago. You cannot join a new rating course yet.');
+});
+
+test('user can join rtg course at exactly 90 days after rating change', function () {
+    $user = gerUserOnRoster(['rating' => 3, 'last_rating_change' => now()->subDays(90)]);
+    $course = Course::factory()->create(['type' => 'RTG', 'position' => 'GND', 'min_rating' => 2, 'max_rating' => 4]);
+
+    [$canJoin, $reason] = makeService()->canUserJoinCourse($course, $user);
+
+    expect($canJoin)->toBeTrue()
+        ->and($reason)->toBe('');
+});
+
+test('recent rating change does not block joining non-rtg courses', function () {
+    $user = gerUserOnRoster(['rating' => 3, 'last_rating_change' => now()->subDays(30)]);
+    $course = Course::factory()->create(['type' => 'EDMT', 'min_rating' => 1, 'max_rating' => 7]);
+
+    [$canJoin] = makeService()->canUserJoinCourse($course, $user);
+
+    expect($canJoin)->toBeTrue();
+});
+
 // ─── Familiarisation ──────────────────────────────────────────────────────────
 
 test('user with existing familiarisation for course sector cannot join', function () {

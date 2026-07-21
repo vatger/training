@@ -31,7 +31,7 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'subdivision' => fake()->randomElement(['GER', 'USA', 'GBR', 'FRA']),
             'rating' => fake()->numberBetween(1, 7),
-            'last_rating_change' => now()->subDays(fake()->numberBetween(30, 365)),
+            'last_rating_change' => now()->subDays(fake()->numberBetween(91, 365)),
             'is_staff' => false,
             'is_superuser' => false,
             'is_admin' => false,
