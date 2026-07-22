@@ -12,6 +12,7 @@ use App\Domain\Cpt\Events\CptLocalLeft;
 use App\Domain\Cpt\Events\CptLogUploaded;
 use App\Domain\Endorsement\Events\EndorsementMarkedForRemoval;
 use App\Domain\Endorsement\Events\EndorsementRemoved;
+use App\Domain\Endorsement\Events\Tier1EndorsementGranted;
 use App\Domain\Endorsement\Events\Tier2EndorsementGranted;
 use App\Domain\Gdpr\Events\UserDeleted;
 use App\Domain\Roster\Events\RosterRemovalWarningIssued;
@@ -20,6 +21,7 @@ use App\Domain\Solo\Events\SoloExtended;
 use App\Domain\Solo\Events\SoloGranted;
 use App\Domain\Solo\Events\SoloRemoved;
 use App\Domain\Training\Events\CourseFinished;
+use App\Domain\Training\Events\FamiliarisationAdded;
 use App\Domain\Training\Events\MentorAdded;
 use App\Domain\Training\Events\MentorRemoved;
 use App\Domain\Training\Events\TraineeAddedToCourse;
@@ -43,12 +45,14 @@ use App\Listeners\LogCptLocalLeft;
 use App\Listeners\LogCptLogUploaded;
 use App\Listeners\LogEndorsementMarkedForRemoval;
 use App\Listeners\LogEndorsementRemoved;
+use App\Listeners\LogFamiliarisationAdded;
 use App\Listeners\LogMentorAdded;
 use App\Listeners\LogMentorRemoved;
 use App\Listeners\LogRosterRemovalWarningIssued;
 use App\Listeners\LogSoloExtended;
 use App\Listeners\LogSoloGranted;
 use App\Listeners\LogSoloRemoved;
+use App\Listeners\LogTier1EndorsementGranted;
 use App\Listeners\LogTier2EndorsementGranted;
 use App\Listeners\LogTraineeAddedToCourse;
 use App\Listeners\LogTraineeAssigned;
@@ -93,7 +97,9 @@ class EventServiceProvider extends ServiceProvider
         CptLogUploaded::class => [LogCptLogUploaded::class],
         EndorsementMarkedForRemoval::class => [LogEndorsementMarkedForRemoval::class],
         EndorsementRemoved::class => [LogEndorsementRemoved::class],
+        Tier1EndorsementGranted::class => [LogTier1EndorsementGranted::class],
         Tier2EndorsementGranted::class => [LogTier2EndorsementGranted::class],
+        FamiliarisationAdded::class => [LogFamiliarisationAdded::class],
         RosterRemovalWarningIssued::class => [LogRosterRemovalWarningIssued::class],
         UserRemovedFromRoster::class => [LogUserRemovedFromRoster::class],
         UserDeleted::class => [LogUserDeleted::class],

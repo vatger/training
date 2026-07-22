@@ -9,8 +9,6 @@ use Illuminate\Support\Facades\Event;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    // Course uses LogsActivity which calls App\Services\ActivityLogger (absent on this branch).
-    // Faking events prevents those observers from running.
     Event::fake();
 });
 

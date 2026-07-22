@@ -33,10 +33,6 @@ beforeEach(function () {
     $this->app->bind(VatEudClientInterface::class, FakeVatEudClient::class);
     $this->app->bind(VatgerClientInterface::class, FakeVatgerClient::class);
 
-    // Allow Cpt Eloquent model events so the saving hook (which sets confirmed)
-    // still fires. Fake everything else to suppress LogsActivity on Course
-    // (which references App\Services\ActivityLogger, absent on this branch)
-    // and to record application events for assertDispatched() checks.
     Event::fakeExcept([
         'eloquent.creating: App\Models\Cpt',
         'eloquent.created: App\Models\Cpt',

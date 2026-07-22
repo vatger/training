@@ -2,13 +2,15 @@
 
 namespace App\Domain\Training\Actions;
 
+use App\Domain\Endorsement\Events\Tier1EndorsementGranted;
 use App\Domain\Training\Events\CourseFinished;
+use App\Domain\Training\Events\FamiliarisationAdded;
+use App\Integrations\VatEud\VatEudService;
 use App\Models\Course;
 use App\Models\Familiarisation;
 use App\Models\FamiliarisationSector;
 use App\Models\Role;
 use App\Models\User;
-use App\Services\ActivityLogger;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -44,7 +46,7 @@ class FinishCourse
     private function grantEndorsements(User $trainee, array $endorsementGroups, User $mentor): void
     {
         try {
-            $vatEudService = app(\App\Services\VatEudService::class);
+            $vatEudService = app(VatEudService::class);
 
             $existing = collect($vatEudService->getTier1Endorsements())
                 ->where('user_cid', $trainee->vatsim_id)
@@ -58,13 +60,12 @@ class FinishCourse
 
                 $result = $vatEudService->createTier1Endorsement($trainee->vatsim_id, $position, $mentor->vatsim_id);
 
-                if ($result['success']) {
-                    ActivityLogger::endorsementGranted($position, $trainee, $mentor, 'tier1');
+                if ($result) {
+                    event(new Tier1EndorsementGranted($position, $trainee, $mentor));
                 } else {
                     Log::warning('Failed to grant Tier 1 endorsement on course completion', [
                         'trainee_id' => $trainee->id,
                         'position' => $position,
-                        'error' => $result['message'] ?? 'Unknown error',
                     ]);
                 }
             }
@@ -107,7 +108,7 @@ class FinishCourse
                 'familiarisation_sector_id' => $sector->id,
             ]);
 
-            ActivityLogger::familiarisationAdded($trainee, $sector->name, $sector->id, $fir, $mentor, $course, true);
+            event(new FamiliarisationAdded($trainee, $sector->name, $sector->id, $fir, $mentor, $course));
         }
     }
 
@@ -121,7 +122,7 @@ class FinishCourse
         if ($familiarisation->wasRecentlyCreated) {
             $sector = FamiliarisationSector::find($course->familiarisation_sector_id);
             if ($sector) {
-                ActivityLogger::familiarisationAdded($trainee, $sector->name, $sector->id, $sector->fir, $mentor, $course, true);
+                event(new FamiliarisationAdded($trainee, $sector->name, $sector->id, $sector->fir, $mentor, $course));
             }
         }
     }

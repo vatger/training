@@ -2,8 +2,9 @@
 
 namespace App\Traits;
 
-use App\Services\ActivityLogger;
+use App\Models\ActivityLog;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Request;
 
 trait LogsActivity
 {
@@ -53,13 +54,35 @@ trait LogsActivity
             }
         }
 
-        ActivityLogger::logModelChange(
-            $this->getActivityAction($action),
-            $this,
-            Auth::user(),
-            $old,
-            $new
-        );
+        $causer = Auth::user();
+        $changes = [];
+        foreach ($new as $key => $value) {
+            if (($old[$key] ?? null) != $value) {
+                $changes[$key] = ['old' => $old[$key] ?? null, 'new' => $value];
+            }
+        }
+        $modelName = class_basename($this);
+        $userName = $causer?->name ?? 'System';
+        $description = empty($changes)
+            ? "{$userName} {$action} {$modelName} #{$this->id}"
+            : "{$userName} {$action} {$modelName} #{$this->id} (changed: ".implode(', ', array_keys($changes)).')';
+
+        ActivityLog::create([
+            'user_id' => $causer?->id ?? Auth::id(),
+            'action' => $this->getActivityAction($action),
+            'model_type' => get_class($this),
+            'model_id' => $this->id,
+            'properties' => [
+                'old' => $old,
+                'new' => $new,
+                'changes' => $changes,
+                'causer_id' => $causer?->id,
+                'causer_name' => $causer?->name,
+            ],
+            'description' => $description,
+            'ip_address' => Request::ip(),
+            'user_agent' => Request::userAgent(),
+        ]);
     }
 
     protected function shouldLogActivity(string $action): bool

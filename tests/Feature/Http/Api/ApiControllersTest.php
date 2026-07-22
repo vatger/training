@@ -19,12 +19,6 @@ beforeEach(function () {
     $this->app->bind(VatEudClientInterface::class, FakeVatEudClient::class);
     Cache::flush();
     Http::fake(['*' => Http::response([], 200)]);
-    // Fake all model events except the ones that must run:
-    // - ApiKey.creating  → booted() observer hashes the plain key before insert
-    // - Cpt.saving       → boot() observer calculates the confirmed flag before insert
-    // - UserDeleted      → listener must write the ActivityLog entry during GDPR deletion
-    // Course and other models with LogsActivity are fully faked; the missing
-    // App\Services\ActivityLogger class is never called.
     Event::fakeExcept([
         'eloquent.creating: App\Models\ApiKey',
         'eloquent.saving: App\Models\Cpt',

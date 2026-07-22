@@ -15,8 +15,6 @@ use Illuminate\Support\Facades\Http;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    // Event::fake() suppresses Eloquent model events, preventing the call to
-    // App\Services\ActivityLogger (absent on this branch) via LogsActivity trait.
     Event::fake();
     Cache::flush();
 });
