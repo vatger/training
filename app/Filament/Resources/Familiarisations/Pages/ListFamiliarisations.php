@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Familiarisations\Pages;
 
 use App\Filament\Resources\Familiarisations\FamiliarisationResource;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListFamiliarisations extends ListRecords
@@ -12,7 +13,7 @@ class ListFamiliarisations extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            \Filament\Actions\CreateAction::make(),
+            CreateAction::make(),
         ];
     }
 }

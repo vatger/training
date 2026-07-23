@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Familiarisations\Tables;
 
 use App\Filament\Resources\Users\UserResource;
+use App\Models\FamiliarisationSector;
 use Filament\Actions\DeleteAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -60,7 +61,7 @@ class FamiliarisationsTable
                 SelectFilter::make('fir')
                     ->label('FIR')
                     ->options(function () {
-                        return \App\Models\FamiliarisationSector::query()
+                        return FamiliarisationSector::query()
                             ->distinct()
                             ->pluck('fir', 'fir')
                             ->toArray();

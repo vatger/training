@@ -3,6 +3,7 @@
 use App\Integrations\Moodle\FakeMoodleClient;
 use App\Integrations\Moodle\MoodleClientInterface;
 use App\Integrations\VatEud\DTOs\ExamResultData;
+use App\Integrations\VatEud\DTOs\SoloEndorsementData;
 use App\Integrations\VatEud\DTOs\UserExamsData;
 use App\Integrations\VatEud\FakeVatEudClient;
 use App\Integrations\VatEud\VatEudClientInterface;
@@ -10,6 +11,8 @@ use App\Integrations\Vatger\FakeVatgerClient;
 use App\Integrations\Vatger\VatgerClientInterface;
 use App\Models\Course;
 use App\Models\EndorsementActivity;
+use App\Models\Familiarisation;
+use App\Models\FamiliarisationSector;
 use App\Models\Role;
 use App\Models\Tier2Endorsement;
 use App\Models\TrainingLog;
@@ -17,6 +20,7 @@ use App\Models\User;
 use App\Models\WaitingListEntry;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\Factory;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
@@ -1256,15 +1260,15 @@ test('superuser can remove a solo endorsement', function () {
 
         public function getSoloEndorsements(): array
         {
-            return [new \App\Integrations\VatEud\DTOs\SoloEndorsementData(
+            return [new SoloEndorsementData(
                 id: 1,
                 userCid: $this->vatsimId,
                 position: $this->position,
                 facility: 9,
                 mentor: 1441619,
                 positionDays: 7,
-                expireAt: \Carbon\Carbon::now()->addDays(10),
-                createdAt: \Carbon\Carbon::now()->subDays(7),
+                expireAt: Carbon::now()->addDays(10),
+                createdAt: Carbon::now()->subDays(7),
             )];
         }
     };
@@ -1375,7 +1379,7 @@ test('courses index hides courses outside the user rating range', function () {
     ]);
 
     $user = User::factory()->create(['subdivision' => 'GER', 'rating' => 3]);
-    Http::swap(new \Illuminate\Http\Client\Factory);
+    Http::swap(new Factory);
     Http::fake(['*' => Http::response(['data' => ['controllers' => [$user->vatsim_id]]], 200)]);
     Cache::flush();
 
@@ -1394,7 +1398,7 @@ test('admin user sees all courses regardless of eligibility', function () {
     $highRatingCourse = Course::factory()->create(['type' => 'RTG', 'position' => 'APP', 'min_rating' => 4, 'max_rating' => 5]);
 
     $admin = User::factory()->superuser()->create(['subdivision' => 'GER', 'rating' => 2]);
-    Http::swap(new \Illuminate\Http\Client\Factory);
+    Http::swap(new Factory);
     Http::fake(['*' => Http::response(['data' => ['controllers' => [$admin->vatsim_id]]], 200)]);
     Cache::flush();
 
@@ -1413,7 +1417,7 @@ test('courses index hides all RTG courses when user is actively enrolled in one'
     $alternativeCourse = Course::factory()->create(['type' => 'RTG', 'position' => 'APP', 'min_rating' => 2, 'max_rating' => 3]);
 
     $user = User::factory()->create(['subdivision' => 'GER', 'rating' => 3]);
-    Http::swap(new \Illuminate\Http\Client\Factory);
+    Http::swap(new Factory);
     Http::fake(['*' => Http::response(['data' => ['controllers' => [$user->vatsim_id]]], 200)]);
     Cache::flush();
 
@@ -1435,7 +1439,7 @@ test('courses index sets rtgRatingPending true when user has rating upgrade pend
         'rating' => 3,
         'rating_upgrade_pending' => true,
     ]);
-    Http::swap(new \Illuminate\Http\Client\Factory);
+    Http::swap(new Factory);
     Http::fake(['*' => Http::response(['data' => ['controllers' => [$user->vatsim_id]]], 200)]);
     Cache::flush();
 
@@ -1454,7 +1458,7 @@ test('courses index sets rtgRatingPending false when user has no rating upgrade 
         'rating' => 3,
         'rating_upgrade_pending' => false,
     ]);
-    Http::swap(new \Illuminate\Http\Client\Factory);
+    Http::swap(new Factory);
     Http::fake(['*' => Http::response(['data' => ['controllers' => [$user->vatsim_id]]], 200)]);
     Cache::flush();
 
@@ -1468,12 +1472,12 @@ test('courses index sets rtgRatingPending false when user has no rating upgrade 
 });
 
 test('courses index hides EDMT course when user already holds all required endorsements', function () {
-    $sector = \App\Models\FamiliarisationSector::create(['name' => 'Test Sector', 'fir' => 'EDGG']);
+    $sector = FamiliarisationSector::create(['name' => 'Test Sector', 'fir' => 'EDGG']);
     $course = Course::factory()->create(['type' => 'EDMT', 'position' => 'TWR', 'min_rating' => 2, 'max_rating' => 3, 'familiarisation_sector_id' => null]);
     \DB::table('course_endorsement_groups')->insert(['course_id' => $course->id, 'endorsement_group_name' => 'EDDF_TWR']);
 
     $user = User::factory()->create(['subdivision' => 'GER', 'rating' => 3]);
-    \App\Models\EndorsementActivity::create([
+    EndorsementActivity::create([
         'endorsement_id' => 1,
         'vatsim_id' => $user->vatsim_id,
         'position' => 'EDDF_TWR',
@@ -1481,7 +1485,7 @@ test('courses index hides EDMT course when user already holds all required endor
         'last_updated' => now(),
     ]);
 
-    Http::swap(new \Illuminate\Http\Client\Factory);
+    Http::swap(new Factory);
     Http::fake(['*' => Http::response(['data' => ['controllers' => [$user->vatsim_id]]], 200)]);
     Cache::flush();
 
@@ -1495,13 +1499,13 @@ test('courses index hides EDMT course when user already holds all required endor
 });
 
 test('courses index hides FAM course when user already has the familiarisation', function () {
-    $sector = \App\Models\FamiliarisationSector::create(['name' => 'Test Sector', 'fir' => 'EDGG']);
+    $sector = FamiliarisationSector::create(['name' => 'Test Sector', 'fir' => 'EDGG']);
     $course = Course::factory()->create(['type' => 'FAM', 'position' => 'CTR', 'min_rating' => 2, 'max_rating' => 3, 'familiarisation_sector_id' => $sector->id]);
 
     $user = User::factory()->create(['subdivision' => 'GER', 'rating' => 3]);
-    \App\Models\Familiarisation::create(['user_id' => $user->id, 'familiarisation_sector_id' => $sector->id]);
+    Familiarisation::create(['user_id' => $user->id, 'familiarisation_sector_id' => $sector->id]);
 
-    Http::swap(new \Illuminate\Http\Client\Factory);
+    Http::swap(new Factory);
     Http::fake(['*' => Http::response(['data' => ['controllers' => [$user->vatsim_id]]], 200)]);
     Cache::flush();
 
@@ -1515,12 +1519,12 @@ test('courses index hides FAM course when user already has the familiarisation',
 });
 
 test('courses index includes FAM course when user has no familiarisation for its sector', function () {
-    $sector = \App\Models\FamiliarisationSector::create(['name' => 'Test Sector', 'fir' => 'EDGG']);
+    $sector = FamiliarisationSector::create(['name' => 'Test Sector', 'fir' => 'EDGG']);
     $course = Course::factory()->create(['type' => 'FAM', 'position' => 'CTR', 'min_rating' => 2, 'max_rating' => 3, 'familiarisation_sector_id' => $sector->id]);
 
     $user = User::factory()->create(['subdivision' => 'GER', 'rating' => 3]);
 
-    Http::swap(new \Illuminate\Http\Client\Factory);
+    Http::swap(new Factory);
     Http::fake(['*' => Http::response(['data' => ['controllers' => [$user->vatsim_id]]], 200)]);
     Cache::flush();
 

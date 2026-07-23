@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Middleware\AuthenticateApi;
+use App\Http\Middleware\CheckCourseAccess;
+use App\Http\Middleware\EnsureUserIsMentor;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Foundation\Application;
@@ -25,9 +27,9 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->alias([
-            'mentor' => \App\Http\Middleware\EnsureUserIsMentor::class,
+            'mentor' => EnsureUserIsMentor::class,
             'api.auth' => AuthenticateApi::class,
-            'course.access' => \App\Http\Middleware\CheckCourseAccess::class,
+            'course.access' => CheckCourseAccess::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

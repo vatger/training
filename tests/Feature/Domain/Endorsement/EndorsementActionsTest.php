@@ -17,6 +17,7 @@ use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Validation\ValidationException;
 
 uses(RefreshDatabase::class);
 
@@ -56,7 +57,7 @@ test('GrantTier2Endorsement throws if trainee already has that position', functi
     Cache::flush();
 
     expect(fn () => app(GrantTier2Endorsement::class)->execute($tier2, $trainee))
-        ->toThrow(\Illuminate\Validation\ValidationException::class);
+        ->toThrow(ValidationException::class);
 });
 
 test('GrantTier2Endorsement validation message says already have endorsement', function () {
@@ -89,7 +90,7 @@ test('GrantTier2Endorsement validation message says already have endorsement', f
     try {
         app(GrantTier2Endorsement::class)->execute($tier2, $trainee);
         $this->fail('Expected ValidationException');
-    } catch (\Illuminate\Validation\ValidationException $e) {
+    } catch (ValidationException $e) {
         expect($e->errors()['endorsement'][0])->toBe('You already have this endorsement.');
     }
 });
@@ -107,7 +108,7 @@ test('GrantTier2Endorsement throws if moodle_course_id set and course not comple
     try {
         app(GrantTier2Endorsement::class)->execute($tier2, $trainee);
         $this->fail('Expected ValidationException');
-    } catch (\Illuminate\Validation\ValidationException $e) {
+    } catch (ValidationException $e) {
         expect($e->errors()['endorsement'][0])
             ->toBe('You must complete the Moodle course before requesting this endorsement.');
     }
@@ -167,7 +168,7 @@ test('MarkEndorsementForRemoval throws if removal_date already set', function ()
     try {
         app(MarkEndorsementForRemoval::class)->execute($activity, $actor);
         $this->fail('Expected ValidationException');
-    } catch (\Illuminate\Validation\ValidationException $e) {
+    } catch (ValidationException $e) {
         expect($e->errors()['endorsement'][0])
             ->toBe('This endorsement is already marked for removal.');
     }
@@ -188,7 +189,7 @@ test('MarkEndorsementForRemoval throws if endorsement not found in VatEud', func
     try {
         app(MarkEndorsementForRemoval::class)->execute($activity, $actor);
         $this->fail('Expected ValidationException');
-    } catch (\Illuminate\Validation\ValidationException $e) {
+    } catch (ValidationException $e) {
         expect($e->errors()['endorsement'][0])
             ->toBe('Endorsement must be at least 6 months old before it can be removed.');
     }
@@ -230,7 +231,7 @@ test('MarkEndorsementForRemoval throws if endorsement younger than 6 months', fu
     try {
         app(MarkEndorsementForRemoval::class)->execute($activity, $actor);
         $this->fail('Expected ValidationException');
-    } catch (\Illuminate\Validation\ValidationException $e) {
+    } catch (ValidationException $e) {
         expect($e->errors()['endorsement'][0])
             ->toBe('Endorsement must be at least 6 months old before it can be removed.');
     }
@@ -270,7 +271,7 @@ test('MarkEndorsementForRemoval throws if activity_minutes meets minimum', funct
     try {
         app(MarkEndorsementForRemoval::class)->execute($activity, $actor);
         $this->fail('Expected ValidationException');
-    } catch (\Illuminate\Validation\ValidationException $e) {
+    } catch (ValidationException $e) {
         expect($e->errors()['endorsement'][0])
             ->toBe('Endorsement has sufficient activity and cannot be marked for removal.');
     }

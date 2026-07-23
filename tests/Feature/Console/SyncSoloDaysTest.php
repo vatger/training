@@ -212,7 +212,7 @@ test('outputs a warning when solo endorsement references an unknown VATSIM ID', 
 
 test('returns exit code 1 when client throws an exception', function () {
     $client = Mockery::mock(VatEudClientInterface::class);
-    $client->shouldReceive('getSoloEndorsements')->andThrow(new \RuntimeException('API down'));
+    $client->shouldReceive('getSoloEndorsements')->andThrow(new RuntimeException('API down'));
     app()->instance(VatEudClientInterface::class, $client);
 
     $this->artisan('solo:sync-days')

@@ -2,14 +2,21 @@
 
 namespace App\Providers;
 
+use App\Integrations\Moodle\FakeMoodleClient;
+use App\Integrations\Moodle\MoodleClient;
+use App\Integrations\Moodle\MoodleClientInterface;
 use App\Integrations\VatEud\FakeVatEudClient;
 use App\Integrations\VatEud\VatEudClient;
 use App\Integrations\VatEud\VatEudClientInterface;
+use App\Integrations\Vatger\FakeVatgerClient;
+use App\Integrations\Vatger\VatgerClient;
+use App\Integrations\Vatger\VatgerClientInterface;
 use App\Models\TrainingLog;
 use App\Policies\EndorsementPolicy;
 use App\Policies\TrainingLogPolicy;
 use App\Services\VatsimConnectService;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -34,17 +41,17 @@ class AppServiceProvider extends ServiceProvider
         );
 
         $this->app->bind(
-            \App\Integrations\Vatger\VatgerClientInterface::class,
+            VatgerClientInterface::class,
             $fake
-            ? \App\Integrations\Vatger\FakeVatgerClient::class
-            : \App\Integrations\Vatger\VatgerClient::class,
+            ? FakeVatgerClient::class
+            : VatgerClient::class,
         );
 
         $this->app->bind(
-            \App\Integrations\Moodle\MoodleClientInterface::class,
+            MoodleClientInterface::class,
             $fake
-            ? \App\Integrations\Moodle\FakeMoodleClient::class
-            : \App\Integrations\Moodle\MoodleClient::class,
+            ? FakeMoodleClient::class
+            : MoodleClient::class,
         );
 
         $this->app->bind(
@@ -61,7 +68,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         if (config('app.forcehttps')) {
-            \Illuminate\Support\Facades\URL::forceScheme('https');
+            URL::forceScheme('https');
         }
 
         date_default_timezone_set(config('app.timezone', 'UTC'));

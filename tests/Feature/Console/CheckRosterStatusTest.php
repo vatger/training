@@ -25,7 +25,7 @@ test('returns exit code 1 when roster is empty', function () {
 
 test('returns exit code 1 when client throws exception', function () {
     $client = Mockery::mock(VatEudClientInterface::class);
-    $client->shouldReceive('getRoster')->once()->andThrow(new \RuntimeException('Network error'));
+    $client->shouldReceive('getRoster')->once()->andThrow(new RuntimeException('Network error'));
     $this->app->instance(VatEudClientInterface::class, $client);
 
     $this->artisan('roster:check')
@@ -77,7 +77,7 @@ test('continues processing remaining users when one throws an exception', functi
 
     $action = Mockery::mock(CheckUserRosterStatus::class);
     $action->shouldReceive('execute')->with(1111111)->once();
-    $action->shouldReceive('execute')->with(2222222)->once()->andThrow(new \RuntimeException('User error'));
+    $action->shouldReceive('execute')->with(2222222)->once()->andThrow(new RuntimeException('User error'));
     $action->shouldReceive('execute')->with(3333333)->once();
     $this->app->instance(CheckUserRosterStatus::class, $action);
 

@@ -6,6 +6,7 @@ use Filament\Forms\Components\Placeholder;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Illuminate\Support\HtmlString;
 
 class EndorsementActivityInfolist
 {
@@ -26,7 +27,7 @@ class EndorsementActivityInfolist
 
                                 Placeholder::make('position')
                                     ->label('Position')
-                                    ->content(fn ($record) => new \Illuminate\Support\HtmlString(
+                                    ->content(fn ($record) => new HtmlString(
                                         '<span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset bg-blue-50 text-blue-700 ring-blue-600/20">'
                                         .e($record->position)
                                         .'</span>'
@@ -44,7 +45,7 @@ class EndorsementActivityInfolist
                             ->schema([
                                 Placeholder::make('activity_hours')
                                     ->label('Activity Hours')
-                                    ->content(fn ($record) => new \Illuminate\Support\HtmlString(
+                                    ->content(fn ($record) => new HtmlString(
                                         '<span class="text-lg font-bold text-'
                                         .($record->status === 'active' ? 'success' : ($record->status === 'warning' ? 'warning' : 'danger'))
                                         .'-600">'
@@ -58,7 +59,7 @@ class EndorsementActivityInfolist
 
                                 Placeholder::make('progress')
                                     ->label('Progress')
-                                    ->content(fn ($record) => new \Illuminate\Support\HtmlString(
+                                    ->content(fn ($record) => new HtmlString(
                                         '<span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset bg-'
                                         .($record->progress >= 100 ? 'success' : ($record->progress >= 50 ? 'warning' : 'danger'))
                                         .'-50 text-'
@@ -72,7 +73,7 @@ class EndorsementActivityInfolist
 
                                 Placeholder::make('status')
                                     ->label('Status')
-                                    ->content(fn ($record) => new \Illuminate\Support\HtmlString(
+                                    ->content(fn ($record) => new HtmlString(
                                         '<span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset bg-'
                                         .($record->status === 'active' ? 'success' : ($record->status === 'warning' ? 'warning' : 'danger'))
                                         .'-50 text-'
@@ -122,7 +123,7 @@ class EndorsementActivityInfolist
                                 Placeholder::make('removal_date')
                                     ->label('Removal Date')
                                     ->content(fn ($record) => $record->removal_date
-                                        ? new \Illuminate\Support\HtmlString(
+                                        ? new HtmlString(
                                             '<span class="text-danger-600 font-medium">'
                                             .$record->removal_date->format('Y-m-d')
                                             .' ('.$record->removal_date->diffForHumans().')'

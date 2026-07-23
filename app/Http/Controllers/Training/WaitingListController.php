@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Training;
 use App\Domain\Training\Actions\StartTraining;
 use App\Http\Controllers\Controller;
 use App\Models\Course;
+use App\Models\User;
 use App\Models\WaitingListEntry;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -185,7 +186,7 @@ class WaitingListController extends Controller
         }
     }
 
-    private function userCanMentorEntry(\App\Models\User $user, WaitingListEntry $entry): bool
+    private function userCanMentorEntry(User $user, WaitingListEntry $entry): bool
     {
         if ($user->is_superuser || $user->is_admin) {
             return true;

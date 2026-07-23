@@ -5,12 +5,17 @@ namespace App\Http\Controllers\Training;
 use App\Domain\Training\Actions\AddMentorToCourse;
 use App\Domain\Training\Actions\RemoveMentorFromCourse;
 use App\Http\Controllers\Controller;
+use App\Integrations\Moodle\MoodleClient;
 use App\Models\Course;
+use App\Models\Familiarisation;
 use App\Models\User;
+use App\Models\WaitingListEntry;
 use App\Services\CourseValidationService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class MentorManagementController extends Controller
 {
@@ -20,11 +25,11 @@ class MentorManagementController extends Controller
         private CourseValidationService $courseValidationService,
     ) {}
 
-    public function index(Request $request): \Inertia\Response
+    public function index(Request $request): Response
     {
         $user = $request->user();
 
-        $moodleClient = app(\App\Integrations\Moodle\MoodleClient::class);
+        $moodleClient = app(MoodleClient::class);
         $moodleSignedUp = $moodleClient->userExists($user->vatsim_id);
 
         $isAdmin = $user->is_admin || $user->is_superuser;
@@ -33,14 +38,14 @@ class MentorManagementController extends Controller
         $isVisitor = ! $isGerSubdivision && $isOnRoster;
 
         $userEndorsements = $this->courseValidationService->getUserEndorsements($user->vatsim_id);
-        $userFamSectorIds = \App\Models\Familiarisation::where('user_id', $user->id)
+        $userFamSectorIds = Familiarisation::where('user_id', $user->id)
             ->pluck('familiarisation_sector_id')
             ->all();
         $userHasActiveRtgEnrollment = $user->activeRatingCourses()->exists();
         $rtgRatingPending = (bool) $user->rating_upgrade_pending;
 
         $courses = Course::with('mentorGroup')->get()->map(function ($course) use ($user, $isAdmin, $isGerSubdivision, $isOnRoster, $isVisitor, $userEndorsements, $userFamSectorIds, $userHasActiveRtgEnrollment) {
-            $waitingEntry = \App\Models\WaitingListEntry::where('course_id', $course->id)
+            $waitingEntry = WaitingListEntry::where('course_id', $course->id)
                 ->where('user_id', $user->id)
                 ->first();
 
@@ -48,7 +53,7 @@ class MentorManagementController extends Controller
             $waitingPosition = null;
 
             if ($isOnWaitingList) {
-                $waitingPosition = \App\Models\WaitingListEntry::where('course_id', $course->id)
+                $waitingPosition = WaitingListEntry::where('course_id', $course->id)
                     ->where('date_added', '<=', $waitingEntry->date_added)
                     ->count();
             }
@@ -81,7 +86,7 @@ class MentorManagementController extends Controller
             ];
         })->filter();
 
-        $userHasActiveRtgCourse = \App\Models\WaitingListEntry::where('user_id', $user->id)
+        $userHasActiveRtgCourse = WaitingListEntry::where('user_id', $user->id)
             ->whereHas('course', fn ($q) => $q->where('type', 'RTG'))
             ->exists();
 
@@ -98,7 +103,7 @@ class MentorManagementController extends Controller
     {
         $user = $request->user();
 
-        $existing = \App\Models\WaitingListEntry::where('course_id', $course->id)
+        $existing = WaitingListEntry::where('course_id', $course->id)
             ->where('user_id', $user->id)
             ->first();
 
@@ -114,7 +119,7 @@ class MentorManagementController extends Controller
             return back()->withErrors(['join' => $error]);
         }
 
-        \App\Models\WaitingListEntry::create([
+        WaitingListEntry::create([
             'course_id' => $course->id,
             'user_id' => $user->id,
             'date_added' => now(),
@@ -169,7 +174,7 @@ class MentorManagementController extends Controller
         bool $isOnRoster,
         bool $isVisitor,
         int $userRating,
-        \Illuminate\Support\Collection $userEndorsements,
+        Collection $userEndorsements,
         array $userFamSectorIds,
         bool $userHasActiveRtgEnrollment,
     ): bool {

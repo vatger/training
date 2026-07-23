@@ -15,6 +15,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 
 class ChiefOfTrainingResource extends Resource
 {
@@ -91,7 +92,7 @@ class ChiefOfTrainingResource extends Resource
         return $user->canEditAdminResource('chief_of_trainings');
     }
 
-    public static function canEdit(\Illuminate\Database\Eloquent\Model $record): bool
+    public static function canEdit(Model $record): bool
     {
         $user = Filament::auth()->user();
 
@@ -121,7 +122,7 @@ class ChiefOfTrainingResource extends Resource
         return $user->canEditAdminResource('chief_of_trainings');
     }
 
-    public static function canDelete(\Illuminate\Database\Eloquent\Model $record): bool
+    public static function canDelete(Model $record): bool
     {
         $user = Filament::auth()->user();
 

@@ -18,8 +18,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\BufferedOutput;
+use Tests\TestCase;
 
-uses(Tests\TestCase::class, RefreshDatabase::class);
+uses(TestCase::class, RefreshDatabase::class);
 
 beforeEach(function () {
     Event::fake();
@@ -260,7 +261,7 @@ test('updateEndorsementActivity does not crash when service throws an exception'
     $rec = syncActRecord();
 
     $svc = Mockery::mock(VatsimActivityService::class);
-    $svc->shouldReceive('getEndorsementActivity')->andThrow(new \RuntimeException('API error'));
+    $svc->shouldReceive('getEndorsementActivity')->andThrow(new RuntimeException('API error'));
 
     $client = Mockery::mock(VatEudClientInterface::class);
     $cmd = syncActMakeCommand($client, $svc);

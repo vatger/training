@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Course;
+use App\Models\LeadingMentor;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\TrainingLog;
@@ -383,21 +384,21 @@ test('isLeadingMentor returns false when user has no leading mentor records', fu
 
 test('isLeadingMentor returns true when user has a leading mentor record', function () {
     $user = User::factory()->create();
-    \App\Models\LeadingMentor::create(['user_id' => $user->id, 'fir' => 'EDGG']);
+    LeadingMentor::create(['user_id' => $user->id, 'fir' => 'EDGG']);
 
     expect($user->isLeadingMentor())->toBeTrue();
 });
 
 test('isLeadingMentorForFir returns true for the assigned FIR', function () {
     $user = User::factory()->create();
-    \App\Models\LeadingMentor::create(['user_id' => $user->id, 'fir' => 'EDMM']);
+    LeadingMentor::create(['user_id' => $user->id, 'fir' => 'EDMM']);
 
     expect($user->isLeadingMentorForFir('EDMM'))->toBeTrue();
 });
 
 test('isLeadingMentorForFir returns false for a different FIR', function () {
     $user = User::factory()->create();
-    \App\Models\LeadingMentor::create(['user_id' => $user->id, 'fir' => 'EDMM']);
+    LeadingMentor::create(['user_id' => $user->id, 'fir' => 'EDMM']);
 
     expect($user->isLeadingMentorForFir('EDGG'))->toBeFalse();
 });
@@ -410,8 +411,8 @@ test('isLeadingMentorForFir returns false when user has no leading mentor record
 
 test('a leading mentor can be assigned to multiple FIRs', function () {
     $user = User::factory()->create();
-    \App\Models\LeadingMentor::create(['user_id' => $user->id, 'fir' => 'EDGG']);
-    \App\Models\LeadingMentor::create(['user_id' => $user->id, 'fir' => 'EDWW']);
+    LeadingMentor::create(['user_id' => $user->id, 'fir' => 'EDGG']);
+    LeadingMentor::create(['user_id' => $user->id, 'fir' => 'EDWW']);
 
     expect($user->isLeadingMentorForFir('EDGG'))->toBeTrue();
     expect($user->isLeadingMentorForFir('EDWW'))->toBeTrue();
@@ -424,7 +425,7 @@ test('canViewCourse returns true for a leading mentor of the course FIR', functi
     $lm = User::factory()->create();
     $role = Role::create(['name' => 'EDGG Mentor']);
     $course = Course::factory()->create(['mentor_group_id' => $role->id]);
-    \App\Models\LeadingMentor::create(['user_id' => $lm->id, 'fir' => 'EDGG']);
+    LeadingMentor::create(['user_id' => $lm->id, 'fir' => 'EDGG']);
 
     // Fresh load to clear the internal FIR cache.
     $lm = User::find($lm->id);
@@ -436,7 +437,7 @@ test('canViewCourse returns false for a leading mentor of a different FIR', func
     $lm = User::factory()->create();
     $role = Role::create(['name' => 'EDMM Mentor']);
     $course = Course::factory()->create(['mentor_group_id' => $role->id]);
-    \App\Models\LeadingMentor::create(['user_id' => $lm->id, 'fir' => 'EDGG']);
+    LeadingMentor::create(['user_id' => $lm->id, 'fir' => 'EDGG']);
 
     $lm = User::find($lm->id);
 
@@ -446,7 +447,7 @@ test('canViewCourse returns false for a leading mentor of a different FIR', func
 test('canViewCourse returns false for a leading mentor when the course has no mentor group', function () {
     $lm = User::factory()->create();
     $course = Course::factory()->create(['mentor_group_id' => null]);
-    \App\Models\LeadingMentor::create(['user_id' => $lm->id, 'fir' => 'EDGG']);
+    LeadingMentor::create(['user_id' => $lm->id, 'fir' => 'EDGG']);
 
     $lm = User::find($lm->id);
 
@@ -461,7 +462,7 @@ test('canEditTrainingLog returns true for a leading mentor of the course FIR', f
     $mentor = User::factory()->create();
     $role = Role::create(['name' => 'EDGG Mentor']);
     $course = Course::factory()->create(['mentor_group_id' => $role->id]);
-    \App\Models\LeadingMentor::create(['user_id' => $lm->id, 'fir' => 'EDGG']);
+    LeadingMentor::create(['user_id' => $lm->id, 'fir' => 'EDGG']);
 
     $log = createLog(['trainee_id' => $trainee->id, 'mentor_id' => $mentor->id, 'course_id' => $course->id]);
     $lm = User::find($lm->id);
@@ -475,7 +476,7 @@ test('canEditTrainingLog returns false for a leading mentor of a different FIR',
     $mentor = User::factory()->create();
     $role = Role::create(['name' => 'EDMM Mentor']);
     $course = Course::factory()->create(['mentor_group_id' => $role->id]);
-    \App\Models\LeadingMentor::create(['user_id' => $lm->id, 'fir' => 'EDGG']);
+    LeadingMentor::create(['user_id' => $lm->id, 'fir' => 'EDGG']);
 
     $log = createLog(['trainee_id' => $trainee->id, 'mentor_id' => $mentor->id, 'course_id' => $course->id]);
     $lm = User::find($lm->id);
@@ -488,7 +489,7 @@ test('canEditTrainingLog returns false for a leading mentor when course has no m
     $trainee = User::factory()->create();
     $mentor = User::factory()->create();
     $course = Course::factory()->create(['mentor_group_id' => null]);
-    \App\Models\LeadingMentor::create(['user_id' => $lm->id, 'fir' => 'EDGG']);
+    LeadingMentor::create(['user_id' => $lm->id, 'fir' => 'EDGG']);
 
     $log = createLog(['trainee_id' => $trainee->id, 'mentor_id' => $mentor->id, 'course_id' => $course->id]);
     $lm = User::find($lm->id);

@@ -3,8 +3,9 @@
 use App\Services\VatsimActivityService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
+use Tests\TestCase;
 
-uses(Tests\TestCase::class);
+uses(TestCase::class);
 
 beforeEach(function () {
     Cache::flush();

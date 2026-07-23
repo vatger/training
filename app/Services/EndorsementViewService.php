@@ -10,6 +10,7 @@ use App\Models\Course;
 use App\Models\EndorsementActivity;
 use App\Models\Tier2Endorsement;
 use App\Models\User;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class EndorsementViewService
@@ -191,7 +192,7 @@ class EndorsementViewService
             ->toArray();
     }
 
-    private function coursePositionStrings($courses): \Illuminate\Support\Collection
+    private function coursePositionStrings($courses): Collection
     {
         return $courses->flatMap(function (Course $course) {
             $airport = $course->airport_icao;
@@ -230,7 +231,7 @@ class EndorsementViewService
         return false;
     }
 
-    private function getAllCoursesForPosition(string $position): \Illuminate\Support\Collection
+    private function getAllCoursesForPosition(string $position): Collection
     {
         $parts = explode('_', $position);
         if (count($parts) < 2) {

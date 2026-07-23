@@ -19,8 +19,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\BufferedOutput;
+use Tests\TestCase;
 
-uses(Tests\TestCase::class, RefreshDatabase::class);
+uses(TestCase::class, RefreshDatabase::class);
 
 beforeEach(function () {
     Event::fake();
@@ -230,7 +231,7 @@ test('sendNotification throws RuntimeException when vatger returns success=false
     );
 
     expect(fn () => rmEndCall($cmd, 'sendNotification', $rec))
-        ->toThrow(\RuntimeException::class);
+        ->toThrow(RuntimeException::class);
 });
 
 test('sendNotification does NOT throw when vatger returns success=true', function () {

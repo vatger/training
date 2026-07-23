@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Widgets\UserStatsWidget;
 use Filament\Pages\Dashboard as BaseDashboard;
 use Illuminate\Contracts\Support\Htmlable;
 
@@ -15,7 +16,7 @@ class Dashboard extends BaseDashboard
 
         if (! $user || (! $user->is_superuser && ! $user->is_admin)) {
             return [
-                \App\Filament\Widgets\UserStatsWidget::class,
+                UserStatsWidget::class,
             ];
         }
 

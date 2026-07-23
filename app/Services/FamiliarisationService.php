@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Familiarisation;
+use App\Models\User;
 
 class FamiliarisationService
 {
@@ -37,7 +38,7 @@ class FamiliarisationService
     public function addFamiliarisation(int $vatsimId, int $sectorId): bool
     {
         try {
-            $user = \App\Models\User::where('vatsim_id', $vatsimId)->firstOrFail();
+            $user = User::where('vatsim_id', $vatsimId)->firstOrFail();
 
             Familiarisation::firstOrCreate([
                 'user_id' => $user->id,
@@ -62,7 +63,7 @@ class FamiliarisationService
     public function removeFamiliarisation(int $vatsimId, int $sectorId): bool
     {
         try {
-            $user = \App\Models\User::where('vatsim_id', $vatsimId)->firstOrFail();
+            $user = User::where('vatsim_id', $vatsimId)->firstOrFail();
 
             Familiarisation::where('user_id', $user->id)
                 ->where('familiarisation_sector_id', $sectorId)

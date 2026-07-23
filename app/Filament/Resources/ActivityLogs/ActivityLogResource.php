@@ -11,6 +11,7 @@ use Filament\Facades\Filament;
 use Filament\Resources\Resource;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 class ActivityLogResource extends Resource
 {
@@ -68,7 +69,7 @@ class ActivityLogResource extends Resource
         return $user->canAccessAdminResource('activity_logs');
     }
 
-    public static function canEdit(\Illuminate\Database\Eloquent\Model $record): bool
+    public static function canEdit(Model $record): bool
     {
         return false;
     }

@@ -1,7 +1,9 @@
 <?php
 
+use App\Domain\Gdpr\Events\UserDeleted;
 use App\Integrations\VatEud\FakeVatEudClient;
 use App\Integrations\VatEud\VatEudClientInterface;
+use App\Models\ActivityLog;
 use App\Models\ApiKey;
 use App\Models\Course;
 use App\Models\Cpt;
@@ -22,7 +24,7 @@ beforeEach(function () {
     Event::fakeExcept([
         'eloquent.creating: App\Models\ApiKey',
         'eloquent.saving: App\Models\Cpt',
-        \App\Domain\Gdpr\Events\UserDeleted::class,
+        UserDeleted::class,
     ]);
 });
 
@@ -481,7 +483,7 @@ describe('GdprController', function () {
 
         expect(User::where('vatsim_id', 7654321)->exists())->toBeFalse();
 
-        $log = \App\Models\ActivityLog::where('action', 'gdpr.deletion')->first();
+        $log = ActivityLog::where('action', 'gdpr.deletion')->first();
         expect($log)->not->toBeNull();
         expect($log->properties['vatsim_id'])->toBe(7654321);
         expect($log->properties['user_name'])->toBe($user->name);

@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class GdprController extends Controller
@@ -88,7 +89,7 @@ class GdprController extends Controller
         try {
             Log::info('Deleting visitor from VatEUD', ['vatsim_id' => $vatsimId]);
 
-            $response = \Illuminate\Support\Facades\Http::withHeaders([
+            $response = Http::withHeaders([
                 'X-API-KEY' => $eudToken,
                 'Accept' => 'application/json',
             ])

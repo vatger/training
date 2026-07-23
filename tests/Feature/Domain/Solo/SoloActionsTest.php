@@ -19,6 +19,7 @@ use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Validation\ValidationException;
 
 uses(RefreshDatabase::class);
 
@@ -120,7 +121,7 @@ test('GrantSoloEndorsement throws when moodle course not completed', function ()
     try {
         app(GrantSoloEndorsement::class)->execute($course, $trainee, $mentor, now()->addDays(30));
         $this->fail('Expected ValidationException');
-    } catch (\Illuminate\Validation\ValidationException $e) {
+    } catch (ValidationException $e) {
         expect($e->errors()['error'][0])
             ->toBe('Trainee has not completed all required Moodle courses');
     }
@@ -143,7 +144,7 @@ test('GrantSoloEndorsement throws when core theory not passed', function () {
     try {
         app(GrantSoloEndorsement::class)->execute($course, $trainee, $mentor, now()->addDays(30));
         $this->fail('Expected ValidationException');
-    } catch (\Illuminate\Validation\ValidationException $e) {
+    } catch (ValidationException $e) {
         expect($e->errors()['error'][0])
             ->toBe('Trainee has not passed the required core theory test');
     }
@@ -171,7 +172,7 @@ test('GrantSoloEndorsement throws when solo already exists for that position', f
     try {
         app(GrantSoloEndorsement::class)->execute($course, $trainee, $mentor, now()->addDays(30));
         $this->fail('Expected ValidationException');
-    } catch (\Illuminate\Validation\ValidationException $e) {
+    } catch (ValidationException $e) {
         expect($e->errors()['error'][0])
             ->toBe('Trainee already has a solo endorsement for this position');
     }
@@ -260,7 +261,7 @@ test('ExtendSoloEndorsement throws when no existing solo found', function () {
     try {
         app(ExtendSoloEndorsement::class)->execute($course, $trainee, $mentor, now()->addDays(60));
         $this->fail('Expected ValidationException');
-    } catch (\Illuminate\Validation\ValidationException $e) {
+    } catch (ValidationException $e) {
         expect($e->errors()['error'][0])
             ->toBe('No solo endorsement found for this trainee and position');
     }
@@ -367,7 +368,7 @@ test('RemoveSoloEndorsement throws when no existing solo found', function () {
     try {
         app(RemoveSoloEndorsement::class)->execute($course, $trainee, $mentor);
         $this->fail('Expected ValidationException');
-    } catch (\Illuminate\Validation\ValidationException $e) {
+    } catch (ValidationException $e) {
         expect($e->errors()['error'][0])
             ->toBe('No solo endorsement found for this trainee and position');
     }
@@ -416,7 +417,7 @@ test('RemoveSoloEndorsement throws when deleteSoloEndorsement returns false', fu
     try {
         app(RemoveSoloEndorsement::class)->execute($course, $trainee, $mentor);
         $this->fail('Expected ValidationException');
-    } catch (\Illuminate\Validation\ValidationException $e) {
+    } catch (ValidationException $e) {
         expect($e->errors()['error'][0])
             ->toBe('Failed to remove solo endorsement');
     }

@@ -2,6 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Integrations\Moodle\MoodleClient;
+use App\Models\Course;
+use App\Models\TrainingLog;
+use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -33,11 +38,11 @@ class DashboardController extends Controller
 
                 $claimedBy = null;
                 if ($pivot && $pivot->claimed_by_mentor_id) {
-                    $mentor = \App\Models\User::find($pivot->claimed_by_mentor_id);
+                    $mentor = User::find($pivot->claimed_by_mentor_id);
                     $claimedBy = $mentor ? $mentor->name : null;
                 }
 
-                $allLogs = \App\Models\TrainingLog::where('trainee_id', $user->id)
+                $allLogs = TrainingLog::where('trainee_id', $user->id)
                     ->where('course_id', $course->id)
                     ->with(['mentor'])
                     ->orderBy('session_date', 'desc')
@@ -82,7 +87,7 @@ class DashboardController extends Controller
 
         $completedCourses = collect();
         foreach ($completedData as $courseData) {
-            $allLogsForCompleted = \App\Models\TrainingLog::where('trainee_id', $user->id)
+            $allLogsForCompleted = TrainingLog::where('trainee_id', $user->id)
                 ->where('course_id', $courseData->id)
                 ->with(['mentor'])
                 ->orderBy('session_date', 'desc')
@@ -110,19 +115,19 @@ class DashboardController extends Controller
                 'position' => $courseData->position,
                 'position_display' => $this->getPositionDisplay($courseData->position),
                 'airport_icao' => $courseData->airport_icao,
-                'completed_at' => \Carbon\Carbon::parse($courseData->completed_at)->format('Y-m-d'),
+                'completed_at' => Carbon::parse($courseData->completed_at)->format('Y-m-d'),
                 'all_logs' => $allLogsForCompleted->toArray(),
             ]);
         }
 
-        $totalSessions = \App\Models\TrainingLog::where('trainee_id', $user->id)
+        $totalSessions = TrainingLog::where('trainee_id', $user->id)
             ->count();
 
         $moodleCourses = [];
-        $moodleClient = app(\App\Integrations\Moodle\MoodleClient::class);
+        $moodleClient = app(MoodleClient::class);
 
         foreach ($activeCourses as $course) {
-            $fullCourse = \App\Models\Course::find($course['id']);
+            $fullCourse = Course::find($course['id']);
             if ($fullCourse && $fullCourse->moodle_course_ids) {
                 $moodleIds = is_array($fullCourse->moodle_course_ids)
                   ? $fullCourse->moodle_course_ids

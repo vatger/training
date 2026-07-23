@@ -6,6 +6,7 @@ use App\Filament\Resources\EndorsementActivities\EndorsementActivityResource;
 use App\Filament\Resources\EndorsementActivities\Schemas\EndorsementActivityForm;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 use Filament\Schemas\Schema;
 
@@ -34,7 +35,7 @@ class EditEndorsementActivity extends EditRecord
                         'removal_notified' => false,
                     ]);
 
-                    \Filament\Notifications\Notification::make()
+                    Notification::make()
                         ->success()
                         ->title('Removal process stopped successfully.')
                         ->send();

@@ -239,7 +239,7 @@ test('does not clear removal_date when there is no removal_date set', function (
 
 test('returns exit code 1 when an exception is thrown during sync', function () {
     $client = Mockery::mock(VatEudClientInterface::class);
-    $client->shouldReceive('getTier1Endorsements')->andThrow(new \RuntimeException('VatEUD down'));
+    $client->shouldReceive('getTier1Endorsements')->andThrow(new RuntimeException('VatEUD down'));
     app()->instance(VatEudClientInterface::class, $client);
 
     $this->artisan('endorsements:sync-activities')

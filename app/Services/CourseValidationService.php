@@ -4,10 +4,12 @@ namespace App\Services;
 
 use App\Integrations\VatEud\VatEudService;
 use App\Models\Course;
+use App\Models\EndorsementActivity;
 use App\Models\Familiarisation;
 use App\Models\User;
 use App\Models\WaitingListEntry;
 use Carbon\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -168,9 +170,9 @@ class CourseValidationService
         return Cache::get('vateud:roster:last_known_good', []);
     }
 
-    public function getUserEndorsements(int $vatsimId): \Illuminate\Support\Collection
+    public function getUserEndorsements(int $vatsimId): Collection
     {
-        return \App\Models\EndorsementActivity::where('vatsim_id', $vatsimId)
+        return EndorsementActivity::where('vatsim_id', $vatsimId)
             ->pluck('position');
     }
 

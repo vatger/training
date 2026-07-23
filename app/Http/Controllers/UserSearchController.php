@@ -2,7 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Integrations\Moodle\MoodleClient;
+use App\Models\Course;
+use App\Models\TrainingLog;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -98,7 +102,7 @@ class UserSearchController extends Controller
         $isPrivilegedUser = $currentUser->isSuperuser() || $currentUser->is_admin;
 
         if ($isPrivilegedUser) {
-            $mentorCourseIds = \App\Models\Course::pluck('id')->toArray();
+            $mentorCourseIds = Course::pluck('id')->toArray();
         } else {
             $mentorCourseIds = $currentUser->mentorCourses()->pluck('courses.id')->toArray();
         }
@@ -120,7 +124,7 @@ class UserSearchController extends Controller
 
                 if ($isMentor) {
                     try {
-                        $logs = \App\Models\TrainingLog::where('course_id', $course->id)
+                        $logs = TrainingLog::where('course_id', $course->id)
                             ->where('trainee_id', $user->id)
                             ->with(['mentor:id,first_name,last_name'])
                             ->select([
@@ -183,7 +187,7 @@ class UserSearchController extends Controller
 
             $courseIds = $completedData->pluck('id');
 
-            $logsGrouped = \App\Models\TrainingLog::whereIn('course_id', $courseIds)
+            $logsGrouped = TrainingLog::whereIn('course_id', $courseIds)
                 ->where('trainee_id', $user->id)
                 ->with(['mentor:id,first_name,last_name'])
                 ->select([
@@ -226,7 +230,7 @@ class UserSearchController extends Controller
                     'name' => $courseData->name,
                     'type' => $courseData->type,
                     'position' => $courseData->position,
-                    'completed_at' => \Carbon\Carbon::parse($courseData->completed_at)->format('Y-m-d'),
+                    'completed_at' => Carbon::parse($courseData->completed_at)->format('Y-m-d'),
                     'is_mentor' => $isMentor,
                     'total_sessions' => $logsGrouped->get($courseData->id, collect())->count(),
                     'logs' => $logs,
@@ -287,10 +291,10 @@ class UserSearchController extends Controller
             });
 
         $moodleCourses = [];
-        $moodleClient = app(\App\Integrations\Moodle\MoodleClient::class);
+        $moodleClient = app(MoodleClient::class);
 
         $courseIds = $activeCourses->pluck('id');
-        $coursesWithMoodle = \App\Models\Course::whereIn('id', $courseIds)
+        $coursesWithMoodle = Course::whereIn('id', $courseIds)
             ->whereNotNull('moodle_course_ids')
             ->get();
 

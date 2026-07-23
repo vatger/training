@@ -116,6 +116,6 @@ trait LogsActivity
 
     public function activityLogs()
     {
-        return $this->morphMany(\App\Models\ActivityLog::class, 'model');
+        return $this->morphMany(ActivityLog::class, 'model');
     }
 }

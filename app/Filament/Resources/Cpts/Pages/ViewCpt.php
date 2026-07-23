@@ -11,6 +11,7 @@ use Filament\Resources\Pages\ViewRecord;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Illuminate\Support\HtmlString;
 
 class ViewCpt extends ViewRecord
 {
@@ -54,7 +55,7 @@ class ViewCpt extends ViewRecord
                                 Placeholder::make('trainee')
                                     ->label('Trainee')
                                     ->content(fn ($record) => $record->trainee
-                                        ? new \Illuminate\Support\HtmlString(
+                                        ? new HtmlString(
                                             '<a href="'.UserResource::getUrl('edit', ['record' => $record->trainee]).'" class="text-primary-600 hover:underline font-medium">'
                                             .e($record->trainee->name).' ('.e($record->trainee->vatsim_id).')'
                                             .'</a>'
@@ -65,7 +66,7 @@ class ViewCpt extends ViewRecord
                                 Placeholder::make('examiner')
                                     ->label('Examiner')
                                     ->content(fn ($record) => $record->examiner
-                                        ? new \Illuminate\Support\HtmlString(
+                                        ? new HtmlString(
                                             '<a href="'.UserResource::getUrl('edit', ['record' => $record->examiner]).'" class="text-primary-600 hover:underline font-medium">'
                                             .e($record->examiner->name).' ('.e($record->examiner->vatsim_id).')'
                                             .'</a>'
@@ -76,7 +77,7 @@ class ViewCpt extends ViewRecord
                                 Placeholder::make('local')
                                     ->label('Local Contact')
                                     ->content(fn ($record) => $record->local
-                                        ? new \Illuminate\Support\HtmlString(
+                                        ? new HtmlString(
                                             '<a href="'.UserResource::getUrl('edit', ['record' => $record->local]).'" class="text-primary-600 hover:underline font-medium">'
                                             .e($record->local->name).' ('.e($record->local->vatsim_id).')'
                                             .'</a>'
@@ -93,7 +94,7 @@ class ViewCpt extends ViewRecord
                                 Placeholder::make('course')
                                     ->label('Course')
                                     ->content(fn ($record) => $record->course
-                                        ? new \Illuminate\Support\HtmlString(
+                                        ? new HtmlString(
                                             '<a href="'.CourseResource::getUrl('edit', ['record' => $record->course]).'" class="text-primary-600 hover:underline font-medium">'
                                             .e($record->course->name)
                                             .'</a>'
@@ -118,16 +119,16 @@ class ViewCpt extends ViewRecord
                                 Placeholder::make('log_uploaded')
                                     ->label('Log Uploaded')
                                     ->content(fn ($record) => $record->log_uploaded
-                                        ? new \Illuminate\Support\HtmlString('<span class="text-success-600 font-medium">✓ Yes</span>')
-                                        : new \Illuminate\Support\HtmlString('<span class="text-warning-600 font-medium">✗ No</span>')
+                                        ? new HtmlString('<span class="text-success-600 font-medium">✓ Yes</span>')
+                                        : new HtmlString('<span class="text-warning-600 font-medium">✗ No</span>')
                                     ),
 
                                 Placeholder::make('passed')
                                     ->label('Result')
                                     ->content(fn ($record) => match ($record->passed) {
-                                        true => new \Illuminate\Support\HtmlString('<span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset bg-success-50 text-success-700 ring-success-600/20">Passed</span>'),
-                                        false => new \Illuminate\Support\HtmlString('<span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset bg-danger-50 text-danger-700 ring-danger-600/20">Failed</span>'),
-                                        null => new \Illuminate\Support\HtmlString('<span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset bg-warning-50 text-warning-700 ring-warning-600/20">Pending</span>'),
+                                        true => new HtmlString('<span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset bg-success-50 text-success-700 ring-success-600/20">Passed</span>'),
+                                        false => new HtmlString('<span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset bg-danger-50 text-danger-700 ring-danger-600/20">Failed</span>'),
+                                        null => new HtmlString('<span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset bg-warning-50 text-warning-700 ring-warning-600/20">Pending</span>'),
                                     }),
                             ]),
                     ])->columns(1),

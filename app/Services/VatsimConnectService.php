@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Role;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -117,7 +118,7 @@ class VatsimConnectService
                 'rating' => $profile['rating_atc'] ?? 1,
                 'subdivision' => $profile['subdivision_code'] ?? null,
                 'last_rating_change' => $profile['last_rating_change_at']
-                    ? \Carbon\Carbon::parse($profile['last_rating_change_at'])
+                    ? Carbon::parse($profile['last_rating_change_at'])
                     : null,
                 'is_staff' => $isStaff,
                 'is_superuser' => $isSuperuser,

@@ -16,8 +16,10 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\BufferedOutput;
+use Symfony\Component\Console\Output\NullOutput;
+use Tests\TestCase;
 
-uses(Tests\TestCase::class, RefreshDatabase::class);
+uses(TestCase::class, RefreshDatabase::class);
 
 beforeEach(function () {
     Event::fake();
@@ -164,8 +166,8 @@ function soloDaysRun(SyncSoloDays $cmd): void
 {
     $cmd->setLaravel(app());
     $cmd->run(
-        new \Symfony\Component\Console\Input\ArrayInput([]),
-        new \Symfony\Component\Console\Output\NullOutput,
+        new ArrayInput([]),
+        new NullOutput,
     );
 }
 

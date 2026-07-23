@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Course;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -22,7 +23,7 @@ class TraineeOrderController extends Controller
             'trainee_ids.*' => 'integer|exists:users,id',
         ]);
 
-        $course = \App\Models\Course::findOrFail($request->course_id);
+        $course = Course::findOrFail($request->course_id);
 
         if (! $user->is_superuser && ! $user->is_admin && ! $user->mentorCourses()->where('courses.id', $course->id)->exists()) {
             return response()->json(['error' => 'You cannot modify this course'], 403);
@@ -68,7 +69,7 @@ class TraineeOrderController extends Controller
             'course_id' => 'required|integer|exists:courses,id',
         ]);
 
-        $course = \App\Models\Course::findOrFail($request->course_id);
+        $course = Course::findOrFail($request->course_id);
 
         if (! $user->is_superuser && ! $user->is_admin && ! $user->mentorCourses()->where('courses.id', $course->id)->exists()) {
             return response()->json(['error' => 'You cannot modify this course'], 403);

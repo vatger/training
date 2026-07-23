@@ -5,6 +5,8 @@ namespace App\Filament\Resources\ActivityLogs\Tables;
 use App\Enums\ActivityAction;
 use App\Filament\Resources\Users\UserResource;
 use Filament\Actions\ViewAction;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
@@ -66,7 +68,7 @@ class ActivityLogsTable
             ->filters([
                 Filter::make('action')
                     ->form([
-                        \Filament\Forms\Components\Select::make('action')
+                        Select::make('action')
                             ->label('Action Contains')
                             ->options(ActivityAction::getFilterOptions())
                             ->multiple(),
@@ -104,9 +106,9 @@ class ActivityLogsTable
 
                 Filter::make('created_at')
                     ->form([
-                        \Filament\Forms\Components\DatePicker::make('created_from')
+                        DatePicker::make('created_from')
                             ->label('From'),
-                        \Filament\Forms\Components\DatePicker::make('created_until')
+                        DatePicker::make('created_until')
                             ->label('Until'),
                     ])
                     ->query(function (Builder $query, array $data): Builder {

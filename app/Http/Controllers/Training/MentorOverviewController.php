@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Integrations\VatEud\VatEudService;
 use App\Jobs\FetchMoodleStatus;
 use App\Models\Course;
+use App\Models\TrainingLog;
 use App\Models\User;
 use App\Services\MentorCourseResponseBuilder;
 use Carbon\Carbon;
@@ -254,7 +255,7 @@ class MentorOverviewController extends Controller
                     'id' => $t->id,
                     'vatsim_id' => $t->vatsim_id,
                     'name' => $t->first_name.' '.$t->last_name,
-                    'completed_at' => \Carbon\Carbon::parse($t->completed_at)->format('Y-m-d'),
+                    'completed_at' => Carbon::parse($t->completed_at)->format('Y-m-d'),
                 ]);
 
             return response()->json(['success' => true, 'trainees' => $pastTrainees]);
@@ -293,7 +294,7 @@ class MentorOverviewController extends Controller
 
         User::findOrFail($traineeId);
 
-        $query = \App\Models\TrainingLog::with(['mentor', 'course'])
+        $query = TrainingLog::with(['mentor', 'course'])
             ->where('trainee_id', $traineeId)
             ->orderBy('session_date', 'desc');
 

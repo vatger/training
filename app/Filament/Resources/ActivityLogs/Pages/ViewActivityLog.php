@@ -13,6 +13,7 @@ use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\View as ViewComponent;
 use Filament\Schemas\Schema;
+use Illuminate\Support\HtmlString;
 
 class ViewActivityLog extends ViewRecord
 {
@@ -34,7 +35,7 @@ class ViewActivityLog extends ViewRecord
 
                                 Placeholder::make('action')
                                     ->label('Action')
-                                    ->content(fn ($record) => new \Illuminate\Support\HtmlString(
+                                    ->content(fn ($record) => new HtmlString(
                                         '<span class="inline-flex items-center gap-x-1.5 rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset bg-'
                                         .$record->getActionColor().'-50 text-'.$record->getActionColor()
                                         .'-700 ring-'.$record->getActionColor().'-600/20">'
@@ -53,7 +54,7 @@ class ViewActivityLog extends ViewRecord
                                     ->label('Performed By')
                                     ->content(
                                         fn ($record) => $record->user
-                                        ? new \Illuminate\Support\HtmlString(
+                                        ? new HtmlString(
                                             '<a href="'.UserResource::getUrl('edit', ['record' => $record->user]).'" class="text-primary-600 hover:underline font-medium">'
                                             .e($record->user->name)
                                             .' ('.e($record->user->vatsim_id).')'
@@ -94,8 +95,8 @@ class ViewActivityLog extends ViewRecord
                                     ->content(
                                         fn ($record) => $record->model_id && $record->model_type
                                         ? (self::modelExists($record->model_type, $record->model_id)
-                                            ? new \Illuminate\Support\HtmlString('<span class="text-success-600 font-medium">✓ Exists</span>')
-                                            : new \Illuminate\Support\HtmlString('<span class="text-danger-600 font-medium">✗ Deleted</span>')
+                                            ? new HtmlString('<span class="text-success-600 font-medium">✓ Exists</span>')
+                                            : new HtmlString('<span class="text-danger-600 font-medium">✗ Deleted</span>')
                                         )
                                         : '-'
                                     ),
@@ -207,7 +208,7 @@ class ViewActivityLog extends ViewRecord
             || (! empty($properties['causer_id']) && $properties['causer_id'] != $record->user_id);
     }
 
-    protected static function getModelLink(?string $modelType, ?int $modelId, ?string $label = null): \Illuminate\Support\HtmlString|string
+    protected static function getModelLink(?string $modelType, ?int $modelId, ?string $label = null): HtmlString|string
     {
         if (! $modelType || ! $modelId) {
             return '-';
@@ -235,7 +236,7 @@ class ViewActivityLog extends ViewRecord
             $url = $resourceClass::getUrl('edit', ['record' => $model]);
             $displayText = $label ?? $modelId;
 
-            return new \Illuminate\Support\HtmlString(
+            return new HtmlString(
                 '<a href="'.e($url).'" class="text-primary-600 hover:underline font-medium">'
                 .e($displayText)
                 .'</a>'

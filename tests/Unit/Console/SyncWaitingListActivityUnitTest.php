@@ -19,8 +19,9 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\BufferedOutput;
+use Tests\TestCase;
 
-uses(Tests\TestCase::class, RefreshDatabase::class);
+uses(TestCase::class, RefreshDatabase::class);
 
 beforeEach(function () {
     Event::fake();
@@ -280,7 +281,7 @@ test('calculateS2TowerHours: empty connections returns 0.0', function () {
 // ─── updateEntryActivity: DB side-effects ─────────────────────────────────────
 
 test('updateEntryActivity handles API exception without crashing', function () {
-    Http::fake(['*' => fn () => throw new \Exception('Connection refused')]);
+    Http::fake(['*' => fn () => throw new Exception('Connection refused')]);
 
     $role = Role::create(['name' => 'EDGG Mentor']);
     $course = Course::factory()->create(['type' => 'RTG', 'position' => 'APP', 'mentor_group_id' => $role->id, 'airport_icao' => 'EDDL']);

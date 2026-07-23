@@ -14,6 +14,7 @@ use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\HtmlString;
 
 class ViewCptLog extends ViewRecord
 {
@@ -76,8 +77,8 @@ class ViewCptLog extends ViewRecord
                                 Placeholder::make('file_status')
                                     ->label('File Status')
                                     ->content(fn ($record) => $this->fileExists($record)
-                                        ? new \Illuminate\Support\HtmlString('<span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset bg-success-50 text-success-700 ring-success-600/20">✓ File Available</span>')
-                                        : new \Illuminate\Support\HtmlString('<span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset bg-danger-50 text-danger-700 ring-danger-600/20">✗ File Not Found</span>')
+                                        ? new HtmlString('<span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset bg-success-50 text-success-700 ring-success-600/20">✓ File Available</span>')
+                                        : new HtmlString('<span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset bg-danger-50 text-danger-700 ring-danger-600/20">✗ File Not Found</span>')
                                     ),
                             ]),
                     ])->columns(1),
@@ -87,7 +88,7 @@ class ViewCptLog extends ViewRecord
                         Placeholder::make('uploaded_by')
                             ->label('User')
                             ->content(fn ($record) => $record->uploadedBy
-                                ? new \Illuminate\Support\HtmlString(
+                                ? new HtmlString(
                                     '<a href="'.UserResource::getUrl('edit', ['record' => $record->uploadedBy]).'" class="text-primary-600 hover:underline font-medium">'
                                     .e($record->uploadedBy->name).' ('.e($record->uploadedBy->vatsim_id).')'
                                     .'</a>'
@@ -103,7 +104,7 @@ class ViewCptLog extends ViewRecord
                                 Placeholder::make('cpt')
                                     ->label('CPT')
                                     ->content(fn ($record) => $record->cpt
-                                        ? new \Illuminate\Support\HtmlString(
+                                        ? new HtmlString(
                                             '<a href="'.CptResource::getUrl('view', ['record' => $record->cpt]).'" class="text-primary-600 hover:underline font-medium">'
                                             .'CPT #'.e($record->cpt->id)
                                             .'</a>'
@@ -114,7 +115,7 @@ class ViewCptLog extends ViewRecord
                                 Placeholder::make('trainee')
                                     ->label('Trainee')
                                     ->content(fn ($record) => $record->cpt?->trainee
-                                        ? new \Illuminate\Support\HtmlString(
+                                        ? new HtmlString(
                                             '<a href="'.UserResource::getUrl('edit', ['record' => $record->cpt->trainee]).'" class="text-primary-600 hover:underline font-medium">'
                                             .e($record->cpt->trainee->name).' ('.e($record->cpt->trainee->vatsim_id).')'
                                             .'</a>'
@@ -135,7 +136,7 @@ class ViewCptLog extends ViewRecord
                                 Placeholder::make('examiner')
                                     ->label('Examiner')
                                     ->content(fn ($record) => $record->cpt?->examiner
-                                        ? new \Illuminate\Support\HtmlString(
+                                        ? new HtmlString(
                                             '<a href="'.UserResource::getUrl('edit', ['record' => $record->cpt->examiner]).'" class="text-primary-600 hover:underline font-medium">'
                                             .e($record->cpt->examiner->name).' ('.e($record->cpt->examiner->vatsim_id).')'
                                             .'</a>'
@@ -146,7 +147,7 @@ class ViewCptLog extends ViewRecord
                                 Placeholder::make('local')
                                     ->label('Local Contact')
                                     ->content(fn ($record) => $record->cpt?->local
-                                        ? new \Illuminate\Support\HtmlString(
+                                        ? new HtmlString(
                                             '<a href="'.UserResource::getUrl('edit', ['record' => $record->cpt->local]).'" class="text-primary-600 hover:underline font-medium">'
                                             .e($record->cpt->local->name).' ('.e($record->cpt->local->vatsim_id).')'
                                             .'</a>'
@@ -157,9 +158,9 @@ class ViewCptLog extends ViewRecord
                                 Placeholder::make('result')
                                     ->label('Result')
                                     ->content(fn ($record) => match ($record->cpt?->passed) {
-                                        true => new \Illuminate\Support\HtmlString('<span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset bg-success-50 text-success-700 ring-success-600/20">Passed</span>'),
-                                        false => new \Illuminate\Support\HtmlString('<span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset bg-danger-50 text-danger-700 ring-danger-600/20">Failed</span>'),
-                                        null => new \Illuminate\Support\HtmlString('<span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset bg-warning-50 text-warning-700 ring-warning-600/20">Pending</span>'),
+                                        true => new HtmlString('<span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset bg-success-50 text-success-700 ring-success-600/20">Passed</span>'),
+                                        false => new HtmlString('<span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset bg-danger-50 text-danger-700 ring-danger-600/20">Failed</span>'),
+                                        null => new HtmlString('<span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset bg-warning-50 text-warning-700 ring-warning-600/20">Pending</span>'),
                                     }),
                             ]),
                     ])->columns(1),
@@ -171,7 +172,7 @@ class ViewCptLog extends ViewRecord
                                 Placeholder::make('course')
                                     ->label('Course')
                                     ->content(fn ($record) => $record->cpt?->course
-                                        ? new \Illuminate\Support\HtmlString(
+                                        ? new HtmlString(
                                             '<a href="'.CourseResource::getUrl('edit', ['record' => $record->cpt->course]).'" class="text-primary-600 hover:underline font-medium">'
                                             .e($record->cpt->course->name)
                                             .'</a>'

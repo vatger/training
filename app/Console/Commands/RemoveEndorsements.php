@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Domain\Endorsement\Events\EndorsementRemoved;
 use App\Integrations\VatEud\VatEudClientInterface;
 use App\Integrations\Vatger\VatgerClientInterface;
 use App\Models\EndorsementActivity;
@@ -126,7 +127,7 @@ class RemoveEndorsements extends Command
 
                 if ($success) {
                     $this->info("✓ Removed endorsement {$endorsement->endorsement_id} ({$endorsement->position}) for user {$endorsement->vatsim_id}");
-                    event(new \App\Domain\Endorsement\Events\EndorsementRemoved(
+                    event(new EndorsementRemoved(
                         activity: $endorsement,
                         activityMinutes: $currentActivityMinutes,
                     ));
