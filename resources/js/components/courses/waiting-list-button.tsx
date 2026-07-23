@@ -132,22 +132,8 @@ export default function WaitingListButton({
 					{
 						preserveState: true,
 						preserveScroll: true,
-						onSuccess: (page) => {
-							const flashData: WaitingListFlash =
-								(page.props as { flash?: WaitingListFlash }).flash ?? {}
-							const response = flashData.flash || flashData
-
-							if (response.success !== false) {
-								toast.success("Successfully left waiting list!")
-							} else {
-								onCourseUpdate?.(course.id, {
-									is_on_waiting_list: true,
-									waiting_list_position: originalPosition,
-									waiting_list_activity: originalActivity,
-								})
-
-								toast.error(response.message || "Failed to leave waiting list")
-							}
+						onSuccess: () => {
+							toast.success("Successfully left waiting list!")
 							resolve()
 						},
 						onError: (errors) => {
