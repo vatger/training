@@ -233,8 +233,10 @@ export default function SortableCoursesTable({
 													course.waiting_list_activity !== undefined &&
 													course.waiting_list_activity !== null && (
 														<div className="text-xs text-muted-foreground">
-															{formatActivityHours(course.waiting_list_activity)}h
-															activity
+															{formatActivityHours(
+																course.waiting_list_activity,
+															)}
+															h activity
 														</div>
 													)}
 											</div>
