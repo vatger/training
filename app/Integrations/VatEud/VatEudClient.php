@@ -526,10 +526,10 @@ class VatEudClient implements VatEudClientInterface
             }
 
             $data = $response->json();
-            $raw = $data['data'] ?? (is_array($data) ? $data : []);
+            $raw = $data['data']['controllers'] ?? [];
 
             return array_values(array_filter(array_map(
-                fn ($entry) => is_array($entry) && isset($entry['user_cid']) ? (int) $entry['user_cid'] : null,
+                fn ($entry) => is_numeric($entry) ? (int) $entry : null,
                 $raw,
             )));
         } catch (\Throwable $e) {
