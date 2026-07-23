@@ -529,7 +529,7 @@ class VatEudClient implements VatEudClientInterface
             $raw = $data['data'] ?? (is_array($data) ? $data : []);
 
             return array_values(array_filter(array_map(
-                fn (array $entry) => isset($entry['user_cid']) ? (int) $entry['user_cid'] : null,
+                fn ($entry) => is_array($entry) && isset($entry['user_cid']) ? (int) $entry['user_cid'] : null,
                 $raw,
             )));
         } catch (\Throwable $e) {
