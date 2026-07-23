@@ -703,7 +703,9 @@ export default function CreateEditTrainingLog({
 													Runway Configuration
 												</Label>
 												<Input
-													className={errors.runway_configuration ? "border-red-500" : ""}
+													className={
+														errors.runway_configuration ? "border-red-500" : ""
+													}
 													id="runway_configuration"
 													maxLength={50}
 													onChange={(e) =>
@@ -724,7 +726,9 @@ export default function CreateEditTrainingLog({
 													Surrounding Stations
 												</Label>
 												<Input
-													className={errors.surrounding_stations ? "border-red-500" : ""}
+													className={
+														errors.surrounding_stations ? "border-red-500" : ""
+													}
 													id="surrounding_stations"
 													onChange={(e) =>
 														setData("surrounding_stations", e.target.value)
@@ -851,9 +855,15 @@ export default function CreateEditTrainingLog({
 															] as string
 														}
 													/>
-													{errors[`${category.name}_positives` as keyof typeof errors] && (
+													{errors[
+														`${category.name}_positives` as keyof typeof errors
+													] && (
 														<p className="text-sm text-red-600">
-															{errors[`${category.name}_positives` as keyof typeof errors]}
+															{
+																errors[
+																	`${category.name}_positives` as keyof typeof errors
+																]
+															}
 														</p>
 													)}
 												</div>
@@ -878,9 +888,15 @@ export default function CreateEditTrainingLog({
 															] as string
 														}
 													/>
-													{errors[`${category.name}_negatives` as keyof typeof errors] && (
+													{errors[
+														`${category.name}_negatives` as keyof typeof errors
+													] && (
 														<p className="text-sm text-red-600">
-															{errors[`${category.name}_negatives` as keyof typeof errors]}
+															{
+																errors[
+																	`${category.name}_negatives` as keyof typeof errors
+																]
+															}
 														</p>
 													)}
 												</div>
@@ -909,7 +925,9 @@ export default function CreateEditTrainingLog({
 										value={data.final_comment}
 									/>
 									{errors.final_comment && (
-										<p className="text-sm text-red-600">{errors.final_comment}</p>
+										<p className="text-sm text-red-600">
+											{errors.final_comment}
+										</p>
 									)}
 								</div>
 
