@@ -8,7 +8,7 @@ import {
 	Search,
 	X,
 } from "lucide-react"
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import CourseCard from "@/components/courses/course-card"
 import SortableCoursesTable from "@/components/courses/courses-table"
 import { MoodleSignupModal } from "@/components/courses/moodle-signup-modal"
@@ -79,6 +79,10 @@ export default function Courses({
 	error,
 }: PageProps) {
 	const [courses, setCourses] = useState(initialCourses)
+
+	useEffect(() => {
+		setCourses(initialCourses)
+	}, [initialCourses])
 	const [searchTerm, setSearchTerm] = useState("")
 	const [typeFilter, setTypeFilter] = useState("all")
 	const [firFilter, setFirFilter] = useState("all")

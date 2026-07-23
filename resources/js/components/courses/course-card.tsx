@@ -10,7 +10,7 @@ import {
 	CardTitle,
 } from "@/components/ui/card"
 import { getTypeColor } from "@/lib/course-utils"
-import { cn } from "@/lib/utils"
+import { cn, formatActivityHours } from "@/lib/utils"
 import type { Course } from "@/pages/training/courses"
 import WaitingListButton from "./waiting-list-button"
 
@@ -92,7 +92,7 @@ export default function CourseCard({
 										course.position !== "CTR" &&
 										course.waiting_list_activity !== undefined &&
 										course.waiting_list_activity !== null &&
-										` • ${course.waiting_list_activity.toFixed(2)}h activity`}
+										` • ${formatActivityHours(course.waiting_list_activity)}h activity`}
 								</span>
 							</>
 						) : course.can_join ? (

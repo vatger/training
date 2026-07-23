@@ -1,18 +1,4 @@
 import { router } from "@inertiajs/react"
-
-type WaitingListFlash = {
-	position?: number
-	activity?: number
-	success?: boolean
-	message?: string
-	flash?: {
-		position?: number
-		activity?: number
-		success?: boolean
-		message?: string
-	}
-}
-
 import { AlertCircle, CheckCircle, Clock, Loader2, X } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
@@ -80,28 +66,9 @@ export default function WaitingListButton({
 					{
 						preserveState: true,
 						preserveScroll: true,
-						onSuccess: (page) => {
-							const flashData: WaitingListFlash =
-								(page.props as { flash?: WaitingListFlash }).flash ?? {}
-							const response = flashData.flash || flashData
-
-							const position = response?.position
-							const activity = response?.activity
-
-							const serverUpdates: Partial<Course> = {
-								is_on_waiting_list: true,
-								waiting_list_position: position,
-								waiting_list_activity: activity,
-							}
-
-							onCourseUpdate?.(course.id, serverUpdates)
-
-							toast.success(`Successfully joined waiting list!`, {
-								description: position
-									? `Your position: #${position}`
-									: undefined,
-							})
-
+						onSuccess: () => {
+							toast.success("Successfully joined waiting list!")
+							router.reload({ only: ["courses"] })
 							resolve()
 						},
 						onError: (errors) => {
