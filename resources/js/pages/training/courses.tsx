@@ -190,13 +190,17 @@ export default function Courses({
 							<div>
 								<p className="font-medium">Rating upgrade pending</p>
 								<p className="text-sm">
-									You have recently completed a rating course. Your new rating has not yet
-									been applied to our system. Joining a new rating course waiting list will
-									be available once the update has been received.
+									You have recently completed a rating course. Your new rating
+									has not yet been applied to our system. Joining a new rating
+									course waiting list will be available once the update has been
+									received.
 									<br />
-									Once your new rating has been applied to your VATSIM account, <strong>please log
-										out and back in to both the homepage and the training system</strong> so that your
-									updated rating can be detected.
+									Once your new rating has been applied to your VATSIM account,{" "}
+									<strong>
+										please log out and back in to both the homepage and the
+										training system
+									</strong>{" "}
+									so that your updated rating can be detected.
 								</p>
 							</div>
 						</div>
