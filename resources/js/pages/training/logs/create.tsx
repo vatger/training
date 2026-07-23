@@ -405,6 +405,8 @@ export default function CreateEditTrainingLog({
 		}
 	}, [debouncedData, storageKey])
 
+	const hasErrors = Object.keys(errors).length > 0
+
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault()
 
@@ -485,6 +487,21 @@ export default function CreateEditTrainingLog({
 
 			<div className="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-4">
 				<form className="space-y-6" onSubmit={handleSubmit}>
+					{hasErrors && (
+						<div className="flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-950">
+							<XCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-500" />
+							<div>
+								<p className="font-medium text-red-800 dark:text-red-200">
+									Please fix the following errors before submitting
+								</p>
+								<ul className="mt-1 list-disc pl-4 text-sm text-red-700 dark:text-red-300">
+									{Object.entries(errors).map(([field, message]) => (
+										<li key={field}>{message as string}</li>
+									))}
+								</ul>
+							</div>
+						</div>
+					)}
 					{/* Basic Session Information */}
 					<Card>
 						<CardContent className="gap-0">
@@ -562,6 +579,7 @@ export default function CreateEditTrainingLog({
 								<div className="space-y-2">
 									<Label htmlFor="session_duration">Duration (minutes)</Label>
 									<Input
+										className={errors.session_duration ? "border-red-500" : ""}
 										id="session_duration"
 										max="480"
 										min="1"
@@ -572,6 +590,11 @@ export default function CreateEditTrainingLog({
 										type="number"
 										value={data.session_duration}
 									/>
+									{errors.session_duration && (
+										<p className="text-sm text-red-600">
+											{errors.session_duration}
+										</p>
+									)}
 								</div>
 
 								<div className="space-y-2">
@@ -680,6 +703,7 @@ export default function CreateEditTrainingLog({
 													Runway Configuration
 												</Label>
 												<Input
+													className={errors.runway_configuration ? "border-red-500" : ""}
 													id="runway_configuration"
 													maxLength={50}
 													onChange={(e) =>
@@ -688,6 +712,11 @@ export default function CreateEditTrainingLog({
 													placeholder="e.g., 25L/07R"
 													value={data.runway_configuration}
 												/>
+												{errors.runway_configuration && (
+													<p className="text-sm text-red-600">
+														{errors.runway_configuration}
+													</p>
+												)}
 											</div>
 
 											<div className="space-y-2">
@@ -695,6 +724,7 @@ export default function CreateEditTrainingLog({
 													Surrounding Stations
 												</Label>
 												<Input
+													className={errors.surrounding_stations ? "border-red-500" : ""}
 													id="surrounding_stations"
 													onChange={(e) =>
 														setData("surrounding_stations", e.target.value)
@@ -702,6 +732,11 @@ export default function CreateEditTrainingLog({
 													placeholder="e.g., EDDF_C_TWR, EDDF_C_GND"
 													value={data.surrounding_stations}
 												/>
+												{errors.surrounding_stations && (
+													<p className="text-sm text-red-600">
+														{errors.surrounding_stations}
+													</p>
+												)}
 											</div>
 										</div>
 
@@ -717,6 +752,11 @@ export default function CreateEditTrainingLog({
 												placeholder="Describe any special procedures used..."
 												value={data.special_procedures}
 											/>
+											{errors.special_procedures && (
+												<p className="text-sm text-red-600">
+													{errors.special_procedures}
+												</p>
+											)}
 										</div>
 
 										<div className="space-y-2">
@@ -731,6 +771,11 @@ export default function CreateEditTrainingLog({
 												placeholder="Note any airspace restrictions..."
 												value={data.airspace_restrictions}
 											/>
+											{errors.airspace_restrictions && (
+												<p className="text-sm text-red-600">
+													{errors.airspace_restrictions}
+												</p>
+											)}
 										</div>
 									</div>
 								)}
@@ -806,6 +851,11 @@ export default function CreateEditTrainingLog({
 															] as string
 														}
 													/>
+													{errors[`${category.name}_positives` as keyof typeof errors] && (
+														<p className="text-sm text-red-600">
+															{errors[`${category.name}_positives` as keyof typeof errors]}
+														</p>
+													)}
 												</div>
 
 												<div className="space-y-2">
@@ -828,6 +878,11 @@ export default function CreateEditTrainingLog({
 															] as string
 														}
 													/>
+													{errors[`${category.name}_negatives` as keyof typeof errors] && (
+														<p className="text-sm text-red-600">
+															{errors[`${category.name}_negatives` as keyof typeof errors]}
+														</p>
+													)}
 												</div>
 											</div>
 										</Fragment>
@@ -853,6 +908,9 @@ export default function CreateEditTrainingLog({
 										placeholder="Provide a comprehensive assessment of the trainee's overall performance during this session..."
 										value={data.final_comment}
 									/>
+									{errors.final_comment && (
+										<p className="text-sm text-red-600">{errors.final_comment}</p>
+									)}
 								</div>
 
 								<div className="space-y-2">
@@ -860,11 +918,15 @@ export default function CreateEditTrainingLog({
 										Next Training Step
 									</Label>
 									<Input
+										className={errors.next_step ? "border-red-500" : ""}
 										id="next_step"
 										onChange={(e) => setData("next_step", e.target.value)}
 										placeholder="e.g., Continue with complex approach scenarios"
 										value={data.next_step}
 									/>
+									{errors.next_step && (
+										<p className="text-sm text-red-600">{errors.next_step}</p>
+									)}
 								</div>
 
 								<Separator />
@@ -885,6 +947,11 @@ export default function CreateEditTrainingLog({
 										placeholder="Private notes for mentors only (not visible to trainee)..."
 										value={data.internal_remarks}
 									/>
+									{errors.internal_remarks && (
+										<p className="text-sm text-red-600">
+											{errors.internal_remarks}
+										</p>
+									)}
 								</div>
 
 								<Separator />
