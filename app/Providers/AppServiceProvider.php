@@ -24,7 +24,7 @@ class AppServiceProvider extends ServiceProvider
             return new VatsimConnectService;
         });
 
-        $fake = $this->app->environment('testing', 'local');
+        $fake = false;
 
         $this->app->bind(
             VatEudClientInterface::class,
