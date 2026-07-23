@@ -166,12 +166,14 @@ const MarkdownContent = ({ content }: { content: string | null }) => {
 		)
 	}
 
+	const html = content.replace(/<p>(\s*)<\/p>/g, "<p><br></p>")
+
 	return (
 		<>
 			<div
 				className="prose prose-sm dark:prose-invert max-w-none"
 				// biome-ignore lint/security/noDangerouslySetInnerHtml: required by library
-				dangerouslySetInnerHTML={{ __html: content }}
+				dangerouslySetInnerHTML={{ __html: html }}
 				onClick={(e) => {
 					const target = e.target as HTMLElement
 					if (target.tagName === "IMG") {
@@ -339,77 +341,77 @@ export default function ViewTrainingLog({
 									log.surrounding_stations ||
 									log.special_procedures ||
 									log.airspace_restrictions) && (
-									<>
-										<Separator className="my-4" />
-										<div>
-											<h3 className="mb-3 text-sm font-semibold">
-												Additional Details
-											</h3>
+										<>
+											<Separator className="my-4" />
+											<div>
+												<h3 className="mb-3 text-sm font-semibold">
+													Additional Details
+												</h3>
 
-											{log.traffic_level && (
-												<div className="mb-3">
-													<p className="text-xs text-muted-foreground">
-														Traffic Level
-													</p>
-													<p className="text-sm">{log.traffic_level_display}</p>
-												</div>
-											)}
-
-											{log.traffic_complexity && (
-												<div className="mb-3">
-													<p className="text-xs text-muted-foreground">
-														Traffic Complexity
-													</p>
-													<p className="text-sm">
-														{log.traffic_complexity_display}
-													</p>
-												</div>
-											)}
-
-											{log.runway_configuration && (
-												<div className="mb-3">
-													<p className="text-xs text-muted-foreground">
-														Runway Configuration
-													</p>
-													<p className="text-sm">{log.runway_configuration}</p>
-												</div>
-											)}
-
-											{log.surrounding_stations && (
-												<div className="mb-3">
-													<p className="text-xs text-muted-foreground">
-														Surrounding Stations
-													</p>
-													<p className="text-sm">{log.surrounding_stations}</p>
-												</div>
-											)}
-
-											{log.special_procedures && (
-												<div className="mb-3">
-													<p className="text-xs text-muted-foreground">
-														Special Procedures
-													</p>
-													<div className="text-sm">
-														<MarkdownContent content={log.special_procedures} />
+												{log.traffic_level && (
+													<div className="mb-3">
+														<p className="text-xs text-muted-foreground">
+															Traffic Level
+														</p>
+														<p className="text-sm">{log.traffic_level_display}</p>
 													</div>
-												</div>
-											)}
+												)}
 
-											{log.airspace_restrictions && (
-												<div className="mb-3">
-													<p className="text-xs text-muted-foreground">
-														Airspace Restrictions
-													</p>
-													<div className="text-sm">
-														<MarkdownContent
-															content={log.airspace_restrictions}
-														/>
+												{log.traffic_complexity && (
+													<div className="mb-3">
+														<p className="text-xs text-muted-foreground">
+															Traffic Complexity
+														</p>
+														<p className="text-sm">
+															{log.traffic_complexity_display}
+														</p>
 													</div>
-												</div>
-											)}
-										</div>
-									</>
-								)}
+												)}
+
+												{log.runway_configuration && (
+													<div className="mb-3">
+														<p className="text-xs text-muted-foreground">
+															Runway Configuration
+														</p>
+														<p className="text-sm">{log.runway_configuration}</p>
+													</div>
+												)}
+
+												{log.surrounding_stations && (
+													<div className="mb-3">
+														<p className="text-xs text-muted-foreground">
+															Surrounding Stations
+														</p>
+														<p className="text-sm">{log.surrounding_stations}</p>
+													</div>
+												)}
+
+												{log.special_procedures && (
+													<div className="mb-3">
+														<p className="text-xs text-muted-foreground">
+															Special Procedures
+														</p>
+														<div className="text-sm">
+															<MarkdownContent content={log.special_procedures} />
+														</div>
+													</div>
+												)}
+
+												{log.airspace_restrictions && (
+													<div className="mb-3">
+														<p className="text-xs text-muted-foreground">
+															Airspace Restrictions
+														</p>
+														<div className="text-sm">
+															<MarkdownContent
+																content={log.airspace_restrictions}
+															/>
+														</div>
+													</div>
+												)}
+											</div>
+										</>
+									)}
 							</CardContent>
 						</Card>
 						<Card>
@@ -527,6 +529,7 @@ export default function ViewTrainingLog({
                         max-width: 100%;
                     }
                     .prose p {
+                        margin-top: 0.5rem;
                         margin-bottom: 0.5rem;
                     }
                     .prose ul, .prose ol {
@@ -561,6 +564,9 @@ export default function ViewTrainingLog({
                     .prose a {
                         color: rgb(59 130 246);
                         text-decoration: underline;
+                    }
+					.prose p:empty {
+                        min-height: 1em;
                     }
                     .prose img {
                         border-radius: 0.375rem;

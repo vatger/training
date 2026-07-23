@@ -13,7 +13,7 @@ import {
 	ListOrdered,
 	Strikethrough,
 } from "lucide-react"
-import { useCallback, useEffect } from "react"
+import { memo, useCallback, useEffect, useRef } from "react"
 import { cn } from "@/lib/utils"
 
 interface WYSIWYGEditorProps {
@@ -132,77 +132,79 @@ const EditorToolbar = ({
 	)
 }
 
-export function WYSIWYGEditor({
-	value,
-	onChange,
-	placeholder = "Start writing...",
-	minHeight = "150px",
-}: WYSIWYGEditorProps) {
-	const editor = useEditor({
-		extensions: [
-			StarterKit.configure({
-				heading: {
-					levels: [1, 2, 3],
+export const WYSIWYGEditor = memo(
+	function WYSIWYGEditor({
+		value,
+		onChange,
+		placeholder = "Start writing...",
+		minHeight = "150px",
+	}: WYSIWYGEditorProps) {
+		// Keep a ref to onChange so the Tiptap onUpdate closure never goes stale
+		// without causing the editor to re-initialize on every parent render.
+		const onChangeRef = useRef(onChange)
+		onChangeRef.current = onChange
+
+		const editor = useEditor({
+			extensions: [
+				StarterKit.configure({
+					heading: {
+						levels: [1, 2, 3],
+					},
+				}),
+				Placeholder.configure({
+					placeholder,
+				}),
+				ImageExtension,
+			],
+			content: value,
+			editorProps: {
+				attributes: {
+					class: "prose prose-sm max-w-none focus:outline-none",
 				},
-			}),
-			Placeholder.configure({
-				placeholder,
-			}),
-			ImageExtension,
-		],
-		content: value,
-		editorProps: {
-			attributes: {
-				class: "prose prose-sm max-w-none focus:outline-none",
 			},
-		},
-		onUpdate: ({ editor }) => {
-			const html = editor.getHTML()
-			onChange(html)
-		},
-		// Critical performance optimization - don't re-render on every transaction
-		immediatelyRender: false,
-		shouldRerenderOnTransaction: false,
-	})
+			onUpdate: ({ editor }) => {
+				onChangeRef.current(editor.getHTML())
+			},
+			immediatelyRender: false,
+			shouldRerenderOnTransaction: false,
+		})
 
-	// Only update content when value prop changes externally (not from typing)
-	useEffect(() => {
-		if (editor && value !== editor.getHTML()) {
-			const { from, to } = editor.state.selection
-			editor.commands.setContent(value)
-			// Restore cursor position
-			editor.commands.setTextSelection({ from, to })
+		// Only update content when value changes externally (e.g. draft load),
+		// not on every keystroke — the editor already owns its own state.
+		useEffect(() => {
+			if (editor && value !== editor.getHTML()) {
+				const { from, to } = editor.state.selection
+				editor.commands.setContent(value)
+				editor.commands.setTextSelection({ from, to })
+			}
+		}, [value, editor])
+
+		const addImage = useCallback(() => {
+			const url = window.prompt("URL")
+			if (url) {
+				editor?.chain().focus().setImage({ src: url }).run()
+			}
+		}, [editor])
+
+		if (!editor) {
+			return null
 		}
-	}, [value, editor])
 
-	const addImage = useCallback(() => {
-		const url = window.prompt("URL")
+		return (
+			<div className="overflow-hidden rounded-lg border">
+				<EditorToolbar addImage={addImage} editor={editor} />
 
-		if (url) {
-			editor?.chain().focus().setImage({ src: url }).run()
-		}
-	}, [editor])
+				<div
+					className="min-h-[var(--min-height)] bg-white p-4 dark:bg-gray-950"
+					style={{ "--min-height": minHeight } as React.CSSProperties}
+				>
+					<EditorContent editor={editor} />
+				</div>
 
-	if (!editor) {
-		return null
-	}
-
-	return (
-		<div className="overflow-hidden rounded-lg border">
-			<EditorToolbar addImage={addImage} editor={editor} />
-
-			{/* Editor Content */}
-			<div
-				className="min-h-[var(--min-height)] bg-white p-4 dark:bg-gray-950"
-				style={{ "--min-height": minHeight } as React.CSSProperties}
-			>
-				<EditorContent editor={editor} />
-			</div>
-
-			<style
-				// biome-ignore lint/security/noDangerouslySetInnerHtml: required by library
-				dangerouslySetInnerHTML={{
-					__html: `
+				<style
+					// biome-ignore lint/security/noDangerouslySetInnerHtml: required by library
+					dangerouslySetInnerHTML={{
+						__html: `
                 .ProseMirror {
                     min-height: ${minHeight};
                 }
@@ -314,8 +316,13 @@ export function WYSIWYGEditor({
                     font-style: italic;
                 }
             `,
-				}}
-			/>
-		</div>
-	)
-}
+					}}
+				/>
+			</div>
+		)
+	},
+	(prev, next) =>
+		prev.value === next.value &&
+		prev.placeholder === next.placeholder &&
+		prev.minHeight === next.minHeight,
+)
