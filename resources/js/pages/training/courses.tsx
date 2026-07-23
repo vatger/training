@@ -183,7 +183,7 @@ export default function Courses({
 					</div>
 				)}
 
-				{!rtgRatingPending && (
+				{rtgRatingPending && (
 					<div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-950/30">
 						<div className="flex items-start gap-2 text-blue-800 dark:text-blue-300">
 							<AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
