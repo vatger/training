@@ -183,17 +183,20 @@ export default function Courses({
 					</div>
 				)}
 
-				{rtgRatingPending && (
+				{!rtgRatingPending && (
 					<div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-950/30">
 						<div className="flex items-start gap-2 text-blue-800 dark:text-blue-300">
 							<AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
 							<div>
 								<p className="font-medium">Rating upgrade pending</p>
 								<p className="text-sm">
-									You have recently completed a rating course. Your new rating
-									has not yet been applied to our system — joining a new rating
-									course waiting list will be available once the update has been
-									received.
+									You have recently completed a rating course. Your new rating has not yet
+									been applied to our system. Joining a new rating course waiting list will
+									be available once the update has been received.
+									<br />
+									Once your new rating has been applied to your VATSIM account, <strong>please log
+										out and back in to both the homepage and the training system</strong> so that your
+									updated rating can be detected.
 								</p>
 							</div>
 						</div>
