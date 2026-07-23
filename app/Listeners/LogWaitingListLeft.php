@@ -14,7 +14,7 @@ class LogWaitingListLeft
             'action' => 'waiting_list.left',
             'model_type' => $event->entry::class,
             'model_id' => $event->entry->id,
-            'description' => "{$event->user->name} left waiting list for {$event->course->name}",
+            'description' => "{$event->user->name} left waiting list for {$event->course->name} (was position {$event->entry->position_in_queue})",
             'user_id' => $event->user->id,
             'properties' => [
                 'course_id' => $event->course->id,

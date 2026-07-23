@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Training;
 
 use App\Domain\Training\Actions\AddMentorToCourse;
 use App\Domain\Training\Actions\RemoveMentorFromCourse;
+use App\Domain\WaitingList\Actions\JoinWaitingList;
+use App\Domain\WaitingList\Actions\LeaveWaitingList;
 use App\Http\Controllers\Controller;
 use App\Integrations\Moodle\MoodleClient;
 use App\Models\Course;
@@ -23,6 +25,8 @@ class MentorManagementController extends Controller
         private AddMentorToCourse $addMentorToCourse,
         private RemoveMentorFromCourse $removeMentorFromCourse,
         private CourseValidationService $courseValidationService,
+        private JoinWaitingList $joinWaitingList,
+        private LeaveWaitingList $leaveWaitingList,
     ) {}
 
     public function index(Request $request): Response
@@ -108,25 +112,18 @@ class MentorManagementController extends Controller
             ->first();
 
         if ($existing) {
-            $existing->delete();
+            [, $message] = $this->leaveWaitingList->execute($course, $user);
 
-            return back()->with('success', 'Removed from waiting list.');
+            return back()->with('success', $message);
         }
 
-        [$canJoin, $error] = $this->courseValidationService->canUserJoinCourse($course, $user);
+        [$joined, $message] = $this->joinWaitingList->execute($course, $user);
 
-        if (! $canJoin) {
-            return back()->withErrors(['join' => $error]);
+        if (! $joined) {
+            return back()->withErrors(['join' => $message]);
         }
 
-        WaitingListEntry::create([
-            'course_id' => $course->id,
-            'user_id' => $user->id,
-            'date_added' => now(),
-            'activity' => 0,
-        ]);
-
-        return back()->with('success', 'Added to waiting list.');
+        return back()->with('success', $message);
     }
 
     public function addMentor(Request $request)
