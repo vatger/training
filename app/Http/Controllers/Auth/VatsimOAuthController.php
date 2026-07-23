@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class VatsimOAuthController extends Controller
 {
@@ -25,7 +26,10 @@ class VatsimOAuthController extends Controller
     public function redirect(): RedirectResponse
     {
         try {
-            $authUrl = $this->vatsimConnect->getAuthorizationUrl();
+            $state = Str::random(40);
+            session(['oauth_state' => $state]);
+
+            $authUrl = $this->vatsimConnect->getAuthorizationUrl($state);
 
             return redirect()->away($authUrl);
         } catch (\Exception $e) {
@@ -58,6 +62,13 @@ class VatsimOAuthController extends Controller
                 ]);
             }
 
+            $expectedState = session()->pull('oauth_state');
+            if (! $state || ! $expectedState || ! hash_equals($expectedState, $state)) {
+                return redirect()->route('login')->withErrors([
+                    'oauth' => 'Invalid OAuth state. Please try again.',
+                ]);
+            }
+
             $cacheKey = 'oauth_code_processed_'.hash('sha256', $code);
             if (Cache::has($cacheKey)) {
                 return redirect()->route('login')->withErrors([
@@ -67,7 +78,7 @@ class VatsimOAuthController extends Controller
             Cache::put($cacheKey, true, 600);
 
             try {
-                $tokenData = $this->vatsimConnect->getAccessToken($code, $state);
+                $tokenData = $this->vatsimConnect->getAccessToken($code);
                 $profile = $this->vatsimConnect->getUserProfile($tokenData['access_token']);
 
                 $user = $this->createOrUpdateUser($profile);

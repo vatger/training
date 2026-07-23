@@ -5,10 +5,8 @@ namespace App\Services;
 use App\Models\Role;
 use App\Models\User;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
 
 class VatsimConnectService
 {
@@ -36,12 +34,8 @@ class VatsimConnectService
         $this->apiBaseUrl = config('services.vatger.oauth_base_url');
     }
 
-    public function getAuthorizationUrl(): string
+    public function getAuthorizationUrl(string $state): string
     {
-        $state = Str::random(40);
-
-        Cache::put('oauth_state_'.$state, true, now()->addMinutes(10));
-
         $params = [
             'client_id' => $this->clientId,
             'redirect_uri' => $this->redirectUri,
@@ -53,16 +47,8 @@ class VatsimConnectService
         return $this->authUrl.'?'.http_build_query($params);
     }
 
-    public function getAccessToken(string $code, ?string $state = null): array
+    public function getAccessToken(string $code): array
     {
-        if ($state && ! Cache::get('oauth_state_'.$state)) {
-            throw new \Exception('Invalid OAuth state parameter');
-        }
-
-        if ($state) {
-            Cache::forget('oauth_state_'.$state);
-        }
-
         $response = Http::asForm()->post($this->tokenUrl, [
             'grant_type' => 'authorization_code',
             'client_id' => $this->clientId,
