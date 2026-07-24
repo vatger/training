@@ -5,7 +5,6 @@ namespace App\Integrations\VatEud;
 use App\Integrations\VatEud\DTOs\Tier1EndorsementData;
 use App\Integrations\VatEud\DTOs\Tier2EndorsementData;
 use App\Integrations\VatEud\DTOs\UserExamsData;
-use Carbon\Carbon;
 
 class FakeVatEudClient implements VatEudClientInterface
 {
@@ -99,11 +98,6 @@ class FakeVatEudClient implements VatEudClientInterface
     public function requestUpgrade(int $traineeCid, int $instructorCid, int $newRating): array
     {
         return ['success' => true];
-    }
-
-    public function getLastGermanSession(int $vatsimId): ?Carbon
-    {
-        return Carbon::now()->subDays(10);
     }
 
     public function getRoster(): array

@@ -2,6 +2,8 @@
 
 namespace App\Integrations\Vatger;
 
+use Carbon\Carbon;
+
 interface VatgerClientInterface
 {
     public function postConfirmedCpts(array $cpts): array;
@@ -14,4 +16,6 @@ interface VatgerClientInterface
         string $linkUrl,
         string $linkText = '',
     ): array;
+
+    public function getLastGermanSession(int $vatsimId): ?Carbon;
 }

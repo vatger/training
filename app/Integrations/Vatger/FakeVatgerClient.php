@@ -2,6 +2,7 @@
 
 namespace App\Integrations\Vatger;
 
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
 class FakeVatgerClient implements VatgerClientInterface
@@ -24,5 +25,10 @@ class FakeVatgerClient implements VatgerClientInterface
         Log::info('[FakeVatger] sendNotification', ['vatsim_id' => $vatsimId, 'title' => $title]);
 
         return ['success' => true];
+    }
+
+    public function getLastGermanSession(int $vatsimId): ?Carbon
+    {
+        return Carbon::now()->subDays(10);
     }
 }
