@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Domain\Gdpr\Actions\AnonymizeUser;
 use App\Domain\Gdpr\Events\UserDeleted;
 use App\Http\Controllers\Controller;
 use App\Integrations\VatEud\VatEudService;
@@ -16,9 +17,12 @@ class GdprController extends Controller
 {
     protected $vatEudService;
 
-    public function __construct(VatEudService $vatEudService)
+    protected AnonymizeUser $anonymizeUser;
+
+    public function __construct(VatEudService $vatEudService, AnonymizeUser $anonymizeUser)
     {
         $this->vatEudService = $vatEudService;
+        $this->anonymizeUser = $anonymizeUser;
     }
 
     public function delete(Request $request, int $vatsimId): JsonResponse
@@ -32,10 +36,13 @@ class GdprController extends Controller
                 return response()->json(['error' => 'User not found'], 200);
             }
 
+            $isVisitor = $user->isVisitor();
+
             Log::info('GDPR deletion initiated', [
                 'vatsim_id' => $vatsimId,
                 'user_id' => $user->id,
                 'user_name' => $user->name,
+                'is_visitor' => $isVisitor,
             ]);
 
             DB::beginTransaction();
@@ -43,11 +50,16 @@ class GdprController extends Controller
             try {
                 $this->vatEudService->removeRosterAndEndorsements($vatsimId);
 
-                $this->deleteVisitorFromVatEUD($vatsimId);
+                if ($isVisitor) {
+                    $this->deleteVisitorFromVatEUD($vatsimId);
+                }
 
                 event(new UserDeleted($user, $request->ip()));
 
-                $user->delete();
+                // Personal data is scrubbed in place rather than deleting the row,
+                // so training logs, waiting list entries, roles, etc. that reference
+                // this user are preserved and simply display "Deleted User".
+                $this->anonymizeUser->execute($user);
 
                 DB::commit();
 

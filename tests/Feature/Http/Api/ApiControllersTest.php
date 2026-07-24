@@ -9,7 +9,9 @@ use App\Models\Course;
 use App\Models\Cpt;
 use App\Models\Familiarisation;
 use App\Models\FamiliarisationSector;
+use App\Models\TrainingLog;
 use App\Models\User;
+use App\Models\WaitingListEntry;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
@@ -145,6 +147,17 @@ describe('UserController', function () {
             ->assertJsonFragment(['vatsim_id' => 1234567])
             ->assertJsonFragment(['subdivision' => 'GER'])
             ->assertJsonFragment(['email' => $user->email]);
+    });
+
+    test('never exposes the password hash or remember token', function () {
+        apiCreateKey(['users.read']);
+        User::factory()->create(['vatsim_id' => 1234568]);
+
+        $response = $this->withHeaders(apiAuthHeaders())
+            ->getJson('/api/user-data/1234568');
+
+        $response->assertOk();
+        expect($response->json())->not->toHaveKeys(['password', 'remember_token']);
     });
 });
 
@@ -487,5 +500,91 @@ describe('GdprController', function () {
         expect($log)->not->toBeNull();
         expect($log->properties['vatsim_id'])->toBe(7654321);
         expect($log->properties['user_name'])->toBe($user->name);
+    });
+
+    test('anonymizes the user in place instead of deleting the row', function () {
+        apiCreateKey(['gdpr.delete']);
+        $user = User::factory()->create(['vatsim_id' => 7654322, 'email' => 'someone@example.com']);
+
+        $this->withHeaders(apiAuthHeaders())
+            ->deleteJson('/api/gdpr-removal/7654322')
+            ->assertOk();
+
+        $user->refresh();
+
+        expect($user->vatsim_id)->toBeNull()
+            ->and($user->first_name)->toBe('Deleted')
+            ->and($user->last_name)->toBe('User')
+            ->and($user->name)->toBe('Deleted User')
+            ->and($user->email)->toBeNull()
+            ->and($user->is_admin)->toBeFalse()
+            ->and($user->is_staff)->toBeFalse()
+            ->and($user->is_superuser)->toBeFalse()
+            ->and($user->gdpr_deleted_at)->not->toBeNull();
+    });
+
+    test('preserves related records and shows them as Deleted User', function () {
+        apiCreateKey(['gdpr.delete']);
+        $user = User::factory()->create(['vatsim_id' => 7654323]);
+        $course = Course::factory()->create();
+
+        WaitingListEntry::create([
+            'user_id' => $user->id,
+            'course_id' => $course->id,
+        ]);
+
+        $trainingLog = TrainingLog::create([
+            'trainee_id' => $user->id,
+            'session_date' => now(),
+            'position' => 'EDDF_TWR',
+            'type' => 'O',
+            'theory' => 3,
+            'phraseology' => 3,
+            'coordination' => 3,
+            'tag_management' => 3,
+            'situational_awareness' => 3,
+            'problem_recognition' => 3,
+            'traffic_planning' => 3,
+            'reaction' => 3,
+            'separation' => 3,
+            'efficiency' => 3,
+            'ability_to_work_under_pressure' => 3,
+            'motivation' => 3,
+            'result' => true,
+        ]);
+
+        $this->withHeaders(apiAuthHeaders())
+            ->deleteJson('/api/gdpr-removal/7654323')
+            ->assertOk();
+
+        expect(WaitingListEntry::where('user_id', $user->id)->exists())->toBeTrue();
+        expect(TrainingLog::where('id', $trainingLog->id)->exists())->toBeTrue();
+
+        $trainingLog->refresh();
+        expect($trainingLog->trainee->name)->toBe('Deleted User');
+    });
+
+    test('deletes the visitor from VatEUD when the user is not GER subdivision', function () {
+        config(['services.vateud.token' => 'fake-token']);
+        apiCreateKey(['gdpr.delete']);
+        $user = User::factory()->create(['vatsim_id' => 7654324, 'subdivision' => 'USA']);
+
+        $this->withHeaders(apiAuthHeaders())
+            ->deleteJson('/api/gdpr-removal/7654324')
+            ->assertOk();
+
+        Http::assertSent(fn ($request) => str_contains($request->url(), 'facility/visitors/7654324/delete'));
+    });
+
+    test('does not call VatEUD visitor deletion for a GER subdivision user', function () {
+        config(['services.vateud.token' => 'fake-token']);
+        apiCreateKey(['gdpr.delete']);
+        User::factory()->create(['vatsim_id' => 7654325, 'subdivision' => 'GER']);
+
+        $this->withHeaders(apiAuthHeaders())
+            ->deleteJson('/api/gdpr-removal/7654325')
+            ->assertOk();
+
+        Http::assertNotSent(fn ($request) => str_contains($request->url(), 'facility/visitors'));
     });
 });
