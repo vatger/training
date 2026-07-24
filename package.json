@@ -19,7 +19,7 @@
 		"@emnapi/core": "1.11.2",
 		"@emnapi/runtime": "1.10.0",
 		"@headlessui/react": "^2.2.9",
-		"@inertiajs/react": "^2.3.6",
+		"@inertiajs/react": "^3.6.1",
 		"@radix-ui/react-accordion": "^1.2.18",
 		"@radix-ui/react-alert-dialog": "^1.1.21",
 		"@radix-ui/react-avatar": "^1.2.4",
