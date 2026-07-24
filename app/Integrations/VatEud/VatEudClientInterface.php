@@ -6,7 +6,6 @@ use App\Integrations\VatEud\DTOs\SoloEndorsementData;
 use App\Integrations\VatEud\DTOs\Tier1EndorsementData;
 use App\Integrations\VatEud\DTOs\Tier2EndorsementData;
 use App\Integrations\VatEud\DTOs\UserExamsData;
-use Carbon\Carbon;
 
 interface VatEudClientInterface
 {
@@ -47,8 +46,6 @@ interface VatEudClientInterface
     ): array;
 
     public function requestUpgrade(int $traineeCid, int $instructorCid, int $newRating): array;
-
-    public function getLastGermanSession(int $vatsimId): ?Carbon;
 
     /** @return int[] */
     public function getRoster(): array;

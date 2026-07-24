@@ -2,6 +2,7 @@
 
 namespace App\Integrations\Vatger;
 
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -81,5 +82,71 @@ class VatgerClient implements VatgerClientInterface
 
             return ['success' => false];
         }
+    }
+
+    public function getLastGermanSession(int $vatsimId): ?Carbon
+    {
+        try {
+            $start = Carbon::now()->subYears(2)->format('Y-m-d');
+
+            $response = Http::timeout(15)
+                ->retry(2, 1000)
+                ->get("https://stats.vatsim-germany.org/api/atc/{$vatsimId}/sessions/", [
+                    'start_date' => $start,
+                ]);
+
+            if (! $response->successful()) {
+                Log::warning('Failed to fetch last German session', [
+                    'vatsim_id' => $vatsimId,
+                    'status' => $response->status(),
+                ]);
+
+                return null;
+            }
+
+            $sessions = $response->json();
+
+            if (! is_array($sessions)) {
+                return null;
+            }
+
+            $lastSession = null;
+
+            foreach ($sessions as $session) {
+                if (! is_array($session)) {
+                    continue;
+                }
+
+                $date = $this->parseSessionDate($session);
+
+                if ($date && ($lastSession === null || $date->greaterThan($lastSession))) {
+                    $lastSession = $date;
+                }
+            }
+
+            return $lastSession;
+        } catch (\Exception $e) {
+            Log::error('Exception fetching last German session', [
+                'vatsim_id' => $vatsimId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
+    }
+
+    private function parseSessionDate(array $session): ?Carbon
+    {
+        foreach (['disconnected_at', 'connected_at', 'start', 'end', 'created_at', 'date'] as $dateField) {
+            if (isset($session[$dateField])) {
+                try {
+                    return Carbon::parse($session[$dateField]);
+                } catch (\Exception $e) {
+                    // Continue to next field
+                }
+            }
+        }
+
+        return null;
     }
 }

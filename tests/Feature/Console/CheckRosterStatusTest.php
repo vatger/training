@@ -38,7 +38,6 @@ test('returns exit code 1 when client throws exception', function () {
 test('calls checkUserRosterStatus for each roster user and returns 0', function () {
     $client = Mockery::mock(VatEudClientInterface::class);
     $client->shouldReceive('getRoster')->once()->andReturn([1234567, 7654321]);
-    $client->shouldReceive('getLastGermanSession')->andReturn(null);
     $this->app->instance(VatEudClientInterface::class, $client);
 
     $action = Mockery::mock(CheckUserRosterStatus::class);
@@ -55,7 +54,6 @@ test('calls checkUserRosterStatus for each roster user and returns 0', function 
 test('processes single-user roster', function () {
     $client = Mockery::mock(VatEudClientInterface::class);
     $client->shouldReceive('getRoster')->once()->andReturn([1234567]);
-    $client->shouldReceive('getLastGermanSession')->andReturn(null);
     $this->app->instance(VatEudClientInterface::class, $client);
 
     $action = Mockery::mock(CheckUserRosterStatus::class);
@@ -72,7 +70,6 @@ test('processes single-user roster', function () {
 test('continues processing remaining users when one throws an exception', function () {
     $client = Mockery::mock(VatEudClientInterface::class);
     $client->shouldReceive('getRoster')->once()->andReturn([1111111, 2222222, 3333333]);
-    $client->shouldReceive('getLastGermanSession')->andReturn(null);
     $this->app->instance(VatEudClientInterface::class, $client);
 
     $action = Mockery::mock(CheckUserRosterStatus::class);

@@ -6,7 +6,6 @@ use App\Integrations\VatEud\DTOs\SoloEndorsementData;
 use App\Integrations\VatEud\DTOs\Tier1EndorsementData;
 use App\Integrations\VatEud\DTOs\Tier2EndorsementData;
 use App\Integrations\VatEud\DTOs\UserExamsData;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 
 class VatEudService
@@ -157,11 +156,6 @@ class VatEudService
     public function requestUpgrade(int $traineeCid, int $instructorCid, int $newRating): array
     {
         return $this->client->requestUpgrade($traineeCid, $instructorCid, $newRating);
-    }
-
-    public function getLastGermanSession(int $vatsimId): ?Carbon
-    {
-        return $this->client->getLastGermanSession($vatsimId);
     }
 
     public function refreshEndorsementCache(): void

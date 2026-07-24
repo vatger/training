@@ -30,7 +30,7 @@ beforeEach(function () {
 // ─── CheckUserRosterStatus ────────────────────────────────────────────────────
 
 test('CheckUserRosterStatus creates entry and sets last_session for active user', function () {
-    // FakeVatEudClient default returns 10 days ago — well within 330-day threshold
+    // FakeVatgerClient default returns 10 days ago — well within 330-day threshold
     $vatsimId = 1234567;
 
     app(CheckUserRosterStatus::class)->execute($vatsimId);
@@ -48,7 +48,7 @@ test('CheckUserRosterStatus sends warning and sets removal_date for user inactiv
 
     $vatsimId = 7654321;
 
-    $this->app->bind(VatEudClientInterface::class, fn () => new class extends FakeVatEudClient
+    $this->app->bind(VatgerClientInterface::class, fn () => new class extends FakeVatgerClient
     {
         public function getLastGermanSession(int $vatsimId): ?Carbon
         {
@@ -80,7 +80,7 @@ test('CheckUserRosterStatus removes user when inactive 366 days and removal_date
         'removal_date' => now()->subDay(),
     ]);
 
-    $this->app->bind(VatEudClientInterface::class, fn () => new class extends FakeVatEudClient
+    $this->app->bind(VatgerClientInterface::class, fn () => new class extends FakeVatgerClient
     {
         public function getLastGermanSession(int $vatsimId): ?Carbon
         {

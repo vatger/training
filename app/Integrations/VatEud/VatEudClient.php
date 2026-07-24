@@ -6,7 +6,6 @@ use App\Integrations\VatEud\DTOs\SoloEndorsementData;
 use App\Integrations\VatEud\DTOs\Tier1EndorsementData;
 use App\Integrations\VatEud\DTOs\Tier2EndorsementData;
 use App\Integrations\VatEud\DTOs\UserExamsData;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -476,36 +475,6 @@ class VatEudClient implements VatEudClientInterface
             ]);
 
             return ['success' => false, 'message' => $e->getMessage()];
-        }
-    }
-
-    public function getLastGermanSession(int $vatsimId): ?Carbon
-    {
-        try {
-            $response = Http::withHeaders($this->headers)
-                ->timeout(10)
-                ->get("{$this->baseUrl}/facility/user/{$vatsimId}/last-session");
-
-            if (! $response->successful()) {
-                Log::warning('Failed to fetch last German session', [
-                    'vatsim_id' => $vatsimId,
-                    'status' => $response->status(),
-                ]);
-
-                return null;
-            }
-
-            $data = $response->json();
-            $date = $data['data']['last_session'] ?? $data['last_session'] ?? null;
-
-            return $date ? Carbon::parse($date) : null;
-        } catch (\Throwable $e) {
-            Log::error('Exception fetching last German session', [
-                'vatsim_id' => $vatsimId,
-                'error' => $e->getMessage(),
-            ]);
-
-            return null;
         }
     }
 
