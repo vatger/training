@@ -1,5 +1,4 @@
 import { Head } from "@inertiajs/react"
-import axios from "axios"
 import { useEffect, useState } from "react"
 import {
 	AssignDialog,
@@ -79,19 +78,26 @@ export default function MentorOverview({
 		setLoadingCourses((prev) => new Set(prev).add(courseId))
 
 		try {
-			const response = await axios.get(
+			const response = await fetch(
 				route("overview.course.trainees", { courseId }),
+				{
+					headers: {
+						Accept: "application/json",
+					},
+				},
 			)
-			const courseData = response.data
 
-			/* console.log('Course data loaded:', courseData.id, 'trainees:', courseData.trainees?.length || 0); */
+			if (!response.ok) {
+				throw new Error(`HTTP ${response.status}`)
+			}
 
-			setCourses((prevCourses) => {
-				const updated = prevCourses.map((c) =>
+			const courseData = await response.json()
+
+			setCourses((prevCourses) =>
+				prevCourses.map((c) =>
 					c.id === courseId ? { ...courseData, loaded: true } : c,
-				)
-				return updated
-			})
+				),
+			)
 		} catch (error) {
 			console.error("Failed to load course data:", error)
 		} finally {
@@ -128,13 +134,13 @@ export default function MentorOverview({
 				}
 
 				/* console.log(
-                    'Selecting course:',
-                    newSelectedCourse.id,
-                    'loaded:',
-                    newSelectedCourse.loaded,
-                    'trainees:',
-                    newSelectedCourse.trainees?.length || 0,
-                ); */
+					'Selecting course:',
+					newSelectedCourse.id,
+					'loaded:',
+					newSelectedCourse.loaded,
+					'trainees:',
+					newSelectedCourse.trainees?.length || 0,
+				); */
 
 				setSelectedCourse(newSelectedCourse)
 
