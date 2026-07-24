@@ -485,6 +485,23 @@ describe('GdprController', function () {
             ->assertJson(['error' => 'User not found']);
     });
 
+    test('deletes user, fires UserDeleted event, writes activity log, and returns success', function () {
+        apiCreateKey(['gdpr.delete']);
+        $user = User::factory()->create(['vatsim_id' => 7654321]);
+
+        $this->withHeaders(apiAuthHeaders())
+            ->deleteJson('/api/gdpr-removal/'.$user->vatsim_id)
+            ->assertOk()
+            ->assertJson(['message' => 'User deleted successfully']);
+
+        expect(User::where('vatsim_id', 7654321)->exists())->toBeFalse();
+
+        $log = ActivityLog::where('action', 'gdpr.deletion')->first();
+        expect($log)->not->toBeNull();
+        expect($log->properties['vatsim_id'])->toBe(7654321);
+        expect($log->properties['user_name'])->toBe($user->name);
+    });
+
     test('anonymizes the user in place instead of deleting the row', function () {
         apiCreateKey(['gdpr.delete']);
         $user = User::factory()->create(['vatsim_id' => 7654322, 'email' => 'someone@example.com']);
