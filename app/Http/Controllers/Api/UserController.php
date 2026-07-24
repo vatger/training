@@ -21,13 +21,7 @@ class UserController extends Controller
                 return response()->json(['error' => 'User not found'], 200);
             }
 
-            $userData = [];
-
-            foreach ($user->getAttributes() as $key => $value) {
-                $userData[$key] = $value;
-            }
-
-            return response()->json($userData, 200);
+            return response()->json($user->toArray(), 200);
 
         } catch (\Exception $e) {
             Log::error('User retrieval failed', [

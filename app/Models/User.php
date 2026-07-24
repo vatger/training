@@ -30,6 +30,7 @@ class User extends Authenticatable implements FilamentUser
         'rating_upgraded_at',
         'rating_upgrade_pending',
         'solo_days_used',
+        'gdpr_deleted_at',
     ];
 
     protected $hidden = [
@@ -48,6 +49,7 @@ class User extends Authenticatable implements FilamentUser
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
         'solo_days_used' => 'integer',
+        'gdpr_deleted_at' => 'datetime',
     ];
 
     private $permissionCache = null;
@@ -122,6 +124,21 @@ class User extends Authenticatable implements FilamentUser
     public function isVatsimUser(): bool
     {
         return ! empty($this->vatsim_id);
+    }
+
+    public function isGdprDeleted(): bool
+    {
+        return $this->gdpr_deleted_at !== null;
+    }
+
+    public function isVisitor(): bool
+    {
+        return ! empty($this->subdivision) && $this->subdivision !== 'GER';
+    }
+
+    public function scopeExcludeGdprDeleted($query)
+    {
+        return $query->whereNull('gdpr_deleted_at');
     }
 
     public function scopeAdmins($query)
