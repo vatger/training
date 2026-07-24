@@ -2,9 +2,9 @@
 
 namespace App\Integrations\Vatger;
 
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Carbon\Carbon;
 
 class VatgerClient implements VatgerClientInterface
 {
