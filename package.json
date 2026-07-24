@@ -65,7 +65,7 @@
 		"tailwind-merge": "^3.5.0",
 		"tailwindcss": "^4.2.2",
 		"tailwindcss-animate": "^1.0.7",
-		"typescript": "^5.9.3",
+		"typescript": "^7.0.2",
 		"vaul": "^1.1.2",
 		"vite": "^8.0.5",
 		"ziggy-js": "^2.6.3",
