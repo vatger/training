@@ -2,7 +2,6 @@
 
 namespace App\Integrations\Vatger;
 
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -91,7 +90,7 @@ class VatgerClient implements VatgerClientInterface
 
             $response = Http::timeout(15)
                 ->retry(2, 1000)
-                ->get("https://stats.vatsim-germany.org/api/atc/{$vatsimId}/sessions/", [
+                ->get("http://stats.vatsim-germany.org/api/atc/{$vatsimId}/sessions/", [
                     'start_date' => $start,
                 ]);
 
