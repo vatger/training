@@ -23,7 +23,7 @@ class WaitingListRestrictionResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::NoSymbol;
 
-    protected static ?string $recordTitleAttribute = 'WaitingListRestriction';
+    protected static ?string $recordTitleAttribute = 'user.vatsim_id';
 
     public static function form(Schema $schema): Schema
     {
