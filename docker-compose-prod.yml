@@ -73,7 +73,74 @@ services:
     command: sh -c "su -s /bin/sh www-data -c 'while true; do php artisan schedule:run --verbose --no-interaction; sleep 60; done' & /start.sh"
     depends_on:
       - redis
-      
+
+  queue-worker:
+    image: "ghcr.io/vatger/training:latest"
+    container_name: vatger-training-queue-worker
+    restart: unless-stopped
+    logging:
+      options:
+        max-size: 10m
+    volumes:
+      - training_storage:/var/www/html/storage
+      - training_cache:/var/www/html/bootstrap/cache
+    environment:
+      - APP_NAME
+      - APP_KEY
+      - APP_ENV
+      - APP_DEBUG
+      - APP_URL
+      - APP_LOCALE
+      - APP_FALLBACK_LOCALE
+      - APP_MAINTENANCE_DRIVER
+      - BCRYPT_ROUNDS
+      - LOG_CHANNEL
+      - LOG_STACK
+      - LOG_DEPRECATIONS_CHANNEL
+      - LOG_LEVEL
+      - DB_CONNECTION
+      - DB_HOST
+      - DB_PORT
+      - DB_DATABASE
+      - DB_USERNAME
+      - DB_PASSWORD
+      - BROADCAST_CONNECTION
+      - FILESYSTEM_DISK
+      - QUEUE_CONNECTION
+      - CACHE_STORE
+      - MEMCACHED_HOST
+      - REDIS_CLIENT
+      - REDIS_HOST
+      - REDIS_PASSWORD
+      - REDIS_PORT
+      - VATEUD_TOKEN
+      - VATEUD_USE_MOCK
+      - VATEUD_MIN_ACTIVITY_MINUTES
+      - VATEUD_REMOVAL_WARNING_DAYS
+      - VATEUD_MIN_ENDORSEMENT_AGE_DAYS
+      - VATEUD_ATD_LEAD_CID
+      - TRAINING_MIN_HOURS
+      - TRAINING_MIN_ACTIVITY
+      - TRAINING_DISPLAY_ACTIVITY
+      - TRAINING_RATING_CHANGE_DAYS
+      - ROSTER_INACTIVITY_WARNING_DAYS
+      - ROSTER_REMOVAL_GRACE_DAYS
+      - ROSTER_MAX_INACTIVITY_DAYS
+      - VATGER_API_KEY
+      - VATGER_API_URL
+      - VATGER_OAUTH_CLIENT_ID
+      - VATGER_OAUTH_CLIENT_SECRET
+      - VATGER_OAUTH_REDIRECT_URI
+      - VATGER_OAUTH_AUTH_URL
+      - VATGER_OAUTH_TOKEN_URL
+      - VATGER_OAUTH_BASE_URL
+    # --max-time recycles the worker hourly (bounds memory growth on a long-lived
+    # PHP process); Docker's restart policy brings it straight back up.
+    command: sh -c "su -s /bin/sh www-data -c 'php artisan queue:work --tries=3 --backoff=10 --timeout=90 --max-time=3600'"
+    depends_on:
+      - redis
+      - app
+
   redis:
     image: redis:7-alpine
     container_name: vatger-training-redis
