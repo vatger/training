@@ -46,15 +46,36 @@ class FetchMoodleStatus implements ShouldQueue
 
         try {
             Cache::put($cacheKey, $this->resolveStatus($moodleClient, $trainee->vatsim_id, $course->moodle_course_ids), 300);
-        } catch (\Exception $e) {
-            Log::error('FetchMoodleStatus job failed', [
-                'trainee_id' => $this->traineeId,
-                'course_id' => $this->courseId,
-                'error' => $e->getMessage(),
-            ]);
+        } catch (\Throwable $e) {
+            $this->logFailure($e);
 
-            Cache::forget($cacheKey);
+            Cache::put($cacheKey, 'unknown', 300);
         }
+    }
+
+    public function failed(?\Throwable $exception): void
+    {
+        if ($exception) {
+            $this->logFailure($exception);
+        }
+
+        $trainee = User::find($this->traineeId);
+        $course = Course::find($this->courseId);
+
+        if (! $trainee || ! $course) {
+            return;
+        }
+
+        Cache::put(self::cacheKey($trainee->vatsim_id, $course->id), 'unknown', 300);
+    }
+
+    private function logFailure(\Throwable $e): void
+    {
+        Log::error('FetchMoodleStatus job failed', [
+            'trainee_id' => $this->traineeId,
+            'course_id' => $this->courseId,
+            'error' => $e->getMessage(),
+        ]);
     }
 
     private function resolveStatus(MoodleClient $moodleClient, int $vatsimId, array $moodleCourseIds): string
