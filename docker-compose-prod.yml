@@ -5,12 +5,12 @@ services:
     restart: unless-stopped
     logging:
       options:
-        max-size: 10m
+        max-size: 32m
     volumes:
       - training_storage:/var/www/html/storage
       - training_cache:/var/www/html/bootstrap/cache
     ports:
-      - "8082:80"
+      - "8017:80/tcp"
     environment:
       - APP_NAME
       - APP_KEY
@@ -20,7 +20,7 @@ services:
       - APP_LOCALE
       - APP_FALLBACK_LOCALE
       - APP_MAINTENANCE_DRIVER
-      - PHP_CLI_SERVER_WORKERS
+      - APP_FORCE_HTTPS
       - BCRYPT_ROUNDS
       - LOG_CHANNEL
       - LOG_STACK
