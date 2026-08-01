@@ -42,7 +42,7 @@ export default function Login({ status }: LoginProps) {
 
 						{/* VATSIM OAuth Button */}
 						<Button
-							className="w-full bg-blue-600 text-white hover:bg-blue-700"
+							className="w-full bg-primary-600 text-white hover:bg-primary-700"
 							onClick={handleVatsimLogin}
 							size="lg"
 							type="button"
@@ -53,8 +53,8 @@ export default function Login({ status }: LoginProps) {
 
 						{/* Debug/Admin access hint for development */}
 						{process.env.NODE_ENV === "development" && (
-							<div className="mt-6 rounded-md border border-yellow-200 bg-yellow-50 p-3">
-								<p className="text-xs text-yellow-800">
+							<div className="mt-6 rounded-md border border-warning-200 bg-warning-50 p-3">
+								<p className="text-xs text-warning-800">
 									<strong>Development Mode:</strong> Admin access available at{" "}
 									<a className="underline" href="/admin/login">
 										/admin/login

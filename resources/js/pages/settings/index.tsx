@@ -192,8 +192,8 @@ export default function SettingsPage({ settings: initialSettings }: Props) {
 									})}
 								</div>
 								{data.theme !== initialTheme && (
-									<div className="rounded-md bg-blue-50 p-3 dark:bg-blue-900/20">
-										<p className="text-sm text-blue-800 dark:text-blue-200">
+									<div className="rounded-md bg-primary-50 p-3 dark:bg-primary-900/20">
+										<p className="text-sm text-primary-800 dark:text-primary-200">
 											Page will reload after saving to apply the new theme
 										</p>
 									</div>

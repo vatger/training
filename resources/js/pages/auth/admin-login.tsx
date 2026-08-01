@@ -35,11 +35,11 @@ export default function AdminLogin() {
 				<Card className="w-full max-w-md">
 					<CardHeader className="space-y-1">
 						<div className="mb-4 flex items-center justify-center">
-							<div className="rounded-full bg-red-100 p-3 dark:bg-red-900/20">
-								<Shield className="h-8 w-8 text-red-600 dark:text-red-400" />
+							<div className="rounded-full bg-danger-100 p-3 dark:bg-danger-900/20">
+								<Shield className="h-8 w-8 text-danger-600 dark:text-danger-400" />
 							</div>
 						</div>
-						<CardTitle className="text-center text-2xl font-bold text-red-600 dark:text-red-400">
+						<CardTitle className="text-center text-2xl font-bold text-danger-600 dark:text-danger-400">
 							Administrator Access
 						</CardTitle>
 						<CardDescription className="text-center">
@@ -61,7 +61,7 @@ export default function AdminLogin() {
 									value={data.email}
 								/>
 								{errors.email && (
-									<p className="text-sm text-red-600">{errors.email}</p>
+									<p className="text-sm text-danger-600">{errors.email}</p>
 								)}
 							</div>
 
@@ -77,12 +77,12 @@ export default function AdminLogin() {
 									value={data.password}
 								/>
 								{errors.password && (
-									<p className="text-sm text-red-600">{errors.password}</p>
+									<p className="text-sm text-danger-600">{errors.password}</p>
 								)}
 							</div>
 
 							<Button
-								className="w-full bg-red-600 hover:bg-red-700"
+								className="w-full bg-danger-600 hover:bg-danger-700"
 								disabled={processing}
 								type="submit"
 							>
@@ -92,7 +92,7 @@ export default function AdminLogin() {
 
 						<div className="text-center">
 							<a
-								className="inline-flex items-center text-sm text-gray-600 hover:text-gray-500"
+								className="inline-flex items-center text-sm text-secondary-600 hover:text-secondary-500"
 								href="/"
 							>
 								<ArrowLeft className="mr-2 h-4 w-4" />

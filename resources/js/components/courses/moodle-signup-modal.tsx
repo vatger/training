@@ -28,7 +28,7 @@ export function MoodleSignupModal({ isOpen }: MoodleSignupModalProps) {
 			<AlertDialogContent>
 				<AlertDialogHeader>
 					<div className="flex items-center gap-2">
-						<AlertCircle className="h-5 w-5 text-yellow-500" />
+						<AlertCircle className="h-5 w-5 text-warning-500" />
 						<AlertDialogTitle>Moodle Account Required</AlertDialogTitle>
 					</div>
 					<AlertDialogDescription className="space-y-4 pt-4">

@@ -395,18 +395,18 @@ export default function ManageEndorsements({
 										</div>
 
 										{stats.lowActivity > 0 && (
-											<div className="flex items-center gap-2 rounded-lg border border-yellow-200 bg-yellow-50 p-3 dark:border-yellow-800 dark:bg-yellow-950/20">
-												<AlertTriangle className="h-4 w-4 shrink-0 text-yellow-600" />
-												<div className="flex-1 text-sm text-yellow-800 dark:text-yellow-200">
+											<div className="flex items-center gap-2 rounded-lg border border-warning-200 bg-warning-50 p-3 dark:border-warning-800 dark:bg-warning-950/20">
+												<AlertTriangle className="h-4 w-4 shrink-0 text-warning-600" />
+												<div className="flex-1 text-sm text-warning-800 dark:text-warning-200">
 													{stats.lowActivity} low activity
 												</div>
 											</div>
 										)}
 
 										{stats.inRemoval > 0 && (
-											<div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-950/20">
-												<AlertCircle className="h-4 w-4 shrink-0 text-red-600" />
-												<div className="flex-1 text-sm text-red-800 dark:text-red-200">
+											<div className="flex items-center gap-2 rounded-lg border border-danger-200 bg-danger-50 p-3 dark:border-danger-800 dark:bg-danger-950/20">
+												<AlertCircle className="h-4 w-4 shrink-0 text-danger-600" />
+												<div className="flex-1 text-sm text-danger-800 dark:text-danger-200">
 													{stats.inRemoval} in removal
 												</div>
 											</div>
@@ -503,7 +503,7 @@ export default function ManageEndorsements({
 											<TableRow
 												className={cn(
 													state === "in-removal" &&
-														"bg-red-50 dark:bg-red-950/20",
+														"bg-danger-50 dark:bg-danger-950/20",
 												)}
 												key={endorsement.id}
 											>
@@ -535,7 +535,7 @@ export default function ManageEndorsements({
 													<div className="space-y-1">
 														{state === "in-removal" ? (
 															<Badge
-																className="border-red-200 bg-red-50 text-red-700 dark:border-red-700 dark:bg-red-900 dark:text-red-300"
+																className="border-danger-200 bg-danger-50 text-danger-700 dark:border-danger-700 dark:bg-danger-900 dark:text-danger-300"
 																variant="outline"
 															>
 																<AlertTriangle className="mr-1 h-3 w-3" />
@@ -543,14 +543,14 @@ export default function ManageEndorsements({
 															</Badge>
 														) : state === "low-activity" ? (
 															<Badge
-																className="border-yellow-200 bg-yellow-50 text-yellow-700 dark:border-yellow-700 dark:bg-yellow-900 dark:text-yellow-300"
+																className="border-warning-200 bg-warning-50 text-warning-700 dark:border-warning-700 dark:bg-warning-900 dark:text-warning-300"
 																variant="outline"
 															>
 																Low Activity
 															</Badge>
 														) : (
 															<Badge
-																className="border-green-200 bg-green-50 text-green-700 dark:border-green-700 dark:bg-green-900 dark:text-green-300"
+																className="border-success-200 bg-success-50 text-success-700 dark:border-success-700 dark:bg-success-900 dark:text-success-300"
 																variant="outline"
 															>
 																Active
@@ -561,8 +561,8 @@ export default function ManageEndorsements({
 																className={cn(
 																	"flex items-center gap-1 text-xs",
 																	removalInfo.isPast
-																		? "text-red-600"
-																		: "text-orange-600",
+																		? "text-danger-600"
+																		: "text-warning-600",
 																)}
 															>
 																<Clock className="h-3 w-3" />
@@ -701,8 +701,8 @@ export default function ManageEndorsements({
 								</div>
 							</div>
 
-							<div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-800 dark:bg-yellow-950/20">
-								<p className="text-sm text-yellow-800 dark:text-yellow-200">
+							<div className="rounded-lg border border-warning-200 bg-warning-50 p-4 dark:border-warning-800 dark:bg-warning-950/20">
+								<p className="text-sm text-warning-800 dark:text-warning-200">
 									This will start the removal process. The controller will be
 									notified and given 31 days to improve their activity before
 									the endorsement is removed.

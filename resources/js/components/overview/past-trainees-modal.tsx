@@ -163,9 +163,11 @@ export function PastTraineesModal({
 							<Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
 						</div>
 					) : error ? (
-						<div className="rounded-lg border border-red-200 bg-red-50 p-4 text-center dark:border-red-800 dark:bg-red-950">
-							<X className="mx-auto mb-2 h-8 w-8 text-red-600 dark:text-red-400" />
-							<p className="text-sm text-red-800 dark:text-red-200">{error}</p>
+						<div className="rounded-lg border border-danger-200 bg-danger-50 p-4 text-center dark:border-danger-800 dark:bg-danger-950">
+							<X className="mx-auto mb-2 h-8 w-8 text-danger-600 dark:text-danger-400" />
+							<p className="text-sm text-danger-800 dark:text-danger-200">
+								{error}
+							</p>
 						</div>
 					) : filteredTrainees.length > 0 ? (
 						<div className="rounded-md border">
