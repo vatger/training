@@ -30,6 +30,19 @@ class AdminPanelProvider extends PanelProvider
             ->brandName('VATGER Training System')
             ->colors([
                 // VATGER brand palette — https://branding.vatsim-germany.org/
+                'gray' => [
+                    50 => '#F0F1F3',
+                    100 => '#E3E5EA',
+                    200 => '#C8CCD6',
+                    300 => '#ADB3C3',
+                    400 => '#929BB0',
+                    500 => '#7A849A',
+                    600 => '#656D80',
+                    700 => '#505766',
+                    800 => '#3D424E',
+                    900 => '#252932',
+                    950 => '#171A1F',
+                ],
                 'primary' => [
                     50 => '#F0F4FA',
                     100 => '#E1E9F5',
