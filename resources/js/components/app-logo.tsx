@@ -6,12 +6,12 @@ export default function AppLogo() {
 		<>
 			<img
 				alt="vatger Training"
-				className="h-auto p-2 pt-3 w-auto group-data-[collapsible=icon]:hidden dark:hidden"
+				className="h-auto p-2 w-auto group-data-[collapsible=icon]:hidden dark:hidden"
 				src={logoLight}
 			/>
 			<img
 				alt="vatger Training"
-				className="hidden p-2 pl-0 pt-3 h-auto w-auto group-data-[collapsible=icon]:hidden dark:block"
+				className="hidden p-2 pl-0 h-auto w-auto group-data-[collapsible=icon]:hidden dark:block"
 				src={logoDark}
 			/>
 		</>
