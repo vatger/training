@@ -23,7 +23,7 @@ class SendRosterRemovalWarning
             vatsimId: $vatsimId,
             title: 'Removal from VATSIM Germany Roster',
             message: $message,
-            sourceName: 'VATGER ATD',
+            sourceName: 'vatger ATD',
             linkUrl: 'https://vatsim-germany.org',
         );
 

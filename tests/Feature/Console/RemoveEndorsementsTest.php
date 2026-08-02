@@ -102,7 +102,7 @@ test('sets removal_notified to true after sending notification', function () {
     $vatger = Mockery::mock(VatgerClientInterface::class);
     $vatger->shouldReceive('sendNotification')
         ->once()
-        ->with(1234567, 'Endorsement Removal', Mockery::type('string'), 'VATGER ATD', Mockery::any())
+        ->with(1234567, 'Endorsement Removal', Mockery::type('string'), 'vatger ATD', Mockery::any())
         ->andReturn(['success' => true]);
     app()->instance(VatgerClientInterface::class, $vatger);
 

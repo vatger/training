@@ -85,7 +85,7 @@ class StartTraining
             ->post("{$apiBaseUrl}/user/{$entry->user->vatsim_id}/send_notification", [
                 'title' => 'Start of Training',
                 'message' => "You have been enrolled in the {$entry->course->name} course. Check the training centre for moodle courses to start your training.",
-                'source_name' => 'VATGER ATD',
+                'source_name' => 'vatger ATD',
                 'link_text' => 'Training Centre',
                 'link_url' => 'https://training.vatsim-germany.org',
                 'via' => 'board.ping',

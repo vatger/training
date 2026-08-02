@@ -199,13 +199,13 @@ test('sendNotification message body mentions activity requirements', function ()
     expect($capturedMessage)->toContain('activity');
 });
 
-test('sendNotification uses VATGER ATD as sourceName', function () {
+test('sendNotification uses vatger ATD as sourceName', function () {
     $rec = rmEndActivity();
 
     $vatger = Mockery::mock(VatgerClientInterface::class);
     $vatger->shouldReceive('sendNotification')
         ->once()
-        ->withArgs(fn ($id, $title, $msg, $source) => $source === 'VATGER ATD')
+        ->withArgs(fn ($id, $title, $msg, $source) => $source === 'vatger ATD')
         ->andReturn(['success' => true]);
 
     $cmd = rmEndMakeCommand(

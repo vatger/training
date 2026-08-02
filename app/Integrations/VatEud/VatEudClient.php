@@ -20,7 +20,7 @@ class VatEudClient implements VatEudClientInterface
         $this->headers = [
             'X-API-KEY' => config('services.vateud.token'),
             'Accept' => 'application/json',
-            'User-Agent' => 'VATGER Training System',
+            'User-Agent' => 'vatger Training System',
         ];
     }
 

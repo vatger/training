@@ -30,7 +30,7 @@ export default function Login({ status }: LoginProps) {
 							Sign in to your account
 						</CardTitle>
 						<CardDescription className="text-center">
-							Access the VATGER Training System with your VATSIM account
+							Access the vatger Training System with your VATSIM account
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-4">
@@ -48,7 +48,7 @@ export default function Login({ status }: LoginProps) {
 							type="button"
 						>
 							<LogIn />
-							Login with VATGER Connect
+							Login with vatger Connect
 						</Button>
 
 						{/* Debug/Admin access hint for development */}

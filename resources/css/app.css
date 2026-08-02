@@ -8,9 +8,42 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@font-face {
+	font-family: "vatger";
+	src: url("../fonts/vatger-regular.woff2") format("woff2");
+	font-weight: 400;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: "vatger";
+	src: url("../fonts/vatger-semibold.woff2") format("woff2");
+	font-weight: 600;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: "vatger";
+	src: url("../fonts/vatger-bold.woff2") format("woff2");
+	font-weight: 700;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: "vatger";
+	src: url("../fonts/vatger-italic.woff2") format("woff2");
+	font-weight: 400;
+	font-style: italic;
+	font-display: swap;
+}
+
 @theme {
+	--font-vatger: "Vatger";
 	--font-sans:
-		var(--font-vatger), "Instrument Sans", ui-sans-serif, system-ui, sans-serif,
+		var(--font-vatger), ui-sans-serif, system-ui, sans-serif,
 		"Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 
 	--radius-lg: var(--radius);

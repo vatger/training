@@ -1,6 +1,7 @@
 import { Link } from "@inertiajs/react"
 import type { PropsWithChildren } from "react"
-import AppLogoIcon from "@/components/app-logo-icon"
+import logoDark from "@/images/vatger-training-dark.svg"
+import logoLight from "@/images/vatger-training-light.svg"
 import { dashboard } from "@/routes"
 
 interface AuthLayoutProps {
@@ -23,8 +24,17 @@ export default function AuthSimpleLayout({
 							className="flex flex-col items-center gap-2 font-medium"
 							href={dashboard()}
 						>
-							<div className="mb-1 flex h-9 w-9 items-center justify-center rounded-md">
-								<AppLogoIcon className="size-9 fill-current text-[var(--foreground)] dark:text-white" />
+							<div className="mb-1 flex items-center justify-center">
+								<img
+									alt="vatger Training"
+									className="h-8 w-auto dark:hidden"
+									src={logoLight}
+								/>
+								<img
+									alt="vatger Training"
+									className="hidden h-8 w-auto dark:block"
+									src={logoDark}
+								/>
 							</div>
 							<span className="sr-only">{title}</span>
 						</Link>

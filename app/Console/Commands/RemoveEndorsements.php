@@ -154,7 +154,7 @@ class RemoveEndorsements extends Command
             vatsimId: $endorsement->vatsim_id,
             title: 'Endorsement Removal',
             message: $message,
-            sourceName: 'VATGER ATD',
+            sourceName: 'vatger ATD',
             linkUrl: 'https://training.vatsim-germany.org',
         );
 

@@ -6,7 +6,7 @@ import { createRoot } from "react-dom/client"
 // biome-ignore lint/correctness/noUnusedImports: assigned to window.route at runtime
 import { route } from "ziggy-js"
 
-const appName = import.meta.env.VITE_APP_NAME || "VATGER Training System"
+const appName = import.meta.env.VITE_APP_NAME || "vatger Training System"
 
 // Make route function globally available
 declare global {

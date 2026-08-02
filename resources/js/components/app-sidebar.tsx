@@ -95,10 +95,10 @@ const adminSection = {
 	label: "Admin",
 	items: [
 		/* {
-            title: 'Announcements',
-            href: '#',
-            icon: Megaphone,
-        }, */
+			title: 'Announcements',
+			href: '#',
+			icon: Megaphone,
+		}, */
 		{
 			title: "Database",
 			href: "/admin",
@@ -182,7 +182,7 @@ export function AppSidebar() {
 				<SidebarHeader>
 					<SidebarMenu>
 						<SidebarMenuItem>
-							<SidebarMenuButton asChild size="lg">
+							<SidebarMenuButton asChild size="lg" variant={"ghost"}>
 								<Link href={dashboard()} prefetch>
 									<AppLogo />
 								</Link>

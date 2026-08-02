@@ -149,7 +149,7 @@ class CourseValidationService
             $response = Http::withHeaders([
                 'X-API-KEY' => config('services.vateud.token'),
                 'Accept' => 'application/json',
-                'User-Agent' => 'VATGER Training System',
+                'User-Agent' => 'vatger Training System',
             ])
                 ->timeout(5)
                 ->get('https://core.vateud.net/api/facility/roster');
