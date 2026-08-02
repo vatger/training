@@ -53,8 +53,8 @@ export default function Login({ status }: LoginProps) {
 
 						{/* Debug/Admin access hint for development */}
 						{process.env.NODE_ENV === "development" && (
-							<div className="mt-6 rounded-md border border-warning-200 bg-warning-50 p-3">
-								<p className="text-xs text-warning-800">
+							<div className="mt-6 rounded-md border border-accent-200 bg-accent-100 p-3">
+								<p className="text-xs text-accent-800">
 									<strong>Development Mode:</strong> Admin access available at{" "}
 									<a className="underline" href="/admin/login">
 										/admin/login

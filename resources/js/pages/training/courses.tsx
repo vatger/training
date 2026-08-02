@@ -162,11 +162,11 @@ export default function Courses({
 						<AlertCircle className="mx-auto mb-4 h-16 w-16 text-muted-foreground" />
 						<h1 className="mb-2 text-2xl font-bold">VATSIM Account Required</h1>
 						<p className="mb-4 text-muted-foreground">
-							You need a VATSIM Germany account to view and join training
+							You need a vatger account to view and join training
 							courses.
 						</p>
 						<Button onClick={() => (window.location.href = "/auth/vatsim")}>
-							Connect VATSIM Germany Account
+							Connect vatger Account
 						</Button>
 					</div>
 				</div>
