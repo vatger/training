@@ -25,11 +25,11 @@
 
         <style>
             html {
-                background-color: oklch(1 0 0);
+                background-color: oklch(0.958 0.003 264.69);
             }
 
             html.dark {
-                background-color: oklch(0.145 0 0);
+                background-color: oklch(0.217 0.011 260.68);
             }
         </style>
 

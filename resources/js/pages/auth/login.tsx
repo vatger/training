@@ -47,7 +47,7 @@ export default function Login({ status, sandboxLoginEnabled }: LoginProps) {
 
 						{/* VATSIM OAuth Button */}
 						<Button
-							className="w-full bg-primary-600 text-white hover:bg-primary-700"
+							className="w-full"
 							onClick={handleVatsimLogin}
 							size="lg"
 							type="button"
