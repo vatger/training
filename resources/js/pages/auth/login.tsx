@@ -12,11 +12,16 @@ import {
 
 interface LoginProps {
 	status?: string
+	sandboxLoginEnabled?: boolean
 }
 
-export default function Login({ status }: LoginProps) {
+export default function Login({ status, sandboxLoginEnabled }: LoginProps) {
 	const handleVatsimLogin = () => {
 		window.location.href = "/auth/vatsim"
+	}
+
+	const handleSandboxLogin = () => {
+		window.location.href = "/auth/vatsim/sandbox"
 	}
 
 	return (
@@ -51,15 +56,23 @@ export default function Login({ status }: LoginProps) {
 							Login with vatger Connect
 						</Button>
 
-						{/* Debug/Admin access hint for development */}
-						{process.env.NODE_ENV === "development" && (
-							<div className="mt-6 rounded-md border border-accent-200 bg-accent-100 p-3">
+						{/* VATSIM Connect sandbox login — only rendered when the backend
+						    confirms this is a non-production, allowed dev host. */}
+						{sandboxLoginEnabled && (
+							<div className="mt-6 space-y-2 rounded-md border border-accent-200 bg-accent-100 p-3">
 								<p className="text-xs text-accent-800">
-									<strong>Development Mode:</strong> Admin access available at{" "}
-									<a className="underline" href="/admin/login">
-										/admin/login
-									</a>
+									<strong>Development Mode:</strong> Sign in using the VATSIM
+									Connect sandbox instead of production vatger Connect.
 								</p>
+								<Button
+									className="w-full"
+									onClick={handleSandboxLogin}
+									size="sm"
+									type="button"
+									variant="outline"
+								>
+									Login with VATSIM Sandbox
+								</Button>
 							</div>
 						)}
 					</CardContent>

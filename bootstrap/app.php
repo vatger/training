@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\AuthenticateApi;
 use App\Http\Middleware\CheckCourseAccess;
+use App\Http\Middleware\EnsureSandboxAuthEnabled;
 use App\Http\Middleware\EnsureUserIsMentor;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
@@ -30,6 +31,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'mentor' => EnsureUserIsMentor::class,
             'api.auth' => AuthenticateApi::class,
             'course.access' => CheckCourseAccess::class,
+            'sandbox.auth' => EnsureSandboxAuthEnabled::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
