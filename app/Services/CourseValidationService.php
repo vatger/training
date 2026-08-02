@@ -29,7 +29,14 @@ class CourseValidationService
     public function canUserJoinCourse(Course $course, User $user): array
     {
         try {
-            $roster = $this->getRoster();
+            $roster = $this->vatEudService->getRoster();
+            
+            if (empty($roster)) {
+                $this->error('Failed to fetch roster from VatEUD');
+
+                return 1;
+            }
+
             $isOnRoster = in_array($user->vatsim_id, $roster);
         } catch (\Exception $e) {
             Log::warning('Failed to fetch roster, allowing course join', ['error' => $e->getMessage()]);
@@ -135,41 +142,6 @@ class CourseValidationService
         return [true, ''];
     }
 
-    public function getRoster(): array
-    {
-        $cacheKey = 'vateud:roster';
-
-        $cached = Cache::get($cacheKey);
-
-        if ($cached !== null) {
-            return $cached;
-        }
-
-        try {
-            $response = Http::withHeaders([
-                'X-API-KEY' => config('services.vateud.token'),
-                'Accept' => 'application/json',
-                'User-Agent' => 'VATGER Training System',
-            ])
-                ->timeout(5)
-                ->get('https://core.vateud.net/api/facility/roster');
-
-            if ($response->successful()) {
-                $controllers = $response->json('data.controllers', []);
-
-                Cache::put($cacheKey, $controllers, now()->addHour());
-
-                return $controllers;
-            }
-        } catch (\Exception $e) {
-            Log::error('Failed to fetch roster from VatEUD', [
-                'error' => $e->getMessage(),
-            ]);
-        }
-
-        return Cache::get('vateud:roster:last_known_good', []);
-    }
-
     public function getUserEndorsements(int $vatsimId): Collection
     {
         return EndorsementActivity::where('vatsim_id', $vatsimId)
@@ -206,7 +178,13 @@ class CourseValidationService
     public function isUserOnRoster(int $vatsimId): bool
     {
         try {
-            $roster = $this->getRoster();
+            $roster = $this->vatEudService->getRoster();
+
+            if (empty($roster)) {
+                $this->error('Failed to fetch roster from VatEUD');
+
+                return 1;
+            }
 
             return in_array($vatsimId, $roster);
         } catch (\Exception $e) {
