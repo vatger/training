@@ -11,7 +11,6 @@ use App\Models\WaitingListEntry;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class CourseValidationService
@@ -30,14 +29,13 @@ class CourseValidationService
     {
         try {
             $roster = $this->vatEudService->getRoster();
-            
+
             if (empty($roster)) {
-                $this->error('Failed to fetch roster from VatEUD');
-
-                return 1;
+                Log::warning('Failed to fetch roster, allowing course join');
+                $isOnRoster = false;
+            } else {
+                $isOnRoster = in_array($user->vatsim_id, $roster);
             }
-
-            $isOnRoster = in_array($user->vatsim_id, $roster);
         } catch (\Exception $e) {
             Log::warning('Failed to fetch roster, allowing course join', ['error' => $e->getMessage()]);
             $isOnRoster = false;
@@ -181,9 +179,9 @@ class CourseValidationService
             $roster = $this->vatEudService->getRoster();
 
             if (empty($roster)) {
-                $this->error('Failed to fetch roster from VatEUD');
+                Log::warning('Failed to fetch roster, treating user as not on roster', ['vatsim_id' => $vatsimId]);
 
-                return 1;
+                return false;
             }
 
             return in_array($vatsimId, $roster);

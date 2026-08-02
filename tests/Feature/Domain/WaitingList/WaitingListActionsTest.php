@@ -4,7 +4,6 @@ use App\Domain\WaitingList\Actions\JoinWaitingList;
 use App\Domain\WaitingList\Actions\LeaveWaitingList;
 use App\Domain\WaitingList\Events\WaitingListJoined;
 use App\Domain\WaitingList\Events\WaitingListLeft;
-use App\Integrations\VatEud\FakeVatEudClient;
 use App\Integrations\VatEud\VatEudClientInterface;
 use App\Integrations\Vatger\FakeVatgerClient;
 use App\Integrations\Vatger\VatgerClientInterface;
@@ -13,27 +12,22 @@ use App\Models\User;
 use App\Models\WaitingListEntry;
 use App\Models\WaitingListRestriction;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\Client\Factory as HttpFactory;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\Http;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->app->bind(VatEudClientInterface::class, FakeVatEudClient::class);
     $this->app->bind(VatgerClientInterface::class, FakeVatgerClient::class);
-    Http::fake(); // Prevent real HTTP calls from CourseValidationService
     Cache::flush();
 });
 
-// Swap to a fresh Http factory with a specific roster response.
-// Http::fake() in beforeEach adds a catch-all with a numeric key that fires
-// before any URL-pattern stubs added in the test, so a full swap is needed.
+// Bind a mocked VatEudClientInterface returning a specific roster.
 function fakeRosterWith(array $vatsimIds): void
 {
-    Http::swap(new HttpFactory);
-    Http::fake(['*' => Http::response(['data' => ['controllers' => $vatsimIds]], 200)]);
+    $client = Mockery::mock(VatEudClientInterface::class);
+    $client->shouldReceive('getRoster')->andReturn($vatsimIds);
+    app()->instance(VatEudClientInterface::class, $client);
     Cache::flush();
 }
 
