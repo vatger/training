@@ -24,9 +24,9 @@ export default function ActivityProgress({
 
 	const percentage = Math.min((current / MIN_ACTIVITY_MINUTES) * 100, 100)
 
-	let progressColor = "bg-green-500"
-	if (status === "warning") progressColor = "bg-yellow-500"
-	if (status === "removal") progressColor = "bg-red-500"
+	let progressColor = "bg-success-500"
+	if (status === "warning") progressColor = "bg-warning-500"
+	if (status === "removal") progressColor = "bg-danger-500"
 
 	return (
 		<TooltipProvider>

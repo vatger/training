@@ -195,7 +195,7 @@ export const WYSIWYGEditor = memo(
 				<EditorToolbar addImage={addImage} editor={editor} />
 
 				<div
-					className="min-h-[var(--min-height)] bg-white p-4 dark:bg-gray-950"
+					className="min-h-[var(--min-height)] bg-card p-4"
 					style={{ "--min-height": minHeight } as React.CSSProperties}
 				>
 					<EditorContent editor={editor} />

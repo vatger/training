@@ -3,15 +3,19 @@ import AppLogoIcon from "./app-logo-icon"
 export default function AppLogo() {
 	return (
 		<>
-			<div className="flex aspect-square size-full max-w-8 items-center justify-center rounded-md bg-vatger-blue">
-				<AppLogoIcon />
-			</div>
-			<div className="ml-1 grid flex-1 text-left">
-				<span className="mb-0.5 truncate text-base leading-tight font-semibold">
-					Training
-				</span>
-				<span className="truncate text-xs leading-tight">VATSIM Germany</span>
-			</div>
+			<AppLogoIcon className="hidden size-8 shrink-0 group-data-[collapsible=icon]:block" />
+			<span className="block h-9 shrink-0 group-data-[collapsible=icon]:hidden">
+				<img
+					alt="vatger / Training"
+					className="block h-full w-auto object-contain dark:hidden"
+					src="/images/brand/logo-training-on-light.svg"
+				/>
+				<img
+					alt="vatger / Training"
+					className="hidden h-full w-auto object-contain dark:block"
+					src="/images/brand/logo-training-on-dark.svg"
+				/>
+			</span>
 		</>
 	)
 }

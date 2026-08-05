@@ -30,7 +30,7 @@ export default function Login({ status }: LoginProps) {
 							Sign in to your account
 						</CardTitle>
 						<CardDescription className="text-center">
-							Access the VATGER Training System with your VATSIM account
+							Access the vatger Training System with your VATSIM account
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-4">
@@ -42,19 +42,19 @@ export default function Login({ status }: LoginProps) {
 
 						{/* VATSIM OAuth Button */}
 						<Button
-							className="w-full bg-blue-600 text-white hover:bg-blue-700"
+							className="w-full"
 							onClick={handleVatsimLogin}
 							size="lg"
 							type="button"
 						>
 							<LogIn />
-							Login with VATGER Connect
+							Login with vatger Connect
 						</Button>
 
 						{/* Debug/Admin access hint for development */}
 						{process.env.NODE_ENV === "development" && (
-							<div className="mt-6 rounded-md border border-yellow-200 bg-yellow-50 p-3">
-								<p className="text-xs text-yellow-800">
+							<div className="mt-6 rounded-md border border-warning-200 bg-warning-50 p-3">
+								<p className="text-xs text-warning-800">
 									<strong>Development Mode:</strong> Admin access available at{" "}
 									<a className="underline" href="/admin/login">
 										/admin/login

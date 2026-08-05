@@ -101,28 +101,28 @@ const breadcrumbs: BreadcrumbItem[] = [
 const getRatingColor = (rating: number): string => {
 	switch (rating) {
 		case 4:
-			return "bg-green-100 text-green-800 border-green-300 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800"
+			return "bg-success-100 text-success-800 border-success-300 dark:bg-success-900/30 dark:text-success-400 dark:border-success-800"
 		case 3:
-			return "bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800"
+			return "bg-primary-100 text-primary-800 border-primary-300 dark:bg-primary-900/30 dark:text-primary-400 dark:border-primary-800"
 		case 2:
-			return "bg-yellow-100 text-yellow-800 border-yellow-300 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800"
+			return "bg-warning-100 text-warning-800 border-warning-300 dark:bg-warning-900/30 dark:text-warning-400 dark:border-warning-800"
 		case 1:
-			return "bg-red-100 text-red-800 border-red-300 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800"
+			return "bg-danger-100 text-danger-800 border-danger-300 dark:bg-danger-900/30 dark:text-danger-400 dark:border-danger-800"
 		default:
-			return "bg-gray-100 text-gray-800 border-gray-300 dark:bg-gray-900/30 dark:text-gray-400 dark:border-gray-800"
+			return "border-border bg-secondary text-secondary-foreground"
 	}
 }
 
 const getSessionTypeColor = (type: string): string => {
 	switch (type) {
 		case "O":
-			return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
+			return "bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-400"
 		case "S":
-			return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+			return "bg-success-100 text-success-800 dark:bg-success-900/30 dark:text-success-400"
 		case "L":
-			return "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400"
+			return "bg-accent-100 text-accent-800 dark:bg-accent-900/30 dark:text-accent-400"
 		default:
-			return "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400"
+			return "bg-secondary text-secondary-foreground"
 	}
 }
 
@@ -484,7 +484,7 @@ export default function ViewTrainingLog({
 													<div className="space-y-4">
 														{evaluation.positives && (
 															<div>
-																<h4 className="mb-2 flex items-center gap-2 text-sm font-medium text-green-700 dark:text-green-400">
+																<h4 className="mb-2 flex items-center gap-2 text-sm font-medium text-success">
 																	<CheckCircle2 className="h-4 w-4" />
 																	Strengths
 																</h4>
@@ -496,7 +496,7 @@ export default function ViewTrainingLog({
 
 														{evaluation.negatives && (
 															<div>
-																<h4 className="mb-2 flex items-center gap-2 text-sm font-medium text-amber-700 dark:text-amber-400">
+																<h4 className="mb-2 flex items-center gap-2 text-sm font-medium text-warning-800 dark:text-warning-600">
 																	<AlertCircle className="h-4 w-4" />
 																	Areas for Improvement
 																</h4>

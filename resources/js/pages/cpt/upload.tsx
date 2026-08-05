@@ -193,7 +193,7 @@ export default function CptUpload({
 										{cpt.examiner ? (
 											<p className="mt-1 font-medium">{cpt.examiner.name}</p>
 										) : (
-											<p className="mt-1 text-sm text-yellow-600">
+											<p className="mt-1 text-sm text-warning-800 dark:text-warning-600">
 												Not assigned
 											</p>
 										)}
@@ -205,7 +205,7 @@ export default function CptUpload({
 										{cpt.local ? (
 											<p className="mt-1 font-medium">{cpt.local.name}</p>
 										) : (
-											<p className="mt-1 text-sm text-yellow-600">
+											<p className="mt-1 text-sm text-warning-800 dark:text-warning-600">
 												Not assigned
 											</p>
 										)}
@@ -224,8 +224,8 @@ export default function CptUpload({
 										<div
 											className={`flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-12 transition-colors ${
 												dragActive
-													? "border-green-500 bg-green-50 dark:bg-green-900/20"
-													: "border-blue-300 bg-blue-50 hover:bg-blue-100 dark:border-blue-700 dark:bg-blue-900/20"
+													? "border-success-500 bg-success-50 dark:bg-success-900/20"
+													: "border-accent-300 bg-accent-50 hover:bg-accent-100 dark:border-accent-700 dark:bg-accent-900/20"
 											}`}
 											onClick={() =>
 												document.getElementById("file-input")?.click()
@@ -236,11 +236,11 @@ export default function CptUpload({
 											onDrop={handleDrop}
 											role="document"
 										>
-											<Upload className="mb-4 h-16 w-16 text-blue-600" />
-											<h3 className="mb-2 text-lg font-medium text-blue-600">
+											<Upload className="mb-4 h-16 w-16 text-accent-600" />
+											<h3 className="mb-2 text-lg font-medium text-accent-600">
 												Upload CPT Log
 											</h3>
-											<p className="mb-4 text-center text-sm text-blue-600">
+											<p className="mb-4 text-center text-sm text-accent-600">
 												Drag and drop your PDF file here, or click to browse
 											</p>
 											<p className="text-xs text-muted-foreground">
@@ -258,23 +258,23 @@ export default function CptUpload({
 										</div>
 
 										{data.log_file && (
-											<div className="rounded-lg border border-green-500 bg-green-50 p-4 dark:bg-green-900/20">
+											<div className="rounded-lg border border-success-500 bg-success-50 p-4 dark:bg-success-900/20">
 												<div className="flex items-center justify-between">
 													<div className="flex items-center gap-3">
-														<div className="rounded bg-red-100 p-2 dark:bg-red-900">
-															<Eye className="h-6 w-6 text-red-600" />
+														<div className="rounded bg-accent-100 p-2 dark:bg-accent-900">
+															<Eye className="h-6 w-6 text-accent-600 dark:text-accent-300" />
 														</div>
 														<div>
-															<p className="font-medium text-green-600">
+															<p className="font-medium text-success-600">
 																{data.log_file.name}
 															</p>
-															<p className="text-sm text-green-600">
+															<p className="text-sm text-success-600">
 																{formatFileSize(data.log_file.size)}
 															</p>
 														</div>
 													</div>
 													<Button
-														className="text-green-600"
+														className="text-success-600"
 														onClick={() => setData("log_file", null)}
 														size="sm"
 														type="button"
@@ -312,8 +312,8 @@ export default function CptUpload({
 										<div className="p-6" key={log.id}>
 											<div className="flex items-center justify-between">
 												<div className="flex items-center gap-4">
-													<div className="rounded bg-red-100 p-3 dark:bg-red-900">
-														<File className="h-6 w-6 text-red-600" />
+													<div className="rounded bg-accent-100 p-3 dark:bg-accent-900">
+														<File className="h-6 w-6 text-accent-600 dark:text-accent-300" />
 													</div>
 													<div>
 														<h4 className="font-semibold">{log.file_name}</h4>

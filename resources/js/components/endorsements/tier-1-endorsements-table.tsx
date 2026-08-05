@@ -54,7 +54,7 @@ export default function Tier1EndorsementsTable({
 								<div className="flex flex-col gap-1">
 									{getStatusBadge(endorsement.status)}
 									{endorsement.removalDate && (
-										<div className="flex items-center gap-1 text-xs text-red-600 dark:text-red-400">
+										<div className="flex items-center gap-1 text-xs text-destructive">
 											<AlertCircle className="h-3 w-3" />
 											Removal:{" "}
 											{new Date(endorsement.removalDate).toLocaleDateString(

@@ -25,23 +25,22 @@
 
         <style>
             html {
-                background-color: oklch(1 0 0);
+                background-color: oklch(0.958 0.003 264.69);
             }
 
             html.dark {
-                background-color: oklch(0.145 0 0);
+                background-color: oklch(0.217 0.011 260.68);
             }
         </style>
 
         <title inertia>{{ config('app.name') }}</title>
 
-        <link rel="icon" href="https://vatsim-germany.org/favicon.svg" type="image/png">
-        <link rel="icon" href="https://vatsim-germany.org/favicon-96x96.png" type="image/svg+xml">
-        <link rel="shortcut icon" href="https://vatsim-germany.org/favicon.ico">
-        <link rel="apple-touch-icon" href="https://vatsim-germany.org/apple-touch-icon.png" sizes="180x180">
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+        <link rel="icon" href="/favicon.ico" sizes="any">
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">
 
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
+        <meta name="theme-color" content="#2B3F55" media="(prefers-color-scheme: light)">
+        <meta name="theme-color" content="#171A1F" media="(prefers-color-scheme: dark)">
 
         @routes
         @viteReactRefresh

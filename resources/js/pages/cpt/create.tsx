@@ -124,7 +124,7 @@ export default function CptCreate({ courses }: PageProps) {
 								<form className="space-y-6" onSubmit={handleSubmit}>
 									<div className="space-y-2">
 										<Label htmlFor="course_id">
-											Course <span className="text-red-600">*</span>
+											Course <span className="text-destructive">*</span>
 										</Label>
 										<Select
 											onValueChange={(value) => setData("course_id", value)}
@@ -145,7 +145,9 @@ export default function CptCreate({ courses }: PageProps) {
 											</SelectContent>
 										</Select>
 										{errors.course_id && (
-											<p className="text-sm text-red-600">{errors.course_id}</p>
+											<p className="text-sm text-destructive">
+												{errors.course_id}
+											</p>
 										)}
 										<p className="text-xs text-muted-foreground">
 											Select the course for which this CPT will be conducted.
@@ -154,7 +156,7 @@ export default function CptCreate({ courses }: PageProps) {
 
 									<div className="space-y-2">
 										<Label htmlFor="date">
-											Date & Time <span className="text-red-600">*</span>
+											Date & Time <span className="text-destructive">*</span>
 										</Label>
 										<Input
 											id="date"
@@ -165,7 +167,7 @@ export default function CptCreate({ courses }: PageProps) {
 											value={data.date}
 										/>
 										{errors.date && (
-											<p className="text-sm text-red-600">{errors.date}</p>
+											<p className="text-sm text-destructive">{errors.date}</p>
 										)}
 										<p className="text-xs text-muted-foreground">
 											Local time (LCL) for the CPT session.
@@ -174,7 +176,7 @@ export default function CptCreate({ courses }: PageProps) {
 
 									<div className="space-y-2">
 										<Label htmlFor="trainee_id">
-											Trainee <span className="text-red-600">*</span>
+											Trainee <span className="text-destructive">*</span>
 										</Label>
 										<Select
 											disabled={!data.course_id || loadingCourseData}
@@ -197,7 +199,7 @@ export default function CptCreate({ courses }: PageProps) {
 											</SelectContent>
 										</Select>
 										{errors.trainee_id && (
-											<p className="text-sm text-red-600">
+											<p className="text-sm text-destructive">
 												{errors.trainee_id}
 											</p>
 										)}
@@ -243,7 +245,7 @@ export default function CptCreate({ courses }: PageProps) {
 											)}
 										</div>
 										{errors.examiner_id && (
-											<p className="text-sm text-red-600">
+											<p className="text-sm text-destructive">
 												{errors.examiner_id}
 											</p>
 										)}
@@ -290,7 +292,9 @@ export default function CptCreate({ courses }: PageProps) {
 											)}
 										</div>
 										{errors.local_id && (
-											<p className="text-sm text-red-600">{errors.local_id}</p>
+											<p className="text-sm text-destructive">
+												{errors.local_id}
+											</p>
 										)}
 										<p className="text-xs text-muted-foreground">
 											Local mentor who will assist during the CPT session.

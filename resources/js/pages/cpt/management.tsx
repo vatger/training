@@ -139,8 +139,8 @@ function CptTemplatesModal({ templates }: { templates: CptTemplate[] }) {
 							<Card className="overflow-hidden" key={template.filename}>
 								<div className="flex items-center justify-between p-4">
 									<div className="flex items-center gap-3">
-										<div className="rounded bg-blue-100 p-2 dark:bg-blue-900">
-											<FileText className="h-5 w-5 text-blue-600" />
+										<div className="rounded bg-accent-100 p-2 dark:bg-accent-900">
+											<FileText className="h-5 w-5 text-accent-600 dark:text-accent-300" />
 										</div>
 										<div>
 											<h4 className="font-medium">{template.name}</h4>
@@ -325,7 +325,9 @@ export default function CptManagement({
 													<div
 														className={cn(
 															"h-2 w-2 rounded-full",
-															cpt.confirmed ? "bg-green-500" : "bg-yellow-500",
+															cpt.confirmed
+																? "bg-success-500"
+																: "bg-warning-500",
 														)}
 													/>
 													<div>
@@ -336,8 +338,8 @@ export default function CptManagement({
 															className={cn(
 																"text-xs",
 																cpt.confirmed
-																	? "text-green-600"
-																	: "text-yellow-600",
+																	? "text-success"
+																	: "text-warning-800 dark:text-warning-600",
 															)}
 														>
 															{cpt.confirmed ? "Confirmed" : "Pending"}
@@ -379,14 +381,14 @@ export default function CptManagement({
 											<TableCell>
 												{cpt.examiner ? (
 													<div className="flex items-center gap-2">
-														<UserCheck className="h-4 w-4 text-green-600" />
+														<UserCheck className="h-4 w-4 text-success" />
 														<div>
 															<div className="text-sm font-medium">
 																{cpt.examiner.name}
 															</div>
 															{cpt.examiner.is_current_user && (
 																<Button
-																	className="h-auto p-0 text-xs text-red-600"
+																	className="h-auto p-0 text-xs text-destructive"
 																	onClick={() => handleLeaveExaminer(cpt.id)}
 																	size="sm"
 																	variant="link"
@@ -415,14 +417,14 @@ export default function CptManagement({
 											<TableCell>
 												{cpt.local ? (
 													<div className="flex items-center gap-2">
-														<UserCheck className="h-4 w-4 text-blue-600" />
+														<UserCheck className="h-4 w-4 text-primary-600" />
 														<div>
 															<div className="text-sm font-medium">
 																{cpt.local.name}
 															</div>
 															{cpt.local.is_current_user && (
 																<Button
-																	className="h-auto p-0 text-xs text-red-600"
+																	className="h-auto p-0 text-xs text-destructive"
 																	onClick={() => handleLeaveLocal(cpt.id)}
 																	size="sm"
 																	variant="link"

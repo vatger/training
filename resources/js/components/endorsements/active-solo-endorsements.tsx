@@ -43,7 +43,7 @@ export default function ActiveSoloEndorsements({
 							key={endorsement.position}
 						>
 							<div className="flex items-center gap-3">
-								<div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary dark:bg-blue-900 dark:text-blue-400">
+								<div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">
 									{getPositionIcon(endorsement.type)}
 								</div>
 								<div>

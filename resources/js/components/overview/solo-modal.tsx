@@ -304,14 +304,14 @@ export function SoloModal({
 		switch (core_theory.status) {
 			case "passed":
 				return (
-					<div className="flex items-center gap-2 text-green-600 dark:text-green-400">
+					<div className="flex items-center gap-2 text-success">
 						<CheckCircle className="h-4 w-4" />
 						<span className="text-sm font-medium">Core Theory Test Passed</span>
 					</div>
 				)
 			case "assigned":
 				return (
-					<div className="flex items-center gap-2 text-yellow-600 dark:text-yellow-400">
+					<div className="flex items-center gap-2 text-warning-800 dark:text-warning-600">
 						<AlertTriangle className="h-4 w-4" />
 						<span className="text-sm font-medium">
 							Test Assigned - Awaiting Completion
@@ -321,7 +321,7 @@ export function SoloModal({
 			case "not_assigned":
 				return (
 					<div className="space-y-2">
-						<div className="flex items-center gap-2 text-red-600 dark:text-red-400">
+						<div className="flex items-center gap-2 text-destructive">
 							<XCircle className="h-4 w-4" />
 							<span className="text-sm font-medium">
 								Core Theory Test Not Assigned
@@ -353,7 +353,7 @@ export function SoloModal({
 				)
 			default:
 				return (
-					<div className="flex items-center gap-2 text-red-600 dark:text-red-400">
+					<div className="flex items-center gap-2 text-destructive">
 						<AlertCircle className="h-4 w-4" />
 						<span className="text-sm">
 							{core_theory.message || "Unable to verify status"}
@@ -370,7 +370,7 @@ export function SoloModal({
 
 		if (moodle.error) {
 			return (
-				<div className="flex items-center gap-2 text-red-600 dark:text-red-400">
+				<div className="flex items-center gap-2 text-destructive">
 					<AlertCircle className="h-4 w-4" />
 					<span className="text-sm">{moodle.error}</span>
 				</div>
@@ -379,7 +379,7 @@ export function SoloModal({
 
 		if (moodle.completed) {
 			return (
-				<div className="flex items-center gap-2 text-green-600 dark:text-green-400">
+				<div className="flex items-center gap-2 text-success">
 					<CheckCircle className="h-4 w-4" />
 					<span className="text-sm font-medium">
 						All Moodle Courses Completed
@@ -394,7 +394,7 @@ export function SoloModal({
 
 		return (
 			<div className="space-y-2">
-				<div className="flex items-center gap-2 text-red-600 dark:text-red-400">
+				<div className="flex items-center gap-2 text-destructive">
 					<XCircle className="h-4 w-4" />
 					<span className="text-sm font-medium">
 						Moodle Courses Incomplete ({totalCourses - incompleteCourses}/
@@ -409,9 +409,9 @@ export function SoloModal({
 								key={detail.course_id}
 							>
 								{detail.completed ? (
-									<CheckCircle className="h-3 w-3 text-green-600" />
+									<CheckCircle className="h-3 w-3 text-success" />
 								) : (
-									<XCircle className="h-3 w-3 text-red-600" />
+									<XCircle className="h-3 w-3 text-destructive" />
 								)}
 								<span>Course {detail.course_id}</span>
 							</div>

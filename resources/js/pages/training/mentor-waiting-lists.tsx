@@ -388,15 +388,15 @@ export default function MentorWaitingLists({ courses, config }: PageProps) {
 																						className={cn(
 																							entry.activity >=
 																								config.min_activity &&
-																								"bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
+																								"bg-success-100 text-success-800 dark:bg-success-900 dark:text-success-300",
 																							entry.activity >=
 																								config.display_activity &&
 																								entry.activity <
 																									config.min_activity &&
-																								"bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300",
+																								"bg-warning-100 text-warning-800 dark:bg-warning-900 dark:text-warning-300",
 																							entry.activity <
 																								config.display_activity &&
-																								"bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300",
+																								"bg-danger-100 text-danger-800 dark:bg-danger-900 dark:text-danger-300",
 																						)}
 																					>
 																						{entry.activity}h
@@ -576,15 +576,15 @@ export default function MentorWaitingLists({ courses, config }: PageProps) {
 																								"font-medium",
 																								entry.activity >=
 																									config.min_activity &&
-																									"text-green-600",
+																									"text-success",
 																								entry.activity >=
 																									config.display_activity &&
 																									entry.activity <
 																										config.min_activity &&
-																									"text-yellow-600",
+																									"text-warning-800 dark:text-warning-600",
 																								entry.activity <
 																									config.display_activity &&
-																									"text-red-600",
+																									"text-destructive",
 																							)}
 																						>
 																							{entry.activity}h

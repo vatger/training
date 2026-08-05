@@ -162,11 +162,10 @@ export default function Courses({
 						<AlertCircle className="mx-auto mb-4 h-16 w-16 text-muted-foreground" />
 						<h1 className="mb-2 text-2xl font-bold">VATSIM Account Required</h1>
 						<p className="mb-4 text-muted-foreground">
-							You need a VATSIM Germany account to view and join training
-							courses.
+							You need a vatger account to view and join training courses.
 						</p>
 						<Button onClick={() => (window.location.href = "/auth/vatsim")}>
-							Connect VATSIM Germany Account
+							Connect vatger Account
 						</Button>
 					</div>
 				</div>
@@ -179,8 +178,8 @@ export default function Courses({
 			<Head title="Courses" />
 			<div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
 				{error && (
-					<div className="rounded-lg border border-red-200 bg-red-50 p-4">
-						<div className="flex items-center gap-2 text-red-800">
+					<div className="rounded-lg border border-danger-200 bg-danger-50 p-4">
+						<div className="flex items-center gap-2 text-danger-800">
 							<AlertCircle className="h-5 w-5" />
 							<span>{error}</span>
 						</div>
@@ -188,8 +187,8 @@ export default function Courses({
 				)}
 
 				{rtgRatingPending && (
-					<div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-950/30">
-						<div className="flex items-start gap-2 text-blue-800 dark:text-blue-300">
+					<div className="rounded-lg border border-primary-200 bg-primary-50 p-4 dark:border-primary-800 dark:bg-primary-950/30">
+						<div className="flex items-start gap-2 text-primary-800 dark:text-primary-300">
 							<AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
 							<div>
 								<p className="font-medium">Rating upgrade pending</p>

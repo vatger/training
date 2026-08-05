@@ -10,15 +10,15 @@ export type StatusType = "active" | "warning" | "removal" | "available"
 export const getPositionColor = (position: string): string => {
 	switch (position) {
 		case "GND":
-			return "bg-gray-100 text-gray-700 dark:bg-gray-900 dark:text-gray-300"
+			return "bg-secondary text-secondary-foreground"
 		case "TWR":
-			return "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
+			return "bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-300"
 		case "APP":
-			return "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
+			return "bg-success-100 text-success-700 dark:bg-success-900 dark:text-success-300"
 		case "CTR":
-			return "bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300"
+			return "bg-accent-100 text-accent-700 dark:bg-accent-900 dark:text-accent-300"
 		default:
-			return "bg-gray-100 text-gray-700 dark:bg-gray-900 dark:text-gray-300"
+			return "bg-secondary text-secondary-foreground"
 	}
 }
 
@@ -28,17 +28,17 @@ export const getPositionColor = (position: string): string => {
 export const getTypeColor = (type: string): string => {
 	switch (type) {
 		case "RTG":
-			return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 border-blue-200 dark:border-blue-800"
+			return "bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-300 border-primary-200 dark:border-primary-800"
 		case "EDMT":
-			return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300 border-purple-200 dark:border-purple-800"
+			return "bg-accent-100 text-accent-800 dark:bg-accent-900 dark:text-accent-300 border-accent-200 dark:border-accent-800"
 		case "FAM":
-			return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800"
+			return "bg-warning-100 text-warning-800 dark:bg-warning-900 dark:text-warning-300 border-warning-200 dark:border-warning-800"
 		case "GST":
-			return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 border-green-200 dark:border-green-800"
+			return "bg-success-100 text-success-800 dark:bg-success-900 dark:text-success-300 border-success-200 dark:border-success-800"
 		case "RST":
-			return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300 border-red-200 dark:border-red-800"
+			return "bg-danger-100 text-danger-800 dark:bg-danger-900 dark:text-danger-300 border-danger-200 dark:border-danger-800"
 		default:
-			return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300 border-gray-200 dark:border-gray-800"
+			return "border-border bg-secondary text-secondary-foreground"
 	}
 }
 
@@ -48,17 +48,17 @@ export const getTypeColor = (type: string): string => {
 export const getStatusColor = (status: string): string => {
 	switch (status) {
 		case "active":
-			return "border-green-200 bg-green-50 text-green-700 dark:border-green-700 dark:bg-green-900 dark:text-green-300"
+			return "border-success-200 bg-success-50 text-success-700 dark:border-success-700 dark:bg-success-900 dark:text-success-300"
 		case "warning":
-			return "border-yellow-200 bg-yellow-50 text-yellow-700 dark:border-yellow-700 dark:bg-yellow-900 dark:text-yellow-300"
+			return "border-warning-200 bg-warning-50 text-warning-800 dark:border-warning-700 dark:bg-warning-900 dark:text-warning-300"
 		case "removal":
-			return "border-red-200 bg-red-50 text-red-700 dark:border-red-700 dark:bg-red-900 dark:text-red-300"
+			return "border-danger-200 bg-danger-50 text-danger-700 dark:border-danger-700 dark:bg-danger-900 dark:text-danger-300"
 		case "available":
-			return "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-700 dark:bg-blue-900 dark:text-blue-300"
+			return "border-primary-200 bg-primary-50 text-primary-700 dark:border-primary-700 dark:bg-primary-900 dark:text-primary-300"
 		case "completed":
-			return "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-700 dark:bg-blue-900 dark:text-blue-300"
+			return "border-success-200 bg-success-50 text-success-700 dark:border-success-700 dark:bg-success-900 dark:text-success-300"
 		default:
-			return "border-gray-200 bg-gray-50 text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
+			return "border-border bg-secondary text-secondary-foreground"
 	}
 }
 

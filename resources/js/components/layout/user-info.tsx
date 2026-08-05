@@ -21,13 +21,13 @@ export function UserInfo({
 				<AvatarImage alt={user.name} src={user.avatar} />
 				{user.is_admin ? (
 					<>
-						<AvatarFallback className="rounded-full bg-red-200 text-black dark:bg-red-800/70 dark:text-white">
+						<AvatarFallback className="rounded-full bg-accent-200 text-accent-950 dark:bg-accent-800/70 dark:text-accent-50">
 							{getInitials(user.name)}
 						</AvatarFallback>
 					</>
 				) : (
 					<>
-						<AvatarFallback className="rounded-full bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white">
+						<AvatarFallback className="rounded-full bg-secondary text-secondary-foreground">
 							{getInitials(user.name)}
 						</AvatarFallback>
 					</>

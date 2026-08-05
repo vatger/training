@@ -24,7 +24,7 @@ export default function AuthSimpleLayout({
 							href={dashboard()}
 						>
 							<div className="mb-1 flex h-9 w-9 items-center justify-center rounded-md">
-								<AppLogoIcon className="size-9 fill-current text-[var(--foreground)] dark:text-white" />
+								<AppLogoIcon className="block size-9" />
 							</div>
 							<span className="sr-only">{title}</span>
 						</Link>
