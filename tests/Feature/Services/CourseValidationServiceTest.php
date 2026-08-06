@@ -1,5 +1,6 @@
 <?php
 
+use App\Integrations\VatEud\VatEudClientInterface;
 use App\Models\Course;
 use App\Models\Familiarisation;
 use App\Models\FamiliarisationSector;
@@ -7,10 +8,8 @@ use App\Models\User;
 use App\Models\WaitingListRestriction;
 use App\Services\CourseValidationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\Client\Factory as HttpFactory;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\Http;
 
 uses(RefreshDatabase::class);
 
@@ -21,8 +20,9 @@ beforeEach(function () {
 
 function fakeRosterWithIds(array $vatsimIds): void
 {
-    Http::swap(new HttpFactory);
-    Http::fake(['*' => Http::response(['data' => ['controllers' => $vatsimIds]], 200)]);
+    $client = Mockery::mock(VatEudClientInterface::class);
+    $client->shouldReceive('getRoster')->andReturn($vatsimIds);
+    app()->instance(VatEudClientInterface::class, $client);
     Cache::flush();
 }
 

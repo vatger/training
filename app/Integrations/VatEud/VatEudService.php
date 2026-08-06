@@ -142,6 +142,11 @@ class VatEudService
         return $this->client->assignCoreTheoryTest($vatsimId, $examId, $instructorCid);
     }
 
+    public function getRoster(): array
+    {
+        return $this->client->getRoster();
+    }
+
     public function uploadCptLog(
         int $traineeCid,
         int $examinerCid,

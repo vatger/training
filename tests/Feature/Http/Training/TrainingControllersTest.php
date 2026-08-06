@@ -20,24 +20,28 @@ use App\Models\User;
 use App\Models\WaitingListEntry;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\Client\Factory;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\Http;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->withoutVite();
-    $this->app->bind(VatEudClientInterface::class, FakeVatEudClient::class);
     $this->app->bind(MoodleClientInterface::class, FakeMoodleClient::class);
     $this->app->bind(VatgerClientInterface::class, FakeVatgerClient::class);
-    Http::fake(['*' => Http::response(['data' => ['controllers' => []]], 200)]);
-    Cache::flush();
 
     Event::fake();
 });
+
+// Only affects the roster; tests that don't call this keep the default FakeVatEudClient.
+function trainingHttpFakeRoster(array $vatsimIds): void
+{
+    $client = Mockery::mock(VatEudClientInterface::class);
+    $client->shouldReceive('getRoster')->andReturn($vatsimIds);
+    app()->instance(VatEudClientInterface::class, $client);
+    Cache::flush();
+}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -1379,9 +1383,7 @@ test('courses index hides courses outside the user rating range', function () {
     ]);
 
     $user = User::factory()->create(['subdivision' => 'GER', 'rating' => 3]);
-    Http::swap(new Factory);
-    Http::fake(['*' => Http::response(['data' => ['controllers' => [$user->vatsim_id]]], 200)]);
-    Cache::flush();
+    trainingHttpFakeRoster([$user->vatsim_id]);
 
     $this->actingAs($user)
         ->get(route('courses.index'))
@@ -1398,9 +1400,7 @@ test('admin user sees all courses regardless of eligibility', function () {
     $highRatingCourse = Course::factory()->create(['type' => 'RTG', 'position' => 'APP', 'min_rating' => 4, 'max_rating' => 5]);
 
     $admin = User::factory()->superuser()->create(['subdivision' => 'GER', 'rating' => 2]);
-    Http::swap(new Factory);
-    Http::fake(['*' => Http::response(['data' => ['controllers' => [$admin->vatsim_id]]], 200)]);
-    Cache::flush();
+    trainingHttpFakeRoster([$admin->vatsim_id]);
 
     $this->actingAs($admin)
         ->get(route('courses.index'))
@@ -1417,9 +1417,7 @@ test('courses index hides all RTG courses when user is actively enrolled in one'
     $alternativeCourse = Course::factory()->create(['type' => 'RTG', 'position' => 'APP', 'min_rating' => 2, 'max_rating' => 3]);
 
     $user = User::factory()->create(['subdivision' => 'GER', 'rating' => 3]);
-    Http::swap(new Factory);
-    Http::fake(['*' => Http::response(['data' => ['controllers' => [$user->vatsim_id]]], 200)]);
-    Cache::flush();
+    trainingHttpFakeRoster([$user->vatsim_id]);
 
     trainingHttpAttachTrainee($enrolledCourse, $user);
 
@@ -1439,9 +1437,7 @@ test('courses index sets rtgRatingPending true when user has rating upgrade pend
         'rating' => 3,
         'rating_upgrade_pending' => true,
     ]);
-    Http::swap(new Factory);
-    Http::fake(['*' => Http::response(['data' => ['controllers' => [$user->vatsim_id]]], 200)]);
-    Cache::flush();
+    trainingHttpFakeRoster([$user->vatsim_id]);
 
     $this->actingAs($user)
         ->get(route('courses.index'))
@@ -1458,9 +1454,7 @@ test('courses index sets rtgRatingPending false when user has no rating upgrade 
         'rating' => 3,
         'rating_upgrade_pending' => false,
     ]);
-    Http::swap(new Factory);
-    Http::fake(['*' => Http::response(['data' => ['controllers' => [$user->vatsim_id]]], 200)]);
-    Cache::flush();
+    trainingHttpFakeRoster([$user->vatsim_id]);
 
     $this->actingAs($user)
         ->get(route('courses.index'))
@@ -1485,9 +1479,7 @@ test('courses index hides EDMT course when user already holds all required endor
         'last_updated' => now(),
     ]);
 
-    Http::swap(new Factory);
-    Http::fake(['*' => Http::response(['data' => ['controllers' => [$user->vatsim_id]]], 200)]);
-    Cache::flush();
+    trainingHttpFakeRoster([$user->vatsim_id]);
 
     $this->actingAs($user)
         ->get(route('courses.index'))
@@ -1505,9 +1497,7 @@ test('courses index hides FAM course when user already has the familiarisation',
     $user = User::factory()->create(['subdivision' => 'GER', 'rating' => 3]);
     Familiarisation::create(['user_id' => $user->id, 'familiarisation_sector_id' => $sector->id]);
 
-    Http::swap(new Factory);
-    Http::fake(['*' => Http::response(['data' => ['controllers' => [$user->vatsim_id]]], 200)]);
-    Cache::flush();
+    trainingHttpFakeRoster([$user->vatsim_id]);
 
     $this->actingAs($user)
         ->get(route('courses.index'))
@@ -1524,9 +1514,7 @@ test('courses index includes FAM course when user has no familiarisation for its
 
     $user = User::factory()->create(['subdivision' => 'GER', 'rating' => 3]);
 
-    Http::swap(new Factory);
-    Http::fake(['*' => Http::response(['data' => ['controllers' => [$user->vatsim_id]]], 200)]);
-    Cache::flush();
+    trainingHttpFakeRoster([$user->vatsim_id]);
 
     $this->actingAs($user)
         ->get(route('courses.index'))
@@ -1546,8 +1534,7 @@ test('courses index includes courses the user is already on the waiting list for
     ]);
 
     $user = User::factory()->create(['subdivision' => 'GER', 'rating' => 3]);
-    Http::fake(['*' => Http::response(['data' => ['controllers' => [$user->vatsim_id]]], 200)]);
-    Cache::flush();
+    trainingHttpFakeRoster([$user->vatsim_id]);
 
     WaitingListEntry::create([
         'course_id' => $course->id,
