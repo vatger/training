@@ -1,6 +1,6 @@
 ---
 name: Bug Report
-about: Report a bug or unexpected behavior in the VATSIM Germany Training System
+about: Report a bug or unexpected behavior in the vatger Training System
 title: "[BUG]"
 labels: bug
 assignees: ''

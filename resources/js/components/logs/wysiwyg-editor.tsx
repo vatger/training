@@ -195,7 +195,7 @@ export const WYSIWYGEditor = memo(
 				<EditorToolbar addImage={addImage} editor={editor} />
 
 				<div
-					className="min-h-[var(--min-height)] bg-white p-4 dark:bg-gray-950"
+					className="min-h-[var(--min-height)] bg-background p-4"
 					style={{ "--min-height": minHeight } as React.CSSProperties}
 				>
 					<EditorContent editor={editor} />
@@ -210,7 +210,7 @@ export const WYSIWYGEditor = memo(
                 }
 
                 .ProseMirror p.is-editor-empty:first-child::before {
-                    color: #adb5bd;
+                    color: var(--muted-foreground);
                     content: attr(data-placeholder);
                     float: left;
                     height: 0;
@@ -271,15 +271,15 @@ export const WYSIWYGEditor = memo(
                 }
 
                 .ProseMirror blockquote {
-                    border-left: 3px solid #e5e7eb;
+                    border-left: 3px solid var(--border);
                     padding-left: 1em;
-                    color: #6b7280;
+                    color: var(--muted-foreground);
                     font-style: italic;
                     margin: 1em 0;
                 }
 
                 .ProseMirror code {
-                    background-color: #f3f4f6;
+                    background-color: var(--muted);
                     padding: 0.125em 0.25em;
                     border-radius: 0.25em;
                     font-size: 0.875em;
@@ -287,8 +287,8 @@ export const WYSIWYGEditor = memo(
                 }
 
                 .ProseMirror pre {
-                    background-color: #1f2937;
-                    color: #f9fafb;
+                    background-color: var(--color-secondary-900);
+                    color: var(--color-secondary-50);
                     padding: 1em;
                     border-radius: 0.5em;
                     overflow-x: auto;
@@ -304,7 +304,7 @@ export const WYSIWYGEditor = memo(
 
                 .ProseMirror hr {
                     border: none;
-                    border-top: 2px solid #e5e7eb;
+                    border-top: 2px solid var(--border);
                     margin: 2em 0;
                 }
 

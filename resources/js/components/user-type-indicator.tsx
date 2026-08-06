@@ -10,7 +10,7 @@ export default function UserTypeIndicator() {
 
 	if (user.is_admin) {
 		return (
-			<div className="flex items-center gap-2 rounded-full bg-red-100 px-3 py-1 text-sm font-medium text-red-700">
+			<div className="flex items-center gap-2 rounded-full bg-danger-100 px-3 py-1 text-sm font-medium text-danger-700">
 				<Shield className="h-4 w-4" />
 				Admin Access
 			</div>
@@ -19,7 +19,7 @@ export default function UserTypeIndicator() {
 
 	if (user.is_vatsim_user) {
 		return (
-			<div className="flex items-center gap-2 rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-700">
+			<div className="flex items-center gap-2 rounded-full bg-primary-100 px-3 py-1 text-sm font-medium text-primary-700">
 				<User className="h-4 w-4" />
 				VATSIM: {user.vatsim_id}
 			</div>

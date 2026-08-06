@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils"
 import { Progress } from "../ui/progress"
 import {
 	Tooltip,
@@ -24,9 +25,14 @@ export default function ActivityProgress({
 
 	const percentage = Math.min((current / MIN_ACTIVITY_MINUTES) * 100, 100)
 
-	let progressColor = "bg-green-500"
-	if (status === "warning") progressColor = "bg-yellow-500"
-	if (status === "removal") progressColor = "bg-red-500"
+	let progressIndicatorClass =
+		"[&>[data-slot=progress-indicator]]:bg-success-500"
+	if (status === "warning")
+		progressIndicatorClass =
+			"[&>[data-slot=progress-indicator]]:bg-warning-500"
+	if (status === "removal")
+		progressIndicatorClass =
+			"[&>[data-slot=progress-indicator]]:bg-danger-500"
 
 	return (
 		<TooltipProvider>
@@ -40,8 +46,7 @@ export default function ActivityProgress({
 						</div>
 
 						<Progress
-							className={`h-2`}
-							colorClass={progressColor}
+							className={cn("h-2", progressIndicatorClass)}
 							value={percentage}
 						/>
 					</div>

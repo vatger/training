@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\VatsimConnectService;
+use App\Support\SandboxAuth;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -25,11 +26,40 @@ class VatsimOAuthController extends Controller
 
     public function redirect(): RedirectResponse
     {
+        return $this->handleRedirect($this->vatsimConnect, 'oauth_state');
+    }
+
+    public function callback(Request $request): RedirectResponse
+    {
+        return $this->handleCallback($request, $this->vatsimConnect, 'oauth_state', sandbox: false);
+    }
+
+    /**
+     * Dev-only: redirect to the VATSIM Connect sandbox instead of production VATSIM Connect.
+     * Also re-checked here (not just via the `sandbox.auth` route middleware) so this can
+     * never fire in production even if the route/middleware wiring is ever changed.
+     */
+    public function sandboxRedirect(Request $request): RedirectResponse
+    {
+        abort_unless(SandboxAuth::enabled($request), 404);
+
+        return $this->handleRedirect(new VatsimConnectService(sandbox: true), 'oauth_sandbox_state');
+    }
+
+    public function sandboxCallback(Request $request): RedirectResponse
+    {
+        abort_unless(SandboxAuth::enabled($request), 404);
+
+        return $this->handleCallback($request, new VatsimConnectService(sandbox: true), 'oauth_sandbox_state', sandbox: true);
+    }
+
+    protected function handleRedirect(VatsimConnectService $connect, string $stateKey): RedirectResponse
+    {
         try {
             $state = Str::random(40);
-            session(['oauth_state' => $state]);
+            session([$stateKey => $state]);
 
-            $authUrl = $this->vatsimConnect->getAuthorizationUrl($state);
+            $authUrl = $connect->getAuthorizationUrl($state);
 
             return redirect()->away($authUrl);
         } catch (\Exception $e) {
@@ -41,7 +71,7 @@ class VatsimOAuthController extends Controller
         }
     }
 
-    public function callback(Request $request): RedirectResponse
+    protected function handleCallback(Request $request, VatsimConnectService $connect, string $stateKey, bool $sandbox): RedirectResponse
     {
         try {
             $code = $request->input('code');
@@ -62,7 +92,7 @@ class VatsimOAuthController extends Controller
                 ]);
             }
 
-            $expectedState = session()->pull('oauth_state');
+            $expectedState = session()->pull($stateKey);
             if (! $state || ! $expectedState || ! hash_equals($expectedState, $state)) {
                 return redirect()->route('login')->withErrors([
                     'oauth' => 'Invalid OAuth state. Please try again.',
@@ -78,11 +108,21 @@ class VatsimOAuthController extends Controller
             Cache::put($cacheKey, true, 600);
 
             try {
-                $tokenData = $this->vatsimConnect->getAccessToken($code);
-                $profile = $this->vatsimConnect->getUserProfile($tokenData['access_token']);
+                $tokenData = $connect->getAccessToken($code);
+                $profile = $connect->getUserProfile($tokenData['access_token']);
 
                 $user = $this->createOrUpdateUser($profile);
                 $this->assignRoles($user, $profile['teams'] ?? []);
+
+                if ($sandbox) {
+                    // Sandbox accounts carry no VATGER "teams", so grant full staff/superuser
+                    // access directly — this is the dev-only replacement for the old
+                    // app:create-admin bootstrap, gated entirely by SandboxAuth::enabled().
+                    $user->forceFill([
+                        'is_staff' => true,
+                        'is_superuser' => true,
+                    ])->save();
+                }
 
                 Auth::login($user, true);
                 $request->session()->regenerate();

@@ -48,5 +48,20 @@ return [
         'oauth_auth_url' => env('VATGER_OAUTH_AUTH_URL'),
         'oauth_token_url' => env('VATGER_OAUTH_TOKEN_URL'),
         'oauth_base_url' => env('VATGER_OAUTH_BASE_URL'),
+
+        // VATSIM Connect sandbox (https://vatsim.dev/services/connect/sandbox/) — dev-only
+        // login that replaces the old admin backdoor. Gated by App\Support\SandboxAuth, which
+        // requires a non-production environment AND a matching allowed host, so this never
+        // activates in production even if APP_ENV is misconfigured.
+        'oauth_sandbox_client_id' => env('VATSIM_SANDBOX_CLIENT_ID'),
+        'oauth_sandbox_client_secret' => env('VATSIM_SANDBOX_CLIENT_SECRET'),
+        'oauth_sandbox_redirect_uri' => env('VATSIM_SANDBOX_REDIRECT_URI'),
+        'oauth_sandbox_auth_url' => env('VATSIM_SANDBOX_AUTH_URL', 'https://auth-dev.vatsim.net/oauth/authorize'),
+        'oauth_sandbox_token_url' => env('VATSIM_SANDBOX_TOKEN_URL', 'https://auth-dev.vatsim.net/oauth/token'),
+        'oauth_sandbox_base_url' => env('VATSIM_SANDBOX_BASE_URL', 'https://auth-dev.vatsim.net/api'),
+
+        // Comma-separated hostname patterns (Str::is wildcards allowed) permitted to use the
+        // sandbox login. Acts as the second, independent gate alongside the environment check.
+        'sandbox_allowed_hosts' => env('VATSIM_SANDBOX_ALLOWED_HOSTS', 'localhost,127.0.0.1,*.test,*.localhost'),
     ],
 ];

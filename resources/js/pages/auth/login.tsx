@@ -12,11 +12,16 @@ import {
 
 interface LoginProps {
 	status?: string
+	sandboxLoginEnabled?: boolean
 }
 
-export default function Login({ status }: LoginProps) {
+export default function Login({ status, sandboxLoginEnabled }: LoginProps) {
 	const handleVatsimLogin = () => {
 		window.location.href = "/auth/vatsim"
+	}
+
+	const handleSandboxLogin = () => {
+		window.location.href = "/auth/vatsim/sandbox"
 	}
 
 	return (
@@ -30,7 +35,7 @@ export default function Login({ status }: LoginProps) {
 							Sign in to your account
 						</CardTitle>
 						<CardDescription className="text-center">
-							Access the VATGER Training System with your VATSIM account
+							Access the vatger Training System with your VATSIM account
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-4">
@@ -42,24 +47,33 @@ export default function Login({ status }: LoginProps) {
 
 						{/* VATSIM OAuth Button */}
 						<Button
-							className="w-full bg-blue-600 text-white hover:bg-blue-700"
+							className="w-full"
 							onClick={handleVatsimLogin}
 							size="lg"
 							type="button"
+							variant="accent"
 						>
 							<LogIn />
-							Login with VATGER Connect
+							Login with vatger Connect
 						</Button>
 
-						{/* Debug/Admin access hint for development */}
-						{process.env.NODE_ENV === "development" && (
-							<div className="mt-6 rounded-md border border-yellow-200 bg-yellow-50 p-3">
-								<p className="text-xs text-yellow-800">
-									<strong>Development Mode:</strong> Admin access available at{" "}
-									<a className="underline" href="/admin/login">
-										/admin/login
-									</a>
+						{/* VATSIM Connect sandbox login — only rendered when the backend
+						    confirms this is a non-production, allowed dev host. */}
+						{sandboxLoginEnabled && (
+							<div className="mt-6 space-y-2 rounded-md border border-accent-200 bg-accent-100 p-3">
+								<p className="text-xs text-accent-800">
+									<strong>Development Mode:</strong> Sign in using the VATSIM
+									Connect sandbox instead of production vatger Connect.
 								</p>
+								<Button
+									className="w-full"
+									onClick={handleSandboxLogin}
+									size="sm"
+									type="button"
+									variant="outline"
+								>
+									Login with VATSIM Sandbox
+								</Button>
 							</div>
 						)}
 					</CardContent>

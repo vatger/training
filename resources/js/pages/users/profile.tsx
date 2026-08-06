@@ -129,13 +129,13 @@ const getRatingDisplay = (rating: number): string => {
 const getSessionTypeColor = (type: string) => {
 	switch (type) {
 		case "O":
-			return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
+			return "bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-400"
 		case "S":
-			return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+			return "bg-success-100 text-success-800 dark:bg-success-900/30 dark:text-success-400"
 		case "L":
-			return "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400"
+			return "bg-secondary-100 text-secondary-800 dark:bg-secondary-900/30 dark:text-secondary-400"
 		default:
-			return "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400"
+			return "bg-secondary-100 text-secondary-800 dark:bg-secondary-900/30 dark:text-secondary-400"
 	}
 }
 
@@ -144,7 +144,7 @@ const getStatusBadge = (status: string) => {
 		case "active":
 			return (
 				<Badge
-					className="border-green-200 bg-green-50 text-green-700 dark:border-green-700 dark:bg-green-900 dark:text-green-300"
+					className="border-success-200 bg-success-50 text-success-700 dark:border-success-700 dark:bg-success-900 dark:text-success-300"
 					variant="outline"
 				>
 					<CheckCircle className="mr-1 h-3 w-3" />
@@ -154,7 +154,7 @@ const getStatusBadge = (status: string) => {
 		case "warning":
 			return (
 				<Badge
-					className="border-yellow-200 bg-yellow-50 text-yellow-700 dark:border-yellow-700 dark:bg-yellow-900 dark:text-yellow-300"
+					className="border-warning-200 bg-warning-50 text-warning-700 dark:border-warning-700 dark:bg-warning-900 dark:text-warning-300"
 					variant="outline"
 				>
 					<AlertCircle className="mr-1 h-3 w-3" />
@@ -164,7 +164,7 @@ const getStatusBadge = (status: string) => {
 		case "removal":
 			return (
 				<Badge
-					className="border-red-200 bg-red-50 text-red-700 dark:border-red-700 dark:bg-red-900 dark:text-red-300"
+					className="border-danger-200 bg-danger-50 text-danger-700 dark:border-danger-700 dark:bg-danger-900 dark:text-danger-300"
 					variant="outline"
 				>
 					<AlertCircle className="mr-1 h-3 w-3" />
@@ -242,7 +242,7 @@ const CourseAccordionItem = ({
 												<div
 													className={cn(
 														"absolute -left-[23px] mt-1.5 h-4 w-4 rounded-full border-2 border-background",
-														log.result ? "bg-green-500" : "bg-red-500",
+														log.result ? "bg-success-500" : "bg-danger-500",
 													)}
 												/>
 
@@ -471,7 +471,7 @@ export default function UserProfilePage({ userData }: { userData: UserData }) {
 												className={cn(
 													"text-xs text-muted-foreground",
 													user.solo_days_used < 0 &&
-														"font-semibold text-red-600 dark:text-red-400",
+													"font-semibold text-danger-600 dark:text-danger-400",
 												)}
 											>
 												{user.solo_days_used} / 90 used
@@ -575,7 +575,7 @@ export default function UserProfilePage({ userData }: { userData: UserData }) {
 									{showRemovedCourses &&
 										removed_courses.map((course) => (
 											<div className="relative" key={course.id}>
-												<div className="absolute top-0 bottom-0 -left-3 w-1 rounded-full bg-red-500/20" />
+												<div className="absolute top-0 bottom-0 -left-3 w-1 rounded-full bg-danger-500/20" />
 												<CourseAccordionItem
 													course={course}
 													keyPrefix="removed-course"
@@ -689,7 +689,7 @@ export default function UserProfilePage({ userData }: { userData: UserData }) {
 												<div className="flex items-center gap-3">
 													{course.passed ? (
 														<Badge
-															className="border-green-200 bg-green-50 text-green-700 dark:border-green-700 dark:bg-green-900 dark:text-green-300"
+															className="border-success-200 bg-success-50 text-success-700 dark:border-success-700 dark:bg-success-900 dark:text-success-300"
 															variant="outline"
 														>
 															<CheckCircle className="mr-1 h-3 w-3" />
@@ -697,7 +697,7 @@ export default function UserProfilePage({ userData }: { userData: UserData }) {
 														</Badge>
 													) : (
 														<Badge
-															className="border-yellow-200 bg-yellow-50 text-yellow-700"
+															className="border-warning-200 bg-warning-50 text-warning-700"
 															variant="outline"
 														>
 															<Clock className="mr-1 h-3 w-3" />
@@ -705,7 +705,7 @@ export default function UserProfilePage({ userData }: { userData: UserData }) {
 														</Badge>
 													)}
 													<a
-														className="text-sm text-primary hover:underline"
+														className="text-sm text-primary hover:underline hover:text-accent-500"
 														href={course.link}
 														rel="noopener noreferrer"
 														target="_blank"

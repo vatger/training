@@ -1,6 +1,6 @@
 ---
 name: Feature Request
-about: Suggest a new feature or enhancement for the VATSIM Germany Training System
+about: Suggest a new feature or enhancement for the vatger Training System
 title: "[FEATURE]"
 labels: enhancement
 assignees: ''

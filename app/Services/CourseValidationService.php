@@ -140,6 +140,41 @@ class CourseValidationService
         return [true, ''];
     }
 
+    public function getRoster(): array
+    {
+        $cacheKey = 'vateud:roster';
+
+        $cached = Cache::get($cacheKey);
+
+        if ($cached !== null) {
+            return $cached;
+        }
+
+        try {
+            $response = Http::withHeaders([
+                'X-API-KEY' => config('services.vateud.token'),
+                'Accept' => 'application/json',
+                'User-Agent' => 'vatger Training System',
+            ])
+                ->timeout(5)
+                ->get('https://core.vateud.net/api/facility/roster');
+
+            if ($response->successful()) {
+                $controllers = $response->json('data.controllers', []);
+
+                Cache::put($cacheKey, $controllers, now()->addHour());
+
+                return $controllers;
+            }
+        } catch (\Exception $e) {
+            Log::error('Failed to fetch roster from VatEUD', [
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        return Cache::get('vateud:roster:last_known_good', []);
+    }
+
     public function getUserEndorsements(int $vatsimId): Collection
     {
         return EndorsementActivity::where('vatsim_id', $vatsimId)

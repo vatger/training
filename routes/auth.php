@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\Auth\AdminAuthController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\VatsimOAuthController;
 use Illuminate\Support\Facades\Route;
@@ -17,16 +16,19 @@ Route::middleware('guest')->group(function () {
     Route::get('auth/vatsim/callback', [VatsimOAuthController::class, 'callback'])
         ->name('auth.vatsim.callback');
 
-    // Admin login routes (separate from regular user flow)
-    Route::get('admin/login', [AdminAuthController::class, 'create'])
-        ->name('admin.login');
+    // VATSIM Connect sandbox login — dev-only, replaces the old admin backdoor.
+    // Double-gated by the `sandbox.auth` middleware (see App\Support\SandboxAuth):
+    // never reachable in production, even if APP_ENV is misconfigured.
+    Route::middleware('sandbox.auth')->group(function () {
+        Route::get('auth/vatsim/sandbox', [VatsimOAuthController::class, 'sandboxRedirect'])
+            ->name('auth.vatsim.sandbox');
 
-    Route::post('admin/login', [AdminAuthController::class, 'store'])
-        ->name('admin.login.store');
+        Route::get('auth/vatsim/sandbox/callback', [VatsimOAuthController::class, 'sandboxCallback'])
+            ->name('auth.vatsim.sandbox.callback');
+    });
 });
 
 Route::middleware('auth')->group(function () {
-    // Logout route (works for both VATSIM and admin users)
-    Route::post('logout', [AdminAuthController::class, 'destroy'])
+    Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
 });

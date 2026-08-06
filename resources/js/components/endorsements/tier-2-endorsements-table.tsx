@@ -68,7 +68,7 @@ export default function Tier2EndorsementsTable({
 						<TableRow className="h-18" key={endorsement.position}>
 							<TableCell>
 								<div className="flex items-center gap-3">
-									<div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-100 text-purple-600">
+									<div className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary-100 text-secondary-600">
 										{getPositionIcon(endorsement.type)}
 									</div>
 									<div>

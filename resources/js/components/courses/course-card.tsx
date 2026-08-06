@@ -23,10 +23,10 @@ interface CourseCardProps {
 
 const getStatusColor = (course: Course) => {
 	if (course.is_on_waiting_list) {
-		return "text-blue-600 dark:text-blue-400"
+		return "text-primary-600 dark:text-primary-400"
 	}
 	if (course.can_join) {
-		return "text-green-600 dark:text-green-400"
+		return "text-success-600 dark:text-success-400"
 	}
 	return "text-muted-foreground"
 }

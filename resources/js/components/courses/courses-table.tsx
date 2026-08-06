@@ -33,17 +33,17 @@ type SortDirection = "asc" | "desc"
 const getTypeColor = (type: string) => {
 	switch (type) {
 		case "RTG":
-			return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
+			return "bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-300"
 		case "EDMT":
-			return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300"
+			return "bg-secondary-100 text-secondary-800 dark:bg-secondary-900 dark:text-secondary-300"
 		case "FAM":
-			return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
+			return "bg-warning-100 text-warning-800 dark:bg-warning-900 dark:text-warning-300"
 		case "GST":
-			return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+			return "bg-success-100 text-success-800 dark:bg-success-900 dark:text-success-300"
 		case "RST":
-			return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
+			return "bg-danger-100 text-danger-800 dark:bg-danger-900 dark:text-danger-300"
 		default:
-			return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300"
+			return "bg-secondary-100 text-secondary-800 dark:bg-secondary-900 dark:text-secondary-300"
 	}
 }
 
@@ -179,7 +179,8 @@ export default function SortableCoursesTable({
 							<TableRow
 								className={cn(
 									"transition-colors",
-									course.is_on_waiting_list && "bg-blue-50 dark:bg-blue-950/20",
+									course.is_on_waiting_list &&
+										"bg-primary-50 dark:bg-primary-950/20",
 								)}
 								key={course.id}
 							>
@@ -212,7 +213,7 @@ export default function SortableCoursesTable({
 								<TableCell>
 									<Badge
 										className={
-											"bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300"
+											"bg-secondary-100 text-secondary-800 dark:bg-secondary-900 dark:text-secondary-300"
 										}
 										variant="outline"
 									>
@@ -222,7 +223,7 @@ export default function SortableCoursesTable({
 
 								<TableCell>
 									{course.is_on_waiting_list ? (
-										<div className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
+										<div className="flex items-center gap-2 text-primary-600 dark:text-primary-400">
 											<Clock className="h-4 w-4" />
 											<div>
 												<div className="text-sm font-medium">
