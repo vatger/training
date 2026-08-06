@@ -214,7 +214,7 @@ export function ProgressModal({
 									<div className="relative" key={log.id}>
 										<div
 											className={cn(
-												"absolute -left-[23px] mt-1.5 h-4 w-4 rounded-full border-2 border-background",
+												"absolute -left-[23px] mt-1.5 h-4 w-4 rounded-full border-2",
 												log.result ? "bg-success-500" : "bg-danger-500",
 											)}
 										/>

@@ -308,7 +308,7 @@ export default function MentorWaitingLists({ courses, config }: PageProps) {
 								</CardHeader>
 
 								<CardContent className="-mt-4 space-y-3">
-									<div className="flex items-center justify-between rounded-lg border py-2 px-0">
+									<div className="flex items-center justify-between rounded-lg border p-2">
 										<div className="flex items-center gap-2">
 											<Users className="h-4 w-4 text-muted-foreground" />
 											<span className="text-sm text-muted-foreground">

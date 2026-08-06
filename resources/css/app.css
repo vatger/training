@@ -152,7 +152,7 @@
 	--accent: var(--color-secondary-800);
 	--accent-foreground: var(--foreground);
 	--destructive: var(--color-danger-700);
-	--border: var(--color-secondary-900);
+	--border: var(--color-secondary-800);
 	--input: var(--color-secondary-600);
 	--ring: var(--color-secondary-400);
 	--chart-1: oklch(0.488 0.243 264.376);
@@ -169,7 +169,7 @@
 	--sidebar-border: oklch(1 0 0 / 10%);
 	--sidebar-ring: oklch(0.556 0 0);
 
-	--vg-card-border: var(--color-secondary-800);
+	--vg-card-border: var(--border);
 	--vg-text-foreground: var(--color-secondary-200);
 	--vg-muted-foreground: var(--color-secondary-300);
 }
