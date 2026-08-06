@@ -234,14 +234,14 @@ export default function Courses({
 						<Button
 							onClick={() => setViewMode("grid")}
 							size="sm"
-							variant={viewMode === "grid" ? "default" : "ghost"}
+							variant={viewMode === "grid" ? "accent" : "ghost"}
 						>
 							<Grid3X3 className="h-4 w-4" />
 						</Button>
 						<Button
 							onClick={() => setViewMode("table")}
 							size="sm"
-							variant={viewMode === "table" ? "default" : "ghost"}
+							variant={viewMode === "table" ? "accent" : "ghost"}
 						>
 							<List className="h-4 w-4" />
 						</Button>

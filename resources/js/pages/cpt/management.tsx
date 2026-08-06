@@ -351,13 +351,13 @@ export default function CptManagement({
 											<TableCell>
 												<div className="flex flex-col">
 													<Link
-														className="font-medium hover:underline"
+														className="font-medium hover:underline hover:text-accent-500"
 														href={`/users/${cpt.trainee.vatsim_id}`}
 													>
 														{cpt.trainee.name}
 													</Link>
 													<a
-														className="text-sm text-muted-foreground hover:underline"
+														className="text-sm text-muted-foreground hover:underline hover:text-accent-500"
 														href={`https://stats.vatsim.net/stats/${cpt.trainee.vatsim_id}`}
 														rel="noopener noreferrer"
 														target="_blank"

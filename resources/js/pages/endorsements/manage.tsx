@@ -503,20 +503,20 @@ export default function ManageEndorsements({
 											<TableRow
 												className={cn(
 													state === "in-removal" &&
-														"bg-danger-50 dark:bg-danger-950/20",
+													"bg-danger-50 dark:bg-danger-950/20",
 												)}
 												key={endorsement.id}
 											>
 												<TableCell>
 													<div className="flex flex-col">
 														<Link
-															className="font-medium hover:underline"
+															className="font-medium hover:underline hover:text-accent-500"
 															href={`/users/${endorsement.vatsimId}`}
 														>
 															{endorsement.userName}
 														</Link>
 														<a
-															className="text-sm text-muted-foreground hover:underline"
+															className="text-sm text-muted-foreground hover:underline hover:text-accent-500"
 															href={`https://stats.vatsim.net/stats/${endorsement.vatsimId}?range=6months`}
 															rel="noopener noreferrer"
 															target="_blank"
@@ -575,13 +575,13 @@ export default function ManageEndorsements({
 													<TableCell>
 														{state !== "active"
 															? (() => {
-																	const date = new Date(
-																		endorsement.eligibleSince,
-																	)
-																	return date.getFullYear() === 1970
-																		? "Unknown"
-																		: date.toLocaleDateString("de")
-																})()
+																const date = new Date(
+																	endorsement.eligibleSince,
+																)
+																return date.getFullYear() === 1970
+																	? "Unknown"
+																	: date.toLocaleDateString("de")
+															})()
 															: null}
 													</TableCell>
 												)}

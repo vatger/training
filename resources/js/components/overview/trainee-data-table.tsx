@@ -403,13 +403,13 @@ export function TraineeDataTable({
 						</div>
 						<div className="flex flex-col">
 							<Link
-								className="font-medium hover:underline"
+								className="font-medium hover:underline hover:text-accent-500"
 								href={`/users/${trainee.vatsimId}`}
 							>
 								{trainee.name}
 							</Link>
 							<a
-								className="text-sm text-muted-foreground hover:underline"
+								className="text-sm text-muted-foreground hover:underline hover:text-accent-500"
 								href={`https://stats.vatsim.net/stats/${trainee.vatsimId}`}
 								rel="noopener noreferrer"
 								target="_blank"

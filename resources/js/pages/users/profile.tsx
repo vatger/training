@@ -471,7 +471,7 @@ export default function UserProfilePage({ userData }: { userData: UserData }) {
 												className={cn(
 													"text-xs text-muted-foreground",
 													user.solo_days_used < 0 &&
-														"font-semibold text-danger-600 dark:text-danger-400",
+													"font-semibold text-danger-600 dark:text-danger-400",
 												)}
 											>
 												{user.solo_days_used} / 90 used
@@ -705,7 +705,7 @@ export default function UserProfilePage({ userData }: { userData: UserData }) {
 														</Badge>
 													)}
 													<a
-														className="text-sm text-primary hover:underline"
+														className="text-sm text-primary hover:underline hover:text-accent-500"
 														href={course.link}
 														rel="noopener noreferrer"
 														target="_blank"

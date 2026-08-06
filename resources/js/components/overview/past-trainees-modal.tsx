@@ -189,13 +189,13 @@ export function PastTraineesModal({
 													</div>
 													<div className="flex flex-col">
 														<Link
-															className="font-medium hover:underline"
+															className="font-medium hover:underline hover:text-accent-500"
 															href={route("users.profile", trainee.vatsim_id)}
 														>
 															{trainee.name}
 														</Link>
 														<a
-															className="text-sm text-muted-foreground hover:underline"
+															className="text-sm text-muted-foreground hover:underline hover:text-accent-500"
 															href={`https://stats.vatsim.net/stats/${trainee.vatsim_id}`}
 															rel="noopener noreferrer"
 															target="_blank"

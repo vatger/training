@@ -366,13 +366,13 @@ export default function MentorWaitingLists({ courses, config }: PageProps) {
 																			<div className="flex items-start justify-between">
 																				<div className="flex flex-col">
 																					<Link
-																						className="font-medium hover:underline"
+																						className="font-medium hover:underline hover:text-accent-500"
 																						href={`/users/${entry.vatsim_id}`}
 																					>
 																						{entry.name}
 																					</Link>
 																					<a
-																						className="text-sm text-muted-foreground hover:underline"
+																						className="text-sm text-muted-foreground hover:underline hover:text-accent-500"
 																						href={`https://stats.vatsim.net/stats/${entry.vatsim_id}`}
 																						rel="noopener noreferrer"
 																						target="_blank"
@@ -553,13 +553,13 @@ export default function MentorWaitingLists({ courses, config }: PageProps) {
 																			<TableCell>
 																				<div className="flex flex-col">
 																					<Link
-																						className="font-medium hover:underline"
+																						className="font-medium hover:underline hover:text-accent-500"
 																						href={`/users/${entry.vatsim_id}`}
 																					>
 																						{entry.name}
 																					</Link>
 																					<a
-																						className="text-sm text-muted-foreground hover:underline"
+																						className="text-sm text-muted-foreground hover:underline hover:text-accent-500"
 																						href={`https://stats.vatsim.net/stats/${entry.vatsim_id}`}
 																						rel="noopener noreferrer"
 																						target="_blank"
