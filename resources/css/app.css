@@ -116,7 +116,7 @@
 	--destructive: var(--color-danger-700);
 	--border: var(--color-secondary-200);
 	--input: var(--color-secondary-200);
-	--ring: var(--color-primary-900);
+	--ring: var(--color-accent-500);
 	--chart-1: oklch(0.646 0.222 41.116);
 	--chart-2: oklch(0.6 0.118 184.704);
 	--chart-3: oklch(0.398 0.07 227.392);
@@ -129,7 +129,7 @@
 	--sidebar-accent: oklch(0.97 0 0);
 	--sidebar-accent-foreground: oklch(0.205 0 0);
 	--sidebar-border: oklch(0.922 0 0);
-	--sidebar-ring: oklch(0.708 0 0);
+	--sidebar-ring: var(--color-accent-500);
 
 	--vg-card-border: var(--border);
 	--vg-text-foreground: var(--color-primary-800);
@@ -154,7 +154,7 @@
 	--destructive: var(--color-danger-700);
 	--border: var(--color-secondary-800);
 	--input: var(--color-secondary-600);
-	--ring: var(--color-secondary-400);
+	--ring: var(--color-accent-500);
 	--chart-1: oklch(0.488 0.243 264.376);
 	--chart-2: oklch(0.696 0.17 162.48);
 	--chart-3: oklch(0.769 0.188 70.08);
@@ -167,7 +167,7 @@
 	--sidebar-accent: var(--color-secondary-800);
 	--sidebar-accent-foreground: oklch(0.985 0 0);
 	--sidebar-border: oklch(1 0 0 / 10%);
-	--sidebar-ring: oklch(0.556 0 0);
+	--sidebar-ring: var(--color-accent-500);
 
 	--vg-card-border: var(--border);
 	--vg-text-foreground: var(--color-secondary-200);

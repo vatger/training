@@ -51,6 +51,7 @@ export default function Login({ status, sandboxLoginEnabled }: LoginProps) {
 							onClick={handleVatsimLogin}
 							size="lg"
 							type="button"
+							variant="accent"
 						>
 							<LogIn />
 							Login with vatger Connect
