@@ -366,7 +366,7 @@ export function TraineeDataTable({
 
 		if (newIndex < 0 || newIndex >= newData.length) return
 
-		;[newData[index], newData[newIndex]] = [newData[newIndex], newData[index]]
+			;[newData[index], newData[newIndex]] = [newData[newIndex], newData[index]]
 
 		setData(newData)
 
@@ -815,22 +815,22 @@ export function TraineeDataTable({
 	})
 
 	return (
-		<div className="overflow-x-auto">
+		<div className="overflow-x-auto [&>div]:rounded-none [&>div]:border-0">
 			<Table>
-				<TableHeader>
+				<TableHeader className="bg-transparent">
 					{table.getHeaderGroups().map((headerGroup) => (
 						<TableRow key={headerGroup.id}>
 							{headerGroup.headers.map((header) => (
 								<TableHead
-									className={header.id === "trainee" ? "pl-6" : ""}
+									className={`${header.id === "trainee" ? "pl-6" : ""} `}
 									key={header.id}
 								>
 									{header.isPlaceholder
 										? null
 										: flexRender(
-												header.column.columnDef.header,
-												header.getContext(),
-											)}
+											header.column.columnDef.header,
+											header.getContext(),
+										)}
 								</TableHead>
 							))}
 						</TableRow>

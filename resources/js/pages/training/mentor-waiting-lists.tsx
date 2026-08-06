@@ -308,7 +308,7 @@ export default function MentorWaitingLists({ courses, config }: PageProps) {
 								</CardHeader>
 
 								<CardContent className="-mt-4 space-y-3">
-									<div className="flex items-center justify-between rounded-lg border p-3">
+									<div className="flex items-center justify-between rounded-lg border py-2 px-0">
 										<div className="flex items-center gap-2">
 											<Users className="h-4 w-4 text-muted-foreground" />
 											<span className="text-sm text-muted-foreground">
@@ -357,7 +357,7 @@ export default function MentorWaitingLists({ courses, config }: PageProps) {
 
 												<div className="overflow-y-auto px-4 pb-4">
 													{selectedCourse &&
-													selectedCourse.waiting_list.length > 0 ? (
+														selectedCourse.waiting_list.length > 0 ? (
 														<div className="space-y-3">
 															{selectedCourse.waiting_list.map(
 																(entry, index) => (
@@ -387,16 +387,16 @@ export default function MentorWaitingLists({ courses, config }: PageProps) {
 																					<Badge
 																						className={cn(
 																							entry.activity >=
-																								config.min_activity &&
-																								"bg-success-100 text-success-800 dark:bg-success-900 dark:text-success-300",
+																							config.min_activity &&
+																							"bg-success-100 text-success-800 dark:bg-success-900 dark:text-success-300",
 																							entry.activity >=
-																								config.display_activity &&
-																								entry.activity <
-																									config.min_activity &&
-																								"bg-warning-100 text-warning-800 dark:bg-warning-900 dark:text-warning-300",
+																							config.display_activity &&
 																							entry.activity <
-																								config.display_activity &&
-																								"bg-danger-100 text-danger-800 dark:bg-danger-900 dark:text-danger-300",
+																							config.min_activity &&
+																							"bg-warning-100 text-warning-800 dark:bg-warning-900 dark:text-warning-300",
+																							entry.activity <
+																							config.display_activity &&
+																							"bg-danger-100 text-danger-800 dark:bg-danger-900 dark:text-danger-300",
 																						)}
 																					>
 																						{entry.activity}h
@@ -427,9 +427,9 @@ export default function MentorWaitingLists({ courses, config }: PageProps) {
 																										(selectedCourse.type ===
 																											"RTG" &&
 																											selectedCourse.position !==
-																												"CTR" &&
+																											"CTR" &&
 																											entry.activity <
-																												config.display_activity)
+																											config.display_activity)
 																									}
 																									onClick={() =>
 																										handleStartTrainingClick(
@@ -445,7 +445,7 @@ export default function MentorWaitingLists({ courses, config }: PageProps) {
 																						</TooltipTrigger>
 																						{selectedCourse.type === "RTG" &&
 																							entry.activity <
-																								config.display_activity && (
+																							config.display_activity && (
 																								<TooltipContent side="top">
 																									<p>
 																										Trainee needs at least{" "}
@@ -525,7 +525,7 @@ export default function MentorWaitingLists({ courses, config }: PageProps) {
 												</DialogHeader>
 
 												{selectedCourse &&
-												selectedCourse.waiting_list.length > 0 ? (
+													selectedCourse.waiting_list.length > 0 ? (
 													<div className="rounded-md border">
 														<Table>
 															<TableHeader>
@@ -575,16 +575,16 @@ export default function MentorWaitingLists({ courses, config }: PageProps) {
 																							className={cn(
 																								"font-medium",
 																								entry.activity >=
-																									config.min_activity &&
-																									"text-success-600",
+																								config.min_activity &&
+																								"text-success-600",
 																								entry.activity >=
-																									config.display_activity &&
-																									entry.activity <
-																										config.min_activity &&
-																									"text-warning-600",
+																								config.display_activity &&
 																								entry.activity <
-																									config.display_activity &&
-																									"text-danger-600",
+																								config.min_activity &&
+																								"text-warning-600",
+																								entry.activity <
+																								config.display_activity &&
+																								"text-danger-600",
 																							)}
 																						>
 																							{entry.activity}h
@@ -622,9 +622,9 @@ export default function MentorWaitingLists({ courses, config }: PageProps) {
 																											(selectedCourse.type ===
 																												"RTG" &&
 																												selectedCourse.position !==
-																													"CTR" &&
+																												"CTR" &&
 																												entry.activity <
-																													config.display_activity)
+																												config.display_activity)
 																										}
 																										onClick={() =>
 																											handleStartTrainingClick(
@@ -640,9 +640,9 @@ export default function MentorWaitingLists({ courses, config }: PageProps) {
 																							</TooltipTrigger>
 																							{selectedCourse.type === "RTG" &&
 																								selectedCourse.position !==
-																									"CTR" &&
+																								"CTR" &&
 																								entry.activity <
-																									config.display_activity && (
+																								config.display_activity && (
 																									<TooltipContent side="top">
 																										<p>
 																											Trainee needs at least{" "}

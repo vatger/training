@@ -305,9 +305,9 @@ export default function CptManagement({
 							</div>
 						</CardContent>
 					) : (
-						<CardContent className="overflow-x-auto px-0">
+						<CardContent className="overflow-x-auto px-0 [&>div]:rounded-none [&>div]:border-0">
 							<Table>
-								<TableHeader>
+								<TableHeader className="bg-transparent">
 									<TableRow>
 										<TableHead className="pl-6">Station & Status</TableHead>
 										<TableHead>Trainee</TableHead>
