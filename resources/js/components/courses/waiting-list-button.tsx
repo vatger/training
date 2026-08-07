@@ -249,7 +249,7 @@ export default function WaitingListButton({
 			disabled={isButtonDisabled}
 			onClick={handleButtonClick}
 			size={size}
-			variant={course.is_on_waiting_list ? "destructive" : "accent"}
+			variant={course.is_on_waiting_list ? "destructive" : "default"}
 		>
 			{getButtonContent()}
 		</Button>
