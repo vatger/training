@@ -366,7 +366,7 @@ export function TraineeDataTable({
 
 		if (newIndex < 0 || newIndex >= newData.length) return
 
-			;[newData[index], newData[newIndex]] = [newData[newIndex], newData[index]]
+		;[newData[index], newData[newIndex]] = [newData[newIndex], newData[index]]
 
 		setData(newData)
 
@@ -828,9 +828,9 @@ export function TraineeDataTable({
 									{header.isPlaceholder
 										? null
 										: flexRender(
-											header.column.columnDef.header,
-											header.getContext(),
-										)}
+												header.column.columnDef.header,
+												header.getContext(),
+											)}
 								</TableHead>
 							))}
 						</TableRow>

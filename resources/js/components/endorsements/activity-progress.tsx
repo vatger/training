@@ -28,11 +28,9 @@ export default function ActivityProgress({
 	let progressIndicatorClass =
 		"[&>[data-slot=progress-indicator]]:bg-success-500"
 	if (status === "warning")
-		progressIndicatorClass =
-			"[&>[data-slot=progress-indicator]]:bg-warning-500"
+		progressIndicatorClass = "[&>[data-slot=progress-indicator]]:bg-warning-500"
 	if (status === "removal")
-		progressIndicatorClass =
-			"[&>[data-slot=progress-indicator]]:bg-danger-500"
+		progressIndicatorClass = "[&>[data-slot=progress-indicator]]:bg-danger-500"
 
 	return (
 		<TooltipProvider>

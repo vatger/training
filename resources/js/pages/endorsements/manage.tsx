@@ -503,7 +503,7 @@ export default function ManageEndorsements({
 											<TableRow
 												className={cn(
 													state === "in-removal" &&
-													"bg-danger-50 dark:bg-danger-950/20",
+														"bg-danger-50 dark:bg-danger-950/20",
 												)}
 												key={endorsement.id}
 											>
@@ -575,13 +575,13 @@ export default function ManageEndorsements({
 													<TableCell>
 														{state !== "active"
 															? (() => {
-																const date = new Date(
-																	endorsement.eligibleSince,
-																)
-																return date.getFullYear() === 1970
-																	? "Unknown"
-																	: date.toLocaleDateString("de")
-															})()
+																	const date = new Date(
+																		endorsement.eligibleSince,
+																	)
+																	return date.getFullYear() === 1970
+																		? "Unknown"
+																		: date.toLocaleDateString("de")
+																})()
 															: null}
 													</TableCell>
 												)}
