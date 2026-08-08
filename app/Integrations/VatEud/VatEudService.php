@@ -16,9 +16,13 @@ class VatEudService
 
     private const CACHE_SOLO = 'vateud:solo_endorsements';
 
+    private const CACHE_ROSTER = 'vateud:roster';
+
     private const TTL_STANDARD = 10;
 
     private const TTL_SOLO = 5;
+
+    private const TTL_ROSTER = 5;
 
     public function __construct(
         private readonly VatEudClientInterface $client,
@@ -127,6 +131,7 @@ class VatEudService
         if ($result) {
             Cache::forget(self::CACHE_TIER1);
             Cache::forget(self::CACHE_TIER2);
+            Cache::forget(self::CACHE_ROSTER);
         }
 
         return $result;
@@ -144,7 +149,19 @@ class VatEudService
 
     public function getRoster(): array
     {
-        return $this->client->getRoster();
+        $roster = Cache::get(self::CACHE_ROSTER);
+
+        if ($roster !== null) {
+            return $roster;
+        }
+
+        $roster = $this->client->getRoster();
+
+        if (! empty($roster)) {
+            Cache::put(self::CACHE_ROSTER, $roster, now()->addMinutes(self::TTL_ROSTER));
+        }
+
+        return $roster;
     }
 
     public function uploadCptLog(
