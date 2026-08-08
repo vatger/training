@@ -1,5 +1,4 @@
 import { router } from "@inertiajs/react"
-import axios from "axios"
 import { format } from "date-fns"
 import {
 	AlertCircle,
@@ -30,8 +29,17 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover"
+import { ApiError, api } from "@/lib/api"
 import { cn } from "@/lib/utils"
 import type { Trainee } from "@/types/mentor"
+
+function extractErrorMessage(err: unknown, fallback: string): string {
+	if (err instanceof ApiError) {
+		const data = err.data as { error?: string; message?: string } | undefined
+		return data?.error ?? data?.message ?? fallback
+	}
+	return fallback
+}
 
 interface SoloModalProps {
 	trainee: Trainee | null
@@ -100,7 +108,7 @@ export function SoloModal({
 		setRequirementsError(null)
 
 		try {
-			const response = await axios.post(
+			const data = await api.post<RequirementsStatus>(
 				route("overview.get-solo-requirements"),
 				{
 					trainee_id: trainee.id,
@@ -108,19 +116,14 @@ export function SoloModal({
 				},
 			)
 
-			setRequirements(response.data)
+			setRequirements(data)
 			setRequirementsError(null)
 		} catch (err: unknown) {
 			console.error("Error fetching requirements:", err)
-			const errorMessage = axios.isAxiosError<{
-				error?: string
-				message?: string
-			}>(err)
-				? (err.response?.data?.error ??
-					err.response?.data?.message ??
-					err.message ??
-					"Failed to load requirements")
-				: "Failed to load requirements"
+			const errorMessage = extractErrorMessage(
+				err,
+				"Failed to load requirements",
+			)
 			setRequirementsError(errorMessage)
 
 			setRequirements({
@@ -140,24 +143,26 @@ export function SoloModal({
 		setError(null)
 
 		try {
-			const response = await axios.post(route("overview.assign-core-test"), {
-				trainee_id: trainee.id,
-				course_id: courseId,
-			})
+			const data = await api.post<{ success: boolean; message?: string }>(
+				route("overview.assign-core-test"),
+				{
+					trainee_id: trainee.id,
+					course_id: courseId,
+				},
+			)
 
-			if (response.data.success) {
+			if (data.success) {
 				await fetchRequirements()
 			} else {
-				setError(response.data.message || "Failed to assign core theory test")
+				setError(data.message || "Failed to assign core theory test")
 			}
 		} catch (err: unknown) {
 			console.error("Error assigning core test:", err)
 			setError(
-				axios.isAxiosError<{ message?: string; error?: string }>(err)
-					? (err.response?.data?.message ??
-							err.response?.data?.error ??
-							"An error occurred while assigning the core theory test")
-					: "An error occurred while assigning the core theory test",
+				extractErrorMessage(
+					err,
+					"An error occurred while assigning the core theory test",
+				),
 			)
 		} finally {
 			setIsAssigningTest(false)

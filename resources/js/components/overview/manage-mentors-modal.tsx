@@ -1,5 +1,4 @@
 import { router } from "@inertiajs/react"
-import axios from "axios"
 import { Loader2, UserMinus, UserPlus, X } from "lucide-react"
 import { useEffect, useState } from "react"
 import { Badge } from "@/components/ui/badge"
@@ -22,6 +21,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table"
+import { api } from "@/lib/api"
 import type { Mentor, MentorCourse } from "@/types/mentor"
 
 interface User {
@@ -64,11 +64,10 @@ export function ManageMentorsModal({
 
 		setIsLoading(true)
 		try {
-			const response = await fetch(`/overview/course/${course.id}/mentors`)
-			if (response.ok) {
-				const data = await response.json()
-				setMentors(data)
-			}
+			const data = await api.get<Mentor[]>(
+				`/overview/course/${course.id}/mentors`,
+			)
+			setMentors(data)
 		} catch (error) {
 			console.error("Error fetching mentors:", error)
 		} finally {
@@ -81,13 +80,14 @@ export function ManageMentorsModal({
 
 		setIsSearching(true)
 		try {
-			const response = await axios.post(route("users.search"), {
-				query: searchQuery,
-			})
+			const data = await api.post<{ success: boolean; users: User[] }>(
+				route("users.search"),
+				{ query: searchQuery },
+			)
 
-			if (response.data.success) {
+			if (data.success) {
 				// Filter out users who are already mentors
-				const filtered = response.data.users.filter(
+				const filtered = data.users.filter(
 					(user: User) => !mentors.some((m) => m.id === user.id),
 				)
 				setSearchResults(filtered)

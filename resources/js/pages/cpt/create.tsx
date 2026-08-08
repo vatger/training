@@ -1,5 +1,4 @@
 import { Head, router, useForm } from "@inertiajs/react"
-import axios from "axios"
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
@@ -13,6 +12,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select"
 import AppLayout from "@/layouts/app-layout"
+import { api } from "@/lib/api"
 import type { BreadcrumbItem } from "@/types"
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -82,10 +82,10 @@ export default function CptCreate({ courses }: PageProps) {
 
 		setLoadingCourseData(true)
 		try {
-			const response = await axios.get(route("cpt.course-data"), {
+			const data = await api.get<CourseData>(route("cpt.course-data"), {
 				params: { course_id: courseId, date },
 			})
-			setCourseData(response.data)
+			setCourseData(data)
 		} catch (error) {
 			console.error("Error fetching course data:", error)
 		} finally {
