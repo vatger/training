@@ -1,5 +1,5 @@
-import axios from "axios"
 import { useEffect, useRef, useState } from "react"
+import { api } from "@/lib/api"
 
 export type MoodleStatus =
 	| "completed"
@@ -12,26 +12,18 @@ type MoodleStatuses = Record<number, MoodleStatus>
 
 const POLL_INTERVAL_MS = 4000
 
-function csrfToken(): string | null {
-	return (
-		document.head
-			.querySelector('meta[name="csrf-token"]')
-			?.getAttribute("content") ?? null
-	)
-}
-
 async function fetchStatusBatch(
 	courseId: number,
 	traineeIds: number[],
 	signal: AbortSignal,
 ): Promise<MoodleStatuses> {
-	const response = await axios.post(
+	const data = await api.post<{ success: boolean; statuses?: MoodleStatuses }>(
 		route("overview.get-moodle-status-batch"),
 		{ course_id: courseId, trainee_ids: traineeIds },
-		{ headers: { "X-CSRF-TOKEN": csrfToken() }, signal },
+		{ signal },
 	)
 
-	return response.data.success ? (response.data.statuses ?? {}) : {}
+	return data.success ? (data.statuses ?? {}) : {}
 }
 
 export function useMoodleStatus(

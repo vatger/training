@@ -1,5 +1,4 @@
 import { router } from "@inertiajs/react"
-import axios from "axios"
 import { AlertCircle, CheckCircle, Loader2, Plus } from "lucide-react"
 import { useState } from "react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
@@ -14,6 +13,7 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { api } from "@/lib/api"
 
 interface User {
 	id: number
@@ -59,13 +59,14 @@ export function AddTrainee({
 		setFoundUser(null)
 
 		try {
-			const response = await axios.post(route("users.search"), {
-				query: vatsimId,
-			})
+			const data = await api.post<{ success: boolean; users: User[] }>(
+				route("users.search"),
+				{ query: vatsimId },
+			)
 
-			if (response.data.success && response.data.users.length > 0) {
+			if (data.success && data.users.length > 0) {
 				// Find exact VATSIM ID match
-				const user = response.data.users.find(
+				const user = data.users.find(
 					(u: User) => u.vatsim_id.toString() === vatsimId,
 				)
 

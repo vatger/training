@@ -1,6 +1,6 @@
 import "../css/app.css"
 
-import { createInertiaApp } from "@inertiajs/react"
+import { createInertiaApp, type ResolvedComponent } from "@inertiajs/react"
 import { resolvePageComponent } from "laravel-vite-plugin/inertia-helpers"
 import { createRoot } from "react-dom/client"
 // biome-ignore lint/correctness/noUnusedImports: assigned to window.route at runtime
@@ -16,13 +16,18 @@ declare global {
 
 window.route = route
 
+const pages = import.meta.glob<{ default: ResolvedComponent }>(
+	"./pages/**/*.tsx",
+)
+
+const resolve = (name: string) =>
+	resolvePageComponent(`./pages/${name}.tsx`, pages).then(
+		(module) => module.default,
+	)
+
 createInertiaApp({
 	title: (title) => `${title} - ${appName}`,
-	resolve: (name) =>
-		resolvePageComponent(
-			`./pages/${name}.tsx`,
-			import.meta.glob("./pages/**/*.tsx"),
-		),
+	resolve,
 	setup({ el, App, props }) {
 		const root = createRoot(el)
 
