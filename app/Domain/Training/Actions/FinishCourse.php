@@ -9,7 +9,6 @@ use App\Integrations\VatEud\VatEudService;
 use App\Models\Course;
 use App\Models\Familiarisation;
 use App\Models\FamiliarisationSector;
-use App\Models\Role;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -34,7 +33,11 @@ class FinishCourse
             }
 
             if ($course->type === 'RTG' && $course->position === 'CTR') {
-                $this->addFirFamiliarisations($trainee, $course, $mentor);
+                if ($course->familiarisation_sector_id) {
+                    $this->addSingleFamiliarisation($trainee, $course, $mentor);
+                } else {
+                    Log::warning('No familiarisation sector set for CTR course, cannot grant familiarisation', ['course_id' => $course->id]);
+                }
             } elseif ($course->type === 'FAM' && $course->familiarisation_sector_id) {
                 $this->addSingleFamiliarisation($trainee, $course, $mentor);
             }
@@ -77,38 +80,6 @@ class FinishCourse
                 'endorsement_groups' => $endorsementGroups,
                 'error' => $e->getMessage(),
             ]);
-        }
-    }
-
-    private function addFirFamiliarisations(User $trainee, Course $course, User $mentor): void
-    {
-        if (! $course->mentor_group_id) {
-            Log::warning('No mentor group for CTR course, cannot determine FIR', ['course_id' => $course->id]);
-
-            return;
-        }
-
-        $mentorGroup = Role::find($course->mentor_group_id);
-        if (! $mentorGroup) {
-            Log::warning('Mentor group not found', ['mentor_group_id' => $course->mentor_group_id]);
-
-            return;
-        }
-
-        $fir = substr($mentorGroup->name, 0, 4);
-        $sectors = FamiliarisationSector::where('fir', $fir)->get();
-
-        foreach ($sectors as $sector) {
-            if (Familiarisation::where('user_id', $trainee->id)->where('familiarisation_sector_id', $sector->id)->exists()) {
-                continue;
-            }
-
-            Familiarisation::create([
-                'user_id' => $trainee->id,
-                'familiarisation_sector_id' => $sector->id,
-            ]);
-
-            event(new FamiliarisationAdded($trainee, $sector->name, $sector->id, $fir, $mentor, $course));
         }
     }
 

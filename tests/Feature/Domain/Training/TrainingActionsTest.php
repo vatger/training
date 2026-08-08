@@ -4,6 +4,7 @@ use App\Domain\Training\Actions\AddMentorToCourse;
 use App\Domain\Training\Actions\AddTraineeToCourse;
 use App\Domain\Training\Actions\AssignTrainee;
 use App\Domain\Training\Actions\ClaimTrainee;
+use App\Domain\Training\Actions\FinishCourse;
 use App\Domain\Training\Actions\ReactivateTrainee;
 use App\Domain\Training\Actions\RemoveMentorFromCourse;
 use App\Domain\Training\Actions\RemoveTrainee;
@@ -25,6 +26,8 @@ use App\Integrations\Moodle\MoodleClientInterface;
 use App\Integrations\VatEud\FakeVatEudClient;
 use App\Integrations\VatEud\VatEudClientInterface;
 use App\Models\Course;
+use App\Models\Familiarisation;
+use App\Models\FamiliarisationSector;
 use App\Models\User;
 use App\Models\WaitingListEntry;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -690,4 +693,45 @@ test('StartTraining treats RTG trainee with activity exactly at threshold as suf
     [$success] = app(StartTraining::class)->execute($entry, $mentor);
 
     expect($success)->toBeTrue();
+});
+
+// ─── FinishCourse: CTR familiarisation ───────────────────────────────────────
+
+test('FinishCourse grants only the course sector familiarisation for RTG CTR course', function () {
+    Event::fake();
+    $sector = FamiliarisationSector::create(['name' => 'CH', 'fir' => 'EDGG']);
+    FamiliarisationSector::create(['name' => 'NH', 'fir' => 'EDGG']);
+    FamiliarisationSector::create(['name' => 'SH', 'fir' => 'EDGG']);
+
+    $course = Course::factory()->create([
+        'type' => 'RTG',
+        'position' => 'CTR',
+        'familiarisation_sector_id' => $sector->id,
+    ]);
+    $trainee = User::factory()->create();
+    $mentor = User::factory()->create();
+    attachTraineeToCourse($course, $trainee);
+
+    app(FinishCourse::class)->execute($course, $trainee, $mentor);
+
+    expect(Familiarisation::where('user_id', $trainee->id)->count())->toBe(1);
+    expect(Familiarisation::where('user_id', $trainee->id)
+        ->where('familiarisation_sector_id', $sector->id)
+        ->exists())->toBeTrue();
+});
+
+test('FinishCourse grants no familiarisation for RTG CTR course without a sector', function () {
+    Event::fake();
+    $course = Course::factory()->create([
+        'type' => 'RTG',
+        'position' => 'CTR',
+        'familiarisation_sector_id' => null,
+    ]);
+    $trainee = User::factory()->create();
+    $mentor = User::factory()->create();
+    attachTraineeToCourse($course, $trainee);
+
+    app(FinishCourse::class)->execute($course, $trainee, $mentor);
+
+    expect(Familiarisation::where('user_id', $trainee->id)->count())->toBe(0);
 });
