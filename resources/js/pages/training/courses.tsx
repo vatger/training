@@ -54,7 +54,7 @@ export interface Course {
 	min_rating: number
 	max_rating: number
 	is_on_waiting_list: boolean
-	waiting_list_position?: number
+	waiting_list_joined_at?: string
 	waiting_list_activity?: number
 	can_join: boolean
 	join_error?: string

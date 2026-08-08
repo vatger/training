@@ -28,7 +28,7 @@ type SortField =
 	| "position"
 	| "rating"
 	| "mentor_group"
-	| "waiting_list_position"
+	| "waiting_list_joined_at"
 type SortDirection = "asc" | "desc"
 
 const getTypeColor = (type: string) => {
@@ -111,9 +111,13 @@ export default function SortableCoursesTable({
 					aValue = a.mentor_group?.toLowerCase() || ""
 					bValue = b.mentor_group?.toLowerCase() || ""
 					break
-				case "waiting_list_position":
-					aValue = a.is_on_waiting_list ? a.waiting_list_position || 999 : 999
-					bValue = b.is_on_waiting_list ? b.waiting_list_position || 999 : 999
+				case "waiting_list_joined_at":
+					aValue = a.is_on_waiting_list
+						? a.waiting_list_joined_at || ""
+						: "9999-99-99"
+					bValue = b.is_on_waiting_list
+						? b.waiting_list_joined_at || ""
+						: "9999-99-99"
 					break
 				default:
 					aValue = a.name.toLowerCase()
@@ -169,7 +173,7 @@ export default function SortableCoursesTable({
 						<SortableHeader field="airport_name">Airport</SortableHeader>
 						<SortableHeader field="type">Type</SortableHeader>
 						<SortableHeader field="position">Position</SortableHeader>
-						<SortableHeader field="waiting_list_position">
+						<SortableHeader field="waiting_list_joined_at">
 							Queue Status
 						</SortableHeader>
 						<TableHead>Actions</TableHead>
@@ -229,7 +233,9 @@ export default function SortableCoursesTable({
 											<Clock className="h-4 w-4" />
 											<div>
 												<div className="text-sm font-medium">
-													Position #{course.waiting_list_position}
+													{course.waiting_list_joined_at
+														? `Since ${new Date(course.waiting_list_joined_at).toLocaleDateString("de")}`
+														: "On waiting list"}
 												</div>
 												{course.type === "RTG" &&
 													course.position !== "CTR" &&

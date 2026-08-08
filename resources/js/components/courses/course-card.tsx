@@ -89,7 +89,9 @@ export default function CourseCard({
 							<>
 								<Clock className="h-4 w-4" />
 								<span>
-									Queue Position #{course.waiting_list_position}
+									{course.waiting_list_joined_at
+										? `On waiting list since ${new Date(course.waiting_list_joined_at).toLocaleDateString("de")}`
+										: "On waiting list"}
 									{course.type === "RTG" &&
 										course.position !== "CTR" &&
 										course.waiting_list_activity !== undefined &&

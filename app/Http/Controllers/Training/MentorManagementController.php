@@ -54,13 +54,6 @@ class MentorManagementController extends Controller
                 ->first();
 
             $isOnWaitingList = (bool) $waitingEntry;
-            $waitingPosition = null;
-
-            if ($isOnWaitingList) {
-                $waitingPosition = WaitingListEntry::where('course_id', $course->id)
-                    ->where('date_added', '<=', $waitingEntry->date_added)
-                    ->count();
-            }
 
             if (! $isAdmin && ! $isOnWaitingList && ! $this->isCourseVisibleToUser($course, $isGerSubdivision, $isOnRoster, $isVisitor, $user->rating, $userEndorsements, $userFamSectorIds, $userHasActiveRtgEnrollment)) {
                 return null;
@@ -83,7 +76,7 @@ class MentorManagementController extends Controller
                 'min_rating' => $course->min_rating,
                 'max_rating' => $course->max_rating,
                 'is_on_waiting_list' => $isOnWaitingList,
-                'waiting_list_position' => $waitingPosition,
+                'waiting_list_joined_at' => $waitingEntry?->date_added?->format('Y-m-d H:i:s'),
                 'waiting_list_activity' => $waitingEntry?->activity,
                 'can_join' => $canJoin,
                 'join_error' => $joinError ?: null,

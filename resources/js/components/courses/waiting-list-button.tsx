@@ -56,7 +56,7 @@ export default function WaitingListButton({
 
 		const optimisticUpdates: Partial<Course> = {
 			is_on_waiting_list: true,
-			waiting_list_position: undefined,
+			waiting_list_joined_at: undefined,
 			waiting_list_activity: undefined,
 		}
 
@@ -78,7 +78,7 @@ export default function WaitingListButton({
 						onError: (errors) => {
 							onCourseUpdate?.(course.id, {
 								is_on_waiting_list: false,
-								waiting_list_position: undefined,
+								waiting_list_joined_at: undefined,
 								waiting_list_activity: undefined,
 							})
 
@@ -101,7 +101,7 @@ export default function WaitingListButton({
 
 			onCourseUpdate?.(course.id, {
 				is_on_waiting_list: false,
-				waiting_list_position: undefined,
+				waiting_list_joined_at: undefined,
 				waiting_list_activity: undefined,
 			})
 		} finally {
@@ -117,12 +117,12 @@ export default function WaitingListButton({
 		setIsLoading(true)
 		setLoadingAction("leaving")
 
-		const originalPosition = course.waiting_list_position
+		const originalJoinedAt = course.waiting_list_joined_at
 		const originalActivity = course.waiting_list_activity
 
 		const optimisticUpdates: Partial<Course> = {
 			is_on_waiting_list: false,
-			waiting_list_position: undefined,
+			waiting_list_joined_at: undefined,
 			waiting_list_activity: undefined,
 		}
 
@@ -143,7 +143,7 @@ export default function WaitingListButton({
 						onError: (errors) => {
 							onCourseUpdate?.(course.id, {
 								is_on_waiting_list: true,
-								waiting_list_position: originalPosition,
+								waiting_list_joined_at: originalJoinedAt,
 								waiting_list_activity: originalActivity,
 							})
 
@@ -305,10 +305,9 @@ export default function WaitingListButton({
 							<DialogDescription>
 								Are you sure you want to leave the waiting list for{" "}
 								<strong>{course.trainee_display_name || course.name}</strong>?
-								{course.waiting_list_position && (
+								{course.waiting_list_joined_at && (
 									<span className="mt-2 block text-sm">
-										You are currently at position #
-										{course.waiting_list_position} and will lose your place.
+										You will lose your place on the waiting list.
 									</span>
 								)}
 							</DialogDescription>
@@ -344,10 +343,9 @@ export default function WaitingListButton({
 						<DialogDescription>
 							Are you sure you want to leave the waiting list for{" "}
 							<strong>{course.trainee_display_name || course.name}</strong>?
-							{course.waiting_list_position && (
+							{course.waiting_list_joined_at && (
 								<span className="mt-2 block text-sm">
-									You are currently at position #{course.waiting_list_position}{" "}
-									and will lose your place.
+									You will lose your place on the waiting list.
 								</span>
 							)}
 						</DialogDescription>
