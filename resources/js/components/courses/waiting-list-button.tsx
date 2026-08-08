@@ -26,6 +26,7 @@ interface WaitingListButtonProps {
 	className?: string
 	size?: "sm" | "default" | "lg"
 	userHasActiveRtgCourse?: boolean
+	userHasActiveFamEdmtCourse?: boolean
 	rtgRatingPending?: boolean
 }
 
@@ -36,6 +37,7 @@ export default function WaitingListButton({
 	className = "",
 	size = "sm",
 	userHasActiveRtgCourse = false,
+	userHasActiveFamEdmtCourse = false,
 	rtgRatingPending = false,
 }: WaitingListButtonProps) {
 	const [isLoading, setIsLoading] = useState(false)
@@ -43,6 +45,8 @@ export default function WaitingListButton({
 		"joining" | "leaving" | null
 	>(null)
 	const [showLeaveConfirmation, setShowLeaveConfirmation] = useState(false)
+
+	const isFamEdmtType = course.type === "EDMT" || course.type === "FAM"
 
 	const handleJoinWaitingList = async () => {
 		if (isLoading || !course.can_join) return
@@ -175,6 +179,17 @@ export default function WaitingListButton({
 			return
 		}
 
+		if (
+			isFamEdmtType &&
+			userHasActiveFamEdmtCourse &&
+			!course.is_on_waiting_list
+		) {
+			toast.error(
+				"You can only join one endorsement or familiarisation course at a time",
+			)
+			return
+		}
+
 		if (course.is_on_waiting_list) {
 			setShowLeaveConfirmation(true)
 		} else if (course.can_join) {
@@ -225,12 +240,15 @@ export default function WaitingListButton({
 		course.type === "RTG" &&
 		userHasActiveRtgCourse &&
 		!course.is_on_waiting_list
+	const isDisabledDueToFamEdmtRestriction =
+		isFamEdmtType && userHasActiveFamEdmtCourse && !course.is_on_waiting_list
 	const isDisabledDueToRtgRatingPending =
 		course.type === "RTG" && rtgRatingPending && !course.is_on_waiting_list
 	const isButtonDisabled =
 		isLoading ||
 		(!course.can_join && !course.is_on_waiting_list) ||
 		isDisabledDueToRtgRestriction ||
+		isDisabledDueToFamEdmtRestriction ||
 		isDisabledDueToRtgRatingPending
 
 	const getTooltipError = () => {
@@ -239,6 +257,9 @@ export default function WaitingListButton({
 		}
 		if (isDisabledDueToRtgRestriction) {
 			return "You can only join one rating course at a time"
+		}
+		if (isDisabledDueToFamEdmtRestriction) {
+			return "You can only join one endorsement or familiarisation course at a time"
 		}
 		return course.join_error || "Cannot join this course at the moment"
 	}

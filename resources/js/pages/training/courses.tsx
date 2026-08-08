@@ -66,6 +66,7 @@ interface PageProps {
 	isVatsimUser: boolean
 	moodleSignedUp: boolean
 	userHasActiveRtgCourse: boolean
+	userHasActiveFamEdmtCourse: boolean
 	rtgRatingPending: boolean
 	error?: string
 }
@@ -75,6 +76,7 @@ export default function Courses({
 	isVatsimUser,
 	moodleSignedUp = false,
 	userHasActiveRtgCourse = false,
+	userHasActiveFamEdmtCourse = false,
 	rtgRatingPending = false,
 	error,
 }: PageProps) {
@@ -96,6 +98,15 @@ export default function Courses({
 		)
 		return userHasActiveRtgCourse || hasRtgFromWaitingList
 	}, [userHasActiveRtgCourse, courses])
+
+	const currentUserHasActiveFamEdmtCourse = useMemo(() => {
+		const hasFamEdmtFromWaitingList = courses.some(
+			(course) =>
+				(course.type === "EDMT" || course.type === "FAM") &&
+				course.is_on_waiting_list,
+		)
+		return userHasActiveFamEdmtCourse || hasFamEdmtFromWaitingList
+	}, [userHasActiveFamEdmtCourse, courses])
 
 	const handleCourseUpdate = useCallback(
 		(courseId: number, updates: Partial<Course>) => {
@@ -134,7 +145,14 @@ export default function Courses({
 				const isNotBlockedByRtgRestriction = !(
 					course.type === "RTG" && currentUserHasActiveRtgCourse
 				)
-				matchesTab = isActuallyAvailable && isNotBlockedByRtgRestriction
+				const isNotBlockedByFamEdmtRestriction = !(
+					(course.type === "EDMT" || course.type === "FAM") &&
+					currentUserHasActiveFamEdmtCourse
+				)
+				matchesTab =
+					isActuallyAvailable &&
+					isNotBlockedByRtgRestriction &&
+					isNotBlockedByFamEdmtRestriction
 			}
 
 			return matchesSearch && matchesType && matchesFir && matchesTab
@@ -146,6 +164,7 @@ export default function Courses({
 		firFilter,
 		activeTab,
 		currentUserHasActiveRtgCourse,
+		currentUserHasActiveFamEdmtCourse,
 	])
 
 	const clearFilters = () => {
@@ -335,6 +354,7 @@ export default function Courses({
 								key={course.id}
 								onCourseUpdate={handleCourseUpdate}
 								rtgRatingPending={rtgRatingPending}
+								userHasActiveFamEdmtCourse={currentUserHasActiveFamEdmtCourse}
 								userHasActiveRtgCourse={currentUserHasActiveRtgCourse}
 							/>
 						))}
@@ -344,6 +364,7 @@ export default function Courses({
 						courses={filteredCourses}
 						onCourseUpdate={handleCourseUpdate}
 						rtgRatingPending={rtgRatingPending}
+						userHasActiveFamEdmtCourse={currentUserHasActiveFamEdmtCourse}
 						userHasActiveRtgCourse={currentUserHasActiveRtgCourse}
 					/>
 				)}

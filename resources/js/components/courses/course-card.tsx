@@ -18,6 +18,7 @@ interface CourseCardProps {
 	course: Course
 	onCourseUpdate?: (courseId: number, updates: Partial<Course>) => void
 	userHasActiveRtgCourse?: boolean
+	userHasActiveFamEdmtCourse?: boolean
 	rtgRatingPending?: boolean
 }
 
@@ -35,6 +36,7 @@ export default function CourseCard({
 	course: initialCourse,
 	onCourseUpdate,
 	userHasActiveRtgCourse = false,
+	userHasActiveFamEdmtCourse = false,
 	rtgRatingPending = false,
 }: CourseCardProps) {
 	const [course, setCourse] = useState(initialCourse)
@@ -117,6 +119,7 @@ export default function CourseCard({
 					onCourseUpdate={handleCourseUpdate}
 					rtgRatingPending={rtgRatingPending}
 					size="sm"
+					userHasActiveFamEdmtCourse={userHasActiveFamEdmtCourse}
 					userHasActiveRtgCourse={userHasActiveRtgCourse}
 				/>
 			</CardFooter>
