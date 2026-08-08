@@ -38,7 +38,7 @@ trait LogsActivity
         }
 
         $old = $action === 'updated' ? $this->getOriginal() : [];
-        $new = $action !== 'deleted' ? $this->getAttributes() : [];
+        $new = $action !== 'deleted' ? $this->attributesToArray() : [];
 
         if ($action === 'updated') {
             $attributesToLog = property_exists($this, 'loggedAttributes') && is_array($this->loggedAttributes)
@@ -47,11 +47,6 @@ trait LogsActivity
 
             $old = array_intersect_key($old, array_flip($attributesToLog));
             $new = array_intersect_key($new, array_flip($attributesToLog));
-
-            // Nothing changed? Skip logging
-            if (empty(array_diff_assoc($new, $old))) {
-                return;
-            }
         }
 
         $causer = Auth::user();
@@ -61,6 +56,12 @@ trait LogsActivity
                 $changes[$key] = ['old' => $old[$key] ?? null, 'new' => $value];
             }
         }
+
+        // Nothing changed? Skip logging
+        if ($action === 'updated' && empty($changes)) {
+            return;
+        }
+
         $modelName = class_basename($this);
         $userName = $causer?->name ?? 'System';
         $description = empty($changes)
