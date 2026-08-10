@@ -62,7 +62,7 @@
 		"tailwindcss-animate": "^1.0.7",
 		"typescript": "^7.0.2",
 		"vaul": "^1.1.2",
-		"vite": "^8.0.5",
+		"vite": "^8.2.1",
 		"ziggy-js": "^2.6.3"
 	}
 }
