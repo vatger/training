@@ -1,0 +1,27 @@
+# Local dev/test compose file — builds Dockerfile.dev so PHP/Composer
+# commands can run against the bind-mounted source tree via:
+#   docker compose exec app <command>
+# and the app itself is reachable at http://localhost:8000 once up.
+# Not used in production (see docker-compose-prod.yml for that).
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html
+    ports:
+      - "8000:8000"
+    environment:
+      - DB_CONNECTION=sqlite
+      - DB_DATABASE=/var/www/html/database/database.sqlite
+    command: >
+      sh -c "
+      composer install --no-interaction &&
+      [ -f .env ] || cp .env.example .env &&
+      grep -q '^APP_KEY=base64' .env || php artisan key:generate --ansi --force &&
+      touch database/database.sqlite &&
+      php artisan migrate --graceful --ansi --force &&
+      php artisan serve --host=0.0.0.0 --port=8000 --no-reload
+      "
