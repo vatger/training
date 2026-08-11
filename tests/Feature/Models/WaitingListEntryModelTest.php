@@ -132,3 +132,12 @@ test('position_in_queue is isolated per course', function () {
     expect($entryA->position_in_queue)->toBe(1);
     expect($entryB->position_in_queue)->toBe(1);
 });
+
+// ─── is_interested default ───────────────────────────────────────────────────
+
+test('is_interested defaults to true for a new entry', function () {
+    $entry = makeEntry(User::factory()->create(), Course::factory()->create());
+
+    expect($entry->is_interested)->toBeTrue();
+    expect($entry->interest_confirmed_at)->toBeNull();
+});
