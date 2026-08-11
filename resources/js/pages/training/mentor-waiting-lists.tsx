@@ -58,6 +58,7 @@ interface WaitingListEntry {
 	waiting_time: string
 	waiting_days: number
 	remarks?: string
+	is_interested: boolean
 	date_added: string
 }
 
@@ -409,6 +410,15 @@ export default function MentorWaitingLists({ courses, config }: PageProps) {
 																				{entry.waiting_time}
 																			</div>
 
+																			{entry.is_interested ? (
+																				<Badge className="bg-success-100 text-success-800 dark:bg-success-900 dark:text-success-300">
+																					Confirmed
+																				</Badge>
+																			) : (
+																				<Badge className="bg-warning-100 text-warning-800 dark:bg-warning-900 dark:text-warning-300">
+																					Pending confirmation
+																				</Badge>
+																			)}
 																			{entry.remarks && (
 																				<div className="border-l-2 pl-3 text-sm text-muted-foreground">
 																					{entry.remarks}
@@ -596,6 +606,15 @@ export default function MentorWaitingLists({ courses, config }: PageProps) {
 																					<Clock className="h-3 w-3" />
 																					{entry.waiting_time}
 																				</div>
+																				{entry.is_interested ? (
+																					<Badge className="bg-success-100 text-success-800 dark:bg-success-900 dark:text-success-300">
+																						Confirmed
+																					</Badge>
+																				) : (
+																					<Badge className="bg-warning-100 text-warning-800 dark:bg-warning-900 dark:text-warning-300">
+																						Pending confirmation
+																					</Badge>
+																				)}
 																			</TableCell>
 																			<TableCell>
 																				{entry.remarks ? (
