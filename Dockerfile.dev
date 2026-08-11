@@ -1,0 +1,19 @@
+# Local dev/test container — not used in production (see Dockerfile for that).
+# Provides PHP 8.4 CLI + Composer + the extensions needed to run
+# composer install / vendor/bin/pest / vendor/bin/pint against the
+# bind-mounted source tree.
+FROM php:8.4-cli-alpine
+
+RUN apk add --no-cache \
+    git \
+    unzip \
+    icu-dev \
+    libzip-dev \
+    sqlite-dev \
+    $PHPIZE_DEPS \
+    && docker-php-ext-install intl zip pdo_sqlite bcmath \
+    && apk del $PHPIZE_DEPS
+
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+WORKDIR /var/www/html
