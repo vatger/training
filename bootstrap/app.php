@@ -59,5 +59,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->command('solo:sync-days')
             ->dailyAt('05:00')
             ->withoutOverlapping();
+
+        $schedule->command('waitinglists:verify-interest')
+            ->dailyAt('06:00')
+            ->withoutOverlapping();
     })
     ->create();
