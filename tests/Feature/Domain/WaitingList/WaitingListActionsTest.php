@@ -1,7 +1,9 @@
 <?php
 
+use App\Domain\WaitingList\Actions\ConfirmWaitingListInterest;
 use App\Domain\WaitingList\Actions\JoinWaitingList;
 use App\Domain\WaitingList\Actions\LeaveWaitingList;
+use App\Domain\WaitingList\Events\WaitingListInterestConfirmed;
 use App\Domain\WaitingList\Events\WaitingListJoined;
 use App\Domain\WaitingList\Events\WaitingListLeft;
 use App\Integrations\VatEud\VatEudClientInterface;
@@ -229,4 +231,35 @@ test('LeaveWaitingList fails if user is not on the waiting list', function () {
 
     expect($success)->toBeFalse();
     expect($message)->toBe('You are not on the waiting list for this course.');
+});
+
+// ─── ConfirmWaitingListInterest ────────────────────────────────────────────────
+
+test('ConfirmWaitingListInterest sets is_interested and timestamp, fires event', function () {
+    Event::fake();
+
+    $user = User::factory()->create();
+    $course = Course::factory()->create(['type' => 'RTG']);
+
+    $entry = WaitingListEntry::create([
+        'user_id' => $user->id,
+        'course_id' => $course->id,
+        'date_added' => now(),
+        'activity' => 0,
+        'hours_updated' => now(),
+        'is_interested' => false,
+    ]);
+
+    app(ConfirmWaitingListInterest::class)->execute($entry, $user);
+
+    $entry->refresh();
+
+    expect($entry->is_interested)->toBeTrue();
+    expect($entry->interest_confirmed_at)->not->toBeNull();
+
+    Event::assertDispatched(WaitingListInterestConfirmed::class, function ($event) use ($user, $course, $entry) {
+        return $event->user->id === $user->id
+            && $event->course->id === $course->id
+            && $event->entry->id === $entry->id;
+    });
 });
