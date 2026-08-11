@@ -81,7 +81,7 @@ class WaitingListController extends Controller
 
         $waitingEntries = WaitingListEntry::whereIn('course_id', $courseIds)
             ->with(['user:id,vatsim_id,first_name,last_name'])
-            ->select(['id', 'user_id', 'course_id', 'activity', 'remarks', 'date_added'])
+            ->select(['id', 'user_id', 'course_id', 'activity', 'remarks', 'date_added', 'is_interested'])
             ->orderBy('course_id')
             ->orderBy('date_added')
             ->get()
@@ -98,6 +98,7 @@ class WaitingListController extends Controller
                 'waiting_time' => $entry->waiting_time,
                 'waiting_days' => $entry->date_added->diffInDays(now()),
                 'remarks' => $entry->remarks,
+                'is_interested' => (bool) $entry->is_interested,
                 'date_added' => $entry->date_added->format('Y-m-d H:i:s'),
             ]);
 

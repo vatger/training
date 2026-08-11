@@ -868,6 +868,30 @@ test('update remarks fails validation when entry_id is missing', function () {
         ->assertSessionHasErrors('entry_id');
 });
 
+test('mentor waiting list view reports is_interested per entry', function () {
+    $course = Course::factory()->create(['type' => 'RTG']);
+    $mentor = trainingHttpMentor($course);
+    $trainee = User::factory()->create();
+
+    WaitingListEntry::create([
+        'user_id' => $trainee->id,
+        'course_id' => $course->id,
+        'date_added' => now(),
+        'activity' => 0,
+        'hours_updated' => now(),
+        'is_interested' => false,
+    ]);
+
+    $this->actingAs($mentor)
+        ->get(route('waiting-lists.manage'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('training/mentor-waiting-lists')
+            ->where('courses', fn ($courses) => collect($courses)
+                ->firstWhere('id', $course->id)['waiting_list'][0]['is_interested'] === false)
+        );
+});
+
 // ─── TrainingLogController: show ──────────────────────────────────────────────
 
 test('unauthenticated user is redirected from training log show', function () {
