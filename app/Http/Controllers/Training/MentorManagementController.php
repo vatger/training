@@ -8,7 +8,7 @@ use App\Domain\WaitingList\Actions\ConfirmWaitingListInterest;
 use App\Domain\WaitingList\Actions\JoinWaitingList;
 use App\Domain\WaitingList\Actions\LeaveWaitingList;
 use App\Http\Controllers\Controller;
-use App\Integrations\Moodle\MoodleClient;
+use App\Integrations\Moodle\MoodleClientInterface;
 use App\Models\Course;
 use App\Models\Familiarisation;
 use App\Models\User;
@@ -29,14 +29,14 @@ class MentorManagementController extends Controller
         private JoinWaitingList $joinWaitingList,
         private LeaveWaitingList $leaveWaitingList,
         private ConfirmWaitingListInterest $confirmWaitingListInterest,
+        private MoodleClientInterface $moodleClient,
     ) {}
 
     public function index(Request $request): Response
     {
         $user = $request->user();
 
-        $moodleClient = app(MoodleClient::class);
-        $moodleSignedUp = $moodleClient->userExists($user->vatsim_id);
+        $moodleSignedUp = $this->moodleClient->userExists($user->vatsim_id);
 
         $isAdmin = $user->is_admin || $user->is_superuser;
         $isOnRoster = $this->courseValidationService->isUserOnRoster($user->vatsim_id);
