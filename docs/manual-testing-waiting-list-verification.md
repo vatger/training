@@ -2,7 +2,8 @@
 
 How to click through the monthly waiting-list interest verification feature
 (see `docs/superpowers/specs/2026-08-10-waiting-list-interest-verification-design.md`
-for the design) on a machine without PHP/Composer/local MySQL installed.
+for the design) on a machine without PHP/Composer/Node/local MySQL installed
+— everything (backend and frontend tooling) runs inside the dev container.
 
 ## 1. Start the app
 
@@ -23,15 +24,29 @@ have sent (check `storage/logs/laravel.log`, or `docker compose logs app`, for
 
 ## 2. Start the frontend
 
-Node/npm run fine on the host — no container needed for this part:
+`npm run dev` needs `php` on its `PATH` (the Wayfinder Vite plugin shells
+out to `php artisan wayfinder:generate` on every start and on every route
+change), so it runs inside the same container rather than on the host —
+`Dockerfile.dev` includes Node/npm alongside PHP for exactly this reason.
+`node_modules` lives in its own Docker volume (not the bind mount), since a
+Linux container and a non-Linux host can't safely share one `node_modules`
+(native packages like `esbuild` ship platform-specific binaries).
 
 ```bash
-npm install
-npm run dev
+docker compose exec app npm install
+docker compose exec app npm run dev -- --host 0.0.0.0
 ```
 
-Leave this running; Vite serves assets with HMR to the app at
+Leave this running in its own terminal. The first start is slow (Wayfinder's
+route codegen can take ~30-45s cold in the container); subsequent starts and
+route-file writes are much faster. Once you see `VITE ... ready in ...ms`,
+Vite is reachable at http://localhost:5173 (mapped through in
+`docker-compose.yml`) and serves assets with HMR to the app at
 http://localhost:8000.
+
+If you'd rather not keep a dev server running, `docker compose exec app npm
+run build` produces a static production build instead (same PHP dependency,
+same container) — reload the page after each change instead of getting HMR.
 
 ## 3. Log in
 
@@ -87,8 +102,11 @@ docker compose exec app php artisan waitinglists:verify-interest
 First run of a calendar month: purges any entry still `is_interested=false`
 (fires a "Removed from Waiting List" fake notification — check the logs),
 then resets every remaining entry to `is_interested=false` and fires a
-"Confirm Waiting List Interest" fake notification per user. A second run in
-the same month is a no-op — check with:
+"Confirm Waiting List Interest" fake notification per user. The purge step
+is additionally skipped if the previous run was less than ~25 days ago
+(protects against hard-deleting everyone if two runs land close together
+across a month boundary) — reset+notify still happens either way. A second
+run in the same month is a no-op — check with:
 
 ```bash
 docker compose exec app php artisan tinker
@@ -115,6 +133,8 @@ entry shows a "Confirmed" or "Pending confirmation" badge
 docker compose down
 ```
 
-The SQLite database file and `vendor/`/`node_modules/` persist on the host
-via the bind mount, so `docker compose up -d` again picks up where you left
-off (migrations only re-run what's pending).
+The SQLite database file and `vendor/` persist on the host via the bind
+mount; `node_modules/` persists in its own Docker volume (see step 2). Either
+way, `docker compose up -d` again picks up where you left off (migrations
+only re-run what's pending, and `npm install` is a no-op if nothing
+changed).

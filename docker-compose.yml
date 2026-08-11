@@ -1,7 +1,8 @@
-# Local dev/test compose file — builds Dockerfile.dev so PHP/Composer
+# Local dev/test compose file — builds Dockerfile.dev so PHP/Composer/Node
 # commands can run against the bind-mounted source tree via:
 #   docker compose exec app <command>
-# and the app itself is reachable at http://localhost:8000 once up.
+# The app itself is reachable at http://localhost:8000, and the Vite dev
+# server (for `npm run dev`, see manual-testing doc) at http://localhost:5173.
 # Not used in production (see docker-compose-prod.yml for that).
 services:
   app:
@@ -11,8 +12,15 @@ services:
     working_dir: /var/www/html
     volumes:
       - .:/var/www/html
+      # node_modules gets its own volume rather than the host bind mount:
+      # this container is Linux, the host may not be (native npm packages
+      # like esbuild ship platform-specific binaries), so sharing one
+      # node_modules between host and container breaks whichever one didn't
+      # run the last `npm install`.
+      - node_modules_data:/var/www/html/node_modules
     ports:
       - "8000:8000"
+      - "5173:5173"
     environment:
       - DB_CONNECTION=sqlite
       - DB_DATABASE=/var/www/html/database/database.sqlite
@@ -32,3 +40,6 @@ services:
       php artisan migrate --graceful --ansi --force &&
       php artisan serve --host=0.0.0.0 --port=8000 --no-reload
       "
+
+volumes:
+  node_modules_data:
