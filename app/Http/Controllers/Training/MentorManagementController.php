@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Training;
 
 use App\Domain\Training\Actions\AddMentorToCourse;
 use App\Domain\Training\Actions\RemoveMentorFromCourse;
+use App\Domain\WaitingList\Actions\ConfirmWaitingListInterest;
 use App\Domain\WaitingList\Actions\JoinWaitingList;
 use App\Domain\WaitingList\Actions\LeaveWaitingList;
 use App\Http\Controllers\Controller;
@@ -27,6 +28,7 @@ class MentorManagementController extends Controller
         private CourseValidationService $courseValidationService,
         private JoinWaitingList $joinWaitingList,
         private LeaveWaitingList $leaveWaitingList,
+        private ConfirmWaitingListInterest $confirmWaitingListInterest,
     ) {}
 
     public function index(Request $request): Response
@@ -78,6 +80,7 @@ class MentorManagementController extends Controller
                 'is_on_waiting_list' => $isOnWaitingList,
                 'waiting_list_joined_at' => $waitingEntry?->date_added?->format('Y-m-d H:i:s'),
                 'waiting_list_activity' => $waitingEntry?->activity,
+                'waiting_list_interest_confirmed' => $waitingEntry?->is_interested,
                 'can_join' => $canJoin,
                 'join_error' => $joinError ?: null,
             ];
@@ -122,6 +125,23 @@ class MentorManagementController extends Controller
         }
 
         return back()->with('success', $message);
+    }
+
+    public function confirmWaitingListInterest(Request $request, Course $course)
+    {
+        $user = $request->user();
+
+        $entry = WaitingListEntry::where('course_id', $course->id)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if (! $entry) {
+            return back()->withErrors(['error' => 'You are not on the waiting list for this course.']);
+        }
+
+        $this->confirmWaitingListInterest->execute($entry, $user);
+
+        return back()->with('success', 'Thanks for confirming your interest!');
     }
 
     public function addMentor(Request $request)
