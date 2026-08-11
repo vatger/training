@@ -56,7 +56,7 @@ export interface Course {
 	is_on_waiting_list: boolean
 	waiting_list_joined_at?: string
 	waiting_list_activity?: number
-	waiting_list_interest_confirmed?: boolean
+	waiting_list_interest_confirmed?: boolean | null
 	can_join: boolean
 	join_error?: string
 	moodle_completed?: boolean

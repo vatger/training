@@ -16,6 +16,13 @@ services:
     environment:
       - DB_CONNECTION=sqlite
       - DB_DATABASE=/var/www/html/database/database.sqlite
+    # NOTE: this is a folded (>) scalar — it collapses to a single shell line,
+    # so no `#` comments may be added inside the sh -c "..." string below.
+    #
+    # `--no-reload` on `artisan serve` is required: artisan serve's file-watcher
+    # restart re-execs the server without this container's env overrides
+    # (DB_CONNECTION/DB_DATABASE above), falling back to .env's mysql settings
+    # and 500ing every request.
     command: >
       sh -c "
       composer install --no-interaction &&
