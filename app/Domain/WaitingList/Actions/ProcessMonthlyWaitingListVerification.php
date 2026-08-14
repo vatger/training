@@ -7,78 +7,39 @@ use App\Domain\WaitingList\Events\WaitingListVerificationRequested;
 use App\Integrations\Vatger\VatgerClientInterface;
 use App\Models\User;
 use App\Models\WaitingListEntry;
-use App\Models\WaitingListVerificationRun;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class ProcessMonthlyWaitingListVerification
 {
-    /**
-     * Minimum number of real days that must have elapsed since the previous run
-     * before unconfirmed entries are purged. Deliberately less than a full month
-     * so a run landing a few days early/late still purges normally, but two runs
-     * landing implausibly close together (e.g. a first run late in a month
-     * followed by one on the 1st, or after scheduler downtime across a month
-     * boundary) skip the purge so people actually get a month to reconfirm.
-     */
-    private const MIN_DAYS_BETWEEN_PURGES = 25;
-
     public function __construct(
         private readonly VatgerClientInterface $vatger,
     ) {}
 
     public function execute(): void
     {
-        $yearMonth = now()->format('Y-m');
-
-        if (WaitingListVerificationRun::where('year_month', $yearMonth)->exists()) {
-            return;
-        }
-
-        $lastRun = WaitingListVerificationRun::orderByDesc('ran_at')->first();
-        $shouldPurge = ! $lastRun || $lastRun->ran_at->diffInDays(now()) >= self::MIN_DAYS_BETWEEN_PURGES;
-
-        $removalNotifications = collect();
-        $pendingNotifications = collect();
-
-        DB::transaction(function () use ($yearMonth, $shouldPurge, &$removalNotifications, &$pendingNotifications) {
-            if ($shouldPurge) {
-                $removalNotifications = $this->purgeUnconfirmed();
-            }
-
-            $pendingNotifications = $this->resetAndNotify();
-
-            WaitingListVerificationRun::create([
-                'year_month' => $yearMonth,
-                'ran_at' => now(),
-            ]);
-        });
-
-        // Notifications are sent only after the transaction commits: they are
-        // real HTTP calls and must not hold DB write locks open, nor be sent
-        // for a transaction that later rolls back.
-        $removalNotifications->each(fn (array $n) => $this->notifyRemoved($n['user'], $n['courseNames']));
-        $pendingNotifications->each(fn (array $n) => $this->notifyPendingConfirmation($n['user'], $n['courseNames']));
+        $this->purgeExpired()->each(fn (array $n) => $this->notifyRemoved($n['user'], $n['courseNames']));
+        $this->startConfirmationWindow()->each(fn (array $n) => $this->notifyPendingConfirmation($n['user'], $n['courseNames']));
     }
 
     /**
      * @return Collection<int, array{user: User, courseNames: string}>
      */
-    private function purgeUnconfirmed(): Collection
+    private function purgeExpired(): Collection
     {
         $notifications = collect();
 
         WaitingListEntry::with(['course', 'user'])
-            ->where('is_interested', false)
+            ->whereNotNull('removal_date')
+            ->where('removal_date', '<=', now())
             ->get()
             ->groupBy('user_id')
             ->each(function (Collection $userEntries) use (&$notifications) {
                 $user = $userEntries->first()->user;
 
-                $userEntries->each(function (WaitingListEntry $entry) {
-                    event(new WaitingListPurgedForInactivity($entry, $entry->course, $entry->user));
-                });
+                $userEntries->each(fn (WaitingListEntry $entry) => event(
+                    new WaitingListPurgedForInactivity($entry, $entry->course, $entry->user)
+                ));
 
                 $notifications->push([
                     'user' => $user,
@@ -92,27 +53,48 @@ class ProcessMonthlyWaitingListVerification
     }
 
     /**
+     * Starts the removal countdown for entries whose interest hasn't been
+     * (re)confirmed within the configured grace period. A never-confirmed
+     * entry's window starts at date_added, not at creation of this job run,
+     * so a brand new entry always gets a full grace period before being
+     * asked to reconfirm.
+     *
      * @return Collection<int, array{user: User, courseNames: string}>
      */
-    private function resetAndNotify(): Collection
+    private function startConfirmationWindow(): Collection
     {
-        WaitingListEntry::where('is_interested', true)->update(['is_interested' => false]);
+        $graceDays = (int) config('services.waiting_list.interest_confirmation_days');
+        $cutoff = now()->subDays($graceDays);
+
+        $due = WaitingListEntry::with(['course', 'user'])
+            ->whereNull('removal_date')
+            ->where('is_interested', true)
+            ->where(function ($query) use ($cutoff) {
+                $query->where(function ($q) use ($cutoff) {
+                    $q->whereNotNull('interest_confirmed_at')->where('interest_confirmed_at', '<=', $cutoff);
+                })->orWhere(function ($q) use ($cutoff) {
+                    $q->whereNull('interest_confirmed_at')->where('date_added', '<=', $cutoff);
+                });
+            })
+            ->get();
+
+        $due->each(fn (WaitingListEntry $entry) => $entry->update([
+            'is_interested' => false,
+            'removal_date' => now()->addDays($graceDays),
+        ]));
 
         $notifications = collect();
 
-        WaitingListEntry::with(['course', 'user'])
-            ->get()
-            ->groupBy('user_id')
-            ->each(function (Collection $userEntries) use (&$notifications) {
-                $user = $userEntries->first()->user;
+        $due->groupBy('user_id')->each(function (Collection $userEntries) use (&$notifications) {
+            $user = $userEntries->first()->user;
 
-                event(new WaitingListVerificationRequested($user, $userEntries));
+            event(new WaitingListVerificationRequested($user, $userEntries));
 
-                $notifications->push([
-                    'user' => $user,
-                    'courseNames' => $userEntries->pluck('course.name')->implode(', '),
-                ]);
-            });
+            $notifications->push([
+                'user' => $user,
+                'courseNames' => $userEntries->pluck('course.name')->implode(', '),
+            ]);
+        });
 
         return $notifications;
     }
@@ -158,7 +140,7 @@ class ProcessMonthlyWaitingListVerification
             $result = $this->vatger->sendNotification(
                 vatsimId: $user->vatsim_id,
                 title: 'Confirm Waiting List Interest',
-                message: "Your waiting list spot(s) for {$courseNames} require monthly confirmation. Please confirm you're still interested before next month's check, or you'll be removed from the list.",
+                message: "Your waiting list spot(s) for {$courseNames} require confirmation. Please confirm you're still interested, or you'll be removed from the list.",
                 sourceName: 'vatger ATD',
                 linkUrl: route('courses.index'),
                 linkText: 'Training Centre',

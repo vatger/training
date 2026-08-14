@@ -8,7 +8,6 @@ use App\Integrations\Vatger\VatgerClientInterface;
 use App\Models\Course;
 use App\Models\User;
 use App\Models\WaitingListEntry;
-use App\Models\WaitingListVerificationRun;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 
@@ -32,10 +31,10 @@ function verificationEntry(array $overrides = []): WaitingListEntry
     ], array_diff_key($overrides, ['user' => true, 'course' => true])));
 }
 
-test('purges entries with is_interested false and fires event', function () {
+test('purges entries whose removal_date has passed and fires event', function () {
     Event::fake();
 
-    $entry = verificationEntry(['is_interested' => false]);
+    $entry = verificationEntry(['is_interested' => false, 'removal_date' => now()->subDay()]);
 
     app(ProcessMonthlyWaitingListVerification::class)->execute();
 
@@ -46,114 +45,94 @@ test('purges entries with is_interested false and fires event', function () {
     });
 });
 
-test('keeps entries with is_interested true, resets them to false, and requests reconfirmation', function () {
+test('does not purge an entry whose removal_date is in the future', function () {
     Event::fake();
 
-    $entry = verificationEntry(['is_interested' => true]);
+    $entry = verificationEntry(['is_interested' => false, 'removal_date' => now()->addDay()]);
+
+    app(ProcessMonthlyWaitingListVerification::class)->execute();
+
+    $this->assertDatabaseHas('waiting_list_entries', ['id' => $entry->id]);
+    Event::assertNotDispatched(WaitingListPurgedForInactivity::class);
+});
+
+test('starts the removal countdown for an entry whose confirmation is older than the grace period', function () {
+    Event::fake();
+    config(['services.waiting_list.interest_confirmation_days' => 30]);
+
+    $entry = verificationEntry([
+        'is_interested' => true,
+        'interest_confirmed_at' => now()->subDays(31),
+    ]);
 
     app(ProcessMonthlyWaitingListVerification::class)->execute();
 
     $entry->refresh();
-
     expect($entry->is_interested)->toBeFalse();
+    expect($entry->removal_date)->not->toBeNull();
+    expect($entry->removal_date->isSameDay(now()->addDays(30)))->toBeTrue();
 
     Event::assertDispatched(WaitingListVerificationRequested::class, function ($event) use ($entry) {
         return $event->entries->pluck('id')->contains($entry->id);
     });
 });
 
-test('records a run for the current month', function () {
-    app(ProcessMonthlyWaitingListVerification::class)->execute();
-
-    $this->assertDatabaseHas('waiting_list_verification_runs', [
-        'year_month' => now()->format('Y-m'),
-    ]);
-});
-
-test('running twice in the same month only applies effects once', function () {
+test('a brand new entry is not asked to reconfirm before its own grace period has elapsed', function () {
     Event::fake();
+    config(['services.waiting_list.interest_confirmation_days' => 30]);
 
-    $unconfirmed = verificationEntry(['is_interested' => false]);
-    $confirmed = verificationEntry(['is_interested' => true]);
-
-    app(ProcessMonthlyWaitingListVerification::class)->execute();
-
-    $this->assertDatabaseMissing('waiting_list_entries', ['id' => $unconfirmed->id]);
-    $confirmed->refresh();
-    expect($confirmed->is_interested)->toBeFalse();
-
-    // Second run in the same month: no further deletions, no further resets.
-    $confirmed->update(['is_interested' => true]);
-
-    app(ProcessMonthlyWaitingListVerification::class)->execute();
-
-    $confirmed->refresh();
-    expect($confirmed->is_interested)->toBeTrue();
-
-    expect(WaitingListVerificationRun::where('year_month', now()->format('Y-m'))->count())->toBe(1);
-});
-
-test('an entry created after this cycle reset is not purged by the same cycle', function () {
-    Event::fake();
-
-    app(ProcessMonthlyWaitingListVerification::class)->execute();
-
-    $lateJoiner = verificationEntry();
-    expect($lateJoiner->is_interested)->toBeTrue();
-
-    app(ProcessMonthlyWaitingListVerification::class)->execute();
-
-    $this->assertDatabaseHas('waiting_list_entries', ['id' => $lateJoiner->id]);
-});
-
-test('skips the purge when the previous run happened only a few days ago', function () {
-    Event::fake();
-
-    // A previous run recorded under a different year_month, but which actually
-    // ran only two days ago (e.g. first run late in a month, next run on the 1st).
-    WaitingListVerificationRun::create([
-        'year_month' => now()->subMonthNoOverflow()->format('Y-m'),
-        'ran_at' => now()->subDays(2),
+    $entry = verificationEntry([
+        'date_added' => now()->subDays(5),
+        'is_interested' => true,
+        'interest_confirmed_at' => null,
     ]);
 
-    $unconfirmed = verificationEntry(['is_interested' => false]);
-
     app(ProcessMonthlyWaitingListVerification::class)->execute();
 
-    // Purge skipped: the user has not had a real month to reconfirm.
-    $this->assertDatabaseHas('waiting_list_entries', ['id' => $unconfirmed->id]);
-    Event::assertNotDispatched(WaitingListPurgedForInactivity::class);
-
-    // But the run itself still happens: reset + reconfirmation request.
-    $this->assertDatabaseHas('waiting_list_verification_runs', ['year_month' => now()->format('Y-m')]);
-    expect($unconfirmed->fresh()->is_interested)->toBeFalse();
-    Event::assertDispatched(WaitingListVerificationRequested::class, function ($event) use ($unconfirmed) {
-        return $event->entries->pluck('id')->contains($unconfirmed->id);
-    });
+    $entry->refresh();
+    expect($entry->is_interested)->toBeTrue();
+    expect($entry->removal_date)->toBeNull();
+    Event::assertNotDispatched(WaitingListVerificationRequested::class);
 });
 
-test('purges normally when the previous run is old enough', function () {
+test('a new entry is asked to reconfirm once its own join date is past the grace period', function () {
     Event::fake();
+    config(['services.waiting_list.interest_confirmation_days' => 30]);
 
-    WaitingListVerificationRun::create([
-        'year_month' => now()->subMonthNoOverflow()->format('Y-m'),
-        'ran_at' => now()->subDays(30),
+    $entry = verificationEntry([
+        'date_added' => now()->subDays(31),
+        'is_interested' => true,
+        'interest_confirmed_at' => null,
     ]);
 
-    $unconfirmed = verificationEntry(['is_interested' => false]);
+    app(ProcessMonthlyWaitingListVerification::class)->execute();
+
+    $entry->refresh();
+    expect($entry->is_interested)->toBeFalse();
+    expect($entry->removal_date)->not->toBeNull();
+});
+
+test('an entry not yet due for reconfirmation is left untouched', function () {
+    Event::fake();
+    config(['services.waiting_list.interest_confirmation_days' => 30]);
+
+    $entry = verificationEntry([
+        'is_interested' => true,
+        'interest_confirmed_at' => now()->subDays(10),
+    ]);
 
     app(ProcessMonthlyWaitingListVerification::class)->execute();
 
-    $this->assertDatabaseMissing('waiting_list_entries', ['id' => $unconfirmed->id]);
-    Event::assertDispatched(WaitingListPurgedForInactivity::class);
+    $entry->refresh();
+    expect($entry->is_interested)->toBeTrue();
+    expect($entry->removal_date)->toBeNull();
+    Event::assertNotDispatched(WaitingListVerificationRequested::class);
 });
 
-test('a user with two entries, one confirmed and one not, only loses the unconfirmed one and gets one notification', function () {
+test('a user with two entries, one purged and one started, only loses the purged one and gets one notification each', function () {
     Event::fake();
+    config(['services.waiting_list.interest_confirmation_days' => 30]);
 
-    // Notifications are grouped per user, not per entry: exactly one "removed"
-    // notification (covering the purged course) and exactly one "confirm"
-    // notification (covering the surviving course) — never one per entry.
     $vatgerMock = Mockery::mock(VatgerClientInterface::class);
     $vatgerMock->shouldReceive('sendNotification')
         ->once()
@@ -166,16 +145,17 @@ test('a user with two entries, one confirmed and one not, only loses the unconfi
     app()->instance(VatgerClientInterface::class, $vatgerMock);
 
     $user = User::factory()->create(['vatsim_id' => 1234567]);
-    $confirmedCourse = Course::factory()->create(['type' => 'RTG']);
-    $unconfirmedCourse = Course::factory()->create(['type' => 'FAM']);
+    $purgedCourse = Course::factory()->create(['type' => 'RTG']);
+    $startedCourse = Course::factory()->create(['type' => 'FAM']);
 
-    $confirmedEntry = verificationEntry(['user' => $user, 'course' => $confirmedCourse, 'is_interested' => true]);
-    $unconfirmedEntry = verificationEntry(['user' => $user, 'course' => $unconfirmedCourse, 'is_interested' => false]);
+    $purgedEntry = verificationEntry(['user' => $user, 'course' => $purgedCourse, 'is_interested' => false, 'removal_date' => now()->subDay()]);
+    $startedEntry = verificationEntry(['user' => $user, 'course' => $startedCourse, 'is_interested' => true, 'interest_confirmed_at' => now()->subDays(31)]);
 
     app(ProcessMonthlyWaitingListVerification::class)->execute();
 
-    $this->assertDatabaseMissing('waiting_list_entries', ['id' => $unconfirmedEntry->id]);
-    $this->assertDatabaseHas('waiting_list_entries', ['id' => $confirmedEntry->id]);
+    $this->assertDatabaseMissing('waiting_list_entries', ['id' => $purgedEntry->id]);
+    $this->assertDatabaseHas('waiting_list_entries', ['id' => $startedEntry->id]);
 
     Event::assertDispatchedTimes(WaitingListVerificationRequested::class, 1);
+    Event::assertDispatchedTimes(WaitingListPurgedForInactivity::class, 1);
 });
