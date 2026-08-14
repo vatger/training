@@ -7,6 +7,7 @@ use App\Jobs\ProcessWaitingListVerification;
 use App\Models\Course;
 use App\Models\User;
 use App\Models\WaitingListEntry;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -35,5 +36,5 @@ test('handle delegates to ProcessMonthlyWaitingListVerification', function () {
 });
 
 test('is queueable', function () {
-    expect(new ProcessWaitingListVerification)->toBeInstanceOf(\Illuminate\Contracts\Queue\ShouldQueue::class);
+    expect(new ProcessWaitingListVerification)->toBeInstanceOf(ShouldQueue::class);
 });

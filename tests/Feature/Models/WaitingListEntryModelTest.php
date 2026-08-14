@@ -3,6 +3,7 @@
 use App\Models\Course;
 use App\Models\User;
 use App\Models\WaitingListEntry;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 
@@ -153,5 +154,5 @@ test('removal_date is cast to a Carbon instance when set', function () {
         'removal_date' => now()->addDays(30),
     ]);
 
-    expect($entry->removal_date)->toBeInstanceOf(\Carbon\Carbon::class);
+    expect($entry->removal_date)->toBeInstanceOf(Carbon::class);
 });
