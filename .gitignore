@@ -32,7 +32,4 @@ bun.lockb
 _ide_helper.php
 _ide_helper_models.php
 .claude
-docker-compose.yml
-Dockerfile.dev
-docs/
 .worktrees/

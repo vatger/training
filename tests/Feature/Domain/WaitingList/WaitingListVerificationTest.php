@@ -159,3 +159,25 @@ test('a user with two entries, one purged and one started, only loses the purged
     Event::assertDispatchedTimes(WaitingListVerificationRequested::class, 1);
     Event::assertDispatchedTimes(WaitingListPurgedForInactivity::class, 1);
 });
+
+test('running twice back-to-back is idempotent', function () {
+    Event::fake();
+    config(['services.waiting_list.interest_confirmation_days' => 30]);
+
+    $entry = verificationEntry([
+        'is_interested' => true,
+        'interest_confirmed_at' => now()->subDays(31),
+    ]);
+
+    app(ProcessMonthlyWaitingListVerification::class)->execute();
+
+    $entry->refresh();
+    $removalDateAfterFirstRun = $entry->removal_date;
+    expect($removalDateAfterFirstRun)->not->toBeNull();
+
+    app(ProcessMonthlyWaitingListVerification::class)->execute();
+
+    $entry->refresh();
+    expect($entry->removal_date->equalTo($removalDateAfterFirstRun))->toBeTrue();
+    Event::assertDispatchedTimes(WaitingListVerificationRequested::class, 1);
+});

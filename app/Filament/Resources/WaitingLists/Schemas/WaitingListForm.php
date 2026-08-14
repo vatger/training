@@ -57,7 +57,7 @@ class WaitingListForm
                             ->label('Interest Confirmed')
                             ->disabled()
                             ->dehydrated(false)
-                            ->helperText('Automatically managed by the monthly waiting-list verification job — not editable here.'),
+                            ->helperText('Automatically managed by the waiting-list interest verification job — not editable here.'),
                     ])->columns(2),
             ]);
     }

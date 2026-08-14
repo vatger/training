@@ -13,7 +13,7 @@ class ProcessWaitingListVerification implements ShouldQueue
 
     public int $tries = 1;
 
-    public int $timeout = 120;
+    public int $timeout = 60;
 
     public function handle(ProcessMonthlyWaitingListVerification $verification): void
     {
