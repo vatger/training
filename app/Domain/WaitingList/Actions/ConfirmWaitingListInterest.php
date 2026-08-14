@@ -12,6 +12,7 @@ class ConfirmWaitingListInterest
     {
         $entry->is_interested = true;
         $entry->interest_confirmed_at = now();
+        $entry->removal_date = null;
         $entry->save();
 
         event(new WaitingListInterestConfirmed($entry, $entry->course, $user));

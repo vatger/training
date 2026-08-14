@@ -235,7 +235,7 @@ test('LeaveWaitingList fails if user is not on the waiting list', function () {
 
 // ─── ConfirmWaitingListInterest ────────────────────────────────────────────────
 
-test('ConfirmWaitingListInterest sets is_interested and timestamp, fires event', function () {
+test('ConfirmWaitingListInterest sets is_interested, timestamp, clears removal_date, fires event', function () {
     Event::fake();
 
     $user = User::factory()->create();
@@ -248,6 +248,7 @@ test('ConfirmWaitingListInterest sets is_interested and timestamp, fires event',
         'activity' => 0,
         'hours_updated' => now(),
         'is_interested' => false,
+        'removal_date' => now()->addDays(5),
     ]);
 
     app(ConfirmWaitingListInterest::class)->execute($entry, $user);
@@ -256,6 +257,7 @@ test('ConfirmWaitingListInterest sets is_interested and timestamp, fires event',
 
     expect($entry->is_interested)->toBeTrue();
     expect($entry->interest_confirmed_at)->not->toBeNull();
+    expect($entry->removal_date)->toBeNull();
 
     Event::assertDispatched(WaitingListInterestConfirmed::class, function ($event) use ($user, $course, $entry) {
         return $event->user->id === $user->id
