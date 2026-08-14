@@ -141,3 +141,17 @@ test('is_interested defaults to true for a new entry', function () {
     expect($entry->is_interested)->toBeTrue();
     expect($entry->interest_confirmed_at)->toBeNull();
 });
+
+test('removal_date defaults to null for a new entry', function () {
+    $entry = makeEntry(User::factory()->create(), Course::factory()->create());
+
+    expect($entry->removal_date)->toBeNull();
+});
+
+test('removal_date is cast to a Carbon instance when set', function () {
+    $entry = makeEntry(User::factory()->create(), Course::factory()->create(), [
+        'removal_date' => now()->addDays(30),
+    ]);
+
+    expect($entry->removal_date)->toBeInstanceOf(\Carbon\Carbon::class);
+});
