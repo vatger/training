@@ -28,6 +28,7 @@ import {
 	CardTitle,
 } from "@/components/ui/card"
 import AppLayout from "@/layouts/app-layout"
+import { CourseChip } from "@/lib/course-utils"
 import type { BreadcrumbItem } from "@/types"
 
 interface TrainingLog {
@@ -82,23 +83,6 @@ interface Props {
 	completedCourses?: Course[]
 	moodleCourses?: MoodleCourse[]
 	familiarisations?: Record<string, Familiarisation[]>
-}
-
-const getTypeColor = (type: string) => {
-	switch (type) {
-		case "RTG":
-			return "bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-300"
-		case "EDMT":
-			return "bg-secondary-100 text-secondary-800 dark:bg-secondary-900 dark:text-secondary-300"
-		case "FAM":
-			return "bg-warning-100 text-warning-800 dark:bg-warning-900 dark:text-warning-300"
-		case "GST":
-			return "bg-success-100 text-success-800 dark:bg-success-900 dark:text-success-300"
-		case "RST":
-			return "bg-danger-100 text-danger-800 dark:bg-danger-900 dark:text-danger-300"
-		default:
-			return "bg-secondary-100 text-secondary-800 dark:bg-secondary-900 dark:text-secondary-300"
-	}
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -209,20 +193,12 @@ export default function TraineeDashboard(props: Props) {
 																	{course.airport_icao}
 																</div>
 															</div>
-															<div className="flex flex-col gap-1">
-																<Badge
-																	className={getTypeColor(course.type)}
-																	variant="outline"
-																>
-																	{course.type_display}
-																</Badge>
-																<Badge
-																	className="justify-center"
-																	variant="secondary"
-																>
-																	{course.position_display}
-																</Badge>
-															</div>
+															<CourseChip
+																position={course.position}
+																positionLabel={course.position_display}
+																type={course.type}
+																typeLabel={course.type_display ?? course.type}
+															/>
 														</div>
 													</CardHeader>
 													<CardContent className="space-y-3">
@@ -327,12 +303,12 @@ export default function TraineeDashboard(props: Props) {
 																	{course.airport_icao}
 																</div>
 															</div>
-															<Badge
-																className={getTypeColor(course.position)}
-																variant="outline"
-															>
-																{course.position_display}
-															</Badge>
+															<CourseChip
+																position={course.position}
+																positionLabel={course.position_display}
+																type={course.type}
+																typeLabel={course.type_display ?? course.type}
+															/>
 														</div>
 													</CardHeader>
 													<CardContent className="space-y-3">

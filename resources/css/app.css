@@ -123,6 +123,36 @@
 	--vg-card-border: var(--border);
 	--vg-text-foreground: var(--color-primary-800);
 	--vg-muted-foreground: var(--color-primary-700);
+
+	/*
+	 * Course type / position chip text/border colors. Deliberately independent
+	 * from the brand palette above. Earlier passes optimized only for overall
+	 * perceptual (OKLab) distance, which let colors satisfy the distance
+	 * threshold purely via lightness while still sharing the same hue family
+	 * (e.g. two different "blues") - technically distinct, but reads as the
+	 * same color to a human. This set instead enforces a hard >=40deg hue
+	 * separation between every pair first (guaranteeing 8 genuinely different
+	 * named color families: red, orange, gold/olive, green, teal, blue,
+	 * purple, magenta), then lets lightness vary per hue to match each
+	 * color's natural character (deep purple, bright orange, dark green,
+	 * ...) instead of forcing every value to the same lightness, which was
+	 * flattening a second, strong perceptual differentiator. Each value is
+	 * still pushed to the max chroma inside the sRGB gamut at its lightness
+	 * (out-of-gamut oklch() gets silently clipped by the browser, collapsing
+	 * distinct hues toward the same muddy tone) and holds >=4.6:1 contrast
+	 * against the card background. Computed with an OKLCH->sRGB conversion
+	 * script, not eyeballed. Redefined in .dark for the dark-mode lightness.
+	 */
+	--chip-rtg: oklch(0.48 0.137 250); /* blue */
+	--chip-edmt: oklch(0.42 0.134 145); /* green */
+	--chip-fam: oklch(0.55 0.137 55); /* orange */
+	--chip-gst: oklch(0.4 0.227 290); /* deep purple */
+	--chip-rst: oklch(0.46 0.185 10); /* red */
+
+	--chip-gnd: oklch(0.48 0.02 250); /* neutral slate */
+	--chip-twr: oklch(0.56 0.254 330); /* magenta */
+	--chip-app: oklch(0.42 0.071 190); /* dark teal */
+	--chip-ctr: oklch(0.5 0.104 100); /* olive/gold */
 }
 
 .dark {
@@ -156,6 +186,18 @@
 	--vg-card-border: var(--border);
 	--vg-text-foreground: var(--color-secondary-200);
 	--vg-muted-foreground: var(--color-secondary-300);
+
+	/* Same hues as :root, re-tuned lighter for contrast against a dark background. */
+	--chip-rtg: oklch(0.7 0.161 250);
+	--chip-edmt: oklch(0.66 0.206 145);
+	--chip-fam: oklch(0.74 0.182 55);
+	--chip-gst: oklch(0.68 0.182 290);
+	--chip-rst: oklch(0.7 0.197 10);
+
+	--chip-gnd: oklch(0.68 0.02 250);
+	--chip-twr: oklch(0.76 0.233 330);
+	--chip-app: oklch(0.66 0.113 190);
+	--chip-ctr: oklch(0.72 0.149 100);
 }
 
 @layer base {

@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { getPositionColor, getPositionIcon } from "@/lib/course-utils"
+import { PositionBadge } from "@/lib/course-utils"
 import type { MentorCourse } from "@/types/mentor"
 
 interface CourseFilterProps {
@@ -67,7 +67,7 @@ export function CourseFilter({
 					<div className="flex flex-wrap gap-2">
 						{filteredCourses.map((course) => (
 							<button
-								className={`inline-flex items-center gap-2 rounded-full border px-1 py-1 text-sm font-medium transition-colors ${
+								className={`inline-flex items-center gap-2 rounded-full border py-1 pr-3 pl-1 text-sm font-medium transition-colors ${
 									selectedCourse?.id === course.id
 										? "border-primary bg-primary text-primary-foreground"
 										: "border-border bg-background hover:bg-muted"
@@ -76,11 +76,9 @@ export function CourseFilter({
 								onClick={() => onCourseSelect(course)}
 								type="submit"
 							>
-								<div
-									className={`rounded-full p-1 ${getPositionColor(course.position)}`}
-								>
-									{getPositionIcon(course.position)}
-								</div>
+								<span className="rounded-full bg-background p-px">
+									<PositionBadge position={course.position} />
+								</span>
 								{course.name}
 								<Badge className="ml-1 rounded-full" variant="secondary">
 									{course.activeTrainees}

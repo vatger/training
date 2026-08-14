@@ -50,7 +50,13 @@ class CoursesTable
 
                 TextColumn::make('position')
                     ->badge()
-                    ->color('primary')
+                    ->color(fn (string $state): string => match ($state) {
+                        'GND' => 'slate',
+                        'TWR' => 'primary',
+                        'APP' => 'teal',
+                        'CTR' => 'pink',
+                        default => 'gray',
+                    })
                     ->formatStateUsing(fn (string $state): string => match ($state) {
                         'GND' => 'Ground',
                         'TWR' => 'Tower',

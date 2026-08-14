@@ -1,6 +1,5 @@
 import { ArrowDown, ArrowUp, ArrowUpDown, Clock, MapPin } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
-import { Badge } from "@/components/ui/badge"
 import {
 	Table,
 	TableBody,
@@ -9,6 +8,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table"
+import { CourseChip } from "@/lib/course-utils"
 import { cn, formatActivityHours } from "@/lib/utils"
 import type { Course } from "@/pages/training/courses"
 import WaitingListButton from "./waiting-list-button"
@@ -30,23 +30,6 @@ type SortField =
 	| "mentor_group"
 	| "waiting_list_joined_at"
 type SortDirection = "asc" | "desc"
-
-const getTypeColor = (type: string) => {
-	switch (type) {
-		case "RTG":
-			return "bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-300"
-		case "EDMT":
-			return "bg-secondary-100 text-secondary-800 dark:bg-secondary-900 dark:text-secondary-300"
-		case "FAM":
-			return "bg-warning-100 text-warning-800 dark:bg-warning-900 dark:text-warning-300"
-		case "GST":
-			return "bg-success-100 text-success-800 dark:bg-success-900 dark:text-success-300"
-		case "RST":
-			return "bg-danger-100 text-danger-800 dark:bg-danger-900 dark:text-danger-300"
-		default:
-			return "bg-secondary-100 text-secondary-800 dark:bg-secondary-900 dark:text-secondary-300"
-	}
-}
 
 export default function SortableCoursesTable({
 	courses: initialCourses,
@@ -171,8 +154,7 @@ export default function SortableCoursesTable({
 					<TableRow>
 						<SortableHeader field="name">Course Name</SortableHeader>
 						<SortableHeader field="airport_name">Airport</SortableHeader>
-						<SortableHeader field="type">Type</SortableHeader>
-						<SortableHeader field="position">Position</SortableHeader>
+						<SortableHeader field="type">Type / Position</SortableHeader>
 						<SortableHeader field="waiting_list_joined_at">
 							Queue Status
 						</SortableHeader>
@@ -211,20 +193,12 @@ export default function SortableCoursesTable({
 								</TableCell>
 
 								<TableCell>
-									<Badge className={getTypeColor(course.type)}>
-										{course.type_display}
-									</Badge>
-								</TableCell>
-
-								<TableCell>
-									<Badge
-										className={
-											"bg-secondary-100 text-secondary-800 dark:bg-secondary-900 dark:text-secondary-300"
-										}
-										variant="outline"
-									>
-										{course.position_display}
-									</Badge>
+									<CourseChip
+										position={course.position}
+										positionLabel={course.position_display}
+										type={course.type}
+										typeLabel={course.type_display}
+									/>
 								</TableCell>
 
 								<TableCell>

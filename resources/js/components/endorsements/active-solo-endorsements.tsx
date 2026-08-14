@@ -1,5 +1,5 @@
 import { CheckCircle, Clock } from "lucide-react"
-import { getPositionIcon } from "@/pages/endorsements/trainee"
+import { getPositionColor, getPositionIcon } from "@/lib/course-utils"
 import type { Endorsement } from "@/types"
 import {
 	Card,
@@ -43,7 +43,9 @@ export default function ActiveSoloEndorsements({
 							key={endorsement.position}
 						>
 							<div className="flex items-center gap-3">
-								<div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary dark:bg-primary-900 dark:text-primary-400">
+								<div
+									className={`flex h-8 w-8 items-center justify-center rounded-full ${getPositionColor(endorsement.type)}`}
+								>
 									{getPositionIcon(endorsement.type)}
 								</div>
 								<div>

@@ -1,6 +1,5 @@
 import { Archive, Settings, Users } from "lucide-react"
 import { useState } from "react"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
 	Card,
@@ -11,11 +10,7 @@ import {
 	CardTitle,
 } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
-import {
-	getCourseTypeDisplay,
-	getPositionColor,
-	getTypeColor,
-} from "@/lib/course-utils"
+import { CourseChip, getCourseTypeDisplay } from "@/lib/course-utils"
 import type { MentorCourse, Trainee } from "@/types/mentor"
 import { AddTrainee } from "./add-trainee"
 import { ManageMentorsModal } from "./manage-mentors-modal"
@@ -92,15 +87,11 @@ export function CourseDetail({
 						<div>
 							<CardTitle className="text-xl">{course.name}</CardTitle>
 							<CardDescription className="mt-1 flex items-center gap-2">
-								<Badge
-									className={getPositionColor(course.position)}
-									variant="outline"
-								>
-									{course.position}
-								</Badge>
-								<Badge className={getTypeColor(course.type)} variant="outline">
-									{getCourseTypeDisplay(course.type)}
-								</Badge>
+								<CourseChip
+									position={course.position}
+									type={course.type}
+									typeLabel={getCourseTypeDisplay(course.type)}
+								/>
 							</CardDescription>
 						</div>
 						<div className="flex gap-2">

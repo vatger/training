@@ -1,6 +1,5 @@
 import { AlertCircle, CheckCircle, Clock, MapPin } from "lucide-react"
 import { useEffect, useState } from "react"
-import { Badge } from "@/components/ui/badge"
 import {
 	Card,
 	CardContent,
@@ -9,7 +8,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card"
-import { getTypeColor } from "@/lib/course-utils"
+import { CourseChip } from "@/lib/course-utils"
 import { cn, formatActivityHours } from "@/lib/utils"
 import type { Course } from "@/pages/training/courses"
 import WaitingListButton from "./waiting-list-button"
@@ -63,12 +62,13 @@ export default function CourseCard({
 							{course.airport_icao}
 						</CardDescription>
 					</div>
-					<div className="mt-3 flex flex-wrap gap-2">
-						<Badge className={getTypeColor(course.type)} variant="outline">
-							{course.type_display}
-						</Badge>
-						<Badge variant="secondary">{course.position_display}</Badge>
-					</div>
+					<CourseChip
+						className="mt-3"
+						position={course.position}
+						positionLabel={course.position_display}
+						type={course.type}
+						typeLabel={course.type_display}
+					/>
 				</div>
 			</CardHeader>
 			<CardContent className="-mt-4 space-y-3">

@@ -47,7 +47,7 @@ import {
 } from "@/components/ui/tooltip"
 import { useIsMobile } from "@/hooks/use-mobile"
 import AppLayout from "@/layouts/app-layout"
-import { getTypeColor } from "@/lib/course-utils"
+import { CourseChip } from "@/lib/course-utils"
 import { cn } from "@/lib/utils"
 
 interface WaitingListEntry {
@@ -294,14 +294,12 @@ export default function MentorWaitingLists({ courses, config }: PageProps) {
 												{course.name}
 											</CardTitle>
 											<CardDescription className="mt-1 flex flex-wrap gap-2">
-												<Badge className="text-xs" variant="outline">
-													{course.position_display}
-												</Badge>
-												<Badge
-													className={cn("text-xs", getTypeColor(course.type))}
-												>
-													{course.type_display}
-												</Badge>
+												<CourseChip
+													position={course.position}
+													positionLabel={course.position_display}
+													type={course.type}
+													typeLabel={course.type_display}
+												/>
 											</CardDescription>
 										</div>
 									</div>

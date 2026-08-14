@@ -2,7 +2,8 @@ import { router, usePage } from "@inertiajs/react"
 import { Award, ExternalLink } from "lucide-react"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
-import { getPositionIcon, getStatusBadge } from "@/pages/endorsements/trainee"
+import { getPositionColor, getPositionIcon } from "@/lib/course-utils"
+import { getStatusBadge } from "@/pages/endorsements/trainee"
 import type { Endorsement, SharedData } from "@/types"
 import { Button } from "../ui/button"
 import {
@@ -68,7 +69,9 @@ export default function Tier2EndorsementsTable({
 						<TableRow className="h-18" key={endorsement.position}>
 							<TableCell>
 								<div className="flex items-center gap-3">
-									<div className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary-100 text-secondary-600">
+									<div
+										className={`flex h-8 w-8 items-center justify-center rounded-full ${getPositionColor(endorsement.type)}`}
+									>
 										{getPositionIcon(endorsement.type)}
 									</div>
 									<div>

@@ -16,7 +16,6 @@ return [
 
     'vateud' => [
         'token' => env('VATEUD_TOKEN'),
-        'use_mock' => env('VATEUD_USE_MOCK', false),
         'min_activity_minutes' => (int) env('VATEUD_MIN_ACTIVITY_MINUTES', 180),
         'removal_warning_days' => (int) env('VATEUD_REMOVAL_WARNING_DAYS', 31),
         'min_endorsement_age_days' => (int) env('VATEUD_MIN_ENDORSEMENT_AGE_DAYS', 180),

@@ -13,7 +13,7 @@ class FakeVatEudClient implements VatEudClientInterface
         return [
             Tier1EndorsementData::fromApiResponse([
                 'id' => 1,
-                'user_cid' => 1601613,
+                'user_cid' => 10000010,
                 'position' => 'EDDL_TWR',
                 'facility' => 9,
                 'created_at' => '2025-04-19T12:02:38.000000Z',

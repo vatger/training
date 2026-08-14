@@ -1,5 +1,6 @@
 import { AlertCircle, Calendar, Clock } from "lucide-react"
-import { getPositionIcon, getStatusBadge } from "@/pages/endorsements/trainee"
+import { getPositionColor, getPositionIcon } from "@/lib/course-utils"
+import { getStatusBadge } from "@/pages/endorsements/trainee"
 import type { Endorsement } from "@/types"
 import {
 	Table,
@@ -33,7 +34,9 @@ export default function Tier1EndorsementsTable({
 						<TableRow className="h-18" key={endorsement.position}>
 							<TableCell>
 								<div className="flex items-center gap-3">
-									<div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">
+									<div
+										className={`flex h-8 w-8 items-center justify-center rounded-full ${getPositionColor(endorsement.type)}`}
+									>
 										{getPositionIcon(endorsement.type)}
 									</div>
 									<div>

@@ -36,7 +36,7 @@ import {
 } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import AppLayout from "@/layouts/app-layout"
-import { getPositionIcon, getTypeColor } from "@/lib/course-utils"
+import { CourseChip } from "@/lib/course-utils"
 import { cn } from "@/lib/utils"
 import type { BreadcrumbItem } from "@/types"
 
@@ -196,14 +196,10 @@ const CourseAccordionItem = ({
 					<AccordionTrigger className="hover:no-underline [&[data-state=open]>div>svg]:rotate-180">
 						<div className="flex w-full items-start justify-between pr-4">
 							<div className="flex items-center gap-3">
-								{getPositionIcon(course.position)}
 								<div className="text-left">
 									<CardTitle className="text-base">{course.name}</CardTitle>
 									<CardDescription className="mt-1 flex flex-wrap gap-2">
-										<Badge variant="outline">{course.position}</Badge>
-										<Badge className={getTypeColor(course.type)}>
-											{course.type}
-										</Badge>
+										<CourseChip position={course.position} type={course.type} />
 										{hasLogs && (
 											<Badge className="text-xs" variant="secondary">
 												{course.logs?.length} log

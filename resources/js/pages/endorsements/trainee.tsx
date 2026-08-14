@@ -1,12 +1,5 @@
 import { Head, usePage } from "@inertiajs/react"
-import {
-	AlertCircle,
-	CheckCircle,
-	Radio,
-	Shield,
-	TowerControl,
-	XCircle,
-} from "lucide-react"
+import { AlertCircle, CheckCircle, Shield, XCircle } from "lucide-react"
 import ActiveSoloEndorsements from "@/components/endorsements/active-solo-endorsements"
 import SoloEndorsementsTable from "@/components/endorsements/solo-endorsements-table"
 import Tier1EndorsementsTable from "@/components/endorsements/tier-1-endorsements-table"
@@ -88,21 +81,6 @@ export function getStatusBadge(status: string) {
 			)
 		default:
 			return <Badge variant="outline">{status}</Badge>
-	}
-}
-
-export function getPositionIcon(type: string) {
-	switch (type) {
-		case "GNDDEL":
-			return <Radio className="h-4 w-4" />
-		case "TWR":
-			return <TowerControl className="h-4 w-4" />
-		case "APP":
-			return <Shield className="h-4 w-4" />
-		case "CTR":
-			return <Shield className="h-4 w-4" />
-		default:
-			return <Radio className="h-4 w-4" />
 	}
 }
 
