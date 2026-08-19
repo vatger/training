@@ -10,6 +10,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class WaitingListsTable
 {
@@ -113,6 +114,26 @@ class WaitingListsTable
                 Filter::make('high_activity')
                     ->label('High Activity (≥10h)')
                     ->query(fn ($query) => $query->where('activity', '>=', 10)),
+
+                Filter::make('multiple_entries')
+                    ->label('Multiple Rating or EDMT/FAM Entries')
+                    ->toggle()
+                    ->query(function (Builder $query) {
+                        return $query
+                            ->whereIn('waiting_list_entries.user_id', function ($outer) {
+                                $outer->select('user_id')
+                                    ->fromSub(function ($sub) {
+                                        $sub->from('waiting_list_entries')
+                                            ->join('courses', 'courses.id', '=', 'waiting_list_entries.course_id')
+                                            ->select('waiting_list_entries.user_id')
+                                            ->selectRaw("case when courses.type = 'RTG' then 'RTG' else 'EDMT_FAM' end as entry_group")
+                                            ->whereIn('courses.type', ['RTG', 'EDMT', 'FAM'])
+                                            ->groupBy('waiting_list_entries.user_id', 'entry_group')
+                                            ->havingRaw('count(*) > 1');
+                                    }, 'duplicate_groups');
+                            })
+                            ->orderBy('waiting_list_entries.user_id');
+                    }),
             ])
             ->recordActions([
                 EditAction::make(),
