@@ -66,6 +66,30 @@ test('other course types do not count towards the duplicate groups', function ()
         ->assertCanNotSeeTableRecords([$entry1, $entry2]);
 });
 
+test('a lone rating entry is excluded even when the user has multiple edmt entries', function () {
+    $user = User::factory()->create();
+    $ratingEntry = makeWaitingListEntry($user, Course::factory()->rtg()->create());
+    $edmtEntry1 = makeWaitingListEntry($user, Course::factory()->edmt()->create());
+    $edmtEntry2 = makeWaitingListEntry($user, Course::factory()->edmt()->create());
+
+    Livewire::test(ListWaitingLists::class)
+        ->filterTable('multiple_entries', true)
+        ->assertCanSeeTableRecords([$edmtEntry1, $edmtEntry2])
+        ->assertCanNotSeeTableRecords([$ratingEntry]);
+});
+
+test('a lone edmt/fam entry is excluded even when the user has multiple rating entries', function () {
+    $user = User::factory()->create();
+    $ratingEntry1 = makeWaitingListEntry($user, Course::factory()->rtg()->create());
+    $ratingEntry2 = makeWaitingListEntry($user, Course::factory()->rtg()->create());
+    $famEntry = makeWaitingListEntry($user, Course::factory()->create(['type' => 'FAM']));
+
+    Livewire::test(ListWaitingLists::class)
+        ->filterTable('multiple_entries', true)
+        ->assertCanSeeTableRecords([$ratingEntry1, $ratingEntry2])
+        ->assertCanNotSeeTableRecords([$famEntry]);
+});
+
 test('filter is off by default and shows all entries', function () {
     $user = User::factory()->create();
     $entry = makeWaitingListEntry($user, Course::factory()->rtg()->create());
