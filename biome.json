@@ -8,7 +8,12 @@
 	},
 	"files": {
 		"ignoreUnknown": false,
-		"includes": ["**", "!public", "!resources/js/components/ui/*"]
+		"includes": [
+			"**",
+			"!public",
+			"!resources/js/components/ui/*",
+			"!resources/js/images/*.svg"
+		]
 	},
 	"formatter": { "enabled": true, "indentStyle": "tab" },
 	"linter": {
