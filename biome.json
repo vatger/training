@@ -1,5 +1,5 @@
 {
-	"$schema": "https://biomejs.dev/schemas/2.5.7/schema.json",
+	"$schema": "https://biomejs.dev/schemas/2.5.9/schema.json",
 	"vcs": {
 		"enabled": true,
 		"clientKind": "git",
@@ -8,7 +8,12 @@
 	},
 	"files": {
 		"ignoreUnknown": false,
-		"includes": ["**", "!public", "!resources/js/components/ui/*"]
+		"includes": [
+			"**",
+			"!public",
+			"!resources/js/components/ui/*",
+			"!resources/js/images/*.svg"
+		]
 	},
 	"formatter": { "enabled": true, "indentStyle": "tab" },
 	"linter": {
