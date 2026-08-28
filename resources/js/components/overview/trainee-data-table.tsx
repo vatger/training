@@ -1,10 +1,11 @@
 import { Link, router } from "@inertiajs/react"
 import {
 	type ColumnDef,
+	type ColumnVisibilityState,
+	columnVisibilityFeature,
 	flexRender,
-	getCoreRowModel,
-	useReactTable,
-	type VisibilityState,
+	tableFeatures,
+	useTable,
 } from "@tanstack/react-table"
 import {
 	AlertCircle,
@@ -68,6 +69,8 @@ interface TraineeDataTableProps {
 	onClaimClick: (trainee: Trainee) => void
 	onAssignClick: (trainee: Trainee) => void
 }
+
+const features = tableFeatures({ columnVisibilityFeature })
 
 function TraineeRowActions({
 	trainee,
@@ -270,7 +273,8 @@ export function TraineeDataTable({
 }: TraineeDataTableProps) {
 	const [data, setData] = useState<Trainee[]>(trainees)
 	const [isUnclaiming, setIsUnclaiming] = useState<number | null>(null)
-	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
+	const [columnVisibility, setColumnVisibility] =
+		useState<ColumnVisibilityState>({})
 
 	const [soloModalOpen, setSoloModalOpen] = useState(false)
 	const [selectedTraineeForSolo, setSelectedTraineeForSolo] =
@@ -389,7 +393,7 @@ export function TraineeDataTable({
 		)
 	}
 
-	const columns: ColumnDef<Trainee>[] = [
+	const columns: ColumnDef<typeof features, Trainee>[] = [
 		{
 			id: "trainee",
 			accessorKey: "name",
@@ -804,10 +808,10 @@ export function TraineeDataTable({
 		},
 	]
 
-	const table = useReactTable({
+	const table = useTable({
 		data,
 		columns,
-		getCoreRowModel: getCoreRowModel(),
+		features,
 		state: {
 			columnVisibility,
 		},
