@@ -53,7 +53,7 @@
 		"lucide-react": "^1.33.0",
 		"radix-ui": "^1.6.7",
 		"react": "^19.2.5",
-		"react-day-picker": "^9.13.0",
+		"react-day-picker": "^10.0.1",
 		"react-dom": "^19.2.8",
 		"sonner": "^2.0.8",
 		"tailwind-merge": "^3.6.0",

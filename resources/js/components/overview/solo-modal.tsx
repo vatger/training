@@ -634,7 +634,6 @@ export function SoloModal({
 												maxDate.setDate(maxDate.getDate() + 29)
 												return date < minDate || date > maxDate
 											}}
-											initialFocus
 											mode="single"
 											onSelect={(date) => {
 												setExpiryDate(date)
