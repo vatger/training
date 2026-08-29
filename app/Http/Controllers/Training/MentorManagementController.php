@@ -87,8 +87,12 @@ class MentorManagementController extends Controller
             ->whereHas('course', fn ($q) => $q->where('type', 'RTG'))
             ->exists();
 
-        $userHasActiveFamEdmtCourse = WaitingListEntry::where('user_id', $user->id)
-            ->whereHas('course', fn ($q) => $q->whereIn('type', ['EDMT', 'FAM']))
+        $userHasActiveEdmtCourse = WaitingListEntry::where('user_id', $user->id)
+            ->whereHas('course', fn ($q) => $q->where('type', 'EDMT'))
+            ->exists();
+
+        $userHasActiveFamCourse = WaitingListEntry::where('user_id', $user->id)
+            ->whereHas('course', fn ($q) => $q->where('type', 'FAM'))
             ->exists();
 
         return Inertia::render('training/courses', [
@@ -96,7 +100,8 @@ class MentorManagementController extends Controller
             'isVatsimUser' => $user->isVatsimUser(),
             'moodleSignedUp' => $moodleSignedUp,
             'userHasActiveRtgCourse' => $userHasActiveRtgCourse,
-            'userHasActiveFamEdmtCourse' => $userHasActiveFamEdmtCourse,
+            'userHasActiveEdmtCourse' => $userHasActiveEdmtCourse,
+            'userHasActiveFamCourse' => $userHasActiveFamCourse,
             'rtgRatingPending' => $rtgRatingPending,
         ]);
     }

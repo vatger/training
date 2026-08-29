@@ -17,7 +17,8 @@ interface SortableCoursesTableProps {
 	courses: Course[]
 	onCourseUpdate?: (courseId: number, updates: Partial<Course>) => void
 	userHasActiveRtgCourse?: boolean
-	userHasActiveFamEdmtCourse?: boolean
+	userHasActiveEdmtCourse?: boolean
+	userHasActiveFamCourse?: boolean
 	rtgRatingPending?: boolean
 }
 
@@ -52,7 +53,8 @@ export default function SortableCoursesTable({
 	courses: initialCourses,
 	onCourseUpdate,
 	userHasActiveRtgCourse = false,
-	userHasActiveFamEdmtCourse = false,
+	userHasActiveEdmtCourse = false,
+	userHasActiveFamCourse = false,
 	rtgRatingPending = false,
 }: SortableCoursesTableProps) {
 	const [courses, setCourses] = useState(initialCourses)
@@ -264,7 +266,8 @@ export default function SortableCoursesTable({
 										onCourseUpdate={handleCourseUpdate}
 										rtgRatingPending={rtgRatingPending}
 										size="sm"
-										userHasActiveFamEdmtCourse={userHasActiveFamEdmtCourse}
+										userHasActiveEdmtCourse={userHasActiveEdmtCourse}
+										userHasActiveFamCourse={userHasActiveFamCourse}
 										userHasActiveRtgCourse={userHasActiveRtgCourse}
 									/>
 								</TableCell>

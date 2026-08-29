@@ -46,9 +46,29 @@ test('user with two rating entries is included', function () {
         ->assertCanSeeTableRecords([$entry1, $entry2]);
 });
 
-test('user with one edmt and one fam entry is included', function () {
+test('user with one edmt and one fam entry is excluded', function () {
     $user = User::factory()->create();
     $entry1 = makeWaitingListEntry($user, Course::factory()->edmt()->create());
+    $entry2 = makeWaitingListEntry($user, Course::factory()->create(['type' => 'FAM']));
+
+    Livewire::test(ListWaitingLists::class)
+        ->filterTable('multiple_entries', true)
+        ->assertCanNotSeeTableRecords([$entry1, $entry2]);
+});
+
+test('user with two edmt entries is included', function () {
+    $user = User::factory()->create();
+    $entry1 = makeWaitingListEntry($user, Course::factory()->edmt()->create());
+    $entry2 = makeWaitingListEntry($user, Course::factory()->edmt()->create());
+
+    Livewire::test(ListWaitingLists::class)
+        ->filterTable('multiple_entries', true)
+        ->assertCanSeeTableRecords([$entry1, $entry2]);
+});
+
+test('user with two fam entries is included', function () {
+    $user = User::factory()->create();
+    $entry1 = makeWaitingListEntry($user, Course::factory()->create(['type' => 'FAM']));
     $entry2 = makeWaitingListEntry($user, Course::factory()->create(['type' => 'FAM']));
 
     Livewire::test(ListWaitingLists::class)

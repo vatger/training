@@ -66,7 +66,8 @@ interface PageProps {
 	isVatsimUser: boolean
 	moodleSignedUp: boolean
 	userHasActiveRtgCourse: boolean
-	userHasActiveFamEdmtCourse: boolean
+	userHasActiveEdmtCourse: boolean
+	userHasActiveFamCourse: boolean
 	rtgRatingPending: boolean
 	error?: string
 }
@@ -76,7 +77,8 @@ export default function Courses({
 	isVatsimUser,
 	moodleSignedUp = false,
 	userHasActiveRtgCourse = false,
-	userHasActiveFamEdmtCourse = false,
+	userHasActiveEdmtCourse = false,
+	userHasActiveFamCourse = false,
 	rtgRatingPending = false,
 	error,
 }: PageProps) {
@@ -99,14 +101,19 @@ export default function Courses({
 		return userHasActiveRtgCourse || hasRtgFromWaitingList
 	}, [userHasActiveRtgCourse, courses])
 
-	const currentUserHasActiveFamEdmtCourse = useMemo(() => {
-		const hasFamEdmtFromWaitingList = courses.some(
-			(course) =>
-				(course.type === "EDMT" || course.type === "FAM") &&
-				course.is_on_waiting_list,
+	const currentUserHasActiveEdmtCourse = useMemo(() => {
+		const hasEdmtFromWaitingList = courses.some(
+			(course) => course.type === "EDMT" && course.is_on_waiting_list,
 		)
-		return userHasActiveFamEdmtCourse || hasFamEdmtFromWaitingList
-	}, [userHasActiveFamEdmtCourse, courses])
+		return userHasActiveEdmtCourse || hasEdmtFromWaitingList
+	}, [userHasActiveEdmtCourse, courses])
+
+	const currentUserHasActiveFamCourse = useMemo(() => {
+		const hasFamFromWaitingList = courses.some(
+			(course) => course.type === "FAM" && course.is_on_waiting_list,
+		)
+		return userHasActiveFamCourse || hasFamFromWaitingList
+	}, [userHasActiveFamCourse, courses])
 
 	const handleCourseUpdate = useCallback(
 		(courseId: number, updates: Partial<Course>) => {
@@ -145,14 +152,17 @@ export default function Courses({
 				const isNotBlockedByRtgRestriction = !(
 					course.type === "RTG" && currentUserHasActiveRtgCourse
 				)
-				const isNotBlockedByFamEdmtRestriction = !(
-					(course.type === "EDMT" || course.type === "FAM") &&
-					currentUserHasActiveFamEdmtCourse
+				const isNotBlockedByEdmtRestriction = !(
+					course.type === "EDMT" && currentUserHasActiveEdmtCourse
+				)
+				const isNotBlockedByFamRestriction = !(
+					course.type === "FAM" && currentUserHasActiveFamCourse
 				)
 				matchesTab =
 					isActuallyAvailable &&
 					isNotBlockedByRtgRestriction &&
-					isNotBlockedByFamEdmtRestriction
+					isNotBlockedByEdmtRestriction &&
+					isNotBlockedByFamRestriction
 			}
 
 			return matchesSearch && matchesType && matchesFir && matchesTab
@@ -164,7 +174,8 @@ export default function Courses({
 		firFilter,
 		activeTab,
 		currentUserHasActiveRtgCourse,
-		currentUserHasActiveFamEdmtCourse,
+		currentUserHasActiveEdmtCourse,
+		currentUserHasActiveFamCourse,
 	])
 
 	const clearFilters = () => {
@@ -354,7 +365,8 @@ export default function Courses({
 								key={course.id}
 								onCourseUpdate={handleCourseUpdate}
 								rtgRatingPending={rtgRatingPending}
-								userHasActiveFamEdmtCourse={currentUserHasActiveFamEdmtCourse}
+								userHasActiveEdmtCourse={currentUserHasActiveEdmtCourse}
+								userHasActiveFamCourse={currentUserHasActiveFamCourse}
 								userHasActiveRtgCourse={currentUserHasActiveRtgCourse}
 							/>
 						))}
@@ -364,7 +376,8 @@ export default function Courses({
 						courses={filteredCourses}
 						onCourseUpdate={handleCourseUpdate}
 						rtgRatingPending={rtgRatingPending}
-						userHasActiveFamEdmtCourse={currentUserHasActiveFamEdmtCourse}
+						userHasActiveEdmtCourse={currentUserHasActiveEdmtCourse}
+						userHasActiveFamCourse={currentUserHasActiveFamCourse}
 						userHasActiveRtgCourse={currentUserHasActiveRtgCourse}
 					/>
 				)}

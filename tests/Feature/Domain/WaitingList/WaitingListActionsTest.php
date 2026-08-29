@@ -122,7 +122,7 @@ test('JoinWaitingList fails if user is already on an EDMT waiting list and tries
     [$success, $message] = app(JoinWaitingList::class)->execute($courseA, $user);
 
     expect($success)->toBeFalse();
-    expect($message)->toBe('You are already on the waiting list for an endorsement or familiarisation course. You can only join one at a time.');
+    expect($message)->toBe('You are already on the waiting list for an endorsement course. You can only join one endorsement course at a time.');
 });
 
 test('JoinWaitingList fails if user is already on a FAM waiting list and tries to join another FAM course', function () {
@@ -145,10 +145,10 @@ test('JoinWaitingList fails if user is already on a FAM waiting list and tries t
     [$success, $message] = app(JoinWaitingList::class)->execute($courseA, $user);
 
     expect($success)->toBeFalse();
-    expect($message)->toBe('You are already on the waiting list for an endorsement or familiarisation course. You can only join one at a time.');
+    expect($message)->toBe('You are already on the waiting list for a familiarisation course. You can only join one familiarisation course at a time.');
 });
 
-test('JoinWaitingList fails if user is already on an EDMT waiting list and tries to join a FAM course', function () {
+test('JoinWaitingList succeeds if user is already on an EDMT waiting list and joins a FAM course', function () {
     Event::fake();
 
     $user = User::factory()->create(['rating' => 2, 'subdivision' => 'GER', 'last_rating_change' => now()->subDays(100)]);
@@ -167,8 +167,33 @@ test('JoinWaitingList fails if user is already on an EDMT waiting list and tries
 
     [$success, $message] = app(JoinWaitingList::class)->execute($famCourse, $user);
 
-    expect($success)->toBeFalse();
-    expect($message)->toBe('You are already on the waiting list for an endorsement or familiarisation course. You can only join one at a time.');
+    expect($success)->toBeTrue();
+    expect($message)->toBe('Successfully joined waiting list.');
+    expect(WaitingListEntry::where('user_id', $user->id)->where('course_id', $famCourse->id)->exists())->toBeTrue();
+});
+
+test('JoinWaitingList succeeds if user is already on a FAM waiting list and joins an EDMT course', function () {
+    Event::fake();
+
+    $user = User::factory()->create(['rating' => 2, 'subdivision' => 'GER', 'last_rating_change' => now()->subDays(100)]);
+    fakeRosterWith([$user->vatsim_id]);
+
+    $famCourse = Course::factory()->create(['type' => 'FAM', 'min_rating' => 2, 'max_rating' => 3]);
+    $edmtCourse = Course::factory()->create(['type' => 'EDMT', 'min_rating' => 2, 'max_rating' => 3]);
+
+    WaitingListEntry::create([
+        'user_id' => $user->id,
+        'course_id' => $famCourse->id,
+        'date_added' => now(),
+        'activity' => 0,
+        'hours_updated' => now(),
+    ]);
+
+    [$success, $message] = app(JoinWaitingList::class)->execute($edmtCourse, $user);
+
+    expect($success)->toBeTrue();
+    expect($message)->toBe('Successfully joined waiting list.');
+    expect(WaitingListEntry::where('user_id', $user->id)->where('course_id', $edmtCourse->id)->exists())->toBeTrue();
 });
 
 test('JoinWaitingList fails if user is restricted from joining that course type', function () {
