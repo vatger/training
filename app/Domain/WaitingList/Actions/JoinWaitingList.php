@@ -34,8 +34,12 @@ class JoinWaitingList
             return [false, 'You are already on the waiting list for a rating course. You can only join one rating course at a time.'];
         }
 
-        if (in_array($course->type, ['EDMT', 'FAM']) && WaitingListEntry::whereHas('course', fn ($q) => $q->whereIn('type', ['EDMT', 'FAM']))->where('user_id', $user->id)->exists()) {
-            return [false, 'You are already on the waiting list for an endorsement or familiarisation course. You can only join one at a time.'];
+        if ($course->type === 'EDMT' && WaitingListEntry::whereHas('course', fn ($q) => $q->where('type', 'EDMT'))->where('user_id', $user->id)->exists()) {
+            return [false, 'You are already on the waiting list for an endorsement course. You can only join one endorsement course at a time.'];
+        }
+
+        if ($course->type === 'FAM' && WaitingListEntry::whereHas('course', fn ($q) => $q->where('type', 'FAM'))->where('user_id', $user->id)->exists()) {
+            return [false, 'You are already on the waiting list for a familiarisation course. You can only join one familiarisation course at a time.'];
         }
 
         try {

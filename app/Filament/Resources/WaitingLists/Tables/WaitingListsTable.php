@@ -116,33 +116,29 @@ class WaitingListsTable
                     ->query(fn ($query) => $query->where('activity', '>=', 10)),
 
                 Filter::make('multiple_entries')
-                    ->label('Multiple Rating or EDMT/FAM Entries')
+                    ->label('Multiple Rating, EDMT or FAM Entries')
                     ->toggle()
                     ->query(function (Builder $query) {
-                        $duplicateUserIdsForTypes = function (array $types) {
-                            return function ($sub) use ($types) {
+                        $duplicateUserIdsForType = function (string $type) {
+                            return function ($sub) use ($type) {
                                 $sub->select('user_id')
                                     ->from('waiting_list_entries')
                                     ->join('courses', 'courses.id', '=', 'waiting_list_entries.course_id')
-                                    ->whereIn('courses.type', $types)
+                                    ->where('courses.type', $type)
                                     ->groupBy('user_id')
                                     ->havingRaw('count(*) > 1');
                             };
                         };
 
                         return $query
-                            ->where(function (Builder $query) use ($duplicateUserIdsForTypes) {
-                                $query
-                                    ->where(function (Builder $query) use ($duplicateUserIdsForTypes) {
+                            ->where(function (Builder $query) use ($duplicateUserIdsForType) {
+                                foreach (['RTG', 'EDMT', 'FAM'] as $type) {
+                                    $query->orWhere(function (Builder $query) use ($duplicateUserIdsForType, $type) {
                                         $query
-                                            ->whereHas('course', fn ($q) => $q->where('type', 'RTG'))
-                                            ->whereIn('user_id', $duplicateUserIdsForTypes(['RTG']));
-                                    })
-                                    ->orWhere(function (Builder $query) use ($duplicateUserIdsForTypes) {
-                                        $query
-                                            ->whereHas('course', fn ($q) => $q->whereIn('type', ['EDMT', 'FAM']))
-                                            ->whereIn('user_id', $duplicateUserIdsForTypes(['EDMT', 'FAM']));
+                                            ->whereHas('course', fn ($q) => $q->where('type', $type))
+                                            ->whereIn('user_id', $duplicateUserIdsForType($type));
                                     });
+                                }
                             })
                             ->orderBy('user_id');
                     }),
