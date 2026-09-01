@@ -10,7 +10,7 @@
 		"types": "tsc --noEmit"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.5.9",
+		"@biomejs/biome": "2.5.11",
 		"@laravel/vite-plugin-wayfinder": "^0.1.7",
 		"@types/node": "^26.4.0",
 		"@types/ziggy-js": "^1.8.0"
