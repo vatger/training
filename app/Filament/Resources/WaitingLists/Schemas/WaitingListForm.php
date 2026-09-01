@@ -52,6 +52,12 @@ class WaitingListForm
                             ->columnSpanFull()
                             ->rows(3)
                             ->helperText('Internal notes about this trainee'),
+
+                        Forms\Components\Toggle::make('is_interested')
+                            ->label('Interest Confirmed')
+                            ->disabled()
+                            ->dehydrated(false)
+                            ->helperText('Automatically managed by the waiting-list interest verification job — not editable here.'),
                     ])->columns(2),
             ]);
     }

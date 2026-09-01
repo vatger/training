@@ -4,10 +4,11 @@ namespace App\Http\Controllers\Training;
 
 use App\Domain\Training\Actions\AddMentorToCourse;
 use App\Domain\Training\Actions\RemoveMentorFromCourse;
+use App\Domain\WaitingList\Actions\ConfirmWaitingListInterest;
 use App\Domain\WaitingList\Actions\JoinWaitingList;
 use App\Domain\WaitingList\Actions\LeaveWaitingList;
 use App\Http\Controllers\Controller;
-use App\Integrations\Moodle\MoodleClient;
+use App\Integrations\Moodle\MoodleClientInterface;
 use App\Models\Course;
 use App\Models\Familiarisation;
 use App\Models\User;
@@ -27,14 +28,15 @@ class MentorManagementController extends Controller
         private CourseValidationService $courseValidationService,
         private JoinWaitingList $joinWaitingList,
         private LeaveWaitingList $leaveWaitingList,
+        private ConfirmWaitingListInterest $confirmWaitingListInterest,
+        private MoodleClientInterface $moodleClient,
     ) {}
 
     public function index(Request $request): Response
     {
         $user = $request->user();
 
-        $moodleClient = app(MoodleClient::class);
-        $moodleSignedUp = $moodleClient->userExists($user->vatsim_id);
+        $moodleSignedUp = $this->moodleClient->userExists($user->vatsim_id);
 
         $isAdmin = $user->is_admin || $user->is_superuser;
         $isOnRoster = $this->courseValidationService->isUserOnRoster($user->vatsim_id);
@@ -78,6 +80,7 @@ class MentorManagementController extends Controller
                 'is_on_waiting_list' => $isOnWaitingList,
                 'waiting_list_joined_at' => $waitingEntry?->date_added?->format('Y-m-d H:i:s'),
                 'waiting_list_activity' => $waitingEntry?->activity,
+                'waiting_list_interest_confirmed' => $waitingEntry?->is_interested,
                 'can_join' => $canJoin,
                 'join_error' => $joinError ?: null,
             ];
@@ -127,6 +130,23 @@ class MentorManagementController extends Controller
         }
 
         return back()->with('success', $message);
+    }
+
+    public function confirmWaitingListInterest(Request $request, Course $course)
+    {
+        $user = $request->user();
+
+        $entry = WaitingListEntry::where('course_id', $course->id)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if (! $entry) {
+            return back()->withErrors(['error' => 'You are not on the waiting list for this course.']);
+        }
+
+        $this->confirmWaitingListInterest->execute($entry, $user);
+
+        return back()->with('success', 'Thanks for confirming your interest!');
     }
 
     public function addMentor(Request $request)

@@ -868,6 +868,30 @@ test('update remarks fails validation when entry_id is missing', function () {
         ->assertSessionHasErrors('entry_id');
 });
 
+test('mentor waiting list view reports is_interested per entry', function () {
+    $course = Course::factory()->create(['type' => 'RTG']);
+    $mentor = trainingHttpMentor($course);
+    $trainee = User::factory()->create();
+
+    WaitingListEntry::create([
+        'user_id' => $trainee->id,
+        'course_id' => $course->id,
+        'date_added' => now(),
+        'activity' => 0,
+        'hours_updated' => now(),
+        'is_interested' => false,
+    ]);
+
+    $this->actingAs($mentor)
+        ->get(route('waiting-lists.manage'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('training/mentor-waiting-lists')
+            ->where('courses', fn ($courses) => collect($courses)
+                ->firstWhere('id', $course->id)['waiting_list'][0]['is_interested'] === false)
+        );
+});
+
 // ─── TrainingLogController: show ──────────────────────────────────────────────
 
 test('unauthenticated user is redirected from training log show', function () {
@@ -1549,5 +1573,67 @@ test('courses index includes courses the user is already on the waiting list for
         ->assertInertia(fn ($page) => $page
             ->component('training/courses')
             ->where('courses', fn ($courses) => collect($courses)->pluck('id')->contains($course->id))
+        );
+});
+
+// ─── MentorManagementController: confirm waiting list interest ───────────────
+
+test('unauthenticated user is redirected when confirming waiting list interest', function () {
+    $course = Course::factory()->create(['type' => 'RTG']);
+
+    $this->post(route('courses.confirm-interest', $course))->assertRedirect();
+});
+
+test('user can confirm interest for their own waiting list entry', function () {
+    $user = User::factory()->create();
+    $course = Course::factory()->create(['type' => 'RTG']);
+
+    $entry = WaitingListEntry::create([
+        'user_id' => $user->id,
+        'course_id' => $course->id,
+        'date_added' => now(),
+        'activity' => 0,
+        'hours_updated' => now(),
+        'is_interested' => false,
+    ]);
+
+    $this->actingAs($user)
+        ->post(route('courses.confirm-interest', $course))
+        ->assertSessionHasNoErrors();
+
+    $entry->refresh();
+    expect($entry->is_interested)->toBeTrue();
+    expect($entry->interest_confirmed_at)->not->toBeNull();
+});
+
+test('confirming interest fails when user has no entry for that course', function () {
+    $user = User::factory()->create();
+    $course = Course::factory()->create(['type' => 'RTG']);
+
+    $this->actingAs($user)
+        ->post(route('courses.confirm-interest', $course))
+        ->assertSessionHasErrors('error');
+});
+
+test('courses index reports waiting_list_interest_confirmed for the user entry', function () {
+    $user = User::factory()->create(['subdivision' => 'GER', 'rating' => 3]);
+    trainingHttpFakeRoster([$user->vatsim_id]);
+    $course = Course::factory()->create(['type' => 'RTG', 'min_rating' => 2, 'max_rating' => 4]);
+
+    WaitingListEntry::create([
+        'user_id' => $user->id,
+        'course_id' => $course->id,
+        'date_added' => now(),
+        'activity' => 0,
+        'hours_updated' => now(),
+        'is_interested' => false,
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('courses.index'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('training/courses')
+            ->where('courses', fn ($courses) => collect($courses)->firstWhere('id', $course->id)['waiting_list_interest_confirmed'] === false)
         );
 });

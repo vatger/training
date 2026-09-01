@@ -8,6 +8,9 @@ enum ActivityAction: string
     case WAITING_LIST_LEFT = 'waiting_list.left';
     case WAITING_LIST_ENTRY_CREATED = 'waitinglistentry.created';
     case WAITING_LIST_ENTRY_DELETED = 'waitinglistentry.deleted';
+    case WAITING_LIST_INTEREST_CONFIRMED = 'waiting_list.interest_confirmed';
+    case WAITING_LIST_PURGED_FOR_INACTIVITY = 'waiting_list.purged_for_inactivity';
+    case WAITING_LIST_VERIFICATION_REQUESTED = 'waiting_list.verification_requested';
 
     case TRAINING_STARTED = 'training.started';
     case COURSE_FINISHED = 'course.finished';
@@ -77,6 +80,9 @@ enum ActivityAction: string
             self::WAITING_LIST_LEFT => 'Left Waiting List',
             self::WAITING_LIST_ENTRY_CREATED => 'Create Waiting List Entry',
             self::WAITING_LIST_ENTRY_DELETED => 'Deleted Waiting List Entry',
+            self::WAITING_LIST_INTEREST_CONFIRMED => 'Confirmed Waiting List Interest',
+            self::WAITING_LIST_PURGED_FOR_INACTIVITY => 'Removed from Waiting List (Inactivity)',
+            self::WAITING_LIST_VERIFICATION_REQUESTED => 'Requested Waiting List Confirmation',
 
             self::TRAINING_STARTED => 'Training Started',
             self::COURSE_FINISHED => 'Course Finished',
@@ -144,6 +150,7 @@ enum ActivityAction: string
     {
         return match ($this) {
             self::WAITING_LIST_JOINED,
+            self::WAITING_LIST_INTEREST_CONFIRMED,
             self::TRAINING_STARTED,
             self::ENDORSEMENT_TIER1_GRANTED,
             self::ENDORSEMENT_TIER2_GRANTED,
@@ -161,6 +168,7 @@ enum ActivityAction: string
             self::CREATED => 'success',
 
             self::WAITING_LIST_LEFT,
+            self::WAITING_LIST_PURGED_FOR_INACTIVITY,
             self::ENDORSEMENT_REMOVED,
             self::ENDORSEMENT_DELETED,
             self::SOLO_REMOVED,
@@ -182,6 +190,7 @@ enum ActivityAction: string
             self::COURSE_UPDATED,
             self::COT_UPDATED,
             self::ROSTER_NOTIFIED,
+            self::WAITING_LIST_VERIFICATION_REQUESTED,
             self::UPDATED => 'warning',
 
             self::CPT_EXAMINER_JOINED,

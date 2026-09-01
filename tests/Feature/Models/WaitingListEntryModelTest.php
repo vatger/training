@@ -3,6 +3,7 @@
 use App\Models\Course;
 use App\Models\User;
 use App\Models\WaitingListEntry;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 
@@ -131,4 +132,27 @@ test('position_in_queue is isolated per course', function () {
 
     expect($entryA->position_in_queue)->toBe(1);
     expect($entryB->position_in_queue)->toBe(1);
+});
+
+// ─── is_interested default ───────────────────────────────────────────────────
+
+test('is_interested defaults to true for a new entry', function () {
+    $entry = makeEntry(User::factory()->create(), Course::factory()->create());
+
+    expect($entry->is_interested)->toBeTrue();
+    expect($entry->interest_confirmed_at)->toBeNull();
+});
+
+test('removal_date defaults to null for a new entry', function () {
+    $entry = makeEntry(User::factory()->create(), Course::factory()->create());
+
+    expect($entry->removal_date)->toBeNull();
+});
+
+test('removal_date is cast to a Carbon instance when set', function () {
+    $entry = makeEntry(User::factory()->create(), Course::factory()->create(), [
+        'removal_date' => now()->addDays(30),
+    ]);
+
+    expect($entry->removal_date)->toBeInstanceOf(Carbon::class);
 });

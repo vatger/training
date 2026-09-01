@@ -47,6 +47,7 @@ export default function WaitingListButton({
 		"joining" | "leaving" | null
 	>(null)
 	const [showLeaveConfirmation, setShowLeaveConfirmation] = useState(false)
+	const [isConfirmingInterest, setIsConfirmingInterest] = useState(false)
 
 	const isEdmtType = course.type === "EDMT"
 	const isFamType = course.type === "FAM"
@@ -169,6 +170,53 @@ export default function WaitingListButton({
 		} finally {
 			setIsLoading(false)
 			setLoadingAction(null)
+		}
+	}
+
+	const handleConfirmInterest = async () => {
+		if (isConfirmingInterest) return
+
+		setIsConfirmingInterest(true)
+
+		onCourseUpdate?.(course.id, { waiting_list_interest_confirmed: true })
+
+		try {
+			await new Promise<void>((resolve, reject) => {
+				router.post(
+					`/courses/${course.id}/waiting-list/confirm-interest`,
+					{},
+					{
+						preserveState: true,
+						preserveScroll: true,
+						onSuccess: () => {
+							toast.success("Thanks for confirming your interest!")
+							resolve()
+						},
+						onError: (errors) => {
+							onCourseUpdate?.(course.id, {
+								waiting_list_interest_confirmed: false,
+							})
+
+							const errorMessage =
+								Object.values(errors).flat()[0] || "An error occurred"
+							toast.error(
+								typeof errorMessage === "string"
+									? errorMessage
+									: "Failed to confirm interest",
+							)
+
+							reject(new Error("Inertia request failed"))
+						},
+					},
+				)
+			})
+		} catch (error) {
+			console.error("Error confirming waiting list interest:", error)
+			toast.error("Connection error")
+
+			onCourseUpdate?.(course.id, { waiting_list_interest_confirmed: false })
+		} finally {
+			setIsConfirmingInterest(false)
 		}
 	}
 
@@ -339,7 +387,26 @@ export default function WaitingListButton({
 
 	return (
 		<>
-			<div className={variant === "compact" ? "" : "w-full"}>{button}</div>
+			<div className={variant === "compact" ? "" : "w-full space-y-2"}>
+				{button}
+				{course.is_on_waiting_list &&
+					course.waiting_list_interest_confirmed === false && (
+						<Button
+							className="w-full"
+							disabled={isConfirmingInterest}
+							onClick={handleConfirmInterest}
+							size={size}
+							variant="outline"
+						>
+							{isConfirmingInterest ? (
+								<Loader2 className="h-4 w-4 animate-spin" />
+							) : (
+								<CheckCircle className="h-4 w-4" />
+							)}
+							{variant === "compact" ? "" : "Confirm you're still interested"}
+						</Button>
+					)}
+			</div>
 
 			<Dialog
 				onOpenChange={setShowLeaveConfirmation}
