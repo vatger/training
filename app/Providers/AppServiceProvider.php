@@ -2,6 +2,9 @@
 
 namespace App\Providers;
 
+use App\Integrations\Datahub\DatahubClient;
+use App\Integrations\Datahub\DatahubClientInterface;
+use App\Integrations\Datahub\FakeDatahubClient;
 use App\Integrations\Moodle\FakeMoodleClient;
 use App\Integrations\Moodle\MoodleClient;
 use App\Integrations\Moodle\MoodleClientInterface;
@@ -11,6 +14,12 @@ use App\Integrations\VatEud\VatEudClientInterface;
 use App\Integrations\Vatger\FakeVatgerClient;
 use App\Integrations\Vatger\VatgerClient;
 use App\Integrations\Vatger\VatgerClientInterface;
+use App\Integrations\VatglassesData\FakeVatglassesDataClient;
+use App\Integrations\VatglassesData\VatglassesDataClient;
+use App\Integrations\VatglassesData\VatglassesDataClientInterface;
+use App\Integrations\VatsimGermanyStats\FakeVatsimGermanyStatsClient;
+use App\Integrations\VatsimGermanyStats\VatsimGermanyStatsClient;
+use App\Integrations\VatsimGermanyStats\VatsimGermanyStatsClientInterface;
 use App\Models\TrainingLog;
 use App\Policies\EndorsementPolicy;
 use App\Policies\TrainingLogPolicy;
@@ -52,6 +61,22 @@ class AppServiceProvider extends ServiceProvider
             $fake
             ? FakeMoodleClient::class
             : MoodleClient::class,
+        );
+
+        // Controller Activity Engine data sources.
+        $this->app->singleton(
+            VatsimGermanyStatsClientInterface::class,
+            $fake ? FakeVatsimGermanyStatsClient::class : VatsimGermanyStatsClient::class,
+        );
+
+        $this->app->singleton(
+            VatglassesDataClientInterface::class,
+            $fake ? FakeVatglassesDataClient::class : VatglassesDataClient::class,
+        );
+
+        $this->app->singleton(
+            DatahubClientInterface::class,
+            $fake ? FakeDatahubClient::class : DatahubClient::class,
         );
 
         $this->app->bind(

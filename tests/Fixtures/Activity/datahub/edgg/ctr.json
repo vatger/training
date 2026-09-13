@@ -1,0 +1,15 @@
+[
+    { "logon": "EDGG_N_CTR",   "frequency": "118.215", "abbreviation": "GN",   "description": "Langen Radar (Bandbox North)" },
+    { "logon": "EDGG_NH_CTR",  "frequency": "136.480", "abbreviation": "GNH",  "description": "Langen Radar (Bandbox North High)" },
+    { "logon": "EDGG_C_CTR",   "frequency": "133.815", "abbreviation": "GC",   "description": "Langen Radar (Bandbox Central)" },
+    { "logon": "EDGG_CH_CTR",  "frequency": "127.925", "abbreviation": "GCH",  "description": "Langen Radar (Bandbox Central High)" },
+    { "logon": "EDGG_CS_CTR",  "frequency": "135.310", "abbreviation": "GCS",  "description": "Langen Radar (Bandbox Central/South)" },
+    { "logon": "EDGG_CSH_CTR", "frequency": "135.030", "abbreviation": "GCSH", "description": "Langen Radar (Bandbox Central/South High)" },
+    { "logon": "EDGG_A_CTR",   "frequency": "132.230", "abbreviation": "GA",   "description": "Langen Radar (Bandbox Allendorf)" },
+    { "logon": "EDGG_GIN_CTR", "frequency": "124.730", "abbreviation": "GIN",  "description": "Langen Radar (Gießen)", "required_familiarisations": ["CH+NH"] },
+    { "logon": "EDGG_GIH_CTR", "frequency": "128.075", "abbreviation": "GINH", "description": "Langen Radar (Gießen High)" },
+    { "logon": "EDGG_HEF_CTR", "frequency": "127.725", "abbreviation": "HEF",  "description": "Langen Radar (Hersfeld)", "required_familiarisations": ["CH"] },
+    { "logon": "EDGG_GED_CTR", "frequency": "124.430", "abbreviation": "GED",  "description": "Langen Radar (Gedern)" },
+    { "logon": "EDGG_SIG_CTR", "frequency": "124.900", "abbreviation": "SIG",  "description": "Langen Radar (Siegen)" },
+    { "logon": "EDGG_TAU_CTR", "frequency": "127.625", "abbreviation": "TAU",  "description": "Langen Radar (Taunus)" }
+]

@@ -38,6 +38,15 @@ return Application::configure(basePath: dirname(__DIR__))
         //
     })
     ->withSchedule(function ($schedule) {
+        $schedule->command('activity:sync-reference')
+            ->dailyAt('02:15')
+            ->withoutOverlapping();
+
+        $schedule->command('activity:recalculate --from-endorsements')
+            ->dailyAt('03:15')
+            ->withoutOverlapping(240)
+            ->runInBackground();
+
         $schedule->command('endorsements:remove')
             ->dailyAt('01:00')
             ->withoutOverlapping();

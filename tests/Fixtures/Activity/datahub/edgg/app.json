@@ -1,0 +1,5 @@
+[
+    { "logon": "EDDF_N_APP", "frequency": "120.805", "abbreviation": "DFAN", "description": "Langen Radar (Frankfurt Arrival North)", "gcap_status": "1" },
+    { "logon": "EDDF_S_APP", "frequency": "125.355", "abbreviation": "DFAS", "description": "Langen Radar (Frankfurt Arrival South)", "gcap_status": "1" },
+    { "logon": "EDDF_N_DEP", "frequency": "120.155", "abbreviation": "DFDN", "description": "Langen Radar (Frankfurt Departure North)" }
+]

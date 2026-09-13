@@ -1,0 +1,5 @@
+[
+    { "logon": "EDDF_TWR",   "frequency": "119.900", "abbreviation": "DFT",  "description": "Frankfurt Tower", "s1_twr": false },
+    { "logon": "EDDF_N_TWR", "frequency": "136.500", "abbreviation": "DFTN", "description": "Frankfurt Tower North" },
+    { "logon": "EDFH_TWR",   "frequency": "119.000", "abbreviation": "FHT",  "description": "Hahn Tower", "s1_twr": true }
+]

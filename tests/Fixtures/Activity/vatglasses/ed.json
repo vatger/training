@@ -1,0 +1,75 @@
+{
+    "groups": {
+        "EDGG": { "name": "Langen" }
+    },
+    "positions": {
+        "GN":   { "pre": ["EDGG"], "type": "CTR", "frequency": "118.215", "callsign": "Langen Radar" },
+        "GNH":  { "pre": ["EDGG"], "type": "CTR", "frequency": "136.480", "callsign": "Langen Radar" },
+        "GC":   { "pre": ["EDGG"], "type": "CTR", "frequency": "133.815", "callsign": "Langen Radar" },
+        "GCA":  { "pre": ["EDGG"], "type": "CTR", "frequency": "133.835", "callsign": "Langen Radar" },
+        "GCH":  { "pre": ["EDGG"], "type": "CTR", "frequency": "127.925", "callsign": "Langen Radar" },
+        "GA":   { "pre": ["EDGG"], "type": "CTR", "frequency": "132.230", "callsign": "Langen Radar" },
+        "GAH":  { "pre": ["EDGG"], "type": "CTR", "frequency": "125.935", "callsign": "Langen Radar" },
+        "GCS":  { "pre": ["EDGG"], "type": "CTR", "frequency": "135.310", "callsign": "Langen Radar" },
+        "GCSH": { "pre": ["EDGG"], "type": "CTR", "frequency": "135.030", "callsign": "Langen Radar" },
+        "GIN":  { "pre": ["EDGG"], "type": "CTR", "frequency": "124.730", "callsign": "Langen Radar" },
+        "GINH": { "pre": ["EDGG"], "type": "CTR", "frequency": "128.075", "callsign": "Langen Radar" },
+        "HEF":  { "pre": ["EDGG"], "type": "CTR", "frequency": "127.725", "callsign": "Langen Radar" },
+        "GED":  { "pre": ["EDGG"], "type": "CTR", "frequency": "124.430", "callsign": "Langen Radar" },
+        "SIG":  { "pre": ["EDGG"], "type": "CTR", "frequency": "124.900", "callsign": "Langen Radar" },
+        "TAU":  { "pre": ["EDGG"], "type": "CTR", "frequency": "127.625", "callsign": "Langen Radar" },
+        "DFAN": { "pre": ["EDDF"], "type": "APP", "frequency": "120.805", "callsign": "Langen Radar" },
+        "DFAS": { "pre": ["EDDF"], "type": "APP", "frequency": "125.355", "callsign": "Langen Radar" },
+        "DFDN": { "pre": ["EDDF"], "type": "DEP", "frequency": "120.155", "callsign": "Langen Radar" },
+        "RUD":  { "pre": ["EDGG"], "type": "CTR", "frequency": "133.435", "callsign": "Langen Radar" }
+    },
+    "callsigns": {
+        "TWR": { "": "Tower" },
+        "GND": { "": "Ground" },
+        "DEL": { "": "Delivery" }
+    },
+    "airspace": [
+        {
+            "id": "Gießen", "group": "EDGG", "uid": "GIN",
+            "owner": ["GIN", "GINH", "SIG", "GC", "GCA", "GCH", "GA", "GAH", "GCS", "GCSH"],
+            "sectors": [{ "min": 245, "max": 660, "points": [["503000", "0083000"], ["503000", "0090000"], ["500000", "0090000"], ["500000", "0083000"]] }]
+        },
+        {
+            "id": "Gießen High", "group": "EDGG", "uid": "GINH",
+            "owner": ["GINH", "GIN", "GC", "GCA", "GCH", "GA", "GAH", "GCS", "GCSH"],
+            "sectors": [{ "min": 355, "max": 660, "points": [["503000", "0083000"], ["503000", "0090000"], ["500000", "0090000"], ["500000", "0083000"]] }]
+        },
+        {
+            "id": "Hersfeld", "group": "EDGG", "uid": "HEF",
+            "owner": ["HEF", "GIN", "GINH", "GC", "GCA", "GCH", "GA", "GAH", "GCS", "GCSH"],
+            "sectors": [{ "min": 245, "max": 660, "points": [["510000", "0093000"], ["510000", "0100000"], ["503000", "0100000"], ["503000", "0093000"]] }]
+        },
+        {
+            "id": "Gedern", "group": "EDGG", "uid": "GED",
+            "owner": ["GED", "HEF", "GIN", "GINH", "GC", "GCA", "GCH", "GA", "GAH", "GCS", "GCSH"],
+            "sectors": [{ "min": 105, "max": 245, "points": [["503000", "0090000"], ["503000", "0093000"], ["500000", "0093000"], ["500000", "0090000"]] }]
+        },
+        {
+            "id": "Siegen", "group": "EDGG", "uid": "SIG",
+            "owner": ["SIG", "TAU", "GIN", "GINH", "GC", "GCA", "GCH", "GA", "GAH", "GCS", "GCSH"],
+            "sectors": [{ "min": 105, "max": 355, "points": [["510000", "0080000"], ["510000", "0083000"], ["503000", "0083000"], ["503000", "0080000"]] }]
+        },
+        {
+            "id": "Taunus", "group": "EDGG", "uid": "TAU",
+            "owner": ["TAU", "SIG", "GIN", "GINH", "GC", "GCA", "GCH", "GA", "GAH", "GCS", "GCSH"],
+            "sectors": [{ "min": 105, "max": 245, "points": [["500000", "0080000"], ["500000", "0083000"], ["493000", "0083000"], ["493000", "0080000"]] }]
+        }
+    ],
+    "airports": {
+        "EDDF": {
+            "callsign": "Frankfurt",
+            "coord": [50.033333333333, 8.5705],
+            "topdown": ["DFAS", "DFAN", "RUD", "GCA", "GCS"]
+        },
+        "EDFH": {
+            "callsign": "Hahn",
+            "coord": [49.945833333333, 7.261],
+            "topdown": ["RUD", "GC", "GCA", "GCH", "GCS", "GCSH"]
+        }
+    }
+}
