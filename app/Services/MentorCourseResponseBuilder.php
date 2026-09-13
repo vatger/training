@@ -21,6 +21,7 @@ class MentorCourseResponseBuilder
                 'users.vatsim_id',
                 'users.first_name',
                 'users.last_name',
+                'users.solo_days_used',
                 'course_trainees.claimed_by_mentor_id',
                 'claimed_mentors.first_name as claimed_first_name',
                 'claimed_mentors.last_name as claimed_last_name',
@@ -72,6 +73,7 @@ class MentorCourseResponseBuilder
                 'updated_at' => $t->remark_updated_at,
                 'author_name' => $t->author_first_name ? $t->author_first_name.' '.$t->author_last_name : null,
             ] : null,
+            'soloDaysUsed' => (int) $t->solo_days_used,
             'soloStatus' => $endorsements[$t->vatsim_id]['soloStatus'] ?? null,
             'endorsementStatus' => $endorsements[$t->vatsim_id]['endorsementStatus'] ?? null,
         ];

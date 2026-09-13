@@ -14,6 +14,7 @@ export interface Trainee {
 	nextStep: string
 	claimedBy: string | null
 	claimedByMentorId: number | null
+	soloDaysUsed: number
 	soloStatus: SoloStatus | null
 	endorsementStatus: string | null
 	remark: {

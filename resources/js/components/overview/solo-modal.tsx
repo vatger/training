@@ -8,6 +8,7 @@ import {
 	Clock,
 	Info,
 	Loader2,
+	Plane,
 	Trash,
 	XCircle,
 } from "lucide-react"
@@ -29,6 +30,7 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover"
+import { Progress } from "@/components/ui/progress"
 import { ApiError, api } from "@/lib/api"
 import { cn } from "@/lib/utils"
 import type { Trainee } from "@/types/mentor"
@@ -94,6 +96,7 @@ export function SoloModal({
 
 			if (!trainee.soloStatus) {
 				setRequirements(null)
+				fetchRequirements()
 			}
 		}
 	}, [isOpen, trainee])
@@ -442,35 +445,54 @@ export function SoloModal({
 				</DialogHeader>
 
 				<div className="space-y-6 py-4">
-					{trainee?.soloStatus && (
-						<div className="rounded-lg border bg-muted/50 p-4">
-							<h3 className="mb-3 font-medium">Current Solo Status</h3>
-							<div className="grid grid-cols-2 gap-4 text-sm">
-								<div>
-									<p className="text-muted-foreground">Remaining Days:</p>
-									<p className="text-2xl font-semibold">
-										{trainee.soloStatus.remaining}
-									</p>
-									<p className="text-xs text-muted-foreground">Until expiry</p>
-								</div>
-								<div>
-									<p className="text-muted-foreground">Used Solo Days:</p>
-									<p className="text-2xl font-semibold">
-										{trainee.soloStatus.used}
-									</p>
-									<p className="text-xs text-muted-foreground">
-										Days since creation
-									</p>
-								</div>
-								<div className="col-span-2 border-t pt-3">
-									<p className="text-muted-foreground">Expiry Date:</p>
-									<p className="font-semibold">
-										{new Date(trainee.soloStatus.expiry).toLocaleDateString(
-											"de",
-										)}
-									</p>
-								</div>
+					{trainee && (
+						<div className="rounded-lg border bg-card p-4">
+							<div className="mb-3 flex items-center gap-2">
+								<Plane className="h-4 w-4 text-muted-foreground" />
+								<h3 className="font-medium">Solo Overview</h3>
 							</div>
+
+							<div className="space-y-1.5">
+								<div className="flex items-baseline justify-between text-sm">
+									<span className="text-muted-foreground">
+										Total Solo Days Used
+									</span>
+									<span
+										className={cn(
+											"font-semibold",
+											trainee.soloDaysUsed >= 90 &&
+												"text-danger-600 dark:text-danger-400",
+										)}
+									>
+										{trainee.soloDaysUsed} / 90
+									</span>
+								</div>
+								<Progress
+									value={Math.min(100, (trainee.soloDaysUsed / 90) * 100)}
+								/>
+							</div>
+
+							{trainee.soloStatus && (
+								<div className="mt-4 grid grid-cols-2 gap-4 border-t pt-4 text-sm">
+									<div>
+										<p className="text-muted-foreground">Remaining</p>
+										<p className="font-semibold">
+											{trainee.soloStatus.remaining}{" "}
+											<span className="font-normal text-muted-foreground">
+												days
+											</span>
+										</p>
+									</div>
+									<div>
+										<p className="text-muted-foreground">Expires</p>
+										<p className="font-semibold">
+											{new Date(trainee.soloStatus.expiry).toLocaleDateString(
+												"de",
+											)}
+										</p>
+									</div>
+								</div>
+							)}
 						</div>
 					)}
 
@@ -531,15 +553,7 @@ export function SoloModal({
 										</div>
 									</div>
 								</div>
-							) : (
-								<Alert>
-									<Info className="h-4 w-4" />
-									<AlertDescription>
-										Click "Add Solo Endorsement" to check requirements and
-										proceed.
-									</AlertDescription>
-								</Alert>
-							)}
+							) : null}
 						</>
 					)}
 
@@ -548,18 +562,9 @@ export function SoloModal({
 							{!trainee?.soloStatus ? (
 								<Button
 									className="w-full"
-									disabled={
-										isLoadingRequirements ||
-										(requirements !== null && !canProceed && !requirementsError)
-									}
+									disabled={!canProceed && !requirementsError}
 									onClick={() => {
-										if (
-											!requirements &&
-											!requirementsError &&
-											!isLoadingRequirements
-										) {
-											fetchRequirements()
-										} else if (canProceed || requirementsError) {
+										if (canProceed || requirementsError) {
 											setMode("add")
 										}
 									}}
@@ -594,15 +599,6 @@ export function SoloModal({
 
 					{(mode === "add" || mode === "extend") && (
 						<div className="space-y-4">
-							<Alert>
-								<AlertCircle className="h-4 w-4" />
-								<AlertDescription>
-									Solo endorsements can be{" "}
-									{mode === "add" ? "granted" : "extended"} for a maximum of 31
-									days at a time.
-								</AlertDescription>
-							</Alert>
-
 							<div className="space-y-2">
 								<Label htmlFor="expiry-date">
 									{mode === "add" ? "Expiry Date" : "New Expiry Date"}
