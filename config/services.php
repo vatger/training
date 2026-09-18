@@ -38,6 +38,12 @@ return [
         'roster_max_inactivity_days' => env('ROSTER_MAX_INACTIVITY_DAYS', 366), // 1 year + 1 day
     ],
 
+    'waiting_list' => [
+        // Days a trainee has to reconfirm interest before their entry starts
+        // its removal countdown (see ProcessMonthlyWaitingListVerification).
+        'interest_confirmation_days' => (int) env('WAITING_LIST_INTEREST_CONFIRMATION_DAYS', 30),
+    ],
+
     'vatger' => [
         'api_key' => env('VATGER_API_KEY'),
         'api_url' => env('VATGER_API_URL', 'http://vatsim-germany.org/api'),

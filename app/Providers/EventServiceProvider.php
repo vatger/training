@@ -32,8 +32,11 @@ use App\Domain\Training\Events\TraineeRemarkUpdated;
 use App\Domain\Training\Events\TraineeRemoved;
 use App\Domain\Training\Events\TraineeUnclaimed;
 use App\Domain\Training\Events\TrainingStarted;
+use App\Domain\WaitingList\Events\WaitingListInterestConfirmed;
 use App\Domain\WaitingList\Events\WaitingListJoined;
 use App\Domain\WaitingList\Events\WaitingListLeft;
+use App\Domain\WaitingList\Events\WaitingListPurgedForInactivity;
+use App\Domain\WaitingList\Events\WaitingListVerificationRequested;
 use App\Listeners\LogCourseFinished;
 use App\Listeners\LogCptCreated;
 use App\Listeners\LogCptDeleted;
@@ -64,8 +67,11 @@ use App\Listeners\LogTraineeUnclaimed;
 use App\Listeners\LogTrainingStarted;
 use App\Listeners\LogUserDeleted;
 use App\Listeners\LogUserRemovedFromRoster;
+use App\Listeners\LogWaitingListInterestConfirmed;
 use App\Listeners\LogWaitingListJoined;
 use App\Listeners\LogWaitingListLeft;
+use App\Listeners\LogWaitingListPurgedForInactivity;
+use App\Listeners\LogWaitingListVerificationRequested;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
 class EventServiceProvider extends ServiceProvider
@@ -84,6 +90,9 @@ class EventServiceProvider extends ServiceProvider
         TraineeRemarkUpdated::class => [LogTraineeRemarkUpdated::class],
         WaitingListJoined::class => [LogWaitingListJoined::class],
         WaitingListLeft::class => [LogWaitingListLeft::class],
+        WaitingListInterestConfirmed::class => [LogWaitingListInterestConfirmed::class],
+        WaitingListPurgedForInactivity::class => [LogWaitingListPurgedForInactivity::class],
+        WaitingListVerificationRequested::class => [LogWaitingListVerificationRequested::class],
         SoloGranted::class => [LogSoloGranted::class],
         SoloExtended::class => [LogSoloExtended::class],
         SoloRemoved::class => [LogSoloRemoved::class],

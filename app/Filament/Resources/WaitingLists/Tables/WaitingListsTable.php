@@ -6,6 +6,7 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\BadgeColumn;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
@@ -75,6 +76,16 @@ class WaitingListsTable
                     ->label('Waiting')
                     ->badge()
                     ->color('warning'),
+
+                IconColumn::make('is_interested')
+                    ->label('Interest')
+                    ->boolean()
+                    ->trueIcon('heroicon-o-check-circle')
+                    ->falseIcon('heroicon-o-clock')
+                    ->trueColor('success')
+                    ->falseColor('warning')
+                    ->tooltip(fn (bool $state): string => $state ? 'Confirmed' : 'Pending confirmation')
+                    ->sortable(),
 
                 TextColumn::make('remarks')
                     ->label('Remarks')

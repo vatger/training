@@ -50,6 +50,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('courses')->name('courses.')->group(function () {
         Route::get('/', [MentorManagementController::class, 'index'])->name('index');
         Route::post('/{course}/waiting-list', [MentorManagementController::class, 'toggleWaitingList'])->name('toggle-waiting-list');
+        Route::post('/{course}/waiting-list/confirm-interest', [MentorManagementController::class, 'confirmWaitingListInterest'])
+            ->name('confirm-interest');
     });
 
     Route::prefix('waiting-lists')->name('waiting-lists.')->middleware('mentor')->group(function () {

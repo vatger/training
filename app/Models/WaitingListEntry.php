@@ -14,12 +14,22 @@ class WaitingListEntry extends Model
         'activity',
         'hours_updated',
         'remarks',
+        'is_interested',
+        'interest_confirmed_at',
+        'removal_date',
     ];
 
     protected $casts = [
         'date_added' => 'datetime',
         'activity' => 'float',
         'hours_updated' => 'datetime',
+        'is_interested' => 'boolean',
+        'interest_confirmed_at' => 'datetime',
+        'removal_date' => 'datetime',
+    ];
+
+    protected $attributes = [
+        'is_interested' => true,
     ];
 
     public function user(): BelongsTo

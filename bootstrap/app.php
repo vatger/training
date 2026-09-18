@@ -6,6 +6,7 @@ use App\Http\Middleware\EnsureSandboxAuthEnabled;
 use App\Http\Middleware\EnsureUserIsMentor;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Jobs\ProcessWaitingListVerification;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -58,6 +59,10 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $schedule->command('solo:sync-days')
             ->dailyAt('05:00')
+            ->withoutOverlapping();
+
+        $schedule->job(new ProcessWaitingListVerification)
+            ->dailyAt('06:00')
             ->withoutOverlapping();
     })
     ->create();
