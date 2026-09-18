@@ -6,6 +6,7 @@ use Filament\Actions\Action;
 use Filament\Forms;
 use Filament\Forms\Components\Placeholder;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Illuminate\Support\Str;
 
 class UserForm
@@ -61,7 +62,7 @@ class UserForm
                             ->dehydrated()
                             ->hintAction(
                                 Action::make('unlock_rating_change')
-                                    ->label('Unlock to edit')
+                                    ->label('Unlock')
                                     ->icon('heroicon-o-lock-closed')
                                     ->color('warning')
                                     ->requiresConfirmation()
