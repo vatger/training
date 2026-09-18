@@ -6,6 +6,7 @@ use App\Integrations\VatEud\VatEudService;
 use App\Models\Course;
 use App\Models\EndorsementActivity;
 use App\Models\Familiarisation;
+use App\Models\FamiliarisationSector;
 use App\Models\User;
 use App\Models\WaitingListEntry;
 use Carbon\Carbon;
@@ -115,6 +116,21 @@ class CourseValidationService
                 ->exists()
         ) {
             return [false, 'You already have a familiarisation for this course.'];
+        }
+
+        if ($course->type === 'EDMT' && $course->position === 'CTR') {
+            $requiredSectorIds = $course->requiredFamiliarisationSectors()->pluck('familiarisation_sectors.id');
+
+            if ($requiredSectorIds->isNotEmpty()) {
+                $userSectorIds = Familiarisation::where('user_id', $user->id)->pluck('familiarisation_sector_id');
+                $missingSectorIds = $requiredSectorIds->diff($userSectorIds);
+
+                if ($missingSectorIds->isNotEmpty()) {
+                    $missingNames = FamiliarisationSector::whereIn('id', $missingSectorIds)->pluck('name')->implode(', ');
+
+                    return [false, "You need the following familiarisation(s) before joining this course's waiting list: {$missingNames}."];
+                }
+            }
         }
 
         $endorsementGroups = $course->endorsementGroups();

@@ -306,3 +306,95 @@ test('user with existing familiarisation for course sector cannot join', functio
     expect($canJoin)->toBeFalse()
         ->and($reason)->toBe('You already have a familiarisation for this course.');
 });
+
+// ─── Required familiarisations (CTR endorsement courses) ─────────────────────
+
+test('user missing a required familiarisation cannot join ctr edmt course', function () {
+    $user = gerUserOnRoster(['rating' => 5]);
+    $wld = FamiliarisationSector::create(['name' => 'WLD', 'fir' => 'EDGG']);
+    $sta = FamiliarisationSector::create(['name' => 'STA', 'fir' => 'EDGG']);
+    Familiarisation::create(['user_id' => $user->id, 'familiarisation_sector_id' => $wld->id]);
+
+    $course = Course::factory()->create([
+        'type' => 'EDMT',
+        'position' => 'CTR',
+        'min_rating' => 5,
+        'max_rating' => 7,
+    ]);
+    $course->requiredFamiliarisationSectors()->attach([$wld->id, $sta->id]);
+
+    [$canJoin, $reason] = makeService()->canUserJoinCourse($course, $user);
+
+    expect($canJoin)->toBeFalse()
+        ->and($reason)->toBe("You need the following familiarisation(s) before joining this course's waiting list: STA.");
+});
+
+test('user holding all required familiarisations can join ctr edmt course', function () {
+    $user = gerUserOnRoster(['rating' => 5]);
+    $wld = FamiliarisationSector::create(['name' => 'WLD', 'fir' => 'EDGG']);
+    $sta = FamiliarisationSector::create(['name' => 'STA', 'fir' => 'EDGG']);
+    Familiarisation::create(['user_id' => $user->id, 'familiarisation_sector_id' => $wld->id]);
+    Familiarisation::create(['user_id' => $user->id, 'familiarisation_sector_id' => $sta->id]);
+
+    $course = Course::factory()->create([
+        'type' => 'EDMT',
+        'position' => 'CTR',
+        'min_rating' => 5,
+        'max_rating' => 7,
+    ]);
+    $course->requiredFamiliarisationSectors()->attach([$wld->id, $sta->id]);
+
+    [$canJoin, $reason] = makeService()->canUserJoinCourse($course, $user);
+
+    expect($canJoin)->toBeTrue()
+        ->and($reason)->toBe('');
+});
+
+test('ctr edmt course without required familiarisations configured is unaffected', function () {
+    $user = gerUserOnRoster(['rating' => 5]);
+
+    $course = Course::factory()->create([
+        'type' => 'EDMT',
+        'position' => 'CTR',
+        'min_rating' => 5,
+        'max_rating' => 7,
+    ]);
+
+    [$canJoin] = makeService()->canUserJoinCourse($course, $user);
+
+    expect($canJoin)->toBeTrue();
+});
+
+test('required familiarisations do not apply to ctr rtg courses', function () {
+    $user = gerUserOnRoster(['rating' => 5]);
+    $sector = FamiliarisationSector::create(['name' => 'WLD', 'fir' => 'EDGG']);
+
+    $course = Course::factory()->create([
+        'type' => 'RTG',
+        'position' => 'CTR',
+        'min_rating' => 5,
+        'max_rating' => 7,
+    ]);
+    $course->requiredFamiliarisationSectors()->attach($sector->id);
+
+    [$canJoin] = makeService()->canUserJoinCourse($course, $user);
+
+    expect($canJoin)->toBeTrue();
+});
+
+test('required familiarisations do not apply to non-ctr edmt courses', function () {
+    $user = gerUserOnRoster(['rating' => 5]);
+    $sector = FamiliarisationSector::create(['name' => 'WLD', 'fir' => 'EDGG']);
+
+    $course = Course::factory()->create([
+        'type' => 'EDMT',
+        'position' => 'APP',
+        'min_rating' => 5,
+        'max_rating' => 7,
+    ]);
+    $course->requiredFamiliarisationSectors()->attach($sector->id);
+
+    [$canJoin] = makeService()->canUserJoinCourse($course, $user);
+
+    expect($canJoin)->toBeTrue();
+});

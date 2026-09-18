@@ -96,6 +96,11 @@ class Course extends Model
         return $this->belongsTo(FamiliarisationSector::class);
     }
 
+    public function requiredFamiliarisationSectors(): BelongsToMany
+    {
+        return $this->belongsToMany(FamiliarisationSector::class, 'course_required_familiarisations');
+    }
+
     public function mentors(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'course_mentors');

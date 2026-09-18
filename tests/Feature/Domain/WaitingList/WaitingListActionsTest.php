@@ -8,6 +8,7 @@ use App\Integrations\VatEud\VatEudClientInterface;
 use App\Integrations\Vatger\FakeVatgerClient;
 use App\Integrations\Vatger\VatgerClientInterface;
 use App\Models\Course;
+use App\Models\FamiliarisationSector;
 use App\Models\User;
 use App\Models\WaitingListEntry;
 use App\Models\WaitingListRestriction;
@@ -214,6 +215,28 @@ test('JoinWaitingList fails if user is restricted from joining that course type'
 
     expect($success)->toBeFalse();
     expect($message)->toBe('You are currently restricted from joining this type of waiting list.');
+});
+
+test('JoinWaitingList fails if user is missing a required familiarisation for a ctr edmt course', function () {
+    Event::fake();
+
+    $user = User::factory()->create(['rating' => 5, 'subdivision' => 'GER', 'last_rating_change' => now()->subDays(100)]);
+    fakeRosterWith([$user->vatsim_id]);
+
+    $sector = FamiliarisationSector::create(['name' => 'WLD', 'fir' => 'EDGG']);
+
+    $course = Course::factory()->create([
+        'type' => 'EDMT',
+        'position' => 'CTR',
+        'min_rating' => 5,
+        'max_rating' => 7,
+    ]);
+    $course->requiredFamiliarisationSectors()->attach($sector->id);
+
+    [$success, $message] = app(JoinWaitingList::class)->execute($course, $user);
+
+    expect($success)->toBeFalse();
+    expect($message)->toBe("You need the following familiarisation(s) before joining this course's waiting list: WLD.");
 });
 
 // ─── LeaveWaitingList ─────────────────────────────────────────────────────────

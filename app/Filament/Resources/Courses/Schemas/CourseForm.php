@@ -88,6 +88,14 @@ class CourseForm
                             ->searchable()
                             ->preload()
                             ->helperText('Required for FAM courses'),
+
+                        Forms\Components\Select::make('requiredFamiliarisationSectors')
+                            ->label('Required Familiarisations')
+                            ->relationship('requiredFamiliarisationSectors', 'name')
+                            ->multiple()
+                            ->searchable()
+                            ->preload()
+                            ->helperText('Only applies to CTR endorsement (EDMT) courses. Trainee must hold all selected familiarisations before joining the waiting list.'),
                     ])->columns(2),
 
                 Section::make('Rating Requirements')
