@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\TrainingLogs\Schemas;
 
+use App\Filament\Support\UserSearch;
 use App\Models\TrainingLog;
 use Filament\Forms;
 use Filament\Schemas\Components\Grid;
@@ -19,18 +20,18 @@ class TrainingLogForm
                         Forms\Components\Select::make('trainee_id')
                             ->label('Trainee')
                             ->relationship('trainee', 'first_name')
-                            ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->first_name} {$record->last_name} ({$record->vatsim_id})")
-                            ->searchable(['first_name', 'last_name', 'vatsim_id'])
-                            ->required()
-                            ->preload(),
+                            ->getSearchResultsUsing(UserSearch::callback())
+                            ->getOptionLabelFromRecordUsing(UserSearch::optionLabel())
+                            ->searchable()
+                            ->required(),
 
                         Forms\Components\Select::make('mentor_id')
                             ->label('Mentor')
                             ->relationship('mentor', 'first_name')
-                            ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->first_name} {$record->last_name} ({$record->vatsim_id})")
-                            ->searchable(['first_name', 'last_name', 'vatsim_id'])
-                            ->required()
-                            ->preload(),
+                            ->getSearchResultsUsing(UserSearch::callback())
+                            ->getOptionLabelFromRecordUsing(UserSearch::optionLabel())
+                            ->searchable()
+                            ->required(),
 
                         Forms\Components\Select::make('course_id')
                             ->label('Course')

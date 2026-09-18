@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Examiners\Schemas;
 
+use App\Filament\Support\UserSearch;
 use App\Models\Examiner;
 use Filament\Forms;
 use Filament\Schemas\Components\Section;
@@ -18,10 +19,10 @@ class ExaminerForm
                         Forms\Components\Select::make('user_id')
                             ->label('User')
                             ->relationship('user', 'first_name')
-                            ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->first_name} {$record->last_name} ({$record->vatsim_id})")
-                            ->searchable(['first_name', 'last_name', 'vatsim_id'])
-                            ->required()
-                            ->preload(),
+                            ->getSearchResultsUsing(UserSearch::callback())
+                            ->getOptionLabelFromRecordUsing(UserSearch::optionLabel())
+                            ->searchable()
+                            ->required(),
 
                         Forms\Components\TextInput::make('callsign')
                             ->label('Callsign')

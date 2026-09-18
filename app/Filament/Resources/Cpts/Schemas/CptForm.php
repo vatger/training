@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Cpts\Schemas;
 
+use App\Filament\Support\UserSearch;
 use Filament\Forms;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -34,8 +35,9 @@ class CptForm
                         Forms\Components\Select::make('trainee_id')
                             ->label('Trainee')
                             ->relationship('trainee', 'first_name')
-                            ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->first_name} {$record->last_name} ({$record->vatsim_id})")
-                            ->searchable(['first_name', 'last_name', 'vatsim_id'])
+                            ->getSearchResultsUsing(UserSearch::callback())
+                            ->getOptionLabelFromRecordUsing(UserSearch::optionLabel())
+                            ->searchable()
                             ->required()
                             ->preload()
                             ->disabled(),
@@ -43,16 +45,16 @@ class CptForm
                         Forms\Components\Select::make('examiner_id')
                             ->label('Examiner')
                             ->relationship('examiner', 'first_name')
-                            ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->first_name} {$record->last_name} ({$record->vatsim_id})")
-                            ->searchable(['first_name', 'last_name', 'vatsim_id'])
-                            ->preload(),
+                            ->getSearchResultsUsing(UserSearch::callback())
+                            ->getOptionLabelFromRecordUsing(UserSearch::optionLabel())
+                            ->searchable(),
 
                         Forms\Components\Select::make('local_id')
                             ->label('Local Contact')
                             ->relationship('local', 'first_name')
-                            ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->first_name} {$record->last_name} ({$record->vatsim_id})")
-                            ->searchable(['first_name', 'last_name', 'vatsim_id'])
-                            ->preload(),
+                            ->getSearchResultsUsing(UserSearch::callback())
+                            ->getOptionLabelFromRecordUsing(UserSearch::optionLabel())
+                            ->searchable(),
                     ])->columns(3),
 
                 Section::make('Course')
