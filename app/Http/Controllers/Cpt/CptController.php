@@ -134,7 +134,7 @@ class CptController extends Controller
             }
 
             $date = Carbon::parse($validated['date']);
-            if ($course->mentors->contains($examinerUser->id) && $date->diffInHours(now()) > 36) {
+            if ($course->mentors->contains($examinerUser->id) && abs($date->diffInHours(now())) > 36) {
                 return back()->withErrors(['examiner_id' => 'Course mentors cannot be examiners more than 36 hours in advance.']);
             }
 
@@ -201,7 +201,7 @@ class CptController extends Controller
         $examinersQuery = Examiner::with('user')
             ->whereJsonContains('positions', $course->position);
 
-        if ($date->diffInHours(now()) > 36) {
+        if (abs($date->diffInHours(now())) > 36) {
             $examinersQuery->whereNotIn('user_id', $course->mentors->pluck('id')->toArray());
         }
 
@@ -261,7 +261,7 @@ class CptController extends Controller
             $cpt->course->load('mentors');
         }
 
-        if ($cpt->course->mentors->contains($user->id) && $cpt->date->diffInHours(now()) > 36) {
+        if ($cpt->course->mentors->contains($user->id) && abs($cpt->date->diffInHours(now())) > 36) {
             return false;
         }
 

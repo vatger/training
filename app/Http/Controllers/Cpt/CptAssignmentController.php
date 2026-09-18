@@ -41,7 +41,7 @@ class CptAssignmentController extends Controller
             return back()->withErrors(['error' => 'You are not authorized to examine this position ('.$cpt->course->position.').']);
         }
 
-        if ($cpt->course->mentors->contains($user->id) && $cpt->date->diffInHours(now()) > 36) {
+        if ($cpt->course->mentors->contains($user->id) && abs($cpt->date->diffInHours(now())) > 36) {
             return back()->withErrors(['error' => 'Course mentors cannot be examiners more than 36 hours in advance.']);
         }
 

@@ -190,6 +190,40 @@ test('creating a cpt with both examiner and local results in confirmed true', fu
     ]);
 });
 
+test('store rejects course mentor as examiner when cpt is more than 36 hours away', function () {
+    $course = cptHttpTwrCourse();
+    $trainee = User::factory()->create();
+    $mentor = cptHttpMentor($course);
+    cptHttpMakeExaminerFor($mentor, 'TWR');
+
+    $this->actingAs(cptHttpSuperuser())
+        ->post(route('cpt.store'), [
+            'course_id' => $course->id,
+            'trainee_id' => $trainee->id,
+            'date' => now()->addDays(3)->toDateTimeString(),
+            'examiner_id' => $mentor->id,
+        ])
+        ->assertSessionHasErrors('examiner_id');
+});
+
+test('store allows course mentor as examiner when cpt is within 36 hours', function () {
+    $course = cptHttpTwrCourse();
+    $trainee = User::factory()->create();
+    $mentor = cptHttpMentor($course);
+    cptHttpMakeExaminerFor($mentor, 'TWR');
+
+    $this->actingAs(cptHttpSuperuser())
+        ->post(route('cpt.store'), [
+            'course_id' => $course->id,
+            'trainee_id' => $trainee->id,
+            'date' => now()->addHours(20)->toDateTimeString(),
+            'examiner_id' => $mentor->id,
+        ])
+        ->assertRedirect(route('cpt.index'));
+
+    $this->assertDatabaseHas('cpts', ['course_id' => $course->id, 'examiner_id' => $mentor->id]);
+});
+
 test('store rejects when trainee and examiner are the same user', function () {
     $course = cptHttpTwrCourse();
     $trainee = User::factory()->create();
@@ -387,6 +421,32 @@ test('cannot join as examiner when already the local contact', function () {
     $this->actingAs($user)
         ->post(route('cpt.join-examiner', $cpt))
         ->assertSessionHasErrors('error');
+});
+
+test('course mentor cannot join as examiner when cpt is more than 36 hours away', function () {
+    $course = cptHttpTwrCourse();
+    $mentor = cptHttpMentor($course);
+    cptHttpMakeExaminerFor($mentor, 'TWR');
+    $cpt = cptHttpRecord($course); // defaults to now()->addDays(3)
+
+    $this->actingAs($mentor)
+        ->post(route('cpt.join-examiner', $cpt))
+        ->assertSessionHasErrors('error');
+
+    $this->assertDatabaseMissing('cpts', ['id' => $cpt->id, 'examiner_id' => $mentor->id]);
+});
+
+test('course mentor can join as examiner when cpt is within 36 hours', function () {
+    $course = cptHttpTwrCourse();
+    $mentor = cptHttpMentor($course);
+    cptHttpMakeExaminerFor($mentor, 'TWR');
+    $cpt = cptHttpRecord($course, ['date' => now()->addHours(20)]);
+
+    $this->actingAs($mentor)
+        ->post(route('cpt.join-examiner', $cpt))
+        ->assertRedirect();
+
+    $this->assertDatabaseHas('cpts', ['id' => $cpt->id, 'examiner_id' => $mentor->id]);
 });
 
 // ─── CptAssignmentController: leave-examiner ─────────────────────────────────
