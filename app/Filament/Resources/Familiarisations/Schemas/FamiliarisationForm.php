@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Familiarisations\Schemas;
 
+use App\Filament\Support\UserSearch;
 use Filament\Forms;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -17,8 +18,8 @@ class FamiliarisationForm
                         Forms\Components\Select::make('user_id')
                             ->label('User')
                             ->relationship('user', 'first_name')
-                            ->getSearchResultsUsing(\App\Filament\Support\UserSearch::callback())
-                            ->getOptionLabelFromRecordUsing(\App\Filament\Support\UserSearch::optionLabel())
+                            ->getSearchResultsUsing(UserSearch::callback())
+                            ->getOptionLabelFromRecordUsing(UserSearch::optionLabel())
                             ->searchable()
                             ->required()
                             ->helperText('Select the user to grant familiarisation'),

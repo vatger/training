@@ -128,6 +128,7 @@ class UsersTable
                     // Pure number → starts-with match on VATSIM ID
                     if (ctype_digit($search)) {
                         $query->where('vatsim_id', 'like', "{$search}%");
+
                         return;
                     }
 

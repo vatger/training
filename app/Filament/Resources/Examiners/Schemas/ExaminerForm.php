@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Examiners\Schemas;
 
+use App\Filament\Support\UserSearch;
 use App\Models\Examiner;
 use Filament\Forms;
 use Filament\Schemas\Components\Section;
@@ -18,8 +19,8 @@ class ExaminerForm
                         Forms\Components\Select::make('user_id')
                             ->label('User')
                             ->relationship('user', 'first_name')
-                            ->getSearchResultsUsing(\App\Filament\Support\UserSearch::callback())
-                            ->getOptionLabelFromRecordUsing(\App\Filament\Support\UserSearch::optionLabel())
+                            ->getSearchResultsUsing(UserSearch::callback())
+                            ->getOptionLabelFromRecordUsing(UserSearch::optionLabel())
                             ->searchable()
                             ->required(),
 

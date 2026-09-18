@@ -2,11 +2,11 @@
 
 namespace App\Filament\Resources\Users\Schemas;
 
-use App\Models\Permission;
+use Filament\Actions\Action;
 use Filament\Forms;
 use Filament\Forms\Components\Placeholder;
 use Filament\Schemas\Components\Section;
-use Filament\Actions\Action;
+use Illuminate\Support\Str;
 
 class UserForm
 {
@@ -57,7 +57,7 @@ class UserForm
                             ->label('Last Rating Change')
                             ->displayFormat('Y-m-d H:i')
                             ->seconds(false)
-                            ->disabled(fn ($livewire) => !$livewire->ratingChangeUnlocked)
+                            ->disabled(fn ($livewire) => ! $livewire->ratingChangeUnlocked)
                             ->dehydrated()
                             ->hintAction(
                                 Action::make('unlock_rating_change')
@@ -95,19 +95,19 @@ class UserForm
                         Forms\Components\Toggle::make('is_staff')
                             ->label('Staff Member')
                             ->helperText('Has access to staff features')
-                            ->disabled(fn ($livewire) => !$livewire->systemPermissionsUnlocked)
+                            ->disabled(fn ($livewire) => ! $livewire->systemPermissionsUnlocked)
                             ->dehydrated(),
 
                         Forms\Components\Toggle::make('is_superuser')
                             ->label('Superuser')
                             ->helperText('Has full system access')
-                            ->disabled(fn ($livewire) => !$livewire->systemPermissionsUnlocked)
+                            ->disabled(fn ($livewire) => ! $livewire->systemPermissionsUnlocked)
                             ->dehydrated(),
 
                         Forms\Components\Toggle::make('is_admin')
                             ->label('Admin Account')
                             ->helperText('Non-VATSIM admin account for development/emergency access')
-                            ->disabled(fn ($livewire) => !$livewire->systemPermissionsUnlocked)
+                            ->disabled(fn ($livewire) => ! $livewire->systemPermissionsUnlocked)
                             ->dehydrated(),
                     ])->columns(3),
 
@@ -132,11 +132,13 @@ class UserForm
                             ->getOptionLabelFromRecordUsing(function ($record) {
                                 $parts = explode('.', $record->name);
                                 if (count($parts) >= 3) {
-                                    $resource = \Illuminate\Support\Str::title(str_replace('_', ' ', $parts[1]));
-                                    $action = \Illuminate\Support\Str::title($parts[2]);
+                                    $resource = Str::title(str_replace('_', ' ', $parts[1]));
+                                    $action = Str::title($parts[2]);
+
                                     return "{$resource} — {$action}";
                                 }
-                                return \Illuminate\Support\Str::title(str_replace(['.', '_'], ' ', $record->name));
+
+                                return Str::title(str_replace(['.', '_'], ' ', $record->name));
                             })
                             ->searchable()
                             ->columns(2)
