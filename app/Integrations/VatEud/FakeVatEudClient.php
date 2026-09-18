@@ -102,6 +102,6 @@ class FakeVatEudClient implements VatEudClientInterface
 
     public function getRoster(): array
     {
-        return [1601613, 1441619];
+        return [1601613, 1441619, 10000010];
     }
 }
