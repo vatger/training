@@ -1,15 +1,14 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
     public function up(): void
     {
-        if (!Schema::hasTable('auth_user')) {
+        if (! Schema::hasTable('auth_user')) {
             return;
         }
 
@@ -49,7 +48,7 @@ return new class extends Migration
             $subdivisionCol = Schema::hasColumn('auth_user', 'subdivision') ? 'subdivision' : 'NULL';
             $ratingCol = Schema::hasColumn('auth_user', 'rating') ? 'rating' : '1';
             $lastRatingChangeCol = Schema::hasColumn('auth_user', 'last_rating_change') ? 'last_rating_change' : 'NULL';
-            
+
             DB::statement("
                 INSERT INTO users (
                     id, vatsim_id, first_name, last_name, email, email_verified_at,
@@ -82,7 +81,5 @@ return new class extends Migration
         }
     }
 
-    public function down(): void
-    {
-    }
+    public function down(): void {}
 };

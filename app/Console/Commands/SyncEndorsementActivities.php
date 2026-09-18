@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Log;
 class SyncEndorsementActivities extends Command
 {
     protected $signature = 'endorsements:sync-activities';
+
     protected $description = 'Sync endorsement activities from VATSIM and VatEUD for all endorsements';
 
     public function __construct(
@@ -30,10 +31,12 @@ class SyncEndorsementActivities extends Command
             $this->updateAllActivities();
 
             $this->info('Endorsement activity sync completed successfully.');
+
             return 0;
         } catch (\Exception $e) {
-            $this->error('Error during sync: ' . $e->getMessage());
+            $this->error('Error during sync: '.$e->getMessage());
             Log::error('Endorsement sync error', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+
             return 1;
         }
     }
@@ -44,7 +47,7 @@ class SyncEndorsementActivities extends Command
 
         $tier1Endorsements = $this->vatEudClient->getTier1Endorsements();
 
-        $this->info('Found ' . count($tier1Endorsements) . ' Tier 1 endorsements');
+        $this->info('Found '.count($tier1Endorsements).' Tier 1 endorsements');
 
         foreach ($tier1Endorsements as $endorsement) {
             try {
@@ -65,7 +68,7 @@ class SyncEndorsementActivities extends Command
 
                 $this->line("Created activity record for endorsement {$endorsement->id} (User: {$endorsement->userCid}, Position: {$endorsement->position})");
             } catch (\Exception $e) {
-                $this->error("Failed to sync endorsement {$endorsement->id}: " . $e->getMessage());
+                $this->error("Failed to sync endorsement {$endorsement->id}: ".$e->getMessage());
                 Log::error('Failed to sync endorsement', ['endorsement_id' => $endorsement->id, 'error' => $e->getMessage()]);
             }
         }
@@ -89,6 +92,7 @@ class SyncEndorsementActivities extends Command
 
         if ($totalCount === 0) {
             $this->info('No endorsements to update');
+
             return;
         }
 

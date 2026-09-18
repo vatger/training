@@ -2,18 +2,19 @@
 
 namespace App\Filament\Resources\WaitingLists;
 
+use App\Filament\Resources\WaitingLists\Pages\CreateWaitingList;
 use App\Filament\Resources\WaitingLists\Pages\EditWaitingList;
 use App\Filament\Resources\WaitingLists\Pages\ListWaitingLists;
-use App\Filament\Resources\WaitingLists\Pages\CreateWaitingList;
 use App\Filament\Resources\WaitingLists\Schemas\WaitingListForm;
 use App\Filament\Resources\WaitingLists\Tables\WaitingListsTable;
 use App\Models\WaitingListEntry;
 use BackedEnum;
+use Filament\Facades\Filament;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
-use Filament\Facades\Filament;
+use Illuminate\Database\Eloquent\Model;
 
 class WaitingListResource extends Resource
 {
@@ -66,7 +67,7 @@ class WaitingListResource extends Resource
     {
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -81,7 +82,7 @@ class WaitingListResource extends Resource
     {
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -92,11 +93,11 @@ class WaitingListResource extends Resource
         return $user->canEditAdminResource('waiting_list_entries');
     }
 
-    public static function canEdit(\Illuminate\Database\Eloquent\Model $record): bool
+    public static function canEdit(Model $record): bool
     {
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -107,11 +108,11 @@ class WaitingListResource extends Resource
         return $user->canEditAdminResource('waiting_list_entries');
     }
 
-    public static function canDelete(\Illuminate\Database\Eloquent\Model $record): bool
+    public static function canDelete(Model $record): bool
     {
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 

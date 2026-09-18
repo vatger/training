@@ -19,11 +19,11 @@ class ViewApiKey extends Page
     public function mount(): void
     {
         $this->apiKey = session('created_api_key');
-        
-        if (!$this->apiKey) {
+
+        if (! $this->apiKey) {
             $this->redirect($this->getResource()::getUrl('index'));
         }
-        
+
         session()->forget('created_api_key');
     }
 

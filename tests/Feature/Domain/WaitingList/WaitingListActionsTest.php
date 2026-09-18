@@ -4,36 +4,31 @@ use App\Domain\WaitingList\Actions\JoinWaitingList;
 use App\Domain\WaitingList\Actions\LeaveWaitingList;
 use App\Domain\WaitingList\Events\WaitingListJoined;
 use App\Domain\WaitingList\Events\WaitingListLeft;
-use App\Integrations\VatEud\FakeVatEudClient;
 use App\Integrations\VatEud\VatEudClientInterface;
 use App\Integrations\Vatger\FakeVatgerClient;
 use App\Integrations\Vatger\VatgerClientInterface;
 use App\Models\Course;
+use App\Models\FamiliarisationSector;
 use App\Models\User;
 use App\Models\WaitingListEntry;
 use App\Models\WaitingListRestriction;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\Client\Factory as HttpFactory;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\Http;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->app->bind(VatEudClientInterface::class, FakeVatEudClient::class);
     $this->app->bind(VatgerClientInterface::class, FakeVatgerClient::class);
-    Http::fake(); // Prevent real HTTP calls from CourseValidationService
     Cache::flush();
 });
 
-// Swap to a fresh Http factory with a specific roster response.
-// Http::fake() in beforeEach adds a catch-all with a numeric key that fires
-// before any URL-pattern stubs added in the test, so a full swap is needed.
+// Bind a mocked VatEudClientInterface returning a specific roster.
 function fakeRosterWith(array $vatsimIds): void
 {
-    Http::swap(new HttpFactory());
-    Http::fake(['*' => Http::response(['data' => ['controllers' => $vatsimIds]], 200)]);
+    $client = Mockery::mock(VatEudClientInterface::class);
+    $client->shouldReceive('getRoster')->andReturn($vatsimIds);
+    app()->instance(VatEudClientInterface::class, $client);
     Cache::flush();
 }
 
@@ -53,9 +48,9 @@ test('JoinWaitingList success: entry created and event fired', function () {
     expect($message)->toBe('Successfully joined waiting list.');
 
     $this->assertDatabaseHas('waiting_list_entries', [
-        'user_id'   => $user->id,
+        'user_id' => $user->id,
         'course_id' => $course->id,
-        'activity'  => 0,
+        'activity' => 0,
     ]);
 
     Event::assertDispatched(WaitingListJoined::class, function ($event) use ($user, $course) {
@@ -72,10 +67,10 @@ test('JoinWaitingList fails if user is already on waiting list for that course',
     $course = Course::factory()->create(['type' => 'RTG', 'min_rating' => 2, 'max_rating' => 3]);
 
     WaitingListEntry::create([
-        'user_id'       => $user->id,
-        'course_id'     => $course->id,
-        'date_added'    => now(),
-        'activity'      => 0,
+        'user_id' => $user->id,
+        'course_id' => $course->id,
+        'date_added' => now(),
+        'activity' => 0,
         'hours_updated' => now(),
     ]);
 
@@ -95,10 +90,10 @@ test('JoinWaitingList fails if user is already on waiting list for a different R
     $courseB = Course::factory()->create(['type' => 'RTG', 'min_rating' => 2, 'max_rating' => 3]);
 
     WaitingListEntry::create([
-        'user_id'       => $user->id,
-        'course_id'     => $courseB->id,
-        'date_added'    => now(),
-        'activity'      => 0,
+        'user_id' => $user->id,
+        'course_id' => $courseB->id,
+        'date_added' => now(),
+        'activity' => 0,
         'hours_updated' => now(),
     ]);
 
@@ -106,6 +101,100 @@ test('JoinWaitingList fails if user is already on waiting list for a different R
 
     expect($success)->toBeFalse();
     expect($message)->toBe('You are already on the waiting list for a rating course. You can only join one rating course at a time.');
+});
+
+test('JoinWaitingList fails if user is already on an EDMT waiting list and tries to join another EDMT course', function () {
+    Event::fake();
+
+    $user = User::factory()->create(['rating' => 2, 'subdivision' => 'GER', 'last_rating_change' => now()->subDays(100)]);
+    fakeRosterWith([$user->vatsim_id]);
+
+    $courseA = Course::factory()->create(['type' => 'EDMT', 'min_rating' => 2, 'max_rating' => 3]);
+    $courseB = Course::factory()->create(['type' => 'EDMT', 'min_rating' => 2, 'max_rating' => 3]);
+
+    WaitingListEntry::create([
+        'user_id' => $user->id,
+        'course_id' => $courseB->id,
+        'date_added' => now(),
+        'activity' => 0,
+        'hours_updated' => now(),
+    ]);
+
+    [$success, $message] = app(JoinWaitingList::class)->execute($courseA, $user);
+
+    expect($success)->toBeFalse();
+    expect($message)->toBe('You are already on the waiting list for an endorsement course. You can only join one endorsement course at a time.');
+});
+
+test('JoinWaitingList fails if user is already on a FAM waiting list and tries to join another FAM course', function () {
+    Event::fake();
+
+    $user = User::factory()->create(['rating' => 2, 'subdivision' => 'GER', 'last_rating_change' => now()->subDays(100)]);
+    fakeRosterWith([$user->vatsim_id]);
+
+    $courseA = Course::factory()->create(['type' => 'FAM', 'min_rating' => 2, 'max_rating' => 3]);
+    $courseB = Course::factory()->create(['type' => 'FAM', 'min_rating' => 2, 'max_rating' => 3]);
+
+    WaitingListEntry::create([
+        'user_id' => $user->id,
+        'course_id' => $courseB->id,
+        'date_added' => now(),
+        'activity' => 0,
+        'hours_updated' => now(),
+    ]);
+
+    [$success, $message] = app(JoinWaitingList::class)->execute($courseA, $user);
+
+    expect($success)->toBeFalse();
+    expect($message)->toBe('You are already on the waiting list for a familiarisation course. You can only join one familiarisation course at a time.');
+});
+
+test('JoinWaitingList succeeds if user is already on an EDMT waiting list and joins a FAM course', function () {
+    Event::fake();
+
+    $user = User::factory()->create(['rating' => 2, 'subdivision' => 'GER', 'last_rating_change' => now()->subDays(100)]);
+    fakeRosterWith([$user->vatsim_id]);
+
+    $edmtCourse = Course::factory()->create(['type' => 'EDMT', 'min_rating' => 2, 'max_rating' => 3]);
+    $famCourse = Course::factory()->create(['type' => 'FAM', 'min_rating' => 2, 'max_rating' => 3]);
+
+    WaitingListEntry::create([
+        'user_id' => $user->id,
+        'course_id' => $edmtCourse->id,
+        'date_added' => now(),
+        'activity' => 0,
+        'hours_updated' => now(),
+    ]);
+
+    [$success, $message] = app(JoinWaitingList::class)->execute($famCourse, $user);
+
+    expect($success)->toBeTrue();
+    expect($message)->toBe('Successfully joined waiting list.');
+    expect(WaitingListEntry::where('user_id', $user->id)->where('course_id', $famCourse->id)->exists())->toBeTrue();
+});
+
+test('JoinWaitingList succeeds if user is already on a FAM waiting list and joins an EDMT course', function () {
+    Event::fake();
+
+    $user = User::factory()->create(['rating' => 2, 'subdivision' => 'GER', 'last_rating_change' => now()->subDays(100)]);
+    fakeRosterWith([$user->vatsim_id]);
+
+    $famCourse = Course::factory()->create(['type' => 'FAM', 'min_rating' => 2, 'max_rating' => 3]);
+    $edmtCourse = Course::factory()->create(['type' => 'EDMT', 'min_rating' => 2, 'max_rating' => 3]);
+
+    WaitingListEntry::create([
+        'user_id' => $user->id,
+        'course_id' => $famCourse->id,
+        'date_added' => now(),
+        'activity' => 0,
+        'hours_updated' => now(),
+    ]);
+
+    [$success, $message] = app(JoinWaitingList::class)->execute($edmtCourse, $user);
+
+    expect($success)->toBeTrue();
+    expect($message)->toBe('Successfully joined waiting list.');
+    expect(WaitingListEntry::where('user_id', $user->id)->where('course_id', $edmtCourse->id)->exists())->toBeTrue();
 });
 
 test('JoinWaitingList fails if user is restricted from joining that course type', function () {
@@ -117,8 +206,8 @@ test('JoinWaitingList fails if user is restricted from joining that course type'
     $course = Course::factory()->create(['type' => 'RTG', 'min_rating' => 2, 'max_rating' => 3]);
 
     WaitingListRestriction::create([
-        'user_id'    => $user->id,
-        'type'       => 'RTG',
+        'user_id' => $user->id,
+        'type' => 'RTG',
         'expires_at' => now()->addDays(30),
     ]);
 
@@ -128,19 +217,41 @@ test('JoinWaitingList fails if user is restricted from joining that course type'
     expect($message)->toBe('You are currently restricted from joining this type of waiting list.');
 });
 
+test('JoinWaitingList fails if user is missing a required familiarisation for a ctr edmt course', function () {
+    Event::fake();
+
+    $user = User::factory()->create(['rating' => 5, 'subdivision' => 'GER', 'last_rating_change' => now()->subDays(100)]);
+    fakeRosterWith([$user->vatsim_id]);
+
+    $sector = FamiliarisationSector::create(['name' => 'WLD', 'fir' => 'EDGG']);
+
+    $course = Course::factory()->create([
+        'type' => 'EDMT',
+        'position' => 'CTR',
+        'min_rating' => 5,
+        'max_rating' => 7,
+    ]);
+    $course->requiredFamiliarisationSectors()->attach($sector->id);
+
+    [$success, $message] = app(JoinWaitingList::class)->execute($course, $user);
+
+    expect($success)->toBeFalse();
+    expect($message)->toBe("You need the following familiarisation(s) before joining this course's waiting list: WLD.");
+});
+
 // ─── LeaveWaitingList ─────────────────────────────────────────────────────────
 
 test('LeaveWaitingList success: entry deleted and event fired', function () {
     Event::fake();
 
-    $user   = User::factory()->create();
+    $user = User::factory()->create();
     $course = Course::factory()->create(['type' => 'RTG']);
 
     $entry = WaitingListEntry::create([
-        'user_id'       => $user->id,
-        'course_id'     => $course->id,
-        'date_added'    => now(),
-        'activity'      => 0,
+        'user_id' => $user->id,
+        'course_id' => $course->id,
+        'date_added' => now(),
+        'activity' => 0,
         'hours_updated' => now(),
     ]);
 
@@ -159,7 +270,7 @@ test('LeaveWaitingList success: entry deleted and event fired', function () {
 test('LeaveWaitingList fails if user is not on the waiting list', function () {
     Event::fake();
 
-    $user   = User::factory()->create();
+    $user = User::factory()->create();
     $course = Course::factory()->create(['type' => 'RTG']);
 
     [$success, $message] = app(LeaveWaitingList::class)->execute($course, $user);

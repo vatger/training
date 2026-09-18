@@ -3,8 +3,7 @@
 namespace App\Services;
 
 use App\Models\Familiarisation;
-use App\Models\FamiliarisationSector;
-use Illuminate\Support\Collection;
+use App\Models\User;
 
 class FamiliarisationService
 {
@@ -21,7 +20,7 @@ class FamiliarisationService
 
         // Group by FIR and sort
         $grouped = $familiarisations->groupBy('sector.fir');
-        
+
         $result = [];
         foreach ($grouped as $fir => $fams) {
             $result[$fir] = $fams->sortBy('sector.name')->values()->all();
@@ -39,8 +38,8 @@ class FamiliarisationService
     public function addFamiliarisation(int $vatsimId, int $sectorId): bool
     {
         try {
-            $user = \App\Models\User::where('vatsim_id', $vatsimId)->firstOrFail();
-            
+            $user = User::where('vatsim_id', $vatsimId)->firstOrFail();
+
             Familiarisation::firstOrCreate([
                 'user_id' => $user->id,
                 'familiarisation_sector_id' => $sectorId,
@@ -51,8 +50,9 @@ class FamiliarisationService
             \Log::error('Failed to add familiarisation', [
                 'vatsim_id' => $vatsimId,
                 'sector_id' => $sectorId,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
@@ -63,8 +63,8 @@ class FamiliarisationService
     public function removeFamiliarisation(int $vatsimId, int $sectorId): bool
     {
         try {
-            $user = \App\Models\User::where('vatsim_id', $vatsimId)->firstOrFail();
-            
+            $user = User::where('vatsim_id', $vatsimId)->firstOrFail();
+
             Familiarisation::where('user_id', $user->id)
                 ->where('familiarisation_sector_id', $sectorId)
                 ->delete();
@@ -74,8 +74,9 @@ class FamiliarisationService
             \Log::error('Failed to remove familiarisation', [
                 'vatsim_id' => $vatsimId,
                 'sector_id' => $sectorId,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }

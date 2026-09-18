@@ -20,7 +20,7 @@ class JoinCptAsExaminer
         $cpt->update(['examiner_id' => $examiner->id]);
         $cpt->refresh();
 
-        if (!$wasConfirmed && $cpt->confirmed) {
+        if (! $wasConfirmed && $cpt->confirmed) {
             $this->notifications->broadcastConfirmedCpts();
         }
 

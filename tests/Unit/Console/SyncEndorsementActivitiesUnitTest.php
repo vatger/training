@@ -18,8 +18,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\BufferedOutput;
+use Tests\TestCase;
 
-uses(Tests\TestCase::class, RefreshDatabase::class);
+uses(TestCase::class, RefreshDatabase::class);
 
 beforeEach(function () {
     Event::fake();
@@ -34,10 +35,11 @@ function syncActMakeCommand(VatEudClientInterface $client, VatsimActivityService
 
 function syncActSetIO(object $command): BufferedOutput
 {
-    $buffered = new BufferedOutput();
+    $buffered = new BufferedOutput;
     $prop = new ReflectionProperty($command, 'output');
     $prop->setAccessible(true);
     $prop->setValue($command, new OutputStyle(new ArrayInput([]), $buffered));
+
     return $buffered;
 }
 
@@ -45,6 +47,7 @@ function syncActCallMethod(object $cmd, string $method, mixed ...$args): mixed
 {
     $m = new ReflectionMethod($cmd, $method);
     $m->setAccessible(true);
+
     return $m->invoke($cmd, ...$args);
 }
 
@@ -62,18 +65,19 @@ function syncActActivity(?Carbon $date = null, float $mins = 0.0): VatsimActivit
     $svc->shouldReceive('getEndorsementActivity')
         ->andReturn(['minutes' => $mins, 'last_activity_date' => $date]);
     $svc->shouldReceive('calculateEligibleSince')->andReturn(null);
+
     return $svc;
 }
 
 function syncActRecord(array $override = []): EndorsementActivity
 {
     return EndorsementActivity::create(array_merge([
-        'endorsement_id'   => 1,
-        'vatsim_id'        => 1234567,
-        'position'         => 'EDDL_TWR',
+        'endorsement_id' => 1,
+        'vatsim_id' => 1234567,
+        'position' => 'EDDL_TWR',
         'activity_minutes' => 0.0,
-        'created_at_vateud'=> now(),
-        'last_updated'     => now()->subHour(),
+        'created_at_vateud' => now(),
+        'last_updated' => now()->subHour(),
     ], $override));
 }
 
@@ -257,7 +261,7 @@ test('updateEndorsementActivity does not crash when service throws an exception'
     $rec = syncActRecord();
 
     $svc = Mockery::mock(VatsimActivityService::class);
-    $svc->shouldReceive('getEndorsementActivity')->andThrow(new \RuntimeException('API error'));
+    $svc->shouldReceive('getEndorsementActivity')->andThrow(new RuntimeException('API error'));
 
     $client = Mockery::mock(VatEudClientInterface::class);
     $cmd = syncActMakeCommand($client, $svc);

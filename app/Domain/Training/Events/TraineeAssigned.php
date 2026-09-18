@@ -9,8 +9,8 @@ readonly class TraineeAssigned
 {
     public function __construct(
         public Course $course,
-        public User   $trainee,
-        public User   $newMentor,
-        public User   $assigningMentor,
+        public User $trainee,
+        public User $newMentor,
+        public User $assigningMentor,
     ) {}
 }

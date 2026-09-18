@@ -15,10 +15,10 @@ class ReactivateTrainee
             ->where('course_id', $course->id)
             ->where('user_id', $trainee->id)
             ->update([
-                'completed_at'         => null,
-                'status'               => 'active',
+                'completed_at' => null,
+                'status' => 'active',
                 'claimed_by_mentor_id' => $mentor->id,
-                'claimed_at'           => now(),
+                'claimed_at' => now(),
             ]);
 
         event(new TraineeReactivated($course, $trainee, $mentor));

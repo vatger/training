@@ -8,7 +8,7 @@ use App\Models\User;
 readonly class CptLocalLeft
 {
     public function __construct(
-        public Cpt  $cpt,
+        public Cpt $cpt,
         public User $local,
     ) {}
 }

@@ -62,7 +62,7 @@ class EndorsementController extends Controller
     {
         $user = $request->user();
 
-        if (!$user->isMentor() && !$user->is_superuser) {
+        if (! $user->isMentor() && ! $user->is_superuser) {
             return back()->with('flash', ['error' => 'Access denied. Mentor privileges required.']);
         }
 
@@ -72,7 +72,7 @@ class EndorsementController extends Controller
             return back()->with('flash', ['error' => 'Endorsement not found in the system.']);
         }
 
-        if (!$user->is_superuser && !$user->is_admin) {
+        if (! $user->is_superuser && ! $user->is_admin) {
             $lmFirs = $user->leadingMentorFirs()->pluck('fir');
             $hasPermission = $user->canRemoveEndorsementForPosition($activity->position)
                 || ($lmFirs->isNotEmpty() && $this->viewService->positionMatchesLmFir($activity->position, $lmFirs));

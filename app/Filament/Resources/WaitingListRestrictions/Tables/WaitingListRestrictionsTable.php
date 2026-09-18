@@ -5,8 +5,8 @@ namespace App\Filament\Resources\WaitingListRestrictions\Tables;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Table;
 
 class WaitingListRestrictionsTable
 {
@@ -28,7 +28,7 @@ class WaitingListRestrictionsTable
                     ->badge(),
 
                 TextColumn::make('expires_at')
-                    ->date()
+                    ->date(),
             ])
             ->filters([
                 //

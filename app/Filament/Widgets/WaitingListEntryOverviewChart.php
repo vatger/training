@@ -9,7 +9,7 @@ class WaitingListEntryOverviewChart extends ChartWidget
 {
     protected ?string $heading = 'Waiting List Entries by Course Type';
 
-    protected int | string | array $columnSpan = [
+    protected int|string|array $columnSpan = [
         'md' => 2,
         'xl' => 1,
     ];
@@ -33,7 +33,7 @@ class WaitingListEntryOverviewChart extends ChartWidget
         $data = [];
 
         foreach ($entriesByType as $type => $count) {
-            $labels[] = match($type) {
+            $labels[] = match ($type) {
                 'RTG' => 'Rating',
                 'EDMT' => 'Endorsement',
                 'GST' => 'Visitor',

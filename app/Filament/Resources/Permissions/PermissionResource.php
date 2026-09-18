@@ -5,11 +5,12 @@ namespace App\Filament\Resources\Permissions;
 use App\Filament\Resources\Permissions\Pages\ListPermissions;
 use App\Models\Permission;
 use BackedEnum;
+use Filament\Facades\Filament;
 use Filament\Resources\Resource;
 use Filament\Support\Icons\Heroicon;
-use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Facades\Filament;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 class PermissionResource extends Resource
 {
@@ -71,7 +72,7 @@ class PermissionResource extends Resource
     {
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -83,12 +84,12 @@ class PermissionResource extends Resource
         return false;
     }
 
-    public static function canEdit(\Illuminate\Database\Eloquent\Model $record): bool
+    public static function canEdit(Model $record): bool
     {
         return false;
     }
 
-    public static function canDelete(\Illuminate\Database\Eloquent\Model $record): bool
+    public static function canDelete(Model $record): bool
     {
         return false;
     }

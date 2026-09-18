@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\Users\Schemas;
 
-use Filament\Schemas\Schema;
+use App\Models\Permission;
 use Filament\Forms;
 use Filament\Forms\Components\Placeholder;
 use Filament\Schemas\Components\Section;

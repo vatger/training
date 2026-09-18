@@ -1,5 +1,6 @@
 <?php
 
+use App\Integrations\VatEud\VatEudClientInterface;
 use App\Models\Course;
 use App\Models\Familiarisation;
 use App\Models\FamiliarisationSector;
@@ -7,24 +8,21 @@ use App\Models\User;
 use App\Models\WaitingListRestriction;
 use App\Services\CourseValidationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\Client\Factory as HttpFactory;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\Http;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    // Event::fake() suppresses Eloquent model events, preventing the call to
-    // App\Services\ActivityLogger (absent on this branch) via LogsActivity trait.
     Event::fake();
     Cache::flush();
 });
 
 function fakeRosterWithIds(array $vatsimIds): void
 {
-    Http::swap(new HttpFactory());
-    Http::fake(['*' => Http::response(['data' => ['controllers' => $vatsimIds]], 200)]);
+    $client = Mockery::mock(VatEudClientInterface::class);
+    $client->shouldReceive('getRoster')->andReturn($vatsimIds);
+    app()->instance(VatEudClientInterface::class, $client);
     Cache::flush();
 }
 
@@ -39,6 +37,7 @@ function gerUserOnRoster(array $attrs = []): User
 {
     $user = User::factory()->create(array_merge(['subdivision' => 'GER', 'rating' => 3], $attrs));
     fakeRosterWithIds([$user->vatsim_id]);
+
     return $user;
 }
 
@@ -46,6 +45,7 @@ function gerUserOffRoster(array $attrs = []): User
 {
     $user = User::factory()->create(array_merge(['subdivision' => 'GER', 'rating' => 3], $attrs));
     fakeRosterWithIds([9999999]); // someone else on roster
+
     return $user;
 }
 
@@ -53,6 +53,7 @@ function visitorOnRoster(array $attrs = []): User
 {
     $user = User::factory()->create(array_merge(['subdivision' => 'USA', 'rating' => 3], $attrs));
     fakeRosterWithIds([$user->vatsim_id]);
+
     return $user;
 }
 
@@ -60,6 +61,7 @@ function foreignOffRoster(array $attrs = []): User
 {
     $user = User::factory()->create(array_merge(['subdivision' => 'USA', 'rating' => 3], $attrs));
     fakeRosterWithIds([9999999]);
+
     return $user;
 }
 
@@ -255,6 +257,35 @@ test('user with no last_rating_change can join rtg course without waiting period
     expect($canJoin)->toBeTrue();
 });
 
+test('user cannot join rtg course at exactly 89 days after rating change', function () {
+    $user = gerUserOnRoster(['rating' => 3, 'last_rating_change' => now()->subDays(89)]);
+    $course = Course::factory()->create(['type' => 'RTG', 'position' => 'GND', 'min_rating' => 2, 'max_rating' => 4]);
+
+    [$canJoin, $reason] = makeService()->canUserJoinCourse($course, $user);
+
+    expect($canJoin)->toBeFalse()
+        ->and($reason)->toBe('Your last rating change was less than 3 months ago. You cannot join a new rating course yet.');
+});
+
+test('user can join rtg course at exactly 90 days after rating change', function () {
+    $user = gerUserOnRoster(['rating' => 3, 'last_rating_change' => now()->subDays(90)]);
+    $course = Course::factory()->create(['type' => 'RTG', 'position' => 'GND', 'min_rating' => 2, 'max_rating' => 4]);
+
+    [$canJoin, $reason] = makeService()->canUserJoinCourse($course, $user);
+
+    expect($canJoin)->toBeTrue()
+        ->and($reason)->toBe('');
+});
+
+test('recent rating change does not block joining non-rtg courses', function () {
+    $user = gerUserOnRoster(['rating' => 3, 'last_rating_change' => now()->subDays(30)]);
+    $course = Course::factory()->create(['type' => 'EDMT', 'min_rating' => 1, 'max_rating' => 7]);
+
+    [$canJoin] = makeService()->canUserJoinCourse($course, $user);
+
+    expect($canJoin)->toBeTrue();
+});
+
 // ─── Familiarisation ──────────────────────────────────────────────────────────
 
 test('user with existing familiarisation for course sector cannot join', function () {
@@ -274,4 +305,96 @@ test('user with existing familiarisation for course sector cannot join', functio
 
     expect($canJoin)->toBeFalse()
         ->and($reason)->toBe('You already have a familiarisation for this course.');
+});
+
+// ─── Required familiarisations (CTR endorsement courses) ─────────────────────
+
+test('user missing a required familiarisation cannot join ctr edmt course', function () {
+    $user = gerUserOnRoster(['rating' => 5]);
+    $wld = FamiliarisationSector::create(['name' => 'WLD', 'fir' => 'EDGG']);
+    $sta = FamiliarisationSector::create(['name' => 'STA', 'fir' => 'EDGG']);
+    Familiarisation::create(['user_id' => $user->id, 'familiarisation_sector_id' => $wld->id]);
+
+    $course = Course::factory()->create([
+        'type' => 'EDMT',
+        'position' => 'CTR',
+        'min_rating' => 5,
+        'max_rating' => 7,
+    ]);
+    $course->requiredFamiliarisationSectors()->attach([$wld->id, $sta->id]);
+
+    [$canJoin, $reason] = makeService()->canUserJoinCourse($course, $user);
+
+    expect($canJoin)->toBeFalse()
+        ->and($reason)->toBe("You need the following familiarisation(s) before joining this course's waiting list: STA.");
+});
+
+test('user holding all required familiarisations can join ctr edmt course', function () {
+    $user = gerUserOnRoster(['rating' => 5]);
+    $wld = FamiliarisationSector::create(['name' => 'WLD', 'fir' => 'EDGG']);
+    $sta = FamiliarisationSector::create(['name' => 'STA', 'fir' => 'EDGG']);
+    Familiarisation::create(['user_id' => $user->id, 'familiarisation_sector_id' => $wld->id]);
+    Familiarisation::create(['user_id' => $user->id, 'familiarisation_sector_id' => $sta->id]);
+
+    $course = Course::factory()->create([
+        'type' => 'EDMT',
+        'position' => 'CTR',
+        'min_rating' => 5,
+        'max_rating' => 7,
+    ]);
+    $course->requiredFamiliarisationSectors()->attach([$wld->id, $sta->id]);
+
+    [$canJoin, $reason] = makeService()->canUserJoinCourse($course, $user);
+
+    expect($canJoin)->toBeTrue()
+        ->and($reason)->toBe('');
+});
+
+test('ctr edmt course without required familiarisations configured is unaffected', function () {
+    $user = gerUserOnRoster(['rating' => 5]);
+
+    $course = Course::factory()->create([
+        'type' => 'EDMT',
+        'position' => 'CTR',
+        'min_rating' => 5,
+        'max_rating' => 7,
+    ]);
+
+    [$canJoin] = makeService()->canUserJoinCourse($course, $user);
+
+    expect($canJoin)->toBeTrue();
+});
+
+test('required familiarisations do not apply to ctr rtg courses', function () {
+    $user = gerUserOnRoster(['rating' => 5]);
+    $sector = FamiliarisationSector::create(['name' => 'WLD', 'fir' => 'EDGG']);
+
+    $course = Course::factory()->create([
+        'type' => 'RTG',
+        'position' => 'CTR',
+        'min_rating' => 5,
+        'max_rating' => 7,
+    ]);
+    $course->requiredFamiliarisationSectors()->attach($sector->id);
+
+    [$canJoin] = makeService()->canUserJoinCourse($course, $user);
+
+    expect($canJoin)->toBeTrue();
+});
+
+test('required familiarisations do not apply to non-ctr edmt courses', function () {
+    $user = gerUserOnRoster(['rating' => 5]);
+    $sector = FamiliarisationSector::create(['name' => 'WLD', 'fir' => 'EDGG']);
+
+    $course = Course::factory()->create([
+        'type' => 'EDMT',
+        'position' => 'APP',
+        'min_rating' => 5,
+        'max_rating' => 7,
+    ]);
+    $course->requiredFamiliarisationSectors()->attach($sector->id);
+
+    [$canJoin] = makeService()->canUserJoinCourse($course, $user);
+
+    expect($canJoin)->toBeTrue();
 });

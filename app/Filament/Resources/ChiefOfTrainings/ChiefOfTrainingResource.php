@@ -2,19 +2,20 @@
 
 namespace App\Filament\Resources\ChiefOfTrainings;
 
+use App\Filament\Resources\ChiefOfTrainings\Pages\CreateChiefOfTraining;
 use App\Filament\Resources\ChiefOfTrainings\Pages\EditChiefOfTraining;
 use App\Filament\Resources\ChiefOfTrainings\Pages\ListChiefOfTrainings;
-use App\Filament\Resources\ChiefOfTrainings\Pages\CreateChiefOfTraining;
 use App\Filament\Resources\ChiefOfTrainings\Schemas\ChiefOfTrainingForm;
 use App\Filament\Resources\ChiefOfTrainings\Tables\ChiefOfTrainingsTable;
 use App\Models\ChiefOfTraining;
 use BackedEnum;
+use Filament\Facades\Filament;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
-use Filament\Facades\Filament;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 
 class ChiefOfTrainingResource extends Resource
 {
@@ -57,7 +58,7 @@ class ChiefOfTrainingResource extends Resource
     {
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -76,7 +77,7 @@ class ChiefOfTrainingResource extends Resource
     {
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -91,11 +92,11 @@ class ChiefOfTrainingResource extends Resource
         return $user->canEditAdminResource('chief_of_trainings');
     }
 
-    public static function canEdit(\Illuminate\Database\Eloquent\Model $record): bool
+    public static function canEdit(Model $record): bool
     {
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -114,17 +115,18 @@ class ChiefOfTrainingResource extends Resource
                     }
                 }
             }
+
             return false;
         }
 
         return $user->canEditAdminResource('chief_of_trainings');
     }
 
-    public static function canDelete(\Illuminate\Database\Eloquent\Model $record): bool
+    public static function canDelete(Model $record): bool
     {
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -143,6 +145,7 @@ class ChiefOfTrainingResource extends Resource
                     }
                 }
             }
+
             return false;
         }
 
@@ -154,7 +157,7 @@ class ChiefOfTrainingResource extends Resource
         $query = parent::getEloquentQuery()->with(['course.mentorGroup']);
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return $query->whereRaw('1 = 0');
         }
 

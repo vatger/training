@@ -40,7 +40,7 @@ export function getStatusBadge(status: string) {
 		case "active":
 			return (
 				<Badge
-					className="border-green-200 bg-green-50 text-green-700 dark:border-green-700 dark:bg-green-900 dark:text-green-300"
+					className="border-success-200 bg-success-50 text-success-700 dark:border-success-700 dark:bg-success-900 dark:text-success-300"
 					variant="outline"
 				>
 					<CheckCircle className="mr-1 h-3 w-3" />
@@ -50,7 +50,7 @@ export function getStatusBadge(status: string) {
 		case "warning":
 			return (
 				<Badge
-					className="border-yellow-200 bg-yellow-50 text-yellow-700 dark:border-yellow-700 dark:bg-yellow-900 dark:text-yellow-300"
+					className="border-warning-200 bg-warning-50 text-warning-700 dark:border-warning-700 dark:bg-warning-900 dark:text-warning-300"
 					variant="outline"
 				>
 					<AlertCircle className="mr-1 h-3 w-3" />
@@ -60,7 +60,7 @@ export function getStatusBadge(status: string) {
 		case "removal":
 			return (
 				<Badge
-					className="border-red-200 bg-red-50 text-red-700 dark:border-red-700 dark:bg-red-900 dark:text-red-300"
+					className="border-danger-200 bg-danger-50 text-danger-700 dark:border-danger-700 dark:bg-danger-900 dark:text-danger-300"
 					variant="outline"
 				>
 					<XCircle className="mr-1 h-3 w-3" />
@@ -70,7 +70,7 @@ export function getStatusBadge(status: string) {
 		case "completed":
 			return (
 				<Badge
-					className="border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-700 dark:bg-blue-900 dark:text-blue-300"
+					className="border-primary-200 bg-primary-50 text-primary-700 dark:border-primary-700 dark:bg-primary-900 dark:text-primary-300"
 					variant="outline"
 				>
 					<CheckCircle className="mr-1 h-3 w-3" />
@@ -80,7 +80,7 @@ export function getStatusBadge(status: string) {
 		case "available":
 			return (
 				<Badge
-					className="border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-700 dark:bg-blue-900 dark:text-blue-300"
+					className="border-primary-200 bg-primary-50 text-primary-700 dark:border-primary-700 dark:bg-primary-900 dark:text-primary-300"
 					variant="outline"
 				>
 					Available
@@ -123,14 +123,14 @@ export default function EndorsementsDashboard() {
 			<div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
 				{/* Removal Warning Banner */}
 				{hasRemovalEndorsements && (
-					<Card className="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20">
+					<Card className="border-danger-200 bg-danger-50 dark:border-danger-800 dark:bg-danger-900/20">
 						<CardContent className="flex items-center gap-4">
-							<XCircle className="h-8 w-8 text-red-600 dark:text-red-400" />
+							<XCircle className="h-8 w-8 text-danger-600 dark:text-danger-400" />
 							<div>
-								<h3 className="font-semibold text-red-800 dark:text-red-200">
+								<h3 className="font-semibold text-danger-800 dark:text-danger-200">
 									Endorsements Marked for Removal
 								</h3>
-								<p className="mt-1 text-sm text-red-700 dark:text-red-300">
+								<p className="mt-1 text-sm text-danger-700 dark:text-danger-300">
 									You have one or more endorsements scheduled for removal.
 									Increase your activity before the removal date to keep them.
 								</p>
@@ -152,8 +152,8 @@ export default function EndorsementsDashboard() {
 							Tier 1 ({tier1Endorsements.length})
 							{hasRemovalEndorsements && (
 								<span className="ml-1 flex h-2 w-2">
-									<span className="absolute inline-flex h-2 w-2 animate-ping rounded-full bg-red-400 opacity-75"></span>
-									<span className="relative inline-flex h-2 w-2 rounded-full bg-red-500"></span>
+									<span className="absolute inline-flex h-2 w-2 animate-ping rounded-full bg-danger-400 opacity-75"></span>
+									<span className="relative inline-flex h-2 w-2 rounded-full bg-danger-500"></span>
 								</span>
 							)}
 						</TabsTrigger>
@@ -261,10 +261,10 @@ export default function EndorsementsDashboard() {
 							<AlertCircle className="h-5 w-5 text-primary dark:text-primary" />
 						</div>
 						<div>
-							<h3 className="font-semibold text-blue-900 dark:text-blue-100">
+							<h3 className="font-semibold text-primary-900 dark:text-primary-100">
 								Activity Requirements
 							</h3>
-							<p className="mt-1 text-sm text-blue-800 dark:text-blue-200">
+							<p className="mt-1 text-sm text-primary-800 dark:text-primary-200">
 								Maintain minimum activity hours to keep your Tier 1 endorsements
 								active. Low activity endorsements may be marked for removal by
 								mentors. Once marked, you have 31 days to increase activity

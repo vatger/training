@@ -1,10 +1,11 @@
 import { Link, router } from "@inertiajs/react"
 import {
 	type ColumnDef,
+	type ColumnVisibilityState,
+	columnVisibilityFeature,
 	flexRender,
-	getCoreRowModel,
-	useReactTable,
-	type VisibilityState,
+	tableFeatures,
+	useTable,
 } from "@tanstack/react-table"
 import {
 	AlertCircle,
@@ -69,6 +70,8 @@ interface TraineeDataTableProps {
 	onAssignClick: (trainee: Trainee) => void
 }
 
+const features = tableFeatures({ columnVisibilityFeature })
+
 function TraineeRowActions({
 	trainee,
 	courseId,
@@ -129,13 +132,11 @@ function TraineeRowActions({
 		)
 	}
 
-	const handleMoveUp = (e: React.MouseEvent) => {
-		e.preventDefault()
+	const handleMoveUp = () => {
 		onMoveUp()
 	}
 
-	const handleMoveDown = (e: React.MouseEvent) => {
-		e.preventDefault()
+	const handleMoveDown = () => {
 		onMoveDown()
 	}
 
@@ -175,7 +176,7 @@ function TraineeRowActions({
 							disabled={isFirst}
 							onSelect={(e) => {
 								e.preventDefault()
-								handleMoveUp(e as any)
+								handleMoveUp()
 							}}
 						>
 							<ChevronUp className="h-4 w-4" />
@@ -185,7 +186,7 @@ function TraineeRowActions({
 							disabled={isLast}
 							onSelect={(e) => {
 								e.preventDefault()
-								handleMoveDown(e as any)
+								handleMoveDown()
 							}}
 						>
 							<ChevronDown className="h-4 w-4" />
@@ -272,7 +273,8 @@ export function TraineeDataTable({
 }: TraineeDataTableProps) {
 	const [data, setData] = useState<Trainee[]>(trainees)
 	const [isUnclaiming, setIsUnclaiming] = useState<number | null>(null)
-	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
+	const [columnVisibility, setColumnVisibility] =
+		useState<ColumnVisibilityState>({})
 
 	const [soloModalOpen, setSoloModalOpen] = useState(false)
 	const [selectedTraineeForSolo, setSelectedTraineeForSolo] =
@@ -391,7 +393,7 @@ export function TraineeDataTable({
 		)
 	}
 
-	const columns: ColumnDef<Trainee>[] = [
+	const columns: ColumnDef<typeof features, Trainee>[] = [
 		{
 			id: "trainee",
 			accessorKey: "name",
@@ -405,13 +407,13 @@ export function TraineeDataTable({
 						</div>
 						<div className="flex flex-col">
 							<Link
-								className="font-medium hover:underline"
+								className="font-medium hover:underline hover:text-accent-500"
 								href={`/users/${trainee.vatsimId}`}
 							>
 								{trainee.name}
 							</Link>
 							<a
-								className="text-sm text-muted-foreground hover:underline"
+								className="text-sm text-muted-foreground hover:underline hover:text-accent-500"
 								href={`https://stats.vatsim.net/stats/${trainee.vatsimId}`}
 								rel="noopener noreferrer"
 								target="_blank"
@@ -436,7 +438,7 @@ export function TraineeDataTable({
 								{Array.from(trainee.progress.slice(-5).entries()).map(
 									([index, passed]) => (
 										<div
-											className={`h-2 w-2 rounded-full ${passed ? "bg-green-500" : "bg-red-500"}`}
+											className={`h-2 w-2 rounded-full ${passed ? "bg-success-500" : "bg-danger-500"}`}
 											key={index}
 											title={`Session was ${passed ? "Passed" : "Failed"}`}
 										/>
@@ -517,10 +519,10 @@ export function TraineeDataTable({
 					<Button
 						className={
 							trainee.soloStatus.remaining < 10
-								? "border-red-200 bg-red-50 text-red-700 hover:bg-red-100 dark:border-red-800 dark:bg-red-950 dark:text-red-300 dark:hover:bg-red-900"
+								? "border-danger-200 bg-danger-50 text-danger-700 hover:bg-danger-100 dark:border-danger-800 dark:bg-danger-950 dark:text-danger-300 dark:hover:bg-danger-900"
 								: trainee.soloStatus.remaining < 20
-									? "border-yellow-200 bg-yellow-50 text-yellow-700 hover:bg-yellow-100 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-300 dark:hover:bg-yellow-900"
-									: "border-green-200 bg-green-50 text-green-700 hover:bg-green-100 dark:border-green-800 dark:bg-green-950 dark:text-green-300 dark:hover:bg-green-900"
+									? "border-warning-200 bg-warning-50 text-warning-700 hover:bg-warning-100 dark:border-warning-800 dark:bg-warning-950 dark:text-warning-300 dark:hover:bg-warning-900"
+									: "border-success-200 bg-success-50 text-success-700 hover:bg-success-100 dark:border-success-800 dark:bg-success-950 dark:text-success-300 dark:hover:bg-success-900"
 						}
 						onClick={() => {
 							setSelectedTraineeForSolo(trainee)
@@ -558,7 +560,7 @@ export function TraineeDataTable({
 
 				return endorsementStatus ? (
 					<Badge
-						className="border-green-200 bg-green-50 text-green-700 dark:border-green-700 dark:bg-green-900 dark:text-green-300"
+						className="border-success-200 bg-success-50 text-success-700 dark:border-success-700 dark:bg-success-900 dark:text-success-300"
 						variant="outline"
 					>
 						<Award className="mr-1 h-3 w-3" />
@@ -591,7 +593,7 @@ export function TraineeDataTable({
 				if (moodleLoading && !moodleStatus) {
 					return (
 						<Badge
-							className="border-gray-200 bg-gray-50 text-gray-700"
+							className="border-secondary-200 bg-secondary-50 text-secondary-700"
 							variant="outline"
 						>
 							<Loader2 className="mr-1 h-3 w-3 animate-spin" />
@@ -607,7 +609,7 @@ export function TraineeDataTable({
 				if (moodleStatus === "pending") {
 					return (
 						<Badge
-							className="border-gray-200 bg-gray-50 text-gray-700"
+							className="border-secondary-200 bg-secondary-50 text-secondary-700"
 							variant="outline"
 						>
 							<Loader2 className="mr-1 h-3 w-3 animate-spin" />
@@ -621,28 +623,28 @@ export function TraineeDataTable({
 						case "completed":
 							return {
 								className:
-									"border-green-200 bg-green-50 text-green-700 dark:border-green-700 dark:bg-green-900 dark:text-green-300",
+									"border-success-200 bg-success-50 text-success-700 dark:border-success-700 dark:bg-success-900 dark:text-success-300",
 								label: "Completed",
 								icon: <CheckCircle className="mr-1 h-3 w-3" />,
 							}
 						case "in-progress":
 							return {
 								className:
-									"border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-700 dark:bg-blue-900 dark:text-blue-300",
+									"border-primary-200 bg-primary-50 text-primary-700 dark:border-primary-700 dark:bg-primary-900 dark:text-primary-300",
 								label: "In Progress",
 								icon: <Clock className="mr-1 h-3 w-3" />,
 							}
 						case "not-started":
 							return {
 								className:
-									"border-gray-200 bg-gray-50 text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300",
+									"border-secondary-200 bg-secondary-50 text-secondary-700 dark:border-secondary-700 dark:bg-secondary-900 dark:text-secondary-300",
 								label: "Not Started",
 								icon: <AlertCircle className="mr-1 h-3 w-3" />,
 							}
 						default:
 							return {
 								className:
-									"border-yellow-200 bg-yellow-50 text-yellow-700 dark:border-yellow-700 dark:bg-yellow-900 dark:text-yellow-300",
+									"border-warning-200 bg-warning-50 text-warning-700 dark:border-warning-700 dark:bg-warning-900 dark:text-warning-300",
 								label: "Unknown",
 								icon: <AlertCircle className="mr-1 h-3 w-3" />,
 							}
@@ -741,8 +743,8 @@ export function TraineeDataTable({
 								<Badge
 									className={
 										trainee.claimedBy === "You"
-											? "cursor-pointer border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100"
-											: "border-gray-200 bg-gray-50 text-gray-700"
+											? "cursor-pointer border-primary-200 bg-primary-50 text-primary-700 hover:bg-primary-100"
+											: "border-secondary-200 bg-secondary-50 text-secondary-700"
 									}
 									onClick={
 										trainee.claimedBy === "You" && !isClaiming
@@ -806,10 +808,10 @@ export function TraineeDataTable({
 		},
 	]
 
-	const table = useReactTable({
+	const table = useTable({
 		data,
 		columns,
-		getCoreRowModel: getCoreRowModel(),
+		features,
 		state: {
 			columnVisibility,
 		},
@@ -817,14 +819,14 @@ export function TraineeDataTable({
 	})
 
 	return (
-		<div className="overflow-x-auto">
+		<div className="overflow-x-auto [&>div]:rounded-none [&>div]:border-0">
 			<Table>
-				<TableHeader>
+				<TableHeader className="bg-transparent">
 					{table.getHeaderGroups().map((headerGroup) => (
 						<TableRow key={headerGroup.id}>
 							{headerGroup.headers.map((header) => (
 								<TableHead
-									className={header.id === "trainee" ? "pl-6" : ""}
+									className={`${header.id === "trainee" ? "pl-6" : ""} `}
 									key={header.id}
 								>
 									{header.isPlaceholder

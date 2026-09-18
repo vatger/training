@@ -9,7 +9,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table"
-import { cn } from "@/lib/utils"
+import { cn, formatActivityHours } from "@/lib/utils"
 import type { Course } from "@/pages/training/courses"
 import WaitingListButton from "./waiting-list-button"
 
@@ -17,6 +17,8 @@ interface SortableCoursesTableProps {
 	courses: Course[]
 	onCourseUpdate?: (courseId: number, updates: Partial<Course>) => void
 	userHasActiveRtgCourse?: boolean
+	userHasActiveEdmtCourse?: boolean
+	userHasActiveFamCourse?: boolean
 	rtgRatingPending?: boolean
 }
 
@@ -27,23 +29,23 @@ type SortField =
 	| "position"
 	| "rating"
 	| "mentor_group"
-	| "waiting_list_position"
+	| "waiting_list_joined_at"
 type SortDirection = "asc" | "desc"
 
 const getTypeColor = (type: string) => {
 	switch (type) {
 		case "RTG":
-			return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
+			return "bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-300"
 		case "EDMT":
-			return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300"
+			return "bg-secondary-100 text-secondary-800 dark:bg-secondary-900 dark:text-secondary-300"
 		case "FAM":
-			return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
+			return "bg-warning-100 text-warning-800 dark:bg-warning-900 dark:text-warning-300"
 		case "GST":
-			return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+			return "bg-success-100 text-success-800 dark:bg-success-900 dark:text-success-300"
 		case "RST":
-			return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
+			return "bg-danger-100 text-danger-800 dark:bg-danger-900 dark:text-danger-300"
 		default:
-			return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300"
+			return "bg-secondary-100 text-secondary-800 dark:bg-secondary-900 dark:text-secondary-300"
 	}
 }
 
@@ -51,6 +53,8 @@ export default function SortableCoursesTable({
 	courses: initialCourses,
 	onCourseUpdate,
 	userHasActiveRtgCourse = false,
+	userHasActiveEdmtCourse = false,
+	userHasActiveFamCourse = false,
 	rtgRatingPending = false,
 }: SortableCoursesTableProps) {
 	const [courses, setCourses] = useState(initialCourses)
@@ -109,9 +113,13 @@ export default function SortableCoursesTable({
 					aValue = a.mentor_group?.toLowerCase() || ""
 					bValue = b.mentor_group?.toLowerCase() || ""
 					break
-				case "waiting_list_position":
-					aValue = a.is_on_waiting_list ? a.waiting_list_position || 999 : 999
-					bValue = b.is_on_waiting_list ? b.waiting_list_position || 999 : 999
+				case "waiting_list_joined_at":
+					aValue = a.is_on_waiting_list
+						? a.waiting_list_joined_at || ""
+						: "9999-99-99"
+					bValue = b.is_on_waiting_list
+						? b.waiting_list_joined_at || ""
+						: "9999-99-99"
 					break
 				default:
 					aValue = a.name.toLowerCase()
@@ -167,7 +175,7 @@ export default function SortableCoursesTable({
 						<SortableHeader field="airport_name">Airport</SortableHeader>
 						<SortableHeader field="type">Type</SortableHeader>
 						<SortableHeader field="position">Position</SortableHeader>
-						<SortableHeader field="waiting_list_position">
+						<SortableHeader field="waiting_list_joined_at">
 							Queue Status
 						</SortableHeader>
 						<TableHead>Actions</TableHead>
@@ -179,7 +187,8 @@ export default function SortableCoursesTable({
 							<TableRow
 								className={cn(
 									"transition-colors",
-									course.is_on_waiting_list && "bg-blue-50 dark:bg-blue-950/20",
+									course.is_on_waiting_list &&
+										"bg-primary-50 dark:bg-primary-950/20",
 								)}
 								key={course.id}
 							>
@@ -212,7 +221,7 @@ export default function SortableCoursesTable({
 								<TableCell>
 									<Badge
 										className={
-											"bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300"
+											"bg-secondary-100 text-secondary-800 dark:bg-secondary-900 dark:text-secondary-300"
 										}
 										variant="outline"
 									>
@@ -222,18 +231,23 @@ export default function SortableCoursesTable({
 
 								<TableCell>
 									{course.is_on_waiting_list ? (
-										<div className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
+										<div className="flex items-center gap-2 text-primary-600 dark:text-primary-400">
 											<Clock className="h-4 w-4" />
 											<div>
 												<div className="text-sm font-medium">
-													Position #{course.waiting_list_position}
+													{course.waiting_list_joined_at
+														? `Since ${new Date(course.waiting_list_joined_at).toLocaleDateString("de")}`
+														: "On waiting list"}
 												</div>
 												{course.type === "RTG" &&
+													course.position !== "CTR" &&
 													course.waiting_list_activity !== undefined &&
 													course.waiting_list_activity !== null && (
 														<div className="text-xs text-muted-foreground">
-															{course.waiting_list_activity.toFixed(2)}h
-															activity
+															{formatActivityHours(
+																course.waiting_list_activity,
+															)}
+															h activity
 														</div>
 													)}
 											</div>
@@ -252,6 +266,8 @@ export default function SortableCoursesTable({
 										onCourseUpdate={handleCourseUpdate}
 										rtgRatingPending={rtgRatingPending}
 										size="sm"
+										userHasActiveEdmtCourse={userHasActiveEdmtCourse}
+										userHasActiveFamCourse={userHasActiveFamCourse}
 										userHasActiveRtgCourse={userHasActiveRtgCourse}
 									/>
 								</TableCell>

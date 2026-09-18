@@ -2,11 +2,10 @@
 
 namespace App\Integrations\VatEud;
 
+use App\Integrations\VatEud\DTOs\SoloEndorsementData;
 use App\Integrations\VatEud\DTOs\Tier1EndorsementData;
 use App\Integrations\VatEud\DTOs\Tier2EndorsementData;
-use App\Integrations\VatEud\DTOs\SoloEndorsementData;
 use App\Integrations\VatEud\DTOs\UserExamsData;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -19,9 +18,9 @@ class VatEudClient implements VatEudClientInterface
     public function __construct()
     {
         $this->headers = [
-            'X-API-KEY'  => config('services.vateud.token'),
-            'Accept'     => 'application/json',
-            'User-Agent' => 'VATGER Training System',
+            'X-API-KEY' => config('services.vateud.token'),
+            'Accept' => 'application/json',
+            'User-Agent' => 'vatger Training System',
         ];
     }
 
@@ -35,17 +34,17 @@ class VatEudClient implements VatEudClientInterface
             if (! $response->successful()) {
                 Log::error('Failed to fetch Tier 1 endorsements', [
                     'status' => $response->status(),
-                    'body'   => $response->body(),
+                    'body' => $response->body(),
                 ]);
 
                 return [];
             }
 
             $data = $response->json();
-            $raw  = $data['data'] ?? (is_array($data) ? $data : []);
+            $raw = $data['data'] ?? (is_array($data) ? $data : []);
 
             $parsed = array_map(
-                fn(array $item) => Tier1EndorsementData::fromApiResponse($item),
+                fn (array $item) => Tier1EndorsementData::fromApiResponse($item),
                 $raw,
             );
 
@@ -63,8 +62,8 @@ class VatEudClient implements VatEudClientInterface
             $response = Http::withHeaders($this->headers)
                 ->timeout(10)
                 ->post("{$this->baseUrl}/facility/endorsements/tier-1", [
-                    'user_cid'       => $userCid,
-                    'position'       => $position,
+                    'user_cid' => $userCid,
+                    'position' => $position,
                     'instructor_cid' => config('services.vateud.atd_lead_cid', 1441619),
                 ]);
 
@@ -72,8 +71,8 @@ class VatEudClient implements VatEudClientInterface
                 Log::error('Failed to create Tier 1 endorsement', [
                     'user_cid' => $userCid,
                     'position' => $position,
-                    'status'   => $response->status(),
-                    'body'     => $response->body(),
+                    'status' => $response->status(),
+                    'body' => $response->body(),
                 ]);
             }
 
@@ -82,7 +81,7 @@ class VatEudClient implements VatEudClientInterface
             Log::error('Exception creating Tier 1 endorsement', [
                 'user_cid' => $userCid,
                 'position' => $position,
-                'error'    => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
 
             return false;
@@ -99,8 +98,8 @@ class VatEudClient implements VatEudClientInterface
             if (! $response->successful()) {
                 Log::warning('Failed to delete Tier 1 endorsement', [
                     'endorsement_id' => $endorsementId,
-                    'status'         => $response->status(),
-                    'body'           => $response->body(),
+                    'status' => $response->status(),
+                    'body' => $response->body(),
                 ]);
             }
 
@@ -108,7 +107,7 @@ class VatEudClient implements VatEudClientInterface
         } catch (\Throwable $e) {
             Log::error('Exception deleting Tier 1 endorsement', [
                 'endorsement_id' => $endorsementId,
-                'error'          => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
 
             return false;
@@ -125,17 +124,17 @@ class VatEudClient implements VatEudClientInterface
             if (! $response->successful()) {
                 Log::error('Failed to fetch Tier 2 endorsements', [
                     'status' => $response->status(),
-                    'body'   => $response->body(),
+                    'body' => $response->body(),
                 ]);
 
                 return [];
             }
 
             $data = $response->json();
-            $raw  = $data['data'] ?? (is_array($data) ? $data : []);
+            $raw = $data['data'] ?? (is_array($data) ? $data : []);
 
             return array_map(
-                fn(array $item) => Tier2EndorsementData::fromApiResponse($item),
+                fn (array $item) => Tier2EndorsementData::fromApiResponse($item),
                 $raw,
             );
         } catch (\Throwable $e) {
@@ -151,8 +150,8 @@ class VatEudClient implements VatEudClientInterface
             $response = Http::withHeaders($this->headers)
                 ->timeout(10)
                 ->post("{$this->baseUrl}/facility/endorsements/tier-2", [
-                    'user_cid'       => $userCid,
-                    'position'       => $position,
+                    'user_cid' => $userCid,
+                    'position' => $position,
                     'instructor_cid' => config('services.vateud.atd_lead_cid', 1441619),
                 ]);
 
@@ -160,8 +159,8 @@ class VatEudClient implements VatEudClientInterface
                 Log::error('Failed to create Tier 2 endorsement', [
                     'user_cid' => $userCid,
                     'position' => $position,
-                    'status'   => $response->status(),
-                    'body'     => $response->body(),
+                    'status' => $response->status(),
+                    'body' => $response->body(),
                 ]);
             }
 
@@ -170,7 +169,7 @@ class VatEudClient implements VatEudClientInterface
             Log::error('Exception creating Tier 2 endorsement', [
                 'user_cid' => $userCid,
                 'position' => $position,
-                'error'    => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
 
             return false;
@@ -187,8 +186,8 @@ class VatEudClient implements VatEudClientInterface
             if (! $response->successful()) {
                 Log::warning('Failed to delete Tier 2 endorsement', [
                     'endorsement_id' => $endorsementId,
-                    'status'         => $response->status(),
-                    'body'           => $response->body(),
+                    'status' => $response->status(),
+                    'body' => $response->body(),
                 ]);
             }
 
@@ -196,7 +195,7 @@ class VatEudClient implements VatEudClientInterface
         } catch (\Throwable $e) {
             Log::error('Exception deleting Tier 2 endorsement', [
                 'endorsement_id' => $endorsementId,
-                'error'          => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
 
             return false;
@@ -213,17 +212,17 @@ class VatEudClient implements VatEudClientInterface
             if (! $response->successful()) {
                 Log::error('Failed to fetch solo endorsements', [
                     'status' => $response->status(),
-                    'body'   => $response->body(),
+                    'body' => $response->body(),
                 ]);
 
                 return [];
             }
 
             $data = $response->json();
-            $raw  = $data['data'] ?? (is_array($data) ? $data : []);
+            $raw = $data['data'] ?? (is_array($data) ? $data : []);
 
             return array_map(
-                fn(array $item) => SoloEndorsementData::fromApiResponse($item),
+                fn (array $item) => SoloEndorsementData::fromApiResponse($item),
                 $raw,
             );
         } catch (\Throwable $e) {
@@ -239,9 +238,9 @@ class VatEudClient implements VatEudClientInterface
             $response = Http::withHeaders($this->headers)
                 ->timeout(10)
                 ->post("{$this->baseUrl}/facility/endorsements/solo", [
-                    'user_cid'       => $userCid,
-                    'position'       => $position,
-                    'expire_at'      => $expireAt,
+                    'user_cid' => $userCid,
+                    'position' => $position,
+                    'expire_at' => $expireAt,
                     'instructor_cid' => config('services.vateud.atd_lead_cid', 1441619),
                 ]);
 
@@ -249,14 +248,14 @@ class VatEudClient implements VatEudClientInterface
                 return ['success' => true];
             }
 
-            $data    = $response->json();
+            $data = $response->json();
             $message = is_array($data) ? ($data['message'] ?? 'Failed to create solo endorsement') : 'Failed to create solo endorsement';
 
             Log::error('Failed to create solo endorsement', [
                 'user_cid' => $userCid,
                 'position' => $position,
-                'status'   => $response->status(),
-                'message'  => $message,
+                'status' => $response->status(),
+                'message' => $message,
             ]);
 
             return ['success' => false, 'message' => $message];
@@ -264,7 +263,7 @@ class VatEudClient implements VatEudClientInterface
             Log::error('Exception creating solo endorsement', [
                 'user_cid' => $userCid,
                 'position' => $position,
-                'error'    => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
 
             return ['success' => false, 'message' => $e->getMessage()];
@@ -281,8 +280,8 @@ class VatEudClient implements VatEudClientInterface
             if (! $response->successful()) {
                 Log::error('Failed to delete solo endorsement', [
                     'solo_id' => $soloId,
-                    'status'  => $response->status(),
-                    'body'    => $response->body(),
+                    'status' => $response->status(),
+                    'body' => $response->body(),
                 ]);
             }
 
@@ -290,7 +289,7 @@ class VatEudClient implements VatEudClientInterface
         } catch (\Throwable $e) {
             Log::error('Exception deleting solo endorsement', [
                 'solo_id' => $soloId,
-                'error'   => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
 
             return false;
@@ -307,8 +306,8 @@ class VatEudClient implements VatEudClientInterface
             if (! $rosterResponse->successful()) {
                 Log::error('Roster removal failed', [
                     'vatsim_id' => $vatsimId,
-                    'status'    => $rosterResponse->status(),
-                    'body'      => $rosterResponse->body(),
+                    'status' => $rosterResponse->status(),
+                    'body' => $rosterResponse->body(),
                 ]);
 
                 return false;
@@ -340,7 +339,7 @@ class VatEudClient implements VatEudClientInterface
         } catch (\Throwable $e) {
             Log::error('Error removing roster and endorsements', [
                 'vatsim_id' => $vatsimId,
-                'error'     => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
 
             return false;
@@ -357,21 +356,21 @@ class VatEudClient implements VatEudClientInterface
             if (! $response->successful()) {
                 Log::error('Failed to fetch user exams', [
                     'vatsim_id' => $vatsimId,
-                    'status'    => $response->status(),
-                    'body'      => $response->body(),
+                    'status' => $response->status(),
+                    'body' => $response->body(),
                 ]);
 
                 return UserExamsData::fromApiResponse([]);
             }
 
             $data = $response->json();
-            $raw  = $data['data'] ?? $data;
+            $raw = $data['data'] ?? $data;
 
             return UserExamsData::fromApiResponse(is_array($raw) ? $raw : []);
         } catch (\Throwable $e) {
             Log::error('Error fetching user exams', [
                 'vatsim_id' => $vatsimId,
-                'error'     => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
 
             return UserExamsData::fromApiResponse([]);
@@ -384,8 +383,8 @@ class VatEudClient implements VatEudClientInterface
             $response = Http::withHeaders($this->headers)
                 ->timeout(10)
                 ->post("{$this->baseUrl}/facility/training/exams/assign", [
-                    'user_cid'       => $vatsimId,
-                    'exam_id'        => $examId,
+                    'user_cid' => $vatsimId,
+                    'exam_id' => $examId,
                     'instructor_cid' => config('services.vateud.atd_lead_cid', 1441619),
                 ]);
 
@@ -393,15 +392,15 @@ class VatEudClient implements VatEudClientInterface
                 return ['success' => true, 'message' => 'Core theory test assigned successfully'];
             }
 
-            $data    = $response->json();
+            $data = $response->json();
             $message = is_array($data) ? ($data['message'] ?? 'Failed to assign test') : 'Failed to assign test';
 
             return ['success' => false, 'message' => $message];
         } catch (\Throwable $e) {
             Log::error('Exception assigning core theory test', [
                 'vatsim_id' => $vatsimId,
-                'exam_id'   => $examId,
-                'error'     => $e->getMessage(),
+                'exam_id' => $examId,
+                'error' => $e->getMessage(),
             ]);
 
             return ['success' => false, 'message' => 'An error occurred while assigning the test'];
@@ -409,11 +408,11 @@ class VatEudClient implements VatEudClientInterface
     }
 
     public function uploadCptLog(
-        int    $traineeCid,
-        int    $examinerCid,
+        int $traineeCid,
+        int $examinerCid,
         string $position,
         string $note,
-        bool   $cptPass,
+        bool $cptPass,
         string $filePath,
     ): array {
         try {
@@ -428,23 +427,23 @@ class VatEudClient implements VatEudClientInterface
                 ->attach('file', $fileContents, basename($filePath))
                 ->post("{$this->baseUrl}/facility/user/{$traineeCid}/notes/cpt", [
                     'examiner_cid' => $examinerCid,
-                    'position'     => $position,
-                    'note'         => $note,
-                    'cpt_pass'     => (int) $cptPass,
+                    'position' => $position,
+                    'note' => $note,
+                    'cpt_pass' => (int) $cptPass,
                 ]);
 
             if ($response->successful()) {
                 return ['success' => true];
             }
 
-            $data    = $response->json();
+            $data = $response->json();
             $message = is_array($data) ? ($data['message'] ?? 'Failed to upload CPT log') : 'Failed to upload CPT log';
 
             return ['success' => false, 'message' => $message];
         } catch (\Throwable $e) {
             Log::error('Exception uploading CPT log', [
                 'trainee_cid' => $traineeCid,
-                'error'       => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
 
             return ['success' => false, 'message' => $e->getMessage()];
@@ -458,54 +457,24 @@ class VatEudClient implements VatEudClientInterface
                 ->timeout(10)
                 ->post("{$this->baseUrl}/facility/user/{$traineeCid}/upgrade", [
                     'instructor_cid' => $instructorCid,
-                    'new_rating'     => $newRating,
+                    'new_rating' => $newRating,
                 ]);
 
             if ($response->successful()) {
                 return ['success' => true];
             }
 
-            $data    = $response->json();
+            $data = $response->json();
             $message = is_array($data) ? ($data['message'] ?? 'Failed to request rating upgrade') : 'Failed to request rating upgrade';
 
             return ['success' => false, 'message' => $message];
         } catch (\Throwable $e) {
             Log::error('Exception requesting rating upgrade', [
                 'trainee_cid' => $traineeCid,
-                'error'       => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
 
             return ['success' => false, 'message' => $e->getMessage()];
-        }
-    }
-
-    public function getLastGermanSession(int $vatsimId): ?Carbon
-    {
-        try {
-            $response = Http::withHeaders($this->headers)
-                ->timeout(10)
-                ->get("{$this->baseUrl}/facility/user/{$vatsimId}/last-session");
-
-            if (! $response->successful()) {
-                Log::warning('Failed to fetch last German session', [
-                    'vatsim_id' => $vatsimId,
-                    'status'    => $response->status(),
-                ]);
-
-                return null;
-            }
-
-            $data = $response->json();
-            $date = $data['data']['last_session'] ?? $data['last_session'] ?? null;
-
-            return $date ? Carbon::parse($date) : null;
-        } catch (\Throwable $e) {
-            Log::error('Exception fetching last German session', [
-                'vatsim_id' => $vatsimId,
-                'error'     => $e->getMessage(),
-            ]);
-
-            return null;
         }
     }
 
@@ -519,17 +488,17 @@ class VatEudClient implements VatEudClientInterface
             if (! $response->successful()) {
                 Log::error('Failed to fetch roster', [
                     'status' => $response->status(),
-                    'body'   => $response->body(),
+                    'body' => $response->body(),
                 ]);
 
                 return [];
             }
 
             $data = $response->json();
-            $raw  = $data['data'] ?? (is_array($data) ? $data : []);
+            $raw = $data['data']['controllers'] ?? [];
 
             return array_values(array_filter(array_map(
-                fn(array $entry) => isset($entry['user_cid']) ? (int) $entry['user_cid'] : null,
+                fn ($entry) => is_numeric($entry) ? (int) $entry : null,
                 $raw,
             )));
         } catch (\Throwable $e) {
@@ -541,7 +510,7 @@ class VatEudClient implements VatEudClientInterface
 
     private function sortByPosition(array $endorsements): array
     {
-        usort($endorsements, fn($a, $b) => strcmp(
+        usort($endorsements, fn ($a, $b) => strcmp(
             $this->positionSortKey($a->position),
             $this->positionSortKey($b->position),
         ));
@@ -556,17 +525,17 @@ class VatEudClient implements VatEudClientInterface
         }
 
         if (str_ends_with($position, '_CTR')) {
-            return '0_CTR_' . substr($position, 0, -4);
+            return '0_CTR_'.substr($position, 0, -4);
         }
 
         $parts = explode('_', $position);
 
         if (count($parts) >= 2) {
-            $priority = match(implode('_', array_slice($parts, 1))) {
-                'APP'    => 1,
-                'TWR'    => 2,
+            $priority = match (implode('_', array_slice($parts, 1))) {
+                'APP' => 1,
+                'TWR' => 2,
                 'GNDDEL' => 3,
-                default  => 9,
+                default => 9,
             };
 
             return sprintf('1_%s_%02d', $parts[0], $priority);

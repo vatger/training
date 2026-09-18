@@ -19,10 +19,11 @@ class RemoveUserFromRoster
 
         if (! $success) {
             Log::error('Roster removal failed at VATEUD', ['vatsim_id' => $vatsimId]);
+
             return;
         }
 
-        WaitingListEntry::whereHas('user', fn($q) => $q->where('vatsim_id', $vatsimId))->delete();
+        WaitingListEntry::whereHas('user', fn ($q) => $q->where('vatsim_id', $vatsimId))->delete();
 
         event(new UserRemovedFromRoster($vatsimId));
 

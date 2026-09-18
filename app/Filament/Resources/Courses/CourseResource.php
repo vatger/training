@@ -2,19 +2,20 @@
 
 namespace App\Filament\Resources\Courses;
 
+use App\Filament\Resources\Courses\Pages\CreateCourse;
 use App\Filament\Resources\Courses\Pages\EditCourse;
 use App\Filament\Resources\Courses\Pages\ListCourses;
-use App\Filament\Resources\Courses\Pages\CreateCourse;
 use App\Filament\Resources\Courses\Schemas\CourseForm;
 use App\Filament\Resources\Courses\Tables\CoursesTable;
 use App\Models\Course;
 use BackedEnum;
+use Filament\Facades\Filament;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
-use Filament\Facades\Filament;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 
 class CourseResource extends Resource
 {
@@ -62,7 +63,7 @@ class CourseResource extends Resource
     {
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -81,18 +82,18 @@ class CourseResource extends Resource
     {
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
         return $user->is_superuser || $user->is_admin;
     }
 
-    public static function canEdit(\Illuminate\Database\Eloquent\Model $record): bool
+    public static function canEdit(Model $record): bool
     {
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -108,28 +109,29 @@ class CourseResource extends Resource
                     return true;
                 }
             }
+
             return false;
         }
 
         return $user->canEditAdminResource('courses');
     }
 
-    public static function canDelete(\Illuminate\Database\Eloquent\Model $record): bool
+    public static function canDelete(Model $record): bool
     {
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
         return $user->is_superuser || $user->is_admin;
     }
 
-    public static function canView(\Illuminate\Database\Eloquent\Model $record): bool
+    public static function canView(Model $record): bool
     {
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -145,6 +147,7 @@ class CourseResource extends Resource
                     return true;
                 }
             }
+
             return false;
         }
 
@@ -156,7 +159,7 @@ class CourseResource extends Resource
         $query = parent::getEloquentQuery()->with('mentorGroup');
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return $query->whereRaw('1 = 0');
         }
 

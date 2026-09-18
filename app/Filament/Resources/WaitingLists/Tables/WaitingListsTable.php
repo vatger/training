@@ -5,11 +5,12 @@ namespace App\Filament\Resources\WaitingLists\Tables;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Tables\Table;
-use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\BadgeColumn;
-use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class WaitingListsTable
 {
@@ -113,6 +114,34 @@ class WaitingListsTable
                 Filter::make('high_activity')
                     ->label('High Activity (≥10h)')
                     ->query(fn ($query) => $query->where('activity', '>=', 10)),
+
+                Filter::make('multiple_entries')
+                    ->label('Multiple Rating, EDMT or FAM Entries')
+                    ->toggle()
+                    ->query(function (Builder $query) {
+                        $duplicateUserIdsForType = function (string $type) {
+                            return function ($sub) use ($type) {
+                                $sub->select('user_id')
+                                    ->from('waiting_list_entries')
+                                    ->join('courses', 'courses.id', '=', 'waiting_list_entries.course_id')
+                                    ->where('courses.type', $type)
+                                    ->groupBy('user_id')
+                                    ->havingRaw('count(*) > 1');
+                            };
+                        };
+
+                        return $query
+                            ->where(function (Builder $query) use ($duplicateUserIdsForType) {
+                                foreach (['RTG', 'EDMT', 'FAM'] as $type) {
+                                    $query->orWhere(function (Builder $query) use ($duplicateUserIdsForType, $type) {
+                                        $query
+                                            ->whereHas('course', fn ($q) => $q->where('type', $type))
+                                            ->whereIn('user_id', $duplicateUserIdsForType($type));
+                                    });
+                                }
+                            })
+                            ->orderBy('user_id');
+                    }),
             ])
             ->recordActions([
                 EditAction::make(),

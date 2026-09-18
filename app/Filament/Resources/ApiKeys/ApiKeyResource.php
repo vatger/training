@@ -10,11 +10,12 @@ use App\Filament\Resources\ApiKeys\Schemas\ApiKeyForm;
 use App\Filament\Resources\ApiKeys\Tables\ApiKeysTable;
 use App\Models\ApiKey;
 use BackedEnum;
+use Filament\Facades\Filament;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
-use Filament\Facades\Filament;
+use Illuminate\Database\Eloquent\Model;
 
 class ApiKeyResource extends Resource
 {
@@ -68,7 +69,7 @@ class ApiKeyResource extends Resource
     {
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -83,7 +84,7 @@ class ApiKeyResource extends Resource
     {
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -94,11 +95,11 @@ class ApiKeyResource extends Resource
         return $user->canEditAdminResource('api_keys');
     }
 
-    public static function canEdit(\Illuminate\Database\Eloquent\Model $record): bool
+    public static function canEdit(Model $record): bool
     {
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -109,11 +110,11 @@ class ApiKeyResource extends Resource
         return $user->canEditAdminResource('api_keys');
     }
 
-    public static function canDelete(\Illuminate\Database\Eloquent\Model $record): bool
+    public static function canDelete(Model $record): bool
     {
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 

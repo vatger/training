@@ -26,7 +26,7 @@ class TrainingLogPolicy
         // - The mentor who created the log
         // - A mentor for the course
         // - A superuser/admin
-        
+
         if ($user->is_superuser || $user->is_admin) {
             return true;
         }
@@ -70,6 +70,7 @@ class TrainingLogPolicy
             if ($log->course) {
                 return $user->mentorCourses()->where('courses.id', $log->course_id)->exists();
             }
+
             return true;
         }
 
@@ -94,7 +95,7 @@ class TrainingLogPolicy
         // - The mentor who created the log
         // - A mentor for the course
         // - A superuser/admin
-        
+
         if ($user->is_superuser || $user->is_admin) {
             return true;
         }

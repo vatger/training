@@ -20,7 +20,7 @@ class JoinCptAsLocal
         $cpt->update(['local_id' => $local->id]);
         $cpt->refresh();
 
-        if (!$wasConfirmed && $cpt->confirmed) {
+        if (! $wasConfirmed && $cpt->confirmed) {
             $this->notifications->broadcastConfirmedCpts();
         }
 

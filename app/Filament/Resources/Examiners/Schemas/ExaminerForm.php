@@ -3,9 +3,9 @@
 namespace App\Filament\Resources\Examiners\Schemas;
 
 use App\Models\Examiner;
-use Filament\Schemas\Schema;
 use Filament\Forms;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 
 class ExaminerForm
 {

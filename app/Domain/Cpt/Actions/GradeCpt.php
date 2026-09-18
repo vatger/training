@@ -30,9 +30,9 @@ class GradeCpt
     private function syncWithVatEud(Cpt $cpt, bool $passed): void
     {
         $latestLog = $cpt->logs->sortByDesc('created_at')->first();
-        $filePath  = $this->resolveFilePath($latestLog->log_file);
+        $filePath = $this->resolveFilePath($latestLog->log_file);
 
-        if (!$filePath) {
+        if (! $filePath) {
             Log::error('CPT grading: log file not found', [
                 'cpt_id' => $cpt->id,
                 'log_id' => $latestLog->id,
@@ -42,22 +42,22 @@ class GradeCpt
             return;
         }
 
-        if (!$cpt->examiner) {
+        if (! $cpt->examiner) {
             Log::error('CPT grading: no examiner assigned', ['cpt_id' => $cpt->id]);
 
             return;
         }
 
         $uploadResult = $this->vatEud->uploadCptLog(
-            traineeCid:  $cpt->trainee->vatsim_id,
+            traineeCid: $cpt->trainee->vatsim_id,
             examinerCid: $cpt->examiner->vatsim_id,
-            position:    $cpt->course->solo_station,
-            note:        'See log',
-            cptPass:     $passed,
-            filePath:    $filePath,
+            position: $cpt->course->solo_station,
+            note: 'See log',
+            cptPass: $passed,
+            filePath: $filePath,
         );
 
-        if (!$uploadResult['success']) {
+        if (! $uploadResult['success']) {
             Log::error('CPT grading: VatEud upload failed', [
                 'cpt_id' => $cpt->id,
                 'result' => $uploadResult,
@@ -79,7 +79,7 @@ class GradeCpt
             newRating: $cpt->trainee->rating + 1,
         );
 
-        if (!$upgradeResult['success']) {
+        if (! $upgradeResult['success']) {
             Log::error('CPT grading: upgrade request failed', [
                 'cpt_id' => $cpt->id,
                 'result' => $upgradeResult,
@@ -89,8 +89,8 @@ class GradeCpt
         }
 
         $cpt->trainee->update([
-            'rating_upgraded_at'     => now(),
-            'last_known_rating'      => $cpt->trainee->rating,
+            'rating_upgraded_at' => now(),
+            'last_known_rating' => $cpt->trainee->rating,
             'rating_upgrade_pending' => true,
         ]);
     }

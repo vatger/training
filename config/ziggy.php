@@ -43,7 +43,7 @@ return [
         'familiarisations.index',
         'familiarisations.user',
 
-        // Find user 
+        // Find user
         'users.search',
         'users.profile',
         'users.data',
@@ -52,13 +52,13 @@ return [
         'overview.index',
         'overview.course.trainees',
         'overview.trainee-logs',
-        
+
         'overview.update-remark',
-        
+
         'overview.assign-trainee',
         'overview.claim-trainee',
         'overview.unclaim-trainee',
-        
+
         'overview.get-course-mentors',
         'overview.add-mentor',
         'overview.remove-mentor',
@@ -74,7 +74,6 @@ return [
 
         'overview.grant-endorsement',
         'overview.get-moodle-status-batch',
-
 
         'overview.add-solo',
         'overview.extend-solo',
@@ -106,6 +105,6 @@ return [
         'cpt.leave-local',
 
         'settings.index',
-        'settings.update'
+        'settings.update',
     ],
 ];

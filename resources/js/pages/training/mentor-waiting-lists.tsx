@@ -308,7 +308,7 @@ export default function MentorWaitingLists({ courses, config }: PageProps) {
 								</CardHeader>
 
 								<CardContent className="-mt-4 space-y-3">
-									<div className="flex items-center justify-between rounded-lg border p-3">
+									<div className="flex items-center justify-between rounded-lg border p-2">
 										<div className="flex items-center gap-2">
 											<Users className="h-4 w-4 text-muted-foreground" />
 											<span className="text-sm text-muted-foreground">
@@ -366,13 +366,13 @@ export default function MentorWaitingLists({ courses, config }: PageProps) {
 																			<div className="flex items-start justify-between">
 																				<div className="flex flex-col">
 																					<Link
-																						className="font-medium hover:underline"
+																						className="font-medium hover:underline hover:text-accent-500"
 																						href={`/users/${entry.vatsim_id}`}
 																					>
 																						{entry.name}
 																					</Link>
 																					<a
-																						className="text-sm text-muted-foreground hover:underline"
+																						className="text-sm text-muted-foreground hover:underline hover:text-accent-500"
 																						href={`https://stats.vatsim.net/stats/${entry.vatsim_id}`}
 																						rel="noopener noreferrer"
 																						target="_blank"
@@ -388,15 +388,15 @@ export default function MentorWaitingLists({ courses, config }: PageProps) {
 																						className={cn(
 																							entry.activity >=
 																								config.min_activity &&
-																								"bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
+																								"bg-success-100 text-success-800 dark:bg-success-900 dark:text-success-300",
 																							entry.activity >=
 																								config.display_activity &&
 																								entry.activity <
 																									config.min_activity &&
-																								"bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300",
+																								"bg-warning-100 text-warning-800 dark:bg-warning-900 dark:text-warning-300",
 																							entry.activity <
 																								config.display_activity &&
-																								"bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300",
+																								"bg-danger-100 text-danger-800 dark:bg-danger-900 dark:text-danger-300",
 																						)}
 																					>
 																						{entry.activity}h
@@ -426,6 +426,8 @@ export default function MentorWaitingLists({ courses, config }: PageProps) {
 																										isLoading ||
 																										(selectedCourse.type ===
 																											"RTG" &&
+																											selectedCourse.position !==
+																												"CTR" &&
 																											entry.activity <
 																												config.display_activity)
 																									}
@@ -530,9 +532,10 @@ export default function MentorWaitingLists({ courses, config }: PageProps) {
 																<TableRow>
 																	<TableHead>Position</TableHead>
 																	<TableHead>Trainee</TableHead>
-																	{selectedCourse.type === "RTG" && (
-																		<TableHead>Activity</TableHead>
-																	)}
+																	{selectedCourse.type === "RTG" &&
+																		selectedCourse.position !== "CTR" && (
+																			<TableHead>Activity</TableHead>
+																		)}
 																	<TableHead>Waiting Time</TableHead>
 																	<TableHead>Remarks</TableHead>
 																	<TableHead className="text-right">
@@ -550,13 +553,13 @@ export default function MentorWaitingLists({ courses, config }: PageProps) {
 																			<TableCell>
 																				<div className="flex flex-col">
 																					<Link
-																						className="font-medium hover:underline"
+																						className="font-medium hover:underline hover:text-accent-500"
 																						href={`/users/${entry.vatsim_id}`}
 																					>
 																						{entry.name}
 																					</Link>
 																					<a
-																						className="text-sm text-muted-foreground hover:underline"
+																						className="text-sm text-muted-foreground hover:underline hover:text-accent-500"
 																						href={`https://stats.vatsim.net/stats/${entry.vatsim_id}`}
 																						rel="noopener noreferrer"
 																						target="_blank"
@@ -565,28 +568,29 @@ export default function MentorWaitingLists({ courses, config }: PageProps) {
 																					</a>
 																				</div>
 																			</TableCell>
-																			{selectedCourse.type === "RTG" && (
-																				<TableCell>
-																					<span
-																						className={cn(
-																							"font-medium",
-																							entry.activity >=
-																								config.min_activity &&
-																								"text-green-600",
-																							entry.activity >=
-																								config.display_activity &&
-																								entry.activity <
+																			{selectedCourse.type === "RTG" &&
+																				selectedCourse.position !== "CTR" && (
+																					<TableCell>
+																						<span
+																							className={cn(
+																								"font-medium",
+																								entry.activity >=
 																									config.min_activity &&
-																								"text-yellow-600",
-																							entry.activity <
-																								config.display_activity &&
-																								"text-red-600",
-																						)}
-																					>
-																						{entry.activity}h
-																					</span>
-																				</TableCell>
-																			)}
+																									"text-success-600",
+																								entry.activity >=
+																									config.display_activity &&
+																									entry.activity <
+																										config.min_activity &&
+																									"text-warning-600",
+																								entry.activity <
+																									config.display_activity &&
+																									"text-danger-600",
+																							)}
+																						>
+																							{entry.activity}h
+																						</span>
+																					</TableCell>
+																				)}
 																			<TableCell>
 																				<div className="flex items-center gap-1 text-sm text-muted-foreground">
 																					<Clock className="h-3 w-3" />
@@ -617,6 +621,8 @@ export default function MentorWaitingLists({ courses, config }: PageProps) {
 																											isLoading ||
 																											(selectedCourse.type ===
 																												"RTG" &&
+																												selectedCourse.position !==
+																													"CTR" &&
 																												entry.activity <
 																													config.display_activity)
 																										}
@@ -633,6 +639,8 @@ export default function MentorWaitingLists({ courses, config }: PageProps) {
 																								</div>
 																							</TooltipTrigger>
 																							{selectedCourse.type === "RTG" &&
+																								selectedCourse.position !==
+																									"CTR" &&
 																								entry.activity <
 																									config.display_activity && (
 																									<TooltipContent side="top">

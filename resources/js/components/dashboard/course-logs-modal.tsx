@@ -28,13 +28,13 @@ interface CourseLogsModalProps {
 const getSessionTypeColor = (type: string) => {
 	switch (type) {
 		case "O":
-			return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
+			return "bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-400"
 		case "S":
-			return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+			return "bg-success-100 text-success-800 dark:bg-success-900/30 dark:text-success-400"
 		case "L":
-			return "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400"
+			return "bg-secondary-100 text-secondary-800 dark:bg-secondary-900/30 dark:text-secondary-400"
 		default:
-			return "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400"
+			return "bg-secondary-100 text-secondary-800 dark:bg-secondary-900/30 dark:text-secondary-400"
 	}
 }
 
@@ -71,7 +71,7 @@ export function CourseLogsModal({
 									<div
 										className={cn(
 											"absolute -left-[23px] mt-1.5 h-4 w-4 rounded-full border-2 border-background",
-											log.result ? "bg-green-500" : "bg-red-500",
+											log.result ? "bg-success-500" : "bg-danger-500",
 										)}
 									/>
 
@@ -134,11 +134,11 @@ export function CourseLogsModal({
 										</div>
 
 										{log.next_step && (
-											<div className="mt-3 rounded-md bg-blue-50 p-3 dark:bg-blue-900/20">
-												<p className="mb-1 text-sm font-medium text-blue-900 dark:text-blue-300">
+											<div className="mt-3 rounded-md bg-primary-50 p-3 dark:bg-primary-900/20">
+												<p className="mb-1 text-sm font-medium text-primary-900 dark:text-primary-300">
 													Next Step:
 												</p>
-												<p className="text-sm text-blue-800 dark:text-blue-200">
+												<p className="text-sm text-primary-800 dark:text-primary-200">
 													{log.next_step}
 												</p>
 											</div>

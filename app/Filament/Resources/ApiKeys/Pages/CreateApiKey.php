@@ -15,7 +15,7 @@ class CreateApiKey extends CreateRecord
         $plainKey = ApiKey::generateKey();
         session(['created_api_key' => $plainKey]);
         $data['key'] = $plainKey;
-        
+
         return $data;
     }
 

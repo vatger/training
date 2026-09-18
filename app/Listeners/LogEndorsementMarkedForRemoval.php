@@ -14,7 +14,7 @@ class LogEndorsementMarkedForRemoval
             'model_type' => $event->trainee ? $event->trainee::class : $event->activity::class,
             'model_id' => $event->trainee?->id ?? $event->activity->id,
             'description' => "{$event->actor->name} started the removal process for {$event->activity->position} endorsement"
-                . ($event->trainee ? " from {$event->trainee->name}" : ''),
+                .($event->trainee ? " from {$event->trainee->name}" : ''),
             'user_id' => $event->actor->id,
             'properties' => [
                 'position' => $event->activity->position,

@@ -3,21 +3,21 @@
 namespace App\Domain\Roster\Actions;
 
 use App\Domain\Roster\Events\RosterRemovalWarningIssued;
-use App\Domain\Roster\Events\UserRemovedFromRoster;
+use App\Integrations\Vatger\VatgerClientInterface;
 use App\Models\RosterEntry;
-use App\Models\WaitingListEntry;
-use App\Integrations\VatEud\VatEudClientInterface;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
 class CheckUserRosterStatus
 {
     private const WARNING_THRESHOLD = 330;
+
     private const REMOVAL_THRESHOLD = 365;
+
     private const GRACE_DAYS = 35;
 
     public function __construct(
-        private readonly VatEudClientInterface $vatEudClient,
+        private readonly VatgerClientInterface $vatgerClient,
         private readonly SendRosterRemovalWarning $sendWarning,
         private readonly RemoveUserFromRoster $removeUser,
     ) {}
@@ -75,7 +75,7 @@ class CheckUserRosterStatus
     private function fetchLastSession(int $vatsimId): ?Carbon
     {
         try {
-            return $this->vatEudClient->getLastGermanSession($vatsimId);
+            return $this->vatgerClient->getLastGermanSession($vatsimId);
         } catch (\Throwable $e) {
             Log::warning('Failed fetching last session', [
                 'vatsim_id' => $vatsimId,

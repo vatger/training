@@ -2,18 +2,19 @@
 
 namespace App\Filament\Resources\Examiners;
 
+use App\Filament\Resources\Examiners\Pages\CreateExaminer;
 use App\Filament\Resources\Examiners\Pages\EditExaminer;
 use App\Filament\Resources\Examiners\Pages\ListExaminers;
-use App\Filament\Resources\Examiners\Pages\CreateExaminer;
 use App\Filament\Resources\Examiners\Schemas\ExaminerForm;
 use App\Filament\Resources\Examiners\Tables\ExaminersTable;
 use App\Models\Examiner;
 use BackedEnum;
+use Filament\Facades\Filament;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
-use Filament\Facades\Filament;
+use Illuminate\Database\Eloquent\Model;
 
 class ExaminerResource extends Resource
 {
@@ -66,7 +67,7 @@ class ExaminerResource extends Resource
     {
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -81,7 +82,7 @@ class ExaminerResource extends Resource
     {
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -92,11 +93,11 @@ class ExaminerResource extends Resource
         return $user->canEditAdminResource('examiners');
     }
 
-    public static function canEdit(\Illuminate\Database\Eloquent\Model $record): bool
+    public static function canEdit(Model $record): bool
     {
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -107,11 +108,11 @@ class ExaminerResource extends Resource
         return $user->canEditAdminResource('examiners');
     }
 
-    public static function canDelete(\Illuminate\Database\Eloquent\Model $record): bool
+    public static function canDelete(Model $record): bool
     {
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 

@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class EndorsementActivity extends Model
 {
@@ -60,19 +60,19 @@ class EndorsementActivity extends Model
     public function getStatusAttribute(): string
     {
         $minMinutes = config('services.vateud.min_activity_minutes', 180);
-        
+
         // If removal date is set and in the future, show removal status
         if ($this->removal_date && $this->removal_date->isFuture()) {
             return 'removal';
-        } 
+        }
         // If activity meets minimum requirements
         elseif ($this->activity_minutes >= $minMinutes) {
             return 'active';
-        } 
+        }
         // If activity is between 50% and 100% of minimum (warning zone)
         elseif ($this->activity_minutes >= ($minMinutes * 0.5)) {
             return 'warning';
-        } 
+        }
         // If activity is below 50% of minimum (potential removal)
         else {
             return 'warning'; // Changed from 'removal' - only show removal if actually marked for removal
@@ -85,6 +85,7 @@ class EndorsementActivity extends Model
     public function getProgressAttribute(): float
     {
         $minMinutes = config('services.vateud.min_activity_minutes', 180);
+
         return min(($this->activity_minutes / $minMinutes) * 100, 100);
     }
 

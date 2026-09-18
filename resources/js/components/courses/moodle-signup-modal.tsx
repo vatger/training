@@ -28,13 +28,13 @@ export function MoodleSignupModal({ isOpen }: MoodleSignupModalProps) {
 			<AlertDialogContent>
 				<AlertDialogHeader>
 					<div className="flex items-center gap-2">
-						<AlertCircle className="h-5 w-5 text-yellow-500" />
+						<AlertCircle className="h-5 w-5 text-warning-500" />
 						<AlertDialogTitle>Moodle Account Required</AlertDialogTitle>
 					</div>
 					<AlertDialogDescription className="space-y-4 pt-4">
 						<p>
 							Before you can register for courses, you need to sign up on the
-							VATSIM Germany Moodle platform.
+							vatger Moodle platform.
 						</p>
 						<p className="text-sm">
 							Many courses require completion of Moodle training modules. Please

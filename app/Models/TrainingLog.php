@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class TrainingLog extends Model
 {
@@ -14,24 +14,33 @@ class TrainingLog extends Model
      * Session type constants
      */
     const TYPE_ONLINE = 'O';
+
     const TYPE_SIM = 'S';
+
     const TYPE_LESSON = 'L';
+
     const TYPE_CUSTOM = 'C';
 
     /**
      * Rating constants
      */
     const RATING_NOT_RATED = 0;
+
     const RATING_NOT_MET = 1;
+
     const RATING_PARTIALLY_MET = 2;
+
     const RATING_MET = 3;
+
     const RATING_EXCEEDED = 4;
 
     /**
      * Traffic level constants
      */
     const TRAFFIC_LOW = 'L';
+
     const TRAFFIC_MEDIUM = 'M';
+
     const TRAFFIC_HIGH = 'H';
 
     protected $fillable = [
@@ -41,7 +50,7 @@ class TrainingLog extends Model
         'session_date',
         'position',
         'type',
-        
+
         // Session details
         'traffic_level',
         'traffic_complexity',
@@ -50,56 +59,56 @@ class TrainingLog extends Model
         'session_duration',
         'special_procedures',
         'airspace_restrictions',
-        
+
         // Evaluation categories
         'theory',
         'theory_positives',
         'theory_negatives',
-        
+
         'phraseology',
         'phraseology_positives',
         'phraseology_negatives',
-        
+
         'coordination',
         'coordination_positives',
         'coordination_negatives',
-        
+
         'tag_management',
         'tag_management_positives',
         'tag_management_negatives',
-        
+
         'situational_awareness',
         'situational_awareness_positives',
         'situational_awareness_negatives',
-        
+
         'problem_recognition',
         'problem_recognition_positives',
         'problem_recognition_negatives',
-        
+
         'traffic_planning',
         'traffic_planning_positives',
         'traffic_planning_negatives',
-        
+
         'reaction',
         'reaction_positives',
         'reaction_negatives',
-        
+
         'separation',
         'separation_positives',
         'separation_negatives',
-        
+
         'efficiency',
         'efficiency_positives',
         'efficiency_negatives',
-        
+
         'ability_to_work_under_pressure',
         'ability_to_work_under_pressure_positives',
         'ability_to_work_under_pressure_negatives',
-        
+
         'motivation',
         'motivation_positives',
         'motivation_negatives',
-        
+
         // Final assessment
         'internal_remarks',
         'final_comment',
@@ -111,7 +120,7 @@ class TrainingLog extends Model
         'session_date' => 'date',
         'result' => 'boolean',
         'session_duration' => 'integer',
-        
+
         // Cast all rating fields to integers
         'theory' => 'integer',
         'phraseology' => 'integer',
@@ -156,7 +165,7 @@ class TrainingLog extends Model
      */
     public function getTypeDisplayAttribute(): string
     {
-        return match($this->type) {
+        return match ($this->type) {
             self::TYPE_ONLINE => 'Online',
             self::TYPE_SIM => 'Sim',
             self::TYPE_LESSON => 'Lesson',
@@ -170,7 +179,7 @@ class TrainingLog extends Model
      */
     public static function getRatingDisplay(int $rating): string
     {
-        return match($rating) {
+        return match ($rating) {
             self::RATING_NOT_RATED => 'Not Rated',
             self::RATING_NOT_MET => 'Requirements Not Met',
             self::RATING_PARTIALLY_MET => 'Requirements Partially Met',
@@ -185,11 +194,11 @@ class TrainingLog extends Model
      */
     public function getTrafficLevelDisplayAttribute(): ?string
     {
-        if (!$this->traffic_level) {
+        if (! $this->traffic_level) {
             return null;
         }
 
-        return match($this->traffic_level) {
+        return match ($this->traffic_level) {
             self::TRAFFIC_LOW => 'Low',
             self::TRAFFIC_MEDIUM => 'Medium',
             self::TRAFFIC_HIGH => 'High',
@@ -202,11 +211,11 @@ class TrainingLog extends Model
      */
     public function getTrafficComplexityDisplayAttribute(): ?string
     {
-        if (!$this->traffic_complexity) {
+        if (! $this->traffic_complexity) {
             return null;
         }
 
-        return match($this->traffic_complexity) {
+        return match ($this->traffic_complexity) {
             self::TRAFFIC_LOW => 'Low',
             self::TRAFFIC_MEDIUM => 'Medium',
             self::TRAFFIC_HIGH => 'High',

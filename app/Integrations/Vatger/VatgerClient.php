@@ -2,17 +2,19 @@
 
 namespace App\Integrations\Vatger;
 
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class VatgerClient implements VatgerClientInterface
 {
     private ?string $apiKey;
+
     private string $baseUrl;
 
     public function __construct()
     {
-        $this->apiKey  = config('services.vatger.api_key');
+        $this->apiKey = config('services.vatger.api_key');
         $this->baseUrl = config('services.vatger.api_url');
     }
 
@@ -25,11 +27,11 @@ class VatgerClient implements VatgerClientInterface
         try {
             $response = Http::withHeaders([
                 'Authorization' => "Token {$this->apiKey}",
-                'Accept'        => 'application/json',
+                'Accept' => 'application/json',
             ])
                 ->timeout(10)
                 ->post("{$this->baseUrl}/board/post/cpt", [
-                    'text_data'  => 'The above CPTs have been confirmed.',
+                    'text_data' => 'The above CPTs have been confirmed.',
                     'table_data' => $cpts,
                 ]);
 
@@ -60,12 +62,12 @@ class VatgerClient implements VatgerClientInterface
             $response = Http::withHeaders(['Authorization' => "Token {$this->apiKey}"])
                 ->timeout(10)
                 ->post("{$this->baseUrl}/user/{$vatsimId}/send_notification", [
-                    'title'       => $title,
-                    'message'     => $message,
+                    'title' => $title,
+                    'message' => $message,
                     'source_name' => $sourceName,
-                    'link_text'   => $linkText,
-                    'link_url'    => $linkUrl,
-                    'via'         => 'board.ping',
+                    'link_text' => $linkText,
+                    'link_url' => $linkUrl,
+                    'via' => 'board.ping',
                 ]);
 
             if ($response->successful()) {
@@ -80,5 +82,71 @@ class VatgerClient implements VatgerClientInterface
 
             return ['success' => false];
         }
+    }
+
+    public function getLastGermanSession(int $vatsimId): ?Carbon
+    {
+        try {
+            $start = Carbon::now()->subYears(2)->format('Y-m-d');
+
+            $response = Http::timeout(15)
+                ->retry(2, 1000)
+                ->get("http://stats.vatsim-germany.org/api/atc/{$vatsimId}/sessions/", [
+                    'start_date' => $start,
+                ]);
+
+            if (! $response->successful()) {
+                Log::warning('Failed to fetch last German session', [
+                    'vatsim_id' => $vatsimId,
+                    'status' => $response->status(),
+                ]);
+
+                return null;
+            }
+
+            $sessions = $response->json();
+
+            if (! is_array($sessions)) {
+                return null;
+            }
+
+            $lastSession = null;
+
+            foreach ($sessions as $session) {
+                if (! is_array($session)) {
+                    continue;
+                }
+
+                $date = $this->parseSessionDate($session);
+
+                if ($date && ($lastSession === null || $date->greaterThan($lastSession))) {
+                    $lastSession = $date;
+                }
+            }
+
+            return $lastSession;
+        } catch (\Exception $e) {
+            Log::error('Exception fetching last German session', [
+                'vatsim_id' => $vatsimId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
+    }
+
+    private function parseSessionDate(array $session): ?Carbon
+    {
+        foreach (['disconnected_at', 'connected_at', 'start', 'end', 'created_at', 'date'] as $dateField) {
+            if (isset($session[$dateField])) {
+                try {
+                    return Carbon::parse($session[$dateField]);
+                } catch (\Exception $e) {
+                    // Continue to next field
+                }
+            }
+        }
+
+        return null;
     }
 }

@@ -2,16 +2,18 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Examiner extends Model
 {
     use HasFactory;
 
     const POSITION_TWR = 'TWR';
+
     const POSITION_APP = 'APP';
+
     const POSITION_CTR = 'CTR';
 
     const VALID_POSITIONS = [
@@ -47,7 +49,7 @@ class Examiner extends Model
         }
 
         return implode(', ', array_map(function ($pos) {
-            return match($pos) {
+            return match ($pos) {
                 self::POSITION_TWR => 'Tower',
                 self::POSITION_APP => 'Approach',
                 self::POSITION_CTR => 'Centre',
@@ -68,7 +70,7 @@ class Examiner extends Model
 
     public static function getPositionLabel(string $position): string
     {
-        return match($position) {
+        return match ($position) {
             self::POSITION_TWR => 'Tower',
             self::POSITION_APP => 'Approach',
             self::POSITION_CTR => 'Centre',

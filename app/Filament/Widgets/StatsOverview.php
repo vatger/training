@@ -3,9 +3,9 @@
 namespace App\Filament\Widgets;
 
 use App\Models\Course;
+use App\Models\EndorsementActivity;
 use App\Models\User;
 use App\Models\WaitingListEntry;
-use App\Models\EndorsementActivity;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Support\Facades\DB;
@@ -16,7 +16,7 @@ class StatsOverview extends BaseWidget
     {
         // Total users (VATSIM only)
         $totalUsers = User::whereNotNull('vatsim_id')->count();
-        
+
         // Users registered in last 30 days
         $recentUsers = User::whereNotNull('vatsim_id')
             ->where('created_at', '>=', now()->subDays(30))
@@ -48,7 +48,7 @@ class StatsOverview extends BaseWidget
 
         return [
             Stat::make('Total Users', $totalUsers)
-                ->description($recentUsers . ' new in last 30 days')
+                ->description($recentUsers.' new in last 30 days')
                 ->descriptionIcon('heroicon-m-arrow-trending-up')
                 ->color('success')
                 ->chart([7, 3, 4, 5, 6, 3, 5, 3]),
@@ -64,12 +64,12 @@ class StatsOverview extends BaseWidget
                 ->color('warning'),
 
             Stat::make('Active Endorsements', $activeEndorsements)
-                ->description($lowActivityEndorsements . ' with low activity')
+                ->description($lowActivityEndorsements.' with low activity')
                 ->descriptionIcon('heroicon-m-shield-check')
                 ->color($lowActivityEndorsements > 0 ? 'warning' : 'success'),
 
             Stat::make('Total Courses', $totalCourses)
-                ->description($rtgCourses . ' rating courses')
+                ->description($rtgCourses.' rating courses')
                 ->descriptionIcon('heroicon-m-book-open')
                 ->color('info'),
 

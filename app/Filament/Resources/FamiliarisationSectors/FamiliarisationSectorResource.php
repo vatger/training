@@ -2,18 +2,19 @@
 
 namespace App\Filament\Resources\FamiliarisationSectors;
 
+use App\Filament\Resources\FamiliarisationSectors\Pages\CreateFamiliarisationSector;
 use App\Filament\Resources\FamiliarisationSectors\Pages\EditFamiliarisationSector;
 use App\Filament\Resources\FamiliarisationSectors\Pages\ListFamiliarisationSectors;
-use App\Filament\Resources\FamiliarisationSectors\Pages\CreateFamiliarisationSector;
 use App\Filament\Resources\FamiliarisationSectors\Schemas\FamiliarisationSectorForm;
 use App\Filament\Resources\FamiliarisationSectors\Tables\FamiliarisationSectorsTable;
 use App\Models\FamiliarisationSector;
 use BackedEnum;
+use Filament\Facades\Filament;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
-use Filament\Facades\Filament;
+use Illuminate\Database\Eloquent\Model;
 
 class FamiliarisationSectorResource extends Resource
 {
@@ -66,7 +67,7 @@ class FamiliarisationSectorResource extends Resource
     {
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -81,7 +82,7 @@ class FamiliarisationSectorResource extends Resource
     {
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -92,11 +93,11 @@ class FamiliarisationSectorResource extends Resource
         return $user->canEditAdminResource('familiarisation_sectors');
     }
 
-    public static function canEdit(\Illuminate\Database\Eloquent\Model $record): bool
+    public static function canEdit(Model $record): bool
     {
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -107,11 +108,11 @@ class FamiliarisationSectorResource extends Resource
         return $user->canEditAdminResource('familiarisation_sectors');
     }
 
-    public static function canDelete(\Illuminate\Database\Eloquent\Model $record): bool
+    public static function canDelete(Model $record): bool
     {
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 

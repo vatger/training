@@ -2,10 +2,9 @@
 
 namespace App\Filament\Resources\EndorsementActivities\Schemas;
 
-use Filament\Schemas\Schema;
 use Filament\Forms;
 use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Schema;
 
 class EndorsementActivityForm
 {

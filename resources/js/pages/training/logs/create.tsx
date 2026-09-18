@@ -405,6 +405,8 @@ export default function CreateEditTrainingLog({
 		}
 	}, [debouncedData, storageKey])
 
+	const hasErrors = Object.keys(errors).length > 0
+
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault()
 
@@ -443,13 +445,13 @@ export default function CreateEditTrainingLog({
 
 			switch (value) {
 				case 4:
-					return "border-2 border-green-500 bg-green-500 text-white hover:bg-green-600 hover:text-white"
+					return "border-2 border-success-500 bg-success-500 text-white hover:bg-success-600 hover:text-white"
 				case 3:
-					return "border-2 border-blue-500 bg-blue-500 text-white hover:bg-blue-600 hover:text-white"
+					return "border-2 border-primary-500 bg-primary-500 text-white hover:bg-primary-600 hover:text-white"
 				case 2:
-					return "border-2 border-yellow-500 bg-yellow-500 text-white hover:bg-yellow-600 hover:text-white"
+					return "border-2 border-warning-500 bg-warning-500 text-white hover:bg-warning-600 hover:text-white"
 				case 1:
-					return "border-2 border-red-500 bg-red-500 text-white hover:bg-red-600 hover:text-white"
+					return "border-2 border-danger-500 bg-danger-500 text-white hover:bg-danger-600 hover:text-white"
 				default:
 					return "border-2 dark:border-primary"
 			}
@@ -485,6 +487,21 @@ export default function CreateEditTrainingLog({
 
 			<div className="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-4">
 				<form className="space-y-6" onSubmit={handleSubmit}>
+					{hasErrors && (
+						<div className="flex items-start gap-3 rounded-lg border border-danger-200 bg-danger-50 p-4 dark:border-danger-800 dark:bg-danger-950">
+							<XCircle className="mt-0.5 h-5 w-5 shrink-0 text-danger-500" />
+							<div>
+								<p className="font-medium text-danger-800 dark:text-danger-200">
+									Please fix the following errors before submitting
+								</p>
+								<ul className="mt-1 list-disc pl-4 text-sm text-danger-700 dark:text-danger-300">
+									{Object.entries(errors).map(([field, message]) => (
+										<li key={field}>{message as string}</li>
+									))}
+								</ul>
+							</div>
+						</div>
+					)}
 					{/* Basic Session Information */}
 					<Card>
 						<CardContent className="gap-0">
@@ -530,7 +547,7 @@ export default function CreateEditTrainingLog({
 								<div className="space-y-2">
 									<Label htmlFor="session_date">Date *</Label>
 									<Input
-										className={errors.session_date ? "border-red-500" : ""}
+										className={errors.session_date ? "border-danger-500" : ""}
 										id="session_date"
 										max={new Date().toISOString().split("T")[0]}
 										onChange={(e) => setData("session_date", e.target.value)}
@@ -538,7 +555,7 @@ export default function CreateEditTrainingLog({
 										value={data.session_date}
 									/>
 									{errors.session_date && (
-										<p className="text-sm text-red-600">
+										<p className="text-sm text-danger-600">
 											{errors.session_date}
 										</p>
 									)}
@@ -547,7 +564,7 @@ export default function CreateEditTrainingLog({
 								<div className="space-y-2">
 									<Label htmlFor="position">Position *</Label>
 									<Input
-										className={errors.position ? "border-red-500" : ""}
+										className={errors.position ? "border-danger-500" : ""}
 										id="position"
 										maxLength={25}
 										onChange={(e) => setData("position", e.target.value)}
@@ -555,13 +572,16 @@ export default function CreateEditTrainingLog({
 										value={data.position}
 									/>
 									{errors.position && (
-										<p className="text-sm text-red-600">{errors.position}</p>
+										<p className="text-sm text-danger-600">{errors.position}</p>
 									)}
 								</div>
 
 								<div className="space-y-2">
 									<Label htmlFor="session_duration">Duration (minutes)</Label>
 									<Input
+										className={
+											errors.session_duration ? "border-danger-500" : ""
+										}
 										id="session_duration"
 										max="480"
 										min="1"
@@ -572,6 +592,11 @@ export default function CreateEditTrainingLog({
 										type="number"
 										value={data.session_duration}
 									/>
+									{errors.session_duration && (
+										<p className="text-sm text-danger-600">
+											{errors.session_duration}
+										</p>
+									)}
 								</div>
 
 								<div className="space-y-2">
@@ -581,7 +606,7 @@ export default function CreateEditTrainingLog({
 										value={data.type}
 									>
 										<SelectTrigger
-											className={errors.type ? "border-red-500" : ""}
+											className={errors.type ? "border-danger-500" : ""}
 											id="type"
 										>
 											<SelectValue placeholder="Select type..." />
@@ -595,7 +620,7 @@ export default function CreateEditTrainingLog({
 										</SelectContent>
 									</Select>
 									{errors.type && (
-										<p className="text-sm text-red-600">{errors.type}</p>
+										<p className="text-sm text-danger-600">{errors.type}</p>
 									)}
 								</div>
 							</div>
@@ -680,6 +705,11 @@ export default function CreateEditTrainingLog({
 													Runway Configuration
 												</Label>
 												<Input
+													className={
+														errors.runway_configuration
+															? "border-danger-500"
+															: ""
+													}
 													id="runway_configuration"
 													maxLength={50}
 													onChange={(e) =>
@@ -688,6 +718,11 @@ export default function CreateEditTrainingLog({
 													placeholder="e.g., 25L/07R"
 													value={data.runway_configuration}
 												/>
+												{errors.runway_configuration && (
+													<p className="text-sm text-danger-600">
+														{errors.runway_configuration}
+													</p>
+												)}
 											</div>
 
 											<div className="space-y-2">
@@ -695,6 +730,11 @@ export default function CreateEditTrainingLog({
 													Surrounding Stations
 												</Label>
 												<Input
+													className={
+														errors.surrounding_stations
+															? "border-danger-500"
+															: ""
+													}
 													id="surrounding_stations"
 													onChange={(e) =>
 														setData("surrounding_stations", e.target.value)
@@ -702,6 +742,11 @@ export default function CreateEditTrainingLog({
 													placeholder="e.g., EDDF_C_TWR, EDDF_C_GND"
 													value={data.surrounding_stations}
 												/>
+												{errors.surrounding_stations && (
+													<p className="text-sm text-danger-600">
+														{errors.surrounding_stations}
+													</p>
+												)}
 											</div>
 										</div>
 
@@ -717,6 +762,11 @@ export default function CreateEditTrainingLog({
 												placeholder="Describe any special procedures used..."
 												value={data.special_procedures}
 											/>
+											{errors.special_procedures && (
+												<p className="text-sm text-danger-600">
+													{errors.special_procedures}
+												</p>
+											)}
 										</div>
 
 										<div className="space-y-2">
@@ -731,6 +781,11 @@ export default function CreateEditTrainingLog({
 												placeholder="Note any airspace restrictions..."
 												value={data.airspace_restrictions}
 											/>
+											{errors.airspace_restrictions && (
+												<p className="text-sm text-danger-600">
+													{errors.airspace_restrictions}
+												</p>
+											)}
 										</div>
 									</div>
 								)}
@@ -757,7 +812,7 @@ export default function CreateEditTrainingLog({
 													</h3>
 													<Tooltip>
 														<TooltipTrigger asChild>
-															<InfoIcon className="size-3 text-blue-500" />
+															<InfoIcon className="size-3 text-primary-500" />
 														</TooltipTrigger>
 														<TooltipContent>
 															<p>{category.description}</p>
@@ -787,7 +842,7 @@ export default function CreateEditTrainingLog({
 
 											<div className="grid gap-4 md:grid-cols-2">
 												<div className="space-y-2">
-													<Label className="flex items-center gap-2 text-base text-green-700">
+													<Label className="flex items-center gap-2 text-base text-success-700">
 														<CheckCircle2 className="h-4 w-4" />
 														Strengths
 													</Label>
@@ -806,10 +861,21 @@ export default function CreateEditTrainingLog({
 															] as string
 														}
 													/>
+													{errors[
+														`${category.name}_positives` as keyof typeof errors
+													] && (
+														<p className="text-sm text-danger-600">
+															{
+																errors[
+																	`${category.name}_positives` as keyof typeof errors
+																]
+															}
+														</p>
+													)}
 												</div>
 
 												<div className="space-y-2">
-													<Label className="flex items-center gap-2 text-base text-amber-700">
+													<Label className="flex items-center gap-2 text-base text-warning-700">
 														<Info className="h-4 w-4" />
 														Areas for Improvement
 													</Label>
@@ -828,6 +894,17 @@ export default function CreateEditTrainingLog({
 															] as string
 														}
 													/>
+													{errors[
+														`${category.name}_negatives` as keyof typeof errors
+													] && (
+														<p className="text-sm text-danger-600">
+															{
+																errors[
+																	`${category.name}_negatives` as keyof typeof errors
+																]
+															}
+														</p>
+													)}
 												</div>
 											</div>
 										</Fragment>
@@ -853,6 +930,11 @@ export default function CreateEditTrainingLog({
 										placeholder="Provide a comprehensive assessment of the trainee's overall performance during this session..."
 										value={data.final_comment}
 									/>
+									{errors.final_comment && (
+										<p className="text-sm text-danger-600">
+											{errors.final_comment}
+										</p>
+									)}
 								</div>
 
 								<div className="space-y-2">
@@ -860,11 +942,17 @@ export default function CreateEditTrainingLog({
 										Next Training Step
 									</Label>
 									<Input
+										className={errors.next_step ? "border-danger-500" : ""}
 										id="next_step"
 										onChange={(e) => setData("next_step", e.target.value)}
 										placeholder="e.g., Continue with complex approach scenarios"
 										value={data.next_step}
 									/>
+									{errors.next_step && (
+										<p className="text-sm text-danger-600">
+											{errors.next_step}
+										</p>
+									)}
 								</div>
 
 								<Separator />
@@ -885,6 +973,11 @@ export default function CreateEditTrainingLog({
 										placeholder="Private notes for mentors only (not visible to trainee)..."
 										value={data.internal_remarks}
 									/>
+									{errors.internal_remarks && (
+										<p className="text-sm text-danger-600">
+											{errors.internal_remarks}
+										</p>
+									)}
 								</div>
 
 								<Separator />
@@ -905,16 +998,16 @@ export default function CreateEditTrainingLog({
 												className={cn(
 													"h-12 w-12 transition-colors",
 													data.result === true
-														? "text-green-600"
-														: "text-gray-400 group-hover:text-green-500",
+														? "text-success-600"
+														: "text-secondary-400 group-hover:text-success-500",
 												)}
 											/>
 											<span
 												className={cn(
 													"text-lg font-bold transition-colors",
 													data.result === true
-														? "text-green-700"
-														: "text-gray-600 group-hover:text-green-600",
+														? "text-success-700"
+														: "text-secondary-600 group-hover:text-success-600",
 												)}
 											>
 												Passed
@@ -934,7 +1027,7 @@ export default function CreateEditTrainingLog({
 										</Button>
 									</div>
 									{errors.result && (
-										<p className="text-sm text-red-600">{errors.result}</p>
+										<p className="text-sm text-danger-600">{errors.result}</p>
 									)}
 								</div>
 							</div>

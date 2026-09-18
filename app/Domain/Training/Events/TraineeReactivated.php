@@ -9,7 +9,7 @@ readonly class TraineeReactivated
 {
     public function __construct(
         public Course $course,
-        public User   $trainee,
-        public User   $mentor,
+        public User $trainee,
+        public User $mentor,
     ) {}
 }

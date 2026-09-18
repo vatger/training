@@ -2,19 +2,22 @@
 
 namespace App\Services;
 
+use App\Integrations\VatEud\VatEudService;
 use App\Models\Course;
+use App\Models\EndorsementActivity;
+use App\Models\Familiarisation;
+use App\Models\FamiliarisationSector;
 use App\Models\User;
 use App\Models\WaitingListEntry;
-use App\Models\Familiarisation;
-use App\Integrations\VatEud\VatEudService;
 use Carbon\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Http;
 
 class CourseValidationService
 {
     protected VatEudService $vatEudService;
+
     protected VatsimActivityService $activityService;
 
     public function __construct(VatEudService $vatEudService, VatsimActivityService $activityService)
@@ -26,15 +29,21 @@ class CourseValidationService
     public function canUserJoinCourse(Course $course, User $user): array
     {
         try {
-            $roster = $this->getRoster();
-            $isOnRoster = in_array($user->vatsim_id, $roster);
+            $roster = $this->vatEudService->getRoster();
+
+            if (empty($roster)) {
+                Log::warning('Failed to fetch roster, allowing course join');
+                $isOnRoster = false;
+            } else {
+                $isOnRoster = in_array($user->vatsim_id, $roster);
+            }
         } catch (\Exception $e) {
             Log::warning('Failed to fetch roster, allowing course join', ['error' => $e->getMessage()]);
             $isOnRoster = false;
         }
 
         $isGerSubdivision = $user->subdivision === 'GER';
-        $isVisitor = !$isGerSubdivision && $isOnRoster;
+        $isVisitor = ! $isGerSubdivision && $isOnRoster;
 
         if ($isGerSubdivision && $isOnRoster) {
             if ($course->type === 'RST') {
@@ -43,7 +52,7 @@ class CourseValidationService
             if ($course->type === 'GST') {
                 return [false, 'You are not allowed to join visitor courses.'];
             }
-        } elseif ($isGerSubdivision && !$isOnRoster) {
+        } elseif ($isGerSubdivision && ! $isOnRoster) {
             if ($course->type !== 'RST') {
                 return [false, 'You must complete roster reentry before joining other courses.'];
             }
@@ -77,7 +86,7 @@ class CourseValidationService
 
         if (
             $course->type !== 'GST' &&
-            !($course->min_rating <= $user->rating && $user->rating <= $course->max_rating)
+            ! ($course->min_rating <= $user->rating && $user->rating <= $course->max_rating)
         ) {
             return [false, 'You do not have the required rating for this course.'];
         }
@@ -90,7 +99,7 @@ class CourseValidationService
             $hasActiveRtg = Cache::remember(
                 "user_{$user->id}_has_active_rtg",
                 now()->addMinutes(5),
-                fn() => $user->activeRatingCourses()
+                fn () => $user->activeRatingCourses()
                     ->wherePivot('completed_at', null)
                     ->exists()
             );
@@ -109,6 +118,21 @@ class CourseValidationService
             return [false, 'You already have a familiarisation for this course.'];
         }
 
+        if ($course->type === 'EDMT' && $course->position === 'CTR') {
+            $requiredSectorIds = $course->requiredFamiliarisationSectors()->pluck('familiarisation_sectors.id');
+
+            if ($requiredSectorIds->isNotEmpty()) {
+                $userSectorIds = Familiarisation::where('user_id', $user->id)->pluck('familiarisation_sector_id');
+                $missingSectorIds = $requiredSectorIds->diff($userSectorIds);
+
+                if ($missingSectorIds->isNotEmpty()) {
+                    $missingNames = FamiliarisationSector::whereIn('id', $missingSectorIds)->pluck('name')->implode(', ');
+
+                    return [false, "You need the following familiarisation(s) before joining this course's waiting list: {$missingNames}."];
+                }
+            }
+        }
+
         $endorsementGroups = $course->endorsementGroups();
         if ($endorsementGroups->isNotEmpty()) {
             $userEndorsements = $this->getUserEndorsements($user->vatsim_id);
@@ -122,7 +146,7 @@ class CourseValidationService
         }
 
         if ($course->type === 'RTG' && $user->last_rating_change) {
-            $minDays = (int) config('services.training.s3_rating_change_days', 90);
+            $minDays = (int) config('services.training.rating_change_days', 90);
             $daysSinceRatingChange = Carbon::parse($user->last_rating_change)->diffInDays(now());
             if ($daysSinceRatingChange < $minDays) {
                 return [false, 'Your last rating change was less than 3 months ago. You cannot join a new rating course yet.'];
@@ -146,7 +170,7 @@ class CourseValidationService
             $response = Http::withHeaders([
                 'X-API-KEY' => config('services.vateud.token'),
                 'Accept' => 'application/json',
-                'User-Agent' => 'VATGER Training System',
+                'User-Agent' => 'vatger Training System',
             ])
                 ->timeout(5)
                 ->get('https://core.vateud.net/api/facility/roster');
@@ -167,9 +191,9 @@ class CourseValidationService
         return Cache::get('vateud:roster:last_known_good', []);
     }
 
-    public function getUserEndorsements(int $vatsimId): \Illuminate\Support\Collection
+    public function getUserEndorsements(int $vatsimId): Collection
     {
-        return \App\Models\EndorsementActivity::where('vatsim_id', $vatsimId)
+        return EndorsementActivity::where('vatsim_id', $vatsimId)
             ->pluck('position');
     }
 
@@ -193,8 +217,9 @@ class CourseValidationService
             Log::error('Failed to get activity hours', [
                 'course_id' => $course->id,
                 'user_id' => $user->id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return 0.0;
         }
     }
@@ -202,13 +227,21 @@ class CourseValidationService
     public function isUserOnRoster(int $vatsimId): bool
     {
         try {
-            $roster = $this->getRoster();
+            $roster = $this->vatEudService->getRoster();
+
+            if (empty($roster)) {
+                Log::warning('Failed to fetch roster, treating user as not on roster', ['vatsim_id' => $vatsimId]);
+
+                return false;
+            }
+
             return in_array($vatsimId, $roster);
         } catch (\Exception $e) {
             Log::warning('Failed to check roster status', [
                 'vatsim_id' => $vatsimId,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }

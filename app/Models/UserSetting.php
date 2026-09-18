@@ -33,6 +33,7 @@ class UserSetting extends Model
     public function getNotificationPreference(string $type): bool
     {
         $preferences = $this->notification_preferences ?? [];
+
         return $preferences[$type] ?? true;
     }
 

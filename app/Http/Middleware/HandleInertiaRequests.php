@@ -2,10 +2,9 @@
 
 namespace App\Http\Middleware;
 
-use Illuminate\Foundation\Inspiring;
+use App\Models\UserSetting;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
-use App\Models\UserSetting;
 
 class HandleInertiaRequests extends Middleware
 {

@@ -2,7 +2,6 @@
 
 namespace App\Filament\Widgets;
 
-use App\Models\User;
 use App\Models\WaitingListEntry;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -10,7 +9,7 @@ use Filament\Widgets\TableWidget as BaseWidget;
 
 class RecentActivity extends BaseWidget
 {
-    protected int | string | array $columnSpan = 'full';
+    protected int|string|array $columnSpan = 'full';
 
     protected static ?int $sort = 5;
 

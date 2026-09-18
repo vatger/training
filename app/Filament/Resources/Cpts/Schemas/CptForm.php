@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources\Cpts\Schemas;
 
-use Filament\Schemas\Schema;
 use Filament\Forms;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 
 class CptForm
 {

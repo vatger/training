@@ -2,17 +2,17 @@
 
 namespace App\Filament\Resources\Cpts;
 
+use App\Filament\Resources\Cpts\Pages\EditCpt;
 use App\Filament\Resources\Cpts\Pages\ListCpts;
 use App\Filament\Resources\Cpts\Pages\ViewCpt;
-use App\Filament\Resources\Cpts\Pages\EditCpt;
 use App\Filament\Resources\Cpts\Tables\CptsTable;
 use App\Models\Cpt;
 use BackedEnum;
+use Filament\Facades\Filament;
 use Filament\Resources\Resource;
-use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
-use Filament\Facades\Filament;
+use Illuminate\Database\Eloquent\Model;
 
 class CptResource extends Resource
 {
@@ -65,7 +65,7 @@ class CptResource extends Resource
     {
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -76,11 +76,11 @@ class CptResource extends Resource
         return $user->canAccessAdminResource('cpts');
     }
 
-    public static function canEdit(\Illuminate\Database\Eloquent\Model $record): bool
+    public static function canEdit(Model $record): bool
     {
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -91,11 +91,11 @@ class CptResource extends Resource
         return $user->canEditAdminResource('cpts');
     }
 
-    public static function canDelete(\Illuminate\Database\Eloquent\Model $record): bool
+    public static function canDelete(Model $record): bool
     {
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 

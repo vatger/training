@@ -2,14 +2,14 @@
 
 namespace App\Filament\Resources\Cpts\Tables;
 
-use App\Filament\Resources\Users\UserResource;
 use App\Filament\Resources\Courses\CourseResource;
-use Filament\Actions\ViewAction;
+use App\Filament\Resources\Users\UserResource;
 use Filament\Actions\EditAction;
-use Filament\Tables\Columns\TextColumn;
+use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\IconColumn;
-use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class CptsTable
@@ -68,12 +68,12 @@ class CptsTable
                 TextColumn::make('passed')
                     ->label('Result')
                     ->badge()
-                    ->formatStateUsing(fn ($state) => match($state) {
+                    ->formatStateUsing(fn ($state) => match ($state) {
                         true => 'Passed',
                         false => 'Failed',
                         null => 'Pending',
                     })
-                    ->color(fn ($state) => match($state) {
+                    ->color(fn ($state) => match ($state) {
                         true => 'success',
                         false => 'danger',
                         null => 'warning',

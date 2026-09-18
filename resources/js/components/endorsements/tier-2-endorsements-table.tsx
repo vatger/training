@@ -3,7 +3,7 @@ import { Award, ExternalLink } from "lucide-react"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
 import { getPositionIcon, getStatusBadge } from "@/pages/endorsements/trainee"
-import type { Endorsement } from "@/types"
+import type { Endorsement, SharedData } from "@/types"
 import { Button } from "../ui/button"
 import {
 	Table,
@@ -22,7 +22,7 @@ export default function Tier2EndorsementsTable({
 	const [requestingEndorsement, setRequestingEndorsement] = useState<
 		number | null
 	>(null)
-	const { flash } = usePage().props as any
+	const { flash } = usePage<SharedData>().props
 
 	useEffect(() => {
 		if (flash?.success) {
@@ -68,7 +68,7 @@ export default function Tier2EndorsementsTable({
 						<TableRow className="h-18" key={endorsement.position}>
 							<TableCell>
 								<div className="flex items-center gap-3">
-									<div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-100 text-purple-600">
+									<div className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary-100 text-secondary-600">
 										{getPositionIcon(endorsement.type)}
 									</div>
 									<div>
@@ -101,7 +101,8 @@ export default function Tier2EndorsementsTable({
 												className="flex items-center gap-2"
 												disabled={requestingEndorsement === endorsement.id}
 												onClick={() =>
-													handleRequestEndorsement(endorsement.id!)
+													endorsement.id !== undefined &&
+													handleRequestEndorsement(endorsement.id)
 												}
 												size="sm"
 												variant="default"

@@ -16,7 +16,7 @@ class AssignTrainee
             ->where('user_id', $trainee->id)
             ->update([
                 'claimed_by_mentor_id' => $newMentor->id,
-                'claimed_at'           => now(),
+                'claimed_at' => now(),
             ]);
 
         event(new TraineeAssigned($course, $trainee, $newMentor, $assigningMentor));

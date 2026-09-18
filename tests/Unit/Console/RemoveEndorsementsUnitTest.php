@@ -19,8 +19,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\BufferedOutput;
+use Tests\TestCase;
 
-uses(Tests\TestCase::class, RefreshDatabase::class);
+uses(TestCase::class, RefreshDatabase::class);
 
 beforeEach(function () {
     Event::fake();
@@ -38,10 +39,11 @@ function rmEndMakeCommand(
 
 function rmEndSetIO(object $command): BufferedOutput
 {
-    $buffered = new BufferedOutput();
+    $buffered = new BufferedOutput;
     $prop = new ReflectionProperty($command, 'output');
     $prop->setAccessible(true);
     $prop->setValue($command, new OutputStyle(new ArrayInput([]), $buffered));
+
     return $buffered;
 }
 
@@ -49,20 +51,21 @@ function rmEndCall(object $cmd, string $method, mixed ...$args): mixed
 {
     $m = new ReflectionMethod($cmd, $method);
     $m->setAccessible(true);
+
     return $m->invoke($cmd, ...$args);
 }
 
 function rmEndActivity(array $override = []): EndorsementActivity
 {
     return EndorsementActivity::create(array_merge([
-        'endorsement_id'   => 99,
-        'vatsim_id'        => 1234567,
-        'position'         => 'EDDL_TWR',
+        'endorsement_id' => 99,
+        'vatsim_id' => 1234567,
+        'position' => 'EDDL_TWR',
         'activity_minutes' => 0.0,
-        'removal_date'     => now()->addDays(10),
+        'removal_date' => now()->addDays(10),
         'removal_notified' => false,
-        'created_at_vateud'=> now(),
-        'last_updated'     => now(),
+        'created_at_vateud' => now(),
+        'last_updated' => now(),
     ], $override));
 }
 
@@ -79,6 +82,7 @@ function rmEndSilentSvc(float $minutes = 0.0): VatsimActivityService
     $svc = Mockery::mock(VatsimActivityService::class);
     $svc->shouldReceive('getEndorsementActivity')
         ->andReturn(['minutes' => $minutes, 'last_activity_date' => null]);
+
     return $svc;
 }
 
@@ -90,7 +94,7 @@ test('sendNotification sends to the correct VATSIM ID', function () {
     $vatger = Mockery::mock(VatgerClientInterface::class);
     $vatger->shouldReceive('sendNotification')
         ->once()
-        ->withArgs(fn($id) => $id === 9876543)
+        ->withArgs(fn ($id) => $id === 9876543)
         ->andReturn(['success' => true]);
 
     $cmd = rmEndMakeCommand(
@@ -108,7 +112,7 @@ test('sendNotification uses title "Endorsement Removal"', function () {
     $vatger = Mockery::mock(VatgerClientInterface::class);
     $vatger->shouldReceive('sendNotification')
         ->once()
-        ->withArgs(fn($id, $title) => $title === 'Endorsement Removal')
+        ->withArgs(fn ($id, $title) => $title === 'Endorsement Removal')
         ->andReturn(['success' => true]);
 
     $cmd = rmEndMakeCommand(
@@ -129,6 +133,7 @@ test('sendNotification message body contains the endorsement position', function
         ->once()
         ->withArgs(function ($id, $title, $message) use (&$capturedMessage) {
             $capturedMessage = $message;
+
             return true;
         })
         ->andReturn(['success' => true]);
@@ -154,6 +159,7 @@ test('sendNotification message body contains the formatted removal date', functi
         ->once()
         ->withArgs(function ($id, $title, $message) use (&$capturedMessage) {
             $capturedMessage = $message;
+
             return true;
         })
         ->andReturn(['success' => true]);
@@ -177,6 +183,7 @@ test('sendNotification message body mentions activity requirements', function ()
     $vatger->shouldReceive('sendNotification')
         ->withArgs(function ($id, $title, $message) use (&$capturedMessage) {
             $capturedMessage = $message;
+
             return true;
         })
         ->andReturn(['success' => true]);
@@ -192,13 +199,13 @@ test('sendNotification message body mentions activity requirements', function ()
     expect($capturedMessage)->toContain('activity');
 });
 
-test('sendNotification uses VATGER ATD as sourceName', function () {
+test('sendNotification uses vatger ATD as sourceName', function () {
     $rec = rmEndActivity();
 
     $vatger = Mockery::mock(VatgerClientInterface::class);
     $vatger->shouldReceive('sendNotification')
         ->once()
-        ->withArgs(fn($id, $title, $msg, $source) => $source === 'VATGER ATD')
+        ->withArgs(fn ($id, $title, $msg, $source) => $source === 'vatger ATD')
         ->andReturn(['success' => true]);
 
     $cmd = rmEndMakeCommand(
@@ -223,8 +230,8 @@ test('sendNotification throws RuntimeException when vatger returns success=false
         rmEndSilentSvc(),
     );
 
-    expect(fn() => rmEndCall($cmd, 'sendNotification', $rec))
-        ->toThrow(\RuntimeException::class);
+    expect(fn () => rmEndCall($cmd, 'sendNotification', $rec))
+        ->toThrow(RuntimeException::class);
 });
 
 test('sendNotification does NOT throw when vatger returns success=true', function () {

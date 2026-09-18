@@ -15,10 +15,10 @@ class RemoveTrainee
             ->where('course_id', $course->id)
             ->where('user_id', $trainee->id)
             ->update([
-                'completed_at'         => now(),
-                'status'               => 'removed',
+                'completed_at' => now(),
+                'status' => 'removed',
                 'claimed_by_mentor_id' => null,
-                'claimed_at'           => null,
+                'claimed_at' => null,
             ]);
 
         event(new TraineeRemoved($course, $trainee, $mentor));

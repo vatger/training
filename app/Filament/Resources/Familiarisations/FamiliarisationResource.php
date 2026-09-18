@@ -2,18 +2,19 @@
 
 namespace App\Filament\Resources\Familiarisations;
 
-use App\Filament\Resources\Familiarisations\Pages\ListFamiliarisations;
 use App\Filament\Resources\Familiarisations\Pages\CreateFamiliarisation;
 use App\Filament\Resources\Familiarisations\Pages\EditFamiliarisation;
+use App\Filament\Resources\Familiarisations\Pages\ListFamiliarisations;
 use App\Filament\Resources\Familiarisations\Schemas\FamiliarisationForm;
 use App\Filament\Resources\Familiarisations\Tables\FamiliarisationsTable;
 use App\Models\Familiarisation;
 use BackedEnum;
+use Filament\Facades\Filament;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
-use Filament\Facades\Filament;
+use Illuminate\Database\Eloquent\Model;
 
 class FamiliarisationResource extends Resource
 {
@@ -66,7 +67,7 @@ class FamiliarisationResource extends Resource
     {
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -81,7 +82,7 @@ class FamiliarisationResource extends Resource
     {
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -92,11 +93,11 @@ class FamiliarisationResource extends Resource
         return $user->canEditAdminResource('familiarisations');
     }
 
-    public static function canEdit(\Illuminate\Database\Eloquent\Model $record): bool
+    public static function canEdit(Model $record): bool
     {
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -107,11 +108,11 @@ class FamiliarisationResource extends Resource
         return $user->canEditAdminResource('familiarisations');
     }
 
-    public static function canDelete(\Illuminate\Database\Eloquent\Model $record): bool
+    public static function canDelete(Model $record): bool
     {
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 

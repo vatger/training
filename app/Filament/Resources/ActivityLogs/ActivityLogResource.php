@@ -7,10 +7,11 @@ use App\Filament\Resources\ActivityLogs\Pages\ViewActivityLog;
 use App\Filament\Resources\ActivityLogs\Tables\ActivityLogsTable;
 use App\Models\ActivityLog;
 use BackedEnum;
+use Filament\Facades\Filament;
 use Filament\Resources\Resource;
 use Filament\Support\Icons\Heroicon;
-use Filament\Facades\Filament;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 class ActivityLogResource extends Resource
 {
@@ -57,7 +58,7 @@ class ActivityLogResource extends Resource
     {
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -68,7 +69,7 @@ class ActivityLogResource extends Resource
         return $user->canAccessAdminResource('activity_logs');
     }
 
-    public static function canEdit(\Illuminate\Database\Eloquent\Model $record): bool
+    public static function canEdit(Model $record): bool
     {
         return false;
     }

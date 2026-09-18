@@ -1,12 +1,15 @@
 <?php
 
+use App\Http\Middleware\AuthenticateApi;
+use App\Http\Middleware\CheckCourseAccess;
+use App\Http\Middleware\EnsureSandboxAuthEnabled;
+use App\Http\Middleware\EnsureUserIsMentor;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
-use App\Http\Middleware\AuthenticateApi;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -25,9 +28,10 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->alias([
-            'mentor' => \App\Http\Middleware\EnsureUserIsMentor::class,
+            'mentor' => EnsureUserIsMentor::class,
             'api.auth' => AuthenticateApi::class,
-            'course.access' => \App\Http\Middleware\CheckCourseAccess::class,
+            'course.access' => CheckCourseAccess::class,
+            'sandbox.auth' => EnsureSandboxAuthEnabled::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

@@ -1,15 +1,14 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
     public function up(): void
     {
-        if (!Schema::hasTable('lists_course')) {
+        if (! Schema::hasTable('lists_course')) {
             return;
         }
 
@@ -75,7 +74,7 @@ return new class extends Migration
         }
 
         if (Schema::hasTable('lists_course_endorsement_groups') && Schema::hasTable('endorsements_endorsementgroup')) {
-            DB::statement("
+            DB::statement('
                 INSERT INTO course_endorsement_groups (course_id, endorsement_group_name, created_at, updated_at)
                 SELECT 
                     lceg.course_id,
@@ -89,7 +88,7 @@ return new class extends Migration
                     WHERE ceg.course_id = lceg.course_id 
                     AND ceg.endorsement_group_name = CONVERT(eg.name USING utf8mb4) COLLATE utf8mb4_unicode_ci
                 )
-            ");
+            ');
         }
 
         if (Schema::hasTable('overview_traineeremark')) {
@@ -116,7 +115,5 @@ return new class extends Migration
         }
     }
 
-    public function down(): void
-    {
-    }
+    public function down(): void {}
 };

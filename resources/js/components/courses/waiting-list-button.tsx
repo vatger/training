@@ -26,6 +26,8 @@ interface WaitingListButtonProps {
 	className?: string
 	size?: "sm" | "default" | "lg"
 	userHasActiveRtgCourse?: boolean
+	userHasActiveEdmtCourse?: boolean
+	userHasActiveFamCourse?: boolean
 	rtgRatingPending?: boolean
 }
 
@@ -36,6 +38,8 @@ export default function WaitingListButton({
 	className = "",
 	size = "sm",
 	userHasActiveRtgCourse = false,
+	userHasActiveEdmtCourse = false,
+	userHasActiveFamCourse = false,
 	rtgRatingPending = false,
 }: WaitingListButtonProps) {
 	const [isLoading, setIsLoading] = useState(false)
@@ -43,6 +47,9 @@ export default function WaitingListButton({
 		"joining" | "leaving" | null
 	>(null)
 	const [showLeaveConfirmation, setShowLeaveConfirmation] = useState(false)
+
+	const isEdmtType = course.type === "EDMT"
+	const isFamType = course.type === "FAM"
 
 	const handleJoinWaitingList = async () => {
 		if (isLoading || !course.can_join) return
@@ -52,7 +59,7 @@ export default function WaitingListButton({
 
 		const optimisticUpdates: Partial<Course> = {
 			is_on_waiting_list: true,
-			waiting_list_position: undefined,
+			waiting_list_joined_at: undefined,
 			waiting_list_activity: undefined,
 		}
 
@@ -66,33 +73,15 @@ export default function WaitingListButton({
 					{
 						preserveState: true,
 						preserveScroll: true,
-						onSuccess: (page) => {
-							const flashData = page.props.flash || {}
-							const response = flashData.flash || flashData
-
-							const position = response?.position
-							const activity = response?.activity
-
-							const serverUpdates: Partial<Course> = {
-								is_on_waiting_list: true,
-								waiting_list_position: position,
-								waiting_list_activity: activity,
-							}
-
-							onCourseUpdate?.(course.id, serverUpdates)
-
-							toast.success(`Successfully joined waiting list!`, {
-								description: position
-									? `Your position: #${position}`
-									: undefined,
-							})
-
+						onSuccess: () => {
+							toast.success("Successfully joined waiting list!")
+							router.reload({ only: ["courses"] })
 							resolve()
 						},
 						onError: (errors) => {
 							onCourseUpdate?.(course.id, {
 								is_on_waiting_list: false,
-								waiting_list_position: undefined,
+								waiting_list_joined_at: undefined,
 								waiting_list_activity: undefined,
 							})
 
@@ -115,7 +104,7 @@ export default function WaitingListButton({
 
 			onCourseUpdate?.(course.id, {
 				is_on_waiting_list: false,
-				waiting_list_position: undefined,
+				waiting_list_joined_at: undefined,
 				waiting_list_activity: undefined,
 			})
 		} finally {
@@ -131,12 +120,12 @@ export default function WaitingListButton({
 		setIsLoading(true)
 		setLoadingAction("leaving")
 
-		const originalPosition = course.waiting_list_position
+		const originalJoinedAt = course.waiting_list_joined_at
 		const originalActivity = course.waiting_list_activity
 
 		const optimisticUpdates: Partial<Course> = {
 			is_on_waiting_list: false,
-			waiting_list_position: undefined,
+			waiting_list_joined_at: undefined,
 			waiting_list_activity: undefined,
 		}
 
@@ -150,27 +139,14 @@ export default function WaitingListButton({
 					{
 						preserveState: true,
 						preserveScroll: true,
-						onSuccess: (page) => {
-							const flashData = page.props.flash || {}
-							const response = flashData.flash || flashData
-
-							if (response.success !== false) {
-								toast.success("Successfully left waiting list!")
-							} else {
-								onCourseUpdate?.(course.id, {
-									is_on_waiting_list: true,
-									waiting_list_position: originalPosition,
-									waiting_list_activity: originalActivity,
-								})
-
-								toast.error(response.message || "Failed to leave waiting list")
-							}
+						onSuccess: () => {
+							toast.success("Successfully left waiting list!")
 							resolve()
 						},
 						onError: (errors) => {
 							onCourseUpdate?.(course.id, {
 								is_on_waiting_list: true,
-								waiting_list_position: originalPosition,
+								waiting_list_joined_at: originalJoinedAt,
 								waiting_list_activity: originalActivity,
 							})
 
@@ -203,6 +179,16 @@ export default function WaitingListButton({
 			!course.is_on_waiting_list
 		) {
 			toast.error("You can only join one rating course at a time")
+			return
+		}
+
+		if (isEdmtType && userHasActiveEdmtCourse && !course.is_on_waiting_list) {
+			toast.error("You can only join one endorsement course at a time")
+			return
+		}
+
+		if (isFamType && userHasActiveFamCourse && !course.is_on_waiting_list) {
+			toast.error("You can only join one familiarisation course at a time")
 			return
 		}
 
@@ -256,12 +242,18 @@ export default function WaitingListButton({
 		course.type === "RTG" &&
 		userHasActiveRtgCourse &&
 		!course.is_on_waiting_list
+	const isDisabledDueToEdmtRestriction =
+		isEdmtType && userHasActiveEdmtCourse && !course.is_on_waiting_list
+	const isDisabledDueToFamRestriction =
+		isFamType && userHasActiveFamCourse && !course.is_on_waiting_list
 	const isDisabledDueToRtgRatingPending =
 		course.type === "RTG" && rtgRatingPending && !course.is_on_waiting_list
 	const isButtonDisabled =
 		isLoading ||
 		(!course.can_join && !course.is_on_waiting_list) ||
 		isDisabledDueToRtgRestriction ||
+		isDisabledDueToEdmtRestriction ||
+		isDisabledDueToFamRestriction ||
 		isDisabledDueToRtgRatingPending
 
 	const getTooltipError = () => {
@@ -270,6 +262,12 @@ export default function WaitingListButton({
 		}
 		if (isDisabledDueToRtgRestriction) {
 			return "You can only join one rating course at a time"
+		}
+		if (isDisabledDueToEdmtRestriction) {
+			return "You can only join one endorsement course at a time"
+		}
+		if (isDisabledDueToFamRestriction) {
+			return "You can only join one familiarisation course at a time"
 		}
 		return course.join_error || "Cannot join this course at the moment"
 	}
@@ -315,10 +313,9 @@ export default function WaitingListButton({
 							<DialogDescription>
 								Are you sure you want to leave the waiting list for{" "}
 								<strong>{course.trainee_display_name || course.name}</strong>?
-								{course.waiting_list_position && (
+								{course.waiting_list_joined_at && (
 									<span className="mt-2 block text-sm">
-										You are currently at position #
-										{course.waiting_list_position} and will lose your place.
+										You will lose your place on the waiting list.
 									</span>
 								)}
 							</DialogDescription>
@@ -354,10 +351,9 @@ export default function WaitingListButton({
 						<DialogDescription>
 							Are you sure you want to leave the waiting list for{" "}
 							<strong>{course.trainee_display_name || course.name}</strong>?
-							{course.waiting_list_position && (
+							{course.waiting_list_joined_at && (
 								<span className="mt-2 block text-sm">
-									You are currently at position #{course.waiting_list_position}{" "}
-									and will lose your place.
+									You will lose your place on the waiting list.
 								</span>
 							)}
 						</DialogDescription>

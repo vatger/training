@@ -2,22 +2,27 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Domain\Gdpr\Actions\AnonymizeUser;
 use App\Domain\Gdpr\Events\UserDeleted;
 use App\Http\Controllers\Controller;
 use App\Integrations\VatEud\VatEudService;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class GdprController extends Controller
 {
     protected $vatEudService;
 
-    public function __construct(VatEudService $vatEudService)
+    protected AnonymizeUser $anonymizeUser;
+
+    public function __construct(VatEudService $vatEudService, AnonymizeUser $anonymizeUser)
     {
         $this->vatEudService = $vatEudService;
+        $this->anonymizeUser = $anonymizeUser;
     }
 
     public function delete(Request $request, int $vatsimId): JsonResponse
@@ -25,27 +30,36 @@ class GdprController extends Controller
         try {
             $user = User::where('vatsim_id', $vatsimId)->first();
 
-            if (!$user) {
+            if (! $user) {
                 Log::info('GDPR deletion - user not found', ['vatsim_id' => $vatsimId]);
+
                 return response()->json(['error' => 'User not found'], 200);
             }
+
+            $isVisitor = $user->isVisitor();
 
             Log::info('GDPR deletion initiated', [
                 'vatsim_id' => $vatsimId,
                 'user_id' => $user->id,
                 'user_name' => $user->name,
+                'is_visitor' => $isVisitor,
             ]);
 
             DB::beginTransaction();
 
             try {
                 $this->vatEudService->removeRosterAndEndorsements($vatsimId);
-                
-                $this->deleteVisitorFromVatEUD($vatsimId);
+
+                if ($isVisitor) {
+                    $this->deleteVisitorFromVatEUD($vatsimId);
+                }
 
                 event(new UserDeleted($user, $request->ip()));
 
-                $user->delete();
+                // Personal data is scrubbed in place rather than deleting the row,
+                // so training logs, waiting list entries, roles, etc. that reference
+                // this user are preserved and simply display "Deleted User".
+                $this->anonymizeUser->execute($user);
 
                 DB::commit();
 
@@ -67,7 +81,7 @@ class GdprController extends Controller
 
             return response()->json([
                 'error' => 'Failed to delete user',
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 500);
         }
     }
@@ -75,23 +89,24 @@ class GdprController extends Controller
     protected function deleteVisitorFromVatEUD(int $vatsimId): void
     {
         $eudToken = config('services.vateud.token');
-        
-        if (!$eudToken) {
+
+        if (! $eudToken) {
             Log::warning('VatEUD token not configured, skipping VatEUD visitor deletion', [
-                'vatsim_id' => $vatsimId
+                'vatsim_id' => $vatsimId,
             ]);
+
             return;
         }
 
         try {
             Log::info('Deleting visitor from VatEUD', ['vatsim_id' => $vatsimId]);
 
-            $response = \Illuminate\Support\Facades\Http::withHeaders([
+            $response = Http::withHeaders([
                 'X-API-KEY' => $eudToken,
                 'Accept' => 'application/json',
             ])
-            ->timeout(10)
-            ->delete("https://core.vateud.net/api/facility/visitors/{$vatsimId}/delete");
+                ->timeout(10)
+                ->delete("https://core.vateud.net/api/facility/visitors/{$vatsimId}/delete");
 
             if ($response->successful()) {
                 Log::info('Successfully deleted visitor from VatEUD', [

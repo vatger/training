@@ -5,10 +5,8 @@ namespace App\Filament\Resources\Users\Tables;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Tables\Table;
-use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\IconColumn;
-use Filament\Tables\Filters\TernaryFilter;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -34,7 +32,7 @@ class UsersTable
                 TextColumn::make('rating')
                     ->badge()
                     ->color('success')
-                    ->formatStateUsing(fn(int $state): string => match ($state) {
+                    ->formatStateUsing(fn (int $state): string => match ($state) {
                         0 => 'None',
                         1 => 'OBS',
                         2 => 'S1',

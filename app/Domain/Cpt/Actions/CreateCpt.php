@@ -3,8 +3,8 @@
 namespace App\Domain\Cpt\Actions;
 
 use App\Domain\Cpt\Events\CptCreated;
-use App\Models\Cpt;
 use App\Models\Course;
+use App\Models\Cpt;
 use App\Models\User;
 use App\Services\CptNotificationService;
 
@@ -23,12 +23,12 @@ class CreateCpt
         ?User $local = null,
     ): Cpt {
         $cpt = Cpt::create([
-            'course_id'   => $course->id,
-            'trainee_id'  => $trainee->id,
-            'date'        => $date,
+            'course_id' => $course->id,
+            'trainee_id' => $trainee->id,
+            'date' => $date,
             'examiner_id' => $examiner?->id,
-            'local_id'    => $local?->id,
-            'created_by'  => $creator->id,
+            'local_id' => $local?->id,
+            'created_by' => $creator->id,
         ]);
 
         if ($cpt->confirmed) {

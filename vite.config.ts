@@ -5,6 +5,14 @@ import laravel from "laravel-vite-plugin"
 import { defineConfig } from "vite"
 
 export default defineConfig({
+	resolve: {
+		dedupe: [
+			"prosemirror-model",
+			"prosemirror-state",
+			"prosemirror-view",
+			"prosemirror-transform",
+		],
+	},
 	plugins: [
 		laravel({
 			input: ["resources/css/app.css", "resources/js/app.tsx"],

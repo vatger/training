@@ -152,13 +152,13 @@ export function ProgressModal({
 	const getSessionTypeColor = (type: string) => {
 		switch (type) {
 			case "O":
-				return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
+				return "bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-400"
 			case "S":
-				return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+				return "bg-success-100 text-success-800 dark:bg-success-900/30 dark:text-success-400"
 			case "L":
-				return "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400"
+				return "bg-secondary-100 text-secondary-800 dark:bg-secondary-900/30 dark:text-secondary-400"
 			default:
-				return "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400"
+				return "bg-secondary-100 text-secondary-800 dark:bg-secondary-900/30 dark:text-secondary-400"
 		}
 	}
 
@@ -214,8 +214,8 @@ export function ProgressModal({
 									<div className="relative" key={log.id}>
 										<div
 											className={cn(
-												"absolute -left-[23px] mt-1.5 h-4 w-4 rounded-full border-2 border-background",
-												log.result ? "bg-green-500" : "bg-red-500",
+												"absolute -left-[23px] mt-1.5 h-4 w-4 rounded-full border-2",
+												log.result ? "bg-success-500" : "bg-danger-500",
 											)}
 										/>
 
@@ -303,7 +303,7 @@ export function ProgressModal({
 				<DialogContent className="max-w-md">
 					<DialogHeader>
 						<DialogTitle className="flex items-center gap-2">
-							<AlertCircle className="h-5 w-5 text-yellow-500" />
+							<AlertCircle className="h-5 w-5 text-warning-500" />
 							Draft Found
 						</DialogTitle>
 						<DialogDescription>

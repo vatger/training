@@ -15,8 +15,8 @@ class UpdateTraineeRemark
             ->where('course_id', $course->id)
             ->where('user_id', $trainee->id)
             ->update([
-                'remarks'           => $remark,
-                'remark_author_id'  => $mentor->id,
+                'remarks' => $remark,
+                'remark_author_id' => $mentor->id,
                 'remark_updated_at' => now(),
             ]);
 

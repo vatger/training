@@ -1,5 +1,4 @@
 import { router } from "@inertiajs/react"
-import axios from "axios"
 import { format } from "date-fns"
 import {
 	AlertCircle,
@@ -9,6 +8,7 @@ import {
 	Clock,
 	Info,
 	Loader2,
+	Plane,
 	Trash,
 	XCircle,
 } from "lucide-react"
@@ -30,8 +30,18 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover"
+import { Progress } from "@/components/ui/progress"
+import { ApiError, api } from "@/lib/api"
 import { cn } from "@/lib/utils"
 import type { Trainee } from "@/types/mentor"
+
+function extractErrorMessage(err: unknown, fallback: string): string {
+	if (err instanceof ApiError) {
+		const data = err.data as { error?: string; message?: string } | undefined
+		return data?.error ?? data?.message ?? fallback
+	}
+	return fallback
+}
 
 interface SoloModalProps {
 	trainee: Trainee | null
@@ -86,6 +96,7 @@ export function SoloModal({
 
 			if (!trainee.soloStatus) {
 				setRequirements(null)
+				fetchRequirements()
 			}
 		}
 	}, [isOpen, trainee])
@@ -100,7 +111,7 @@ export function SoloModal({
 		setRequirementsError(null)
 
 		try {
-			const response = await axios.post(
+			const data = await api.post<RequirementsStatus>(
 				route("overview.get-solo-requirements"),
 				{
 					trainee_id: trainee.id,
@@ -108,15 +119,14 @@ export function SoloModal({
 				},
 			)
 
-			setRequirements(response.data)
+			setRequirements(data)
 			setRequirementsError(null)
-		} catch (err: any) {
+		} catch (err: unknown) {
 			console.error("Error fetching requirements:", err)
-			const errorMessage =
-				err.response?.data?.error ||
-				err.response?.data?.message ||
-				err.message ||
-				"Failed to load requirements"
+			const errorMessage = extractErrorMessage(
+				err,
+				"Failed to load requirements",
+			)
 			setRequirementsError(errorMessage)
 
 			setRequirements({
@@ -136,22 +146,26 @@ export function SoloModal({
 		setError(null)
 
 		try {
-			const response = await axios.post(route("overview.assign-core-test"), {
-				trainee_id: trainee.id,
-				course_id: courseId,
-			})
+			const data = await api.post<{ success: boolean; message?: string }>(
+				route("overview.assign-core-test"),
+				{
+					trainee_id: trainee.id,
+					course_id: courseId,
+				},
+			)
 
-			if (response.data.success) {
+			if (data.success) {
 				await fetchRequirements()
 			} else {
-				setError(response.data.message || "Failed to assign core theory test")
+				setError(data.message || "Failed to assign core theory test")
 			}
-		} catch (err: any) {
+		} catch (err: unknown) {
 			console.error("Error assigning core test:", err)
 			setError(
-				err.response?.data?.message ||
-					err.response?.data?.error ||
+				extractErrorMessage(
+					err,
 					"An error occurred while assigning the core theory test",
+				),
 			)
 		} finally {
 			setIsAssigningTest(false)
@@ -298,14 +312,14 @@ export function SoloModal({
 		switch (core_theory.status) {
 			case "passed":
 				return (
-					<div className="flex items-center gap-2 text-green-600 dark:text-green-400">
+					<div className="flex items-center gap-2 text-success-600 dark:text-success-400">
 						<CheckCircle className="h-4 w-4" />
 						<span className="text-sm font-medium">Core Theory Test Passed</span>
 					</div>
 				)
 			case "assigned":
 				return (
-					<div className="flex items-center gap-2 text-yellow-600 dark:text-yellow-400">
+					<div className="flex items-center gap-2 text-warning-600 dark:text-warning-400">
 						<AlertTriangle className="h-4 w-4" />
 						<span className="text-sm font-medium">
 							Test Assigned - Awaiting Completion
@@ -315,7 +329,7 @@ export function SoloModal({
 			case "not_assigned":
 				return (
 					<div className="space-y-2">
-						<div className="flex items-center gap-2 text-red-600 dark:text-red-400">
+						<div className="flex items-center gap-2 text-danger-600 dark:text-danger-400">
 							<XCircle className="h-4 w-4" />
 							<span className="text-sm font-medium">
 								Core Theory Test Not Assigned
@@ -347,7 +361,7 @@ export function SoloModal({
 				)
 			default:
 				return (
-					<div className="flex items-center gap-2 text-red-600 dark:text-red-400">
+					<div className="flex items-center gap-2 text-danger-600 dark:text-danger-400">
 						<AlertCircle className="h-4 w-4" />
 						<span className="text-sm">
 							{core_theory.message || "Unable to verify status"}
@@ -364,7 +378,7 @@ export function SoloModal({
 
 		if (moodle.error) {
 			return (
-				<div className="flex items-center gap-2 text-red-600 dark:text-red-400">
+				<div className="flex items-center gap-2 text-danger-600 dark:text-danger-400">
 					<AlertCircle className="h-4 w-4" />
 					<span className="text-sm">{moodle.error}</span>
 				</div>
@@ -373,7 +387,7 @@ export function SoloModal({
 
 		if (moodle.completed) {
 			return (
-				<div className="flex items-center gap-2 text-green-600 dark:text-green-400">
+				<div className="flex items-center gap-2 text-success-600 dark:text-success-400">
 					<CheckCircle className="h-4 w-4" />
 					<span className="text-sm font-medium">
 						All Moodle Courses Completed
@@ -388,7 +402,7 @@ export function SoloModal({
 
 		return (
 			<div className="space-y-2">
-				<div className="flex items-center gap-2 text-red-600 dark:text-red-400">
+				<div className="flex items-center gap-2 text-danger-600 dark:text-danger-400">
 					<XCircle className="h-4 w-4" />
 					<span className="text-sm font-medium">
 						Moodle Courses Incomplete ({totalCourses - incompleteCourses}/
@@ -403,9 +417,9 @@ export function SoloModal({
 								key={detail.course_id}
 							>
 								{detail.completed ? (
-									<CheckCircle className="h-3 w-3 text-green-600" />
+									<CheckCircle className="h-3 w-3 text-success-600" />
 								) : (
-									<XCircle className="h-3 w-3 text-red-600" />
+									<XCircle className="h-3 w-3 text-danger-600" />
 								)}
 								<span>Course {detail.course_id}</span>
 							</div>
@@ -431,35 +445,54 @@ export function SoloModal({
 				</DialogHeader>
 
 				<div className="space-y-6 py-4">
-					{trainee?.soloStatus && (
-						<div className="rounded-lg border bg-muted/50 p-4">
-							<h3 className="mb-3 font-medium">Current Solo Status</h3>
-							<div className="grid grid-cols-2 gap-4 text-sm">
-								<div>
-									<p className="text-muted-foreground">Remaining Days:</p>
-									<p className="text-2xl font-semibold">
-										{trainee.soloStatus.remaining}
-									</p>
-									<p className="text-xs text-muted-foreground">Until expiry</p>
-								</div>
-								<div>
-									<p className="text-muted-foreground">Used Solo Days:</p>
-									<p className="text-2xl font-semibold">
-										{trainee.soloStatus.used}
-									</p>
-									<p className="text-xs text-muted-foreground">
-										Days since creation
-									</p>
-								</div>
-								<div className="col-span-2 border-t pt-3">
-									<p className="text-muted-foreground">Expiry Date:</p>
-									<p className="font-semibold">
-										{new Date(trainee.soloStatus.expiry).toLocaleDateString(
-											"de",
-										)}
-									</p>
-								</div>
+					{trainee && (
+						<div className="rounded-lg border bg-card p-4">
+							<div className="mb-3 flex items-center gap-2">
+								<Plane className="h-4 w-4 text-muted-foreground" />
+								<h3 className="font-medium">Solo Overview</h3>
 							</div>
+
+							<div className="space-y-1.5">
+								<div className="flex items-baseline justify-between text-sm">
+									<span className="text-muted-foreground">
+										Total Solo Days Used
+									</span>
+									<span
+										className={cn(
+											"font-semibold",
+											trainee.soloDaysUsed >= 90 &&
+												"text-danger-600 dark:text-danger-400",
+										)}
+									>
+										{trainee.soloDaysUsed} / 90
+									</span>
+								</div>
+								<Progress
+									value={Math.min(100, (trainee.soloDaysUsed / 90) * 100)}
+								/>
+							</div>
+
+							{trainee.soloStatus && (
+								<div className="mt-4 grid grid-cols-2 gap-4 border-t pt-4 text-sm">
+									<div>
+										<p className="text-muted-foreground">Remaining</p>
+										<p className="font-semibold">
+											{trainee.soloStatus.remaining}{" "}
+											<span className="font-normal text-muted-foreground">
+												days
+											</span>
+										</p>
+									</div>
+									<div>
+										<p className="text-muted-foreground">Expires</p>
+										<p className="font-semibold">
+											{new Date(trainee.soloStatus.expiry).toLocaleDateString(
+												"de",
+											)}
+										</p>
+									</div>
+								</div>
+							)}
 						</div>
 					)}
 
@@ -520,15 +553,7 @@ export function SoloModal({
 										</div>
 									</div>
 								</div>
-							) : (
-								<Alert>
-									<Info className="h-4 w-4" />
-									<AlertDescription>
-										Click "Add Solo Endorsement" to check requirements and
-										proceed.
-									</AlertDescription>
-								</Alert>
-							)}
+							) : null}
 						</>
 					)}
 
@@ -537,18 +562,9 @@ export function SoloModal({
 							{!trainee?.soloStatus ? (
 								<Button
 									className="w-full"
-									disabled={
-										isLoadingRequirements ||
-										(requirements !== null && !canProceed && !requirementsError)
-									}
+									disabled={!canProceed && !requirementsError}
 									onClick={() => {
-										if (
-											!requirements &&
-											!requirementsError &&
-											!isLoadingRequirements
-										) {
-											fetchRequirements()
-										} else if (canProceed || requirementsError) {
+										if (canProceed || requirementsError) {
 											setMode("add")
 										}
 									}}
@@ -583,15 +599,6 @@ export function SoloModal({
 
 					{(mode === "add" || mode === "extend") && (
 						<div className="space-y-4">
-							<Alert>
-								<AlertCircle className="h-4 w-4" />
-								<AlertDescription>
-									Solo endorsements can be{" "}
-									{mode === "add" ? "granted" : "extended"} for a maximum of 31
-									days at a time.
-								</AlertDescription>
-							</Alert>
-
 							<div className="space-y-2">
 								<Label htmlFor="expiry-date">
 									{mode === "add" ? "Expiry Date" : "New Expiry Date"}
@@ -623,7 +630,6 @@ export function SoloModal({
 												maxDate.setDate(maxDate.getDate() + 29)
 												return date < minDate || date > maxDate
 											}}
-											initialFocus
 											mode="single"
 											onSelect={(date) => {
 												setExpiryDate(date)

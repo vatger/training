@@ -2,18 +2,19 @@
 
 namespace App\Filament\Resources\Tier2Endorsements;
 
-use App\Filament\Resources\Tier2Endorsements\Pages\ListTier2Endorsements;
 use App\Filament\Resources\Tier2Endorsements\Pages\CreateTier2Endorsement;
 use App\Filament\Resources\Tier2Endorsements\Pages\EditTier2Endorsement;
+use App\Filament\Resources\Tier2Endorsements\Pages\ListTier2Endorsements;
 use App\Filament\Resources\Tier2Endorsements\Schemas\Tier2EndorsementForm;
 use App\Filament\Resources\Tier2Endorsements\Tables\Tier2EndorsementsTable;
 use App\Models\Tier2Endorsement;
 use BackedEnum;
+use Filament\Facades\Filament;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
-use Filament\Facades\Filament;
+use Illuminate\Database\Eloquent\Model;
 
 class Tier2EndorsementResource extends Resource
 {
@@ -66,7 +67,7 @@ class Tier2EndorsementResource extends Resource
     {
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -81,7 +82,7 @@ class Tier2EndorsementResource extends Resource
     {
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -92,11 +93,11 @@ class Tier2EndorsementResource extends Resource
         return $user->canEditAdminResource('tier2_endorsements');
     }
 
-    public static function canEdit(\Illuminate\Database\Eloquent\Model $record): bool
+    public static function canEdit(Model $record): bool
     {
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -107,11 +108,11 @@ class Tier2EndorsementResource extends Resource
         return $user->canEditAdminResource('tier2_endorsements');
     }
 
-    public static function canDelete(\Illuminate\Database\Eloquent\Model $record): bool
+    public static function canDelete(Model $record): bool
     {
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 

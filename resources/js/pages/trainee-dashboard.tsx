@@ -87,17 +87,17 @@ interface Props {
 const getTypeColor = (type: string) => {
 	switch (type) {
 		case "RTG":
-			return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
+			return "bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-300"
 		case "EDMT":
-			return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300"
+			return "bg-secondary-100 text-secondary-800 dark:bg-secondary-900 dark:text-secondary-300"
 		case "FAM":
-			return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
+			return "bg-warning-100 text-warning-800 dark:bg-warning-900 dark:text-warning-300"
 		case "GST":
-			return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+			return "bg-success-100 text-success-800 dark:bg-success-900 dark:text-success-300"
 		case "RST":
-			return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
+			return "bg-danger-100 text-danger-800 dark:bg-danger-900 dark:text-danger-300"
 		default:
-			return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300"
+			return "bg-secondary-100 text-secondary-800 dark:bg-secondary-900 dark:text-secondary-300"
 	}
 }
 
@@ -249,9 +249,9 @@ export default function TraineeDashboard(props: Props) {
 																		>
 																			<div className="flex items-center gap-2">
 																				{log.result ? (
-																					<CheckCircle className="h-4 w-4 text-green-600" />
+																					<CheckCircle className="h-4 w-4 text-success-600" />
 																				) : (
-																					<div className="h-4 w-4 rounded-full border-2 border-red-600" />
+																					<div className="h-4 w-4 rounded-full border-2 border-danger-600" />
 																				)}
 																				<span className="font-mono text-xs">
 																					{log.position}
@@ -298,8 +298,8 @@ export default function TraineeDashboard(props: Props) {
 								<CardHeader className="gap-0 px-0 py-2">
 									<AccordionTrigger className="w-full p-4 hover:no-underline [&[data-state=open]>div>svg]:rotate-180">
 										<div className="flex items-center gap-2">
-											<div className="rounded-full bg-green-100 p-2 dark:bg-green-900">
-												<GraduationCap className="h-5 w-5 text-green-600 dark:text-green-400" />
+											<div className="rounded-full bg-success-100 p-2 dark:bg-success-900">
+												<GraduationCap className="h-5 w-5 text-success-600 dark:text-success-400" />
 											</div>
 											<div className="text-left">
 												<CardTitle>Completed Courses</CardTitle>
@@ -372,8 +372,8 @@ export default function TraineeDashboard(props: Props) {
 								<CardHeader className="gap-0 px-0 py-2">
 									<AccordionTrigger className="w-full p-4 hover:no-underline [&[data-state=open]>div>svg]:rotate-180">
 										<div className="flex items-center gap-2">
-											<div className="rounded-full bg-purple-100 p-2 dark:bg-purple-900">
-												<BookOpen className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+											<div className="rounded-full bg-secondary-100 p-2 dark:bg-secondary-900">
+												<BookOpen className="h-5 w-5 text-secondary-600 dark:text-secondary-400" />
 											</div>
 											<div className="text-left">
 												<CardTitle>Moodle Courses</CardTitle>
@@ -395,12 +395,12 @@ export default function TraineeDashboard(props: Props) {
 												>
 													<div className="flex items-center gap-3">
 														{course.passed ? (
-															<div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100 dark:bg-green-900">
-																<CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
+															<div className="flex h-8 w-8 items-center justify-center rounded-full bg-success-100 dark:bg-success-900">
+																<CheckCircle className="h-5 w-5 text-success-600 dark:text-success-400" />
 															</div>
 														) : (
-															<div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
-																<BookOpen className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+															<div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-100 dark:bg-primary-900">
+																<BookOpen className="h-5 w-5 text-primary-600 dark:text-primary-400" />
 															</div>
 														)}
 														<div>
@@ -434,8 +434,8 @@ export default function TraineeDashboard(props: Props) {
 					<Card>
 						<CardHeader>
 							<CardTitle className="flex items-center gap-2">
-								<div className="rounded-full bg-orange-100 p-2 dark:bg-orange-900">
-									<Map className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+								<div className="rounded-full bg-accent-100 p-2 dark:bg-accent-900">
+									<Map className="h-5 w-5 text-accent-600 dark:text-accent-400" />
 								</div>
 								Centre Familiarisations
 							</CardTitle>

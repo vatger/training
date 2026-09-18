@@ -18,18 +18,18 @@ class LeadingMentorsTable
                     ->label('User')
                     ->searchable(['first_name', 'last_name'])
                     ->sortable(),
-                
+
                 TextColumn::make('user.vatsim_id')
                     ->label('VATSIM ID')
                     ->searchable()
                     ->sortable(),
-                
+
                 TextColumn::make('fir')
                     ->label('FIR')
                     ->badge()
                     ->color('primary')
                     ->sortable(),
-                
+
                 TextColumn::make('created_at')
                     ->label('Assigned At')
                     ->dateTime()

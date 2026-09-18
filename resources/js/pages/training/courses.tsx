@@ -8,7 +8,7 @@ import {
 	Search,
 	X,
 } from "lucide-react"
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import CourseCard from "@/components/courses/course-card"
 import SortableCoursesTable from "@/components/courses/courses-table"
 import { MoodleSignupModal } from "@/components/courses/moodle-signup-modal"
@@ -54,7 +54,7 @@ export interface Course {
 	min_rating: number
 	max_rating: number
 	is_on_waiting_list: boolean
-	waiting_list_position?: number
+	waiting_list_joined_at?: string
 	waiting_list_activity?: number
 	can_join: boolean
 	join_error?: string
@@ -66,6 +66,8 @@ interface PageProps {
 	isVatsimUser: boolean
 	moodleSignedUp: boolean
 	userHasActiveRtgCourse: boolean
+	userHasActiveEdmtCourse: boolean
+	userHasActiveFamCourse: boolean
 	rtgRatingPending: boolean
 	error?: string
 }
@@ -75,10 +77,16 @@ export default function Courses({
 	isVatsimUser,
 	moodleSignedUp = false,
 	userHasActiveRtgCourse = false,
+	userHasActiveEdmtCourse = false,
+	userHasActiveFamCourse = false,
 	rtgRatingPending = false,
 	error,
 }: PageProps) {
 	const [courses, setCourses] = useState(initialCourses)
+
+	useEffect(() => {
+		setCourses(initialCourses)
+	}, [initialCourses])
 	const [searchTerm, setSearchTerm] = useState("")
 	const [typeFilter, setTypeFilter] = useState("all")
 	const [firFilter, setFirFilter] = useState("all")
@@ -92,6 +100,20 @@ export default function Courses({
 		)
 		return userHasActiveRtgCourse || hasRtgFromWaitingList
 	}, [userHasActiveRtgCourse, courses])
+
+	const currentUserHasActiveEdmtCourse = useMemo(() => {
+		const hasEdmtFromWaitingList = courses.some(
+			(course) => course.type === "EDMT" && course.is_on_waiting_list,
+		)
+		return userHasActiveEdmtCourse || hasEdmtFromWaitingList
+	}, [userHasActiveEdmtCourse, courses])
+
+	const currentUserHasActiveFamCourse = useMemo(() => {
+		const hasFamFromWaitingList = courses.some(
+			(course) => course.type === "FAM" && course.is_on_waiting_list,
+		)
+		return userHasActiveFamCourse || hasFamFromWaitingList
+	}, [userHasActiveFamCourse, courses])
 
 	const handleCourseUpdate = useCallback(
 		(courseId: number, updates: Partial<Course>) => {
@@ -130,7 +152,17 @@ export default function Courses({
 				const isNotBlockedByRtgRestriction = !(
 					course.type === "RTG" && currentUserHasActiveRtgCourse
 				)
-				matchesTab = isActuallyAvailable && isNotBlockedByRtgRestriction
+				const isNotBlockedByEdmtRestriction = !(
+					course.type === "EDMT" && currentUserHasActiveEdmtCourse
+				)
+				const isNotBlockedByFamRestriction = !(
+					course.type === "FAM" && currentUserHasActiveFamCourse
+				)
+				matchesTab =
+					isActuallyAvailable &&
+					isNotBlockedByRtgRestriction &&
+					isNotBlockedByEdmtRestriction &&
+					isNotBlockedByFamRestriction
 			}
 
 			return matchesSearch && matchesType && matchesFir && matchesTab
@@ -142,6 +174,8 @@ export default function Courses({
 		firFilter,
 		activeTab,
 		currentUserHasActiveRtgCourse,
+		currentUserHasActiveEdmtCourse,
+		currentUserHasActiveFamCourse,
 	])
 
 	const clearFilters = () => {
@@ -158,11 +192,10 @@ export default function Courses({
 						<AlertCircle className="mx-auto mb-4 h-16 w-16 text-muted-foreground" />
 						<h1 className="mb-2 text-2xl font-bold">VATSIM Account Required</h1>
 						<p className="mb-4 text-muted-foreground">
-							You need a VATSIM Germany account to view and join training
-							courses.
+							You need a vatger account to view and join training courses.
 						</p>
 						<Button onClick={() => (window.location.href = "/auth/vatsim")}>
-							Connect VATSIM Germany Account
+							Connect vatger Account
 						</Button>
 					</div>
 				</div>
@@ -175,8 +208,8 @@ export default function Courses({
 			<Head title="Courses" />
 			<div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
 				{error && (
-					<div className="rounded-lg border border-red-200 bg-red-50 p-4">
-						<div className="flex items-center gap-2 text-red-800">
+					<div className="rounded-lg border border-danger-200 bg-danger-50 p-4">
+						<div className="flex items-center gap-2 text-danger-800">
 							<AlertCircle className="h-5 w-5" />
 							<span>{error}</span>
 						</div>
@@ -184,16 +217,23 @@ export default function Courses({
 				)}
 
 				{rtgRatingPending && (
-					<div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-950/30">
-						<div className="flex items-start gap-2 text-blue-800 dark:text-blue-300">
+					<div className="rounded-lg border border-primary-200 bg-primary-50 p-4 dark:border-primary-800 dark:bg-primary-950/30">
+						<div className="flex items-start gap-2 text-primary-800 dark:text-primary-300">
 							<AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
 							<div>
 								<p className="font-medium">Rating upgrade pending</p>
 								<p className="text-sm">
 									You have recently completed a rating course. Your new rating
-									has not yet been applied to our system — joining a new rating
+									has not yet been applied to our system. Joining a new rating
 									course waiting list will be available once the update has been
 									received.
+									<br />
+									Once your new rating has been applied to your VATSIM account,{" "}
+									<strong>
+										please log out and back in to both the homepage and the
+										training system
+									</strong>{" "}
+									so that your updated rating can be detected.
 								</p>
 							</div>
 						</div>
@@ -223,14 +263,14 @@ export default function Courses({
 						<Button
 							onClick={() => setViewMode("grid")}
 							size="sm"
-							variant={viewMode === "grid" ? "default" : "ghost"}
+							variant={viewMode === "grid" ? "accent" : "ghost"}
 						>
 							<Grid3X3 className="h-4 w-4" />
 						</Button>
 						<Button
 							onClick={() => setViewMode("table")}
 							size="sm"
-							variant={viewMode === "table" ? "default" : "ghost"}
+							variant={viewMode === "table" ? "accent" : "ghost"}
 						>
 							<List className="h-4 w-4" />
 						</Button>
@@ -325,6 +365,8 @@ export default function Courses({
 								key={course.id}
 								onCourseUpdate={handleCourseUpdate}
 								rtgRatingPending={rtgRatingPending}
+								userHasActiveEdmtCourse={currentUserHasActiveEdmtCourse}
+								userHasActiveFamCourse={currentUserHasActiveFamCourse}
 								userHasActiveRtgCourse={currentUserHasActiveRtgCourse}
 							/>
 						))}
@@ -334,6 +376,8 @@ export default function Courses({
 						courses={filteredCourses}
 						onCourseUpdate={handleCourseUpdate}
 						rtgRatingPending={rtgRatingPending}
+						userHasActiveEdmtCourse={currentUserHasActiveEdmtCourse}
+						userHasActiveFamCourse={currentUserHasActiveFamCourse}
 						userHasActiveRtgCourse={currentUserHasActiveRtgCourse}
 					/>
 				)}

@@ -2,11 +2,10 @@
 
 namespace App\Services;
 
+use App\Models\Course;
 use App\Models\TrainingLog;
 use App\Models\User;
-use App\Models\Course;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class TrainingLogService
@@ -36,7 +35,7 @@ class TrainingLogService
         return [
             'total_sessions' => $logs->count(),
             'total_hours' => round($logs->sum('session_duration') / 60, 1),
-            'average_rating' => round($logs->avg(fn($log) => $log->average_rating), 2),
+            'average_rating' => round($logs->avg(fn ($log) => $log->average_rating), 2),
             'pass_rate' => round(($logs->where('result', true)->count() / $logs->count()) * 100, 1),
             'recent_trend' => $this->calculateRecentTrend($logs),
             'sessions_by_type' => $this->getSessionsByType($logs),
@@ -64,8 +63,8 @@ class TrainingLogService
             return 'new_trainee';
         }
 
-        $recentAvg = $recentLogs->avg(fn($log) => $log->average_rating);
-        $olderAvg = $olderLogs->avg(fn($log) => $log->average_rating);
+        $recentAvg = $recentLogs->avg(fn ($log) => $log->average_rating);
+        $olderAvg = $olderLogs->avg(fn ($log) => $log->average_rating);
 
         $difference = $recentAvg - $olderAvg;
 
@@ -97,7 +96,7 @@ class TrainingLogService
     protected function getSessionsByPosition(Collection $logs): array
     {
         return $logs->groupBy('position')
-            ->map(fn($group) => $group->count())
+            ->map(fn ($group) => $group->count())
             ->sortDesc()
             ->toArray();
     }
@@ -117,8 +116,8 @@ class TrainingLogService
         $breakdown = [];
 
         foreach ($categories as $category) {
-            $ratings = $logs->pluck($category)->filter(fn($r) => $r > 0);
-            
+            $ratings = $logs->pluck($category)->filter(fn ($r) => $r > 0);
+
             if ($ratings->isEmpty()) {
                 continue;
             }
@@ -142,8 +141,8 @@ class TrainingLogService
             return 'insufficient_data';
         }
 
-        $recent = $logs->take(3)->pluck($category)->filter(fn($r) => $r > 0);
-        $older = $logs->skip(3)->take(3)->pluck($category)->filter(fn($r) => $r > 0);
+        $recent = $logs->take(3)->pluck($category)->filter(fn ($r) => $r > 0);
+        $older = $logs->skip(3)->take(3)->pluck($category)->filter(fn ($r) => $r > 0);
 
         if ($recent->isEmpty() || $older->isEmpty()) {
             return 'insufficient_data';
@@ -189,14 +188,14 @@ class TrainingLogService
         $strengths = [];
 
         foreach ($categories as $key => $label) {
-            $ratings = $logs->pluck($key)->filter(fn($r) => $r > 0);
-            
+            $ratings = $logs->pluck($key)->filter(fn ($r) => $r > 0);
+
             if ($ratings->isEmpty()) {
                 continue;
             }
 
             $average = $ratings->avg();
-            
+
             // Consider it a strength if average >= 3.5 (between Met and Exceeded)
             if ($average >= 3.5) {
                 $strengths[] = [
@@ -208,7 +207,7 @@ class TrainingLogService
         }
 
         // Sort by average rating descending
-        usort($strengths, fn($a, $b) => $b['average'] <=> $a['average']);
+        usort($strengths, fn ($a, $b) => $b['average'] <=> $a['average']);
 
         return array_slice($strengths, 0, 5); // Top 5 strengths
     }
@@ -240,14 +239,14 @@ class TrainingLogService
         $improvements = [];
 
         foreach ($categories as $key => $label) {
-            $ratings = $logs->pluck($key)->filter(fn($r) => $r > 0);
-            
+            $ratings = $logs->pluck($key)->filter(fn ($r) => $r > 0);
+
             if ($ratings->isEmpty()) {
                 continue;
             }
 
             $average = $ratings->avg();
-            
+
             // Consider it an area for improvement if average < 3.0 (below Met)
             if ($average < 3.0) {
                 $improvements[] = [
@@ -260,7 +259,7 @@ class TrainingLogService
         }
 
         // Sort by average rating ascending (worst first)
-        usort($improvements, fn($a, $b) => $a['average'] <=> $b['average']);
+        usort($improvements, fn ($a, $b) => $a['average'] <=> $b['average']);
 
         return array_slice($improvements, 0, 5); // Top 5 areas for improvement
     }
@@ -270,8 +269,8 @@ class TrainingLogService
      */
     protected function getRecentNegativeFeedback(Collection $logs, string $category): ?string
     {
-        $negativesField = $category . '_negatives';
-        
+        $negativesField = $category.'_negatives';
+
         $recentNegatives = $logs->take(3)
             ->pluck($negativesField)
             ->filter()
@@ -320,7 +319,7 @@ class TrainingLogService
             'total_sessions' => $logs->count(),
             'unique_trainees' => $logs->pluck('trainee_id')->unique()->count(),
             'total_hours' => round($logs->sum('session_duration') / 60, 1),
-            'average_rating' => round($logs->avg(fn($log) => $log->average_rating), 2),
+            'average_rating' => round($logs->avg(fn ($log) => $log->average_rating), 2),
             'pass_rate' => round(($logs->where('result', true)->count() / $logs->count()) * 100, 1),
             'sessions_by_type' => $this->getSessionsByType($logs),
             'recent_activity' => $logs->sortByDesc('session_date')->map(function ($log) {
@@ -356,10 +355,10 @@ class TrainingLogService
             'total_sessions' => $logs->count(),
             'unique_trainees' => $logs->pluck('trainee_id')->unique()->count(),
             'total_hours' => round($logs->sum('session_duration') / 60, 1),
-            'average_rating_given' => round($logs->avg(fn($log) => $log->average_rating), 2),
+            'average_rating_given' => round($logs->avg(fn ($log) => $log->average_rating), 2),
             'pass_rate' => round(($logs->where('result', true)->count() / $logs->count()) * 100, 1),
             'sessions_by_course' => $logs->groupBy('course.name')
-                ->map(fn($group) => $group->count())
+                ->map(fn ($group) => $group->count())
                 ->sortDesc()
                 ->toArray(),
             'sessions_by_type' => $this->getSessionsByType($logs),
@@ -384,18 +383,18 @@ class TrainingLogService
 
         foreach ($traineeIds as $traineeId) {
             $logs = TrainingLog::forTrainee($traineeId)->get();
-            
+
             if ($logs->isEmpty()) {
                 continue;
             }
 
             $trainee = User::find($traineeId);
-            
+
             $comparisons[] = [
                 'trainee_id' => $traineeId,
                 'trainee_name' => $trainee->name,
                 'total_sessions' => $logs->count(),
-                'average_rating' => round($logs->avg(fn($log) => $log->average_rating), 2),
+                'average_rating' => round($logs->avg(fn ($log) => $log->average_rating), 2),
                 'pass_rate' => round(($logs->where('result', true)->count() / $logs->count()) * 100, 1),
                 'total_hours' => round($logs->sum('session_duration') / 60, 1),
             ];
@@ -424,7 +423,7 @@ class TrainingLogService
             'Duration (min)', 'Result', 'Average Rating',
             'Theory', 'Phraseology', 'Coordination', 'Tag Management',
             'Situational Awareness', 'Problem Recognition', 'Traffic Planning',
-            'Reaction', 'Separation', 'Efficiency', 'Work Under Pressure', 'Motivation'
+            'Reaction', 'Separation', 'Efficiency', 'Work Under Pressure', 'Motivation',
         ];
 
         $rows = $logs->map(function ($log) {
@@ -457,7 +456,7 @@ class TrainingLogService
         $csv = [implode(',', $headers)];
         foreach ($rows as $row) {
             $csv[] = implode(',', array_map(function ($field) {
-                return '"' . str_replace('"', '""', $field) . '"';
+                return '"'.str_replace('"', '""', $field).'"';
             }, $row));
         }
 

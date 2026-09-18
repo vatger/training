@@ -1,4 +1,5 @@
-[![Docker Image Generation](https://github.com/vatger/training/actions/workflows/deploy.yml/badge.svg?branch=main)](https://github.com/vatger/training/actions/workflows/deploy.yml)
+[![CI](https://github.com/vatger/training/actions/workflows/ci.yml/badge.svg)](https://github.com/vatger/training/actions/workflows/ci.yml)
+[![CD](https://github.com/vatger/training/actions/workflows/cd.yml/badge.svg)](https://github.com/vatger/training/actions/workflows/cd.yml)
 
 # Training Centre
 

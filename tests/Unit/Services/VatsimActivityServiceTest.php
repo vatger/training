@@ -3,8 +3,9 @@
 use App\Services\VatsimActivityService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
+use Tests\TestCase;
 
-uses(Tests\TestCase::class);
+uses(TestCase::class);
 
 beforeEach(function () {
     Cache::flush();
@@ -20,6 +21,7 @@ function invokeCalculateActivity(array $endorsement, array $connections): array
     $service = activityService();
     $method = new ReflectionMethod($service, 'calculateActivity');
     $method->setAccessible(true);
+
     return $method->invoke($service, $endorsement, $connections);
 }
 

@@ -16,7 +16,7 @@ class UnclaimTrainee
             ->where('user_id', $trainee->id)
             ->update([
                 'claimed_by_mentor_id' => null,
-                'claimed_at'           => null,
+                'claimed_at' => null,
             ]);
 
         event(new TraineeUnclaimed($course, $trainee, $mentor));

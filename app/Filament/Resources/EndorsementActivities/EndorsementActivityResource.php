@@ -2,18 +2,19 @@
 
 namespace App\Filament\Resources\EndorsementActivities;
 
+use App\Filament\Resources\EndorsementActivities\Pages\EditEndorsementActivity;
 use App\Filament\Resources\EndorsementActivities\Pages\ListEndorsementActivities;
 use App\Filament\Resources\EndorsementActivities\Pages\ViewEndorsementActivity;
-use App\Filament\Resources\EndorsementActivities\Pages\EditEndorsementActivity;
 use App\Filament\Resources\EndorsementActivities\Schemas\EndorsementActivityForm;
 use App\Filament\Resources\EndorsementActivities\Tables\EndorsementActivitiesTable;
 use App\Models\EndorsementActivity;
 use BackedEnum;
+use Filament\Facades\Filament;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
-use Filament\Facades\Filament;
+use Illuminate\Database\Eloquent\Model;
 
 class EndorsementActivityResource extends Resource
 {
@@ -66,7 +67,7 @@ class EndorsementActivityResource extends Resource
     {
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -82,11 +83,11 @@ class EndorsementActivityResource extends Resource
         return false;
     }
 
-    public static function canEdit(\Illuminate\Database\Eloquent\Model $record): bool
+    public static function canEdit(Model $record): bool
     {
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -97,11 +98,11 @@ class EndorsementActivityResource extends Resource
         return $user->canEditAdminResource('endorsement_activities');
     }
 
-    public static function canDelete(\Illuminate\Database\Eloquent\Model $record): bool
+    public static function canDelete(Model $record): bool
     {
         $user = Filament::auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 

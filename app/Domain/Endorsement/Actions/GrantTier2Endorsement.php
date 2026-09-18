@@ -19,7 +19,7 @@ class GrantTier2Endorsement
     public function execute(Tier2Endorsement $tier2Endorsement, User $trainee): void
     {
         $existing = collect($this->vatEud->getTier2Endorsements())->first(
-            fn($e) => $e->userCid === $trainee->vatsim_id && $e->position === $tier2Endorsement->position,
+            fn ($e) => $e->userCid === $trainee->vatsim_id && $e->position === $tier2Endorsement->position,
         );
 
         if ($existing) {

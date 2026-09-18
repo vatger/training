@@ -1,17 +1,19 @@
-import AppLogoIcon from "./app-logo-icon"
+import logoDark from "@/images/vatger-training-dark.svg"
+import logoLight from "@/images/vatger-training-light.svg"
 
 export default function AppLogo() {
 	return (
 		<>
-			<div className="flex aspect-square size-full max-w-8 items-center justify-center rounded-md bg-vatger-blue">
-				<AppLogoIcon />
-			</div>
-			<div className="ml-1 grid flex-1 text-left">
-				<span className="mb-0.5 truncate text-base leading-tight font-semibold">
-					Training
-				</span>
-				<span className="truncate text-xs leading-tight">VATSIM Germany</span>
-			</div>
+			<img
+				alt="vatger Training"
+				className="h-auto p-2 w-auto group-data-[collapsible=icon]:hidden dark:hidden"
+				src={logoLight}
+			/>
+			<img
+				alt="vatger Training"
+				className="hidden p-2 pl-0 h-auto w-auto group-data-[collapsible=icon]:hidden dark:block"
+				src={logoDark}
+			/>
 		</>
 	)
 }

@@ -95,10 +95,10 @@ const adminSection = {
 	label: "Admin",
 	items: [
 		/* {
-            title: 'Announcements',
-            href: '#',
-            icon: Megaphone,
-        }, */
+			title: 'Announcements',
+			href: '#',
+			icon: Megaphone,
+		}, */
 		{
 			title: "Database",
 			href: "/admin",
@@ -133,6 +133,14 @@ const footerNavItems: NavItem[] = [
 	},
 ]
 
+function toPathname(href: string) {
+	try {
+		return new URL(href, window.location.origin).pathname
+	} catch {
+		return href
+	}
+}
+
 function NavSection({ section }: { section: (typeof navSections)[0] }) {
 	const page = usePage()
 
@@ -145,7 +153,9 @@ function NavSection({ section }: { section: (typeof navSections)[0] }) {
 						<SidebarMenuButton
 							asChild
 							isActive={page.url.startsWith(
-								typeof item.href === "string" ? item.href : item.href.url,
+								toPathname(
+									typeof item.href === "string" ? item.href : item.href.url,
+								),
 							)}
 							tooltip={{ children: item.title }}
 						>
@@ -182,7 +192,7 @@ export function AppSidebar() {
 				<SidebarHeader>
 					<SidebarMenu>
 						<SidebarMenuItem>
-							<SidebarMenuButton asChild size="lg">
+							<SidebarMenuButton asChild size="lg" variant={"ghost"}>
 								<Link href={dashboard()} prefetch>
 									<AppLogo />
 								</Link>

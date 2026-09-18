@@ -2,11 +2,10 @@
 
 namespace App\Integrations\VatEud;
 
+use App\Integrations\VatEud\DTOs\SoloEndorsementData;
 use App\Integrations\VatEud\DTOs\Tier1EndorsementData;
 use App\Integrations\VatEud\DTOs\Tier2EndorsementData;
-use App\Integrations\VatEud\DTOs\SoloEndorsementData;
 use App\Integrations\VatEud\DTOs\UserExamsData;
-use Carbon\Carbon;
 
 interface VatEudClientInterface
 {
@@ -38,17 +37,15 @@ interface VatEudClientInterface
     public function assignCoreTheoryTest(int $vatsimId, int $examId, int $instructorCid): array;
 
     public function uploadCptLog(
-        int    $traineeCid,
-        int    $examinerCid,
+        int $traineeCid,
+        int $examinerCid,
         string $position,
         string $note,
-        bool   $cptPass,
+        bool $cptPass,
         string $filePath,
     ): array;
 
     public function requestUpgrade(int $traineeCid, int $instructorCid, int $newRating): array;
-
-    public function getLastGermanSession(int $vatsimId): ?Carbon;
 
     /** @return int[] */
     public function getRoster(): array;

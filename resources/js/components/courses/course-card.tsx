@@ -10,7 +10,7 @@ import {
 	CardTitle,
 } from "@/components/ui/card"
 import { getTypeColor } from "@/lib/course-utils"
-import { cn } from "@/lib/utils"
+import { cn, formatActivityHours } from "@/lib/utils"
 import type { Course } from "@/pages/training/courses"
 import WaitingListButton from "./waiting-list-button"
 
@@ -18,15 +18,17 @@ interface CourseCardProps {
 	course: Course
 	onCourseUpdate?: (courseId: number, updates: Partial<Course>) => void
 	userHasActiveRtgCourse?: boolean
+	userHasActiveEdmtCourse?: boolean
+	userHasActiveFamCourse?: boolean
 	rtgRatingPending?: boolean
 }
 
 const getStatusColor = (course: Course) => {
 	if (course.is_on_waiting_list) {
-		return "text-blue-600 dark:text-blue-400"
+		return "text-primary-600 dark:text-primary-400"
 	}
 	if (course.can_join) {
-		return "text-green-600 dark:text-green-400"
+		return "text-success-600 dark:text-success-400"
 	}
 	return "text-muted-foreground"
 }
@@ -35,6 +37,8 @@ export default function CourseCard({
 	course: initialCourse,
 	onCourseUpdate,
 	userHasActiveRtgCourse = false,
+	userHasActiveEdmtCourse = false,
+	userHasActiveFamCourse = false,
 	rtgRatingPending = false,
 }: CourseCardProps) {
 	const [course, setCourse] = useState(initialCourse)
@@ -87,11 +91,14 @@ export default function CourseCard({
 							<>
 								<Clock className="h-4 w-4" />
 								<span>
-									Queue Position #{course.waiting_list_position}
+									{course.waiting_list_joined_at
+										? `On waiting list since ${new Date(course.waiting_list_joined_at).toLocaleDateString("de")}`
+										: "On waiting list"}
 									{course.type === "RTG" &&
+										course.position !== "CTR" &&
 										course.waiting_list_activity !== undefined &&
 										course.waiting_list_activity !== null &&
-										` • ${course.waiting_list_activity.toFixed(2)}h activity`}
+										` • ${formatActivityHours(course.waiting_list_activity)}h activity`}
 								</span>
 							</>
 						) : course.can_join ? (
@@ -116,6 +123,8 @@ export default function CourseCard({
 					onCourseUpdate={handleCourseUpdate}
 					rtgRatingPending={rtgRatingPending}
 					size="sm"
+					userHasActiveEdmtCourse={userHasActiveEdmtCourse}
+					userHasActiveFamCourse={userHasActiveFamCourse}
 					userHasActiveRtgCourse={userHasActiveRtgCourse}
 				/>
 			</CardFooter>

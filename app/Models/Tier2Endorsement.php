@@ -2,9 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-
+use Illuminate\Database\Eloquent\Model;
 
 class Tier2Endorsement extends Model
 {
@@ -26,9 +25,9 @@ class Tier2Endorsement extends Model
     public function isMentorEndorsement(): bool
     {
         return in_array($this->name, [
-            'EDGG Mentor', 
-            'EDMM Mentor', 
-            'EDWW Mentor'
+            'EDGG Mentor',
+            'EDMM Mentor',
+            'EDWW Mentor',
         ]);
     }
 
@@ -38,8 +37,8 @@ class Tier2Endorsement extends Model
     public function isLeadershipEndorsement(): bool
     {
         return in_array($this->name, [
-            'ATD Leitung', 
-            'VATGER Leitung'
+            'ATD Leitung',
+            'VATGER Leitung',
         ]);
     }
 }

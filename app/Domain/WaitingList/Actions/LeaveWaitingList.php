@@ -17,7 +17,7 @@ class LeaveWaitingList
                 ->where('course_id', $course->id)
                 ->first();
 
-            if (!$entry) {
+            if (! $entry) {
                 return [false, 'You are not on the waiting list for this course.'];
             }
 
@@ -28,9 +28,9 @@ class LeaveWaitingList
             return [true, 'Successfully left waiting list.'];
         } catch (\Exception $e) {
             Log::error('Failed to leave waiting list', [
-                'user_id'   => $user->id,
+                'user_id' => $user->id,
                 'course_id' => $course->id,
-                'error'     => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
 
             return [false, 'Failed to leave waiting list. Please try again.'];

@@ -9,8 +9,8 @@ readonly class TraineeAddedToCourse
 {
     public function __construct(
         public Course $course,
-        public User   $trainee,
-        public User   $mentor,
-        public bool   $wasReactivated,
+        public User $trainee,
+        public User $mentor,
+        public bool $wasReactivated,
     ) {}
 }

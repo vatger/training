@@ -1,5 +1,4 @@
 import { router } from "@inertiajs/react"
-import axios from "axios"
 import { Loader2, Search, User } from "lucide-react"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
@@ -12,6 +11,7 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { api } from "@/lib/api"
 
 // biome-ignore lint/suspicious/noRedeclare: no factor
 interface User {
@@ -43,13 +43,14 @@ export function UserSearchModal({ open, onOpenChange }: UserSearchModalProps) {
 		setResults([])
 
 		try {
-			const response = await axios.post(route("users.search"), {
-				query: query,
-			})
+			const data = await api.post<{ success: boolean; users: User[] }>(
+				route("users.search"),
+				{ query },
+			)
 
-			if (response.data.success) {
-				setResults(response.data.users)
-				if (response.data.users.length === 0) {
+			if (data.success) {
+				setResults(data.users)
+				if (data.users.length === 0) {
 					setError("No users found")
 				}
 			} else {

@@ -1,12 +1,12 @@
 import "../css/app.css"
 
-import { createInertiaApp } from "@inertiajs/react"
+import { createInertiaApp, type ResolvedComponent } from "@inertiajs/react"
 import { resolvePageComponent } from "laravel-vite-plugin/inertia-helpers"
 import { createRoot } from "react-dom/client"
 // biome-ignore lint/correctness/noUnusedImports: assigned to window.route at runtime
 import { route } from "ziggy-js"
 
-const appName = import.meta.env.VITE_APP_NAME || "VATGER Training System"
+const appName = import.meta.env.VITE_APP_NAME || "vatger Training System"
 
 // Make route function globally available
 declare global {
@@ -16,19 +16,24 @@ declare global {
 
 window.route = route
 
+const pages = import.meta.glob<{ default: ResolvedComponent }>(
+	"./pages/**/*.tsx",
+)
+
+const resolve = (name: string) =>
+	resolvePageComponent(`./pages/${name}.tsx`, pages).then(
+		(module) => module.default,
+	)
+
 createInertiaApp({
 	title: (title) => `${title} - ${appName}`,
-	resolve: (name) =>
-		resolvePageComponent(
-			`./pages/${name}.tsx`,
-			import.meta.glob("./pages/**/*.tsx"),
-		),
+	resolve,
 	setup({ el, App, props }) {
 		const root = createRoot(el)
 
 		root.render(<App {...props} />)
 	},
 	progress: {
-		color: "#4B5563",
+		color: "oklch(0.576 0.074 251.72)",
 	},
 })

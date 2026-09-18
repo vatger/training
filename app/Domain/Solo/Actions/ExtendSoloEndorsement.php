@@ -18,10 +18,10 @@ class ExtendSoloEndorsement
     public function execute(Course $course, User $trainee, User $mentor, Carbon $expiryDate): void
     {
         $solo = collect($this->vatEud->getSoloEndorsements())->first(
-            fn($s) => $s->userCid === $trainee->vatsim_id && $s->position === $course->solo_station,
+            fn ($s) => $s->userCid === $trainee->vatsim_id && $s->position === $course->solo_station,
         );
 
-        if (!$solo) {
+        if (! $solo) {
             throw ValidationException::withMessages([
                 'error' => 'No solo endorsement found for this trainee and position',
             ]);
@@ -38,7 +38,7 @@ class ExtendSoloEndorsement
             $mentor->vatsim_id,
         );
 
-        if (!$result['success']) {
+        if (! $result['success']) {
             throw ValidationException::withMessages([
                 'error' => $result['message'] ?? 'Failed to extend solo endorsement',
             ]);

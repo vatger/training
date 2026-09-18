@@ -2,18 +2,19 @@
 
 namespace App\Filament\Resources\TrainingLogs\Tables;
 
-use App\Filament\Resources\Users\UserResource;
 use App\Filament\Resources\Courses\CourseResource;
+use App\Filament\Resources\Users\UserResource;
 use App\Models\TrainingLog;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
-use Filament\Tables\Table;
-use Filament\Tables\Columns\TextColumn;
+use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Columns\IconColumn;
-use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Table;
 
 class TrainingLogsTable
 {
@@ -37,11 +38,10 @@ class TrainingLogsTable
                     ->searchable(['first_name', 'last_name'])
                     ->sortable()
                     ->formatStateUsing(fn ($record) => $record->mentor?->name ?? '—')
-                    ->url(fn ($record) => $record->mentor 
-                        ? UserResource::getUrl('edit', ['record' => $record->mentor]) 
+                    ->url(fn ($record) => $record->mentor
+                        ? UserResource::getUrl('edit', ['record' => $record->mentor])
                         : null
-            ),
-                
+                    ),
 
                 TextColumn::make('course.name')
                     ->label('Course')
@@ -139,9 +139,9 @@ class TrainingLogsTable
 
                 Filter::make('session_date')
                     ->form([
-                        \Filament\Forms\Components\DatePicker::make('from')
+                        DatePicker::make('from')
                             ->label('From'),
-                        \Filament\Forms\Components\DatePicker::make('until')
+                        DatePicker::make('until')
                             ->label('Until'),
                     ])
                     ->query(function ($query, array $data) {

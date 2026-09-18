@@ -9,7 +9,7 @@ readonly class MentorAdded
 {
     public function __construct(
         public Course $course,
-        public User   $newMentor,
-        public User   $addingUser,
+        public User $newMentor,
+        public User $addingUser,
     ) {}
 }

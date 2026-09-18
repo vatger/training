@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources\WaitingListRestrictions\Schemas;
 
-use Filament\Schemas\Schema;
-use Filament\Forms\Components\Select;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
+use Filament\Schemas\Schema;
 
 class WaitingListRestrictionForm
 {

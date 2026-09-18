@@ -34,7 +34,7 @@ class CptController extends Controller
                 });
 
             return response()->json([
-                'data' => $cpts
+                'data' => $cpts,
             ], 200);
 
         } catch (\Exception $e) {
@@ -44,7 +44,7 @@ class CptController extends Controller
 
             return response()->json([
                 'error' => 'Failed to retrieve CPTs',
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 500);
         }
     }

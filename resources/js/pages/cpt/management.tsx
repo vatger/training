@@ -139,8 +139,8 @@ function CptTemplatesModal({ templates }: { templates: CptTemplate[] }) {
 							<Card className="overflow-hidden" key={template.filename}>
 								<div className="flex items-center justify-between p-4">
 									<div className="flex items-center gap-3">
-										<div className="rounded bg-blue-100 p-2 dark:bg-blue-900">
-											<FileText className="h-5 w-5 text-blue-600" />
+										<div className="rounded bg-primary-100 p-2 dark:bg-primary-900">
+											<FileText className="h-5 w-5 text-primary-600" />
 										</div>
 										<div>
 											<h4 className="font-medium">{template.name}</h4>
@@ -305,9 +305,9 @@ export default function CptManagement({
 							</div>
 						</CardContent>
 					) : (
-						<CardContent className="overflow-x-auto px-0">
+						<CardContent className="overflow-x-auto px-0 [&>div]:rounded-none [&>div]:border-0">
 							<Table>
-								<TableHeader>
+								<TableHeader className="bg-transparent">
 									<TableRow>
 										<TableHead className="pl-6">Station & Status</TableHead>
 										<TableHead>Trainee</TableHead>
@@ -325,7 +325,9 @@ export default function CptManagement({
 													<div
 														className={cn(
 															"h-2 w-2 rounded-full",
-															cpt.confirmed ? "bg-green-500" : "bg-yellow-500",
+															cpt.confirmed
+																? "bg-success-500"
+																: "bg-warning-500",
 														)}
 													/>
 													<div>
@@ -336,8 +338,8 @@ export default function CptManagement({
 															className={cn(
 																"text-xs",
 																cpt.confirmed
-																	? "text-green-600"
-																	: "text-yellow-600",
+																	? "text-success-600"
+																	: "text-warning-600",
 															)}
 														>
 															{cpt.confirmed ? "Confirmed" : "Pending"}
@@ -349,13 +351,13 @@ export default function CptManagement({
 											<TableCell>
 												<div className="flex flex-col">
 													<Link
-														className="font-medium hover:underline"
+														className="font-medium hover:underline hover:text-accent-500"
 														href={`/users/${cpt.trainee.vatsim_id}`}
 													>
 														{cpt.trainee.name}
 													</Link>
 													<a
-														className="text-sm text-muted-foreground hover:underline"
+														className="text-sm text-muted-foreground hover:underline hover:text-accent-500"
 														href={`https://stats.vatsim.net/stats/${cpt.trainee.vatsim_id}`}
 														rel="noopener noreferrer"
 														target="_blank"
@@ -379,14 +381,14 @@ export default function CptManagement({
 											<TableCell>
 												{cpt.examiner ? (
 													<div className="flex items-center gap-2">
-														<UserCheck className="h-4 w-4 text-green-600" />
+														<UserCheck className="h-4 w-4 text-success-600" />
 														<div>
 															<div className="text-sm font-medium">
 																{cpt.examiner.name}
 															</div>
 															{cpt.examiner.is_current_user && (
 																<Button
-																	className="h-auto p-0 text-xs text-red-600"
+																	className="h-auto p-0 text-xs text-danger-600"
 																	onClick={() => handleLeaveExaminer(cpt.id)}
 																	size="sm"
 																	variant="link"
@@ -415,14 +417,14 @@ export default function CptManagement({
 											<TableCell>
 												{cpt.local ? (
 													<div className="flex items-center gap-2">
-														<UserCheck className="h-4 w-4 text-blue-600" />
+														<UserCheck className="h-4 w-4 text-primary-600" />
 														<div>
 															<div className="text-sm font-medium">
 																{cpt.local.name}
 															</div>
 															{cpt.local.is_current_user && (
 																<Button
-																	className="h-auto p-0 text-xs text-red-600"
+																	className="h-auto p-0 text-xs text-danger-600"
 																	onClick={() => handleLeaveLocal(cpt.id)}
 																	size="sm"
 																	variant="link"

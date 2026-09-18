@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Familiarisation;
 use App\Services\FamiliarisationService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -22,10 +23,10 @@ class FamiliarisationController extends Controller
     public function index(Request $request): Response
     {
         try {
-            $familiarisations = \App\Models\Familiarisation::query()
+            $familiarisations = Familiarisation::query()
                 ->with(['user:id,vatsim_id', 'sector:id,name'])
                 ->get()
-                ->groupBy(fn($fam) => $fam->user->vatsim_id)
+                ->groupBy(fn ($fam) => $fam->user->vatsim_id)
                 ->map(function ($userFams, $cid) {
                     return [
                         'cid' => (int) $cid,
@@ -34,7 +35,7 @@ class FamiliarisationController extends Controller
                             ->sort()
                             ->values()
                             ->all(),
-                ];
+                    ];
                 })
                 ->sortBy('cid')
                 ->values()
@@ -44,7 +45,7 @@ class FamiliarisationController extends Controller
                 'familiarisations' => $familiarisations,
                 'statistics' => [
                     'total_users' => count($familiarisations),
-                    'total_familiarisations' => \App\Models\Familiarisation::count(),
+                    'total_familiarisations' => Familiarisation::count(),
                 ],
             ]);
         } catch (\Throwable $e) {

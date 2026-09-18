@@ -17,10 +17,10 @@ class RemoveSoloEndorsement
     public function execute(Course $course, User $trainee, User $mentor): void
     {
         $solo = collect($this->vatEud->getSoloEndorsements())->first(
-            fn($s) => $s->userCid === $trainee->vatsim_id && $s->position === $course->solo_station,
+            fn ($s) => $s->userCid === $trainee->vatsim_id && $s->position === $course->solo_station,
         );
 
-        if (!$solo) {
+        if (! $solo) {
             throw ValidationException::withMessages([
                 'error' => 'No solo endorsement found for this trainee and position',
             ]);
@@ -28,7 +28,7 @@ class RemoveSoloEndorsement
 
         $success = $this->vatEud->deleteSoloEndorsement($solo->id);
 
-        if (!$success) {
+        if (! $success) {
             throw ValidationException::withMessages([
                 'error' => 'Failed to remove solo endorsement',
             ]);

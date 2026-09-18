@@ -67,27 +67,27 @@ class TrainingLogController extends Controller
 
     public function create(Request $request, int $traineeId, int $courseId): Response|RedirectResponse
     {
-        $user    = $request->user();
+        $user = $request->user();
         $trainee = User::findOrFail($traineeId);
-        $course  = Course::findOrFail($courseId);
+        $course = Course::findOrFail($courseId);
 
-        if (!$user->is_superuser && !$user->is_admin && !$user->mentorCourses()->where('courses.id', $course->id)->exists()) {
+        if (! $user->is_superuser && ! $user->is_admin && ! $user->mentorCourses()->where('courses.id', $course->id)->exists()) {
             abort(403, 'You are not a mentor for this course.');
         }
 
-        if (!$course->activeTrainees()->where('user_id', $trainee->id)->exists()) {
+        if (! $course->activeTrainees()->where('user_id', $trainee->id)->exists()) {
             return redirect()->route('overview.index')->withErrors(['error' => 'This trainee is not active in the selected course.']);
         }
 
         return Inertia::render('training/logs/create', [
-            'trainee'       => ['id' => $trainee->id, 'name' => $trainee->name, 'vatsim_id' => $trainee->vatsim_id],
-            'course'        => ['id' => $course->id, 'name' => $course->name, 'position' => $course->position, 'type' => $course->type],
-            'categories'    => $this->categories(),
-            'sessionTypes'  => $this->sessionTypes(),
+            'trainee' => ['id' => $trainee->id, 'name' => $trainee->name, 'vatsim_id' => $trainee->vatsim_id],
+            'course' => ['id' => $course->id, 'name' => $course->name, 'position' => $course->position, 'type' => $course->type],
+            'categories' => $this->categories(),
+            'sessionTypes' => $this->sessionTypes(),
             'ratingOptions' => $this->ratingOptions(),
             'trafficLevels' => $this->trafficLevels(),
             'continueDraft' => $request->query('continue') === '1',
-            'isEditing'     => false,
+            'isEditing' => false,
         ]);
     }
 
@@ -106,7 +106,7 @@ class TrainingLogController extends Controller
     {
         $user = $request->user();
 
-        if (!$user->can('view', $trainingLog)) {
+        if (! $user->can('view', $trainingLog)) {
             abort(403);
         }
 
@@ -115,10 +115,10 @@ class TrainingLogController extends Controller
         $canViewInternal = $user->can('viewInternal', $trainingLog);
 
         return Inertia::render('training/logs/view', [
-            'log'            => $this->formatLogForView($trainingLog, $canViewInternal),
-            'canEdit'        => $user->can('update', $trainingLog),
+            'log' => $this->formatLogForView($trainingLog, $canViewInternal),
+            'canEdit' => $user->can('update', $trainingLog),
             'canViewInternal' => $canViewInternal,
-            'categories'     => $this->categories(),
+            'categories' => $this->categories(),
         ]);
     }
 
@@ -126,22 +126,22 @@ class TrainingLogController extends Controller
     {
         $user = $request->user();
 
-        if (!$user->can('update', $trainingLog)) {
+        if (! $user->can('update', $trainingLog)) {
             abort(403);
         }
 
         $trainingLog->load(['trainee', 'mentor', 'course']);
 
         return Inertia::render('training/logs/create', [
-            'log'           => $this->formatLogForEdit($trainingLog),
-            'trainee'       => ['id' => $trainingLog->trainee->id, 'name' => $trainingLog->trainee->name, 'vatsim_id' => $trainingLog->trainee->vatsim_id],
-            'course'        => $trainingLog->course ? ['id' => $trainingLog->course->id, 'name' => $trainingLog->course->name, 'position' => $trainingLog->course->position, 'type' => $trainingLog->course->type] : null,
-            'categories'    => $this->categories(),
-            'sessionTypes'  => $this->sessionTypes(),
+            'log' => $this->formatLogForEdit($trainingLog),
+            'trainee' => ['id' => $trainingLog->trainee->id, 'name' => $trainingLog->trainee->name, 'vatsim_id' => $trainingLog->trainee->vatsim_id],
+            'course' => $trainingLog->course ? ['id' => $trainingLog->course->id, 'name' => $trainingLog->course->name, 'position' => $trainingLog->course->position, 'type' => $trainingLog->course->type] : null,
+            'categories' => $this->categories(),
+            'sessionTypes' => $this->sessionTypes(),
             'ratingOptions' => $this->ratingOptions(),
             'trafficLevels' => $this->trafficLevels(),
             'continueDraft' => false,
-            'isEditing'     => true,
+            'isEditing' => true,
         ]);
     }
 
@@ -149,7 +149,7 @@ class TrainingLogController extends Controller
     {
         $user = $request->user();
 
-        if (!$user->can('update', $trainingLog)) {
+        if (! $user->can('update', $trainingLog)) {
             abort(403);
         }
 
@@ -163,7 +163,7 @@ class TrainingLogController extends Controller
     {
         $user = $request->user();
 
-        if (!$user->can('delete', $trainingLog)) {
+        if (! $user->can('delete', $trainingLog)) {
             abort(403);
         }
 
@@ -176,54 +176,54 @@ class TrainingLogController extends Controller
     private function formatLogForView(TrainingLog $log, bool $canViewInternal): array
     {
         return [
-            'id'                        => $log->id,
-            'session_date'              => $log->session_date->format('Y-m-d'),
-            'position'                  => $log->position,
-            'type'                      => $log->type,
-            'type_display'              => $log->type_display,
-            'traffic_level'             => $log->traffic_level,
-            'traffic_level_display'     => $log->traffic_level_display,
-            'traffic_complexity'        => $log->traffic_complexity,
+            'id' => $log->id,
+            'session_date' => $log->session_date->format('Y-m-d'),
+            'position' => $log->position,
+            'type' => $log->type,
+            'type_display' => $log->type_display,
+            'traffic_level' => $log->traffic_level,
+            'traffic_level_display' => $log->traffic_level_display,
+            'traffic_complexity' => $log->traffic_complexity,
             'traffic_complexity_display' => $log->traffic_complexity_display,
-            'runway_configuration'      => $log->runway_configuration,
-            'surrounding_stations'      => $log->surrounding_stations,
-            'session_duration'          => $log->session_duration,
-            'special_procedures'        => $log->special_procedures,
-            'airspace_restrictions'     => $log->airspace_restrictions,
-            'trainee'                   => ['id' => $log->trainee->id, 'name' => $log->trainee->name, 'vatsim_id' => $log->trainee->vatsim_id],
-            'mentor'                    => ['id' => $log->mentor->id, 'name' => $log->mentor->name, 'vatsim_id' => $log->mentor->vatsim_id],
-            'course'                    => $log->course ? ['id' => $log->course->id, 'name' => $log->course->name, 'position' => $log->course->position, 'type' => $log->course->type] : null,
-            'evaluations'               => $log->getEvaluationCategories(),
-            'final_comment'             => $log->final_comment,
-            'internal_remarks'          => $canViewInternal ? $log->internal_remarks : null,
-            'result'                    => $log->result,
-            'next_step'                 => $log->next_step,
-            'average_rating'            => $log->average_rating,
-            'has_ratings'               => $log->hasRatings(),
-            'created_at'                => $log->created_at->toIso8601String(),
-            'updated_at'                => $log->updated_at->toIso8601String(),
+            'runway_configuration' => $log->runway_configuration,
+            'surrounding_stations' => $log->surrounding_stations,
+            'session_duration' => $log->session_duration,
+            'special_procedures' => $log->special_procedures,
+            'airspace_restrictions' => $log->airspace_restrictions,
+            'trainee' => ['id' => $log->trainee->id, 'name' => $log->trainee->name, 'vatsim_id' => $log->trainee->vatsim_id],
+            'mentor' => ['id' => $log->mentor->id, 'name' => $log->mentor->name, 'vatsim_id' => $log->mentor->vatsim_id],
+            'course' => $log->course ? ['id' => $log->course->id, 'name' => $log->course->name, 'position' => $log->course->position, 'type' => $log->course->type] : null,
+            'evaluations' => $log->getEvaluationCategories(),
+            'final_comment' => $log->final_comment,
+            'internal_remarks' => $canViewInternal ? $log->internal_remarks : null,
+            'result' => $log->result,
+            'next_step' => $log->next_step,
+            'average_rating' => $log->average_rating,
+            'has_ratings' => $log->hasRatings(),
+            'created_at' => $log->created_at->toIso8601String(),
+            'updated_at' => $log->updated_at->toIso8601String(),
         ];
     }
 
     private function formatLogForEdit(TrainingLog $log): array
     {
         return [
-            'id'                        => $log->id,
-            'session_date'              => $log->session_date->format('Y-m-d'),
-            'position'                  => $log->position,
-            'type'                      => $log->type,
-            'traffic_level'             => $log->traffic_level,
-            'traffic_complexity'        => $log->traffic_complexity,
-            'runway_configuration'      => $log->runway_configuration,
-            'surrounding_stations'      => $log->surrounding_stations,
-            'session_duration'          => $log->session_duration,
-            'special_procedures'        => $log->special_procedures,
-            'airspace_restrictions'     => $log->airspace_restrictions,
-            'evaluations'               => $log->getEvaluationCategories(),
-            'internal_remarks'          => $log->internal_remarks,
-            'final_comment'             => $log->final_comment,
-            'result'                    => $log->result,
-            'next_step'                 => $log->next_step,
+            'id' => $log->id,
+            'session_date' => $log->session_date->format('Y-m-d'),
+            'position' => $log->position,
+            'type' => $log->type,
+            'traffic_level' => $log->traffic_level,
+            'traffic_complexity' => $log->traffic_complexity,
+            'runway_configuration' => $log->runway_configuration,
+            'surrounding_stations' => $log->surrounding_stations,
+            'session_duration' => $log->session_duration,
+            'special_procedures' => $log->special_procedures,
+            'airspace_restrictions' => $log->airspace_restrictions,
+            'evaluations' => $log->getEvaluationCategories(),
+            'internal_remarks' => $log->internal_remarks,
+            'final_comment' => $log->final_comment,
+            'result' => $log->result,
+            'next_step' => $log->next_step,
         ];
     }
 }

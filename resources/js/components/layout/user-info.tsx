@@ -1,7 +1,7 @@
 import { usePage } from "@inertiajs/react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useInitials } from "@/hooks/use-initials"
-import type { User } from "@/types"
+import type { SharedData, User } from "@/types"
 
 export function UserInfo({
 	showEmail = false,
@@ -10,7 +10,7 @@ export function UserInfo({
 	showEmail?: boolean
 }) {
 	const getInitials = useInitials()
-	const { auth } = usePage().props as any
+	const { auth } = usePage<SharedData>().props
 	const user = auth.user
 
 	if (!user) return null
@@ -21,13 +21,13 @@ export function UserInfo({
 				<AvatarImage alt={user.name} src={user.avatar} />
 				{user.is_admin ? (
 					<>
-						<AvatarFallback className="rounded-full bg-red-200 text-black dark:bg-red-800/70 dark:text-white">
+						<AvatarFallback className="rounded-full bg-danger-200 text-black dark:bg-danger-800/70 dark:text-white">
 							{getInitials(user.name)}
 						</AvatarFallback>
 					</>
 				) : (
 					<>
-						<AvatarFallback className="rounded-full bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white">
+						<AvatarFallback className="rounded-full bg-secondary-200 text-black dark:bg-secondary-700 dark:text-white">
 							{getInitials(user.name)}
 						</AvatarFallback>
 					</>

@@ -21,6 +21,7 @@ class MentorCourseResponseBuilder
                 'users.vatsim_id',
                 'users.first_name',
                 'users.last_name',
+                'users.solo_days_used',
                 'course_trainees.claimed_by_mentor_id',
                 'claimed_mentors.first_name as claimed_first_name',
                 'claimed_mentors.last_name as claimed_last_name',
@@ -42,14 +43,14 @@ class MentorCourseResponseBuilder
             ->groupBy('trainee_id');
 
         return [
-            'id'             => $course->id,
-            'name'           => $course->name,
-            'position'       => $course->position,
-            'type'           => $course->type,
-            'soloStation'    => $course->solo_station,
+            'id' => $course->id,
+            'name' => $course->name,
+            'position' => $course->position,
+            'type' => $course->type,
+            'soloStation' => $course->solo_station,
             'activeTrainees' => $trainees->count(),
             'loaded' => true,
-            'trainees' => $trainees->map(fn($t) => $this->mapTrainee($t, $user, $logs, $endorsements))->values(),
+            'trainees' => $trainees->map(fn ($t) => $this->mapTrainee($t, $user, $logs, $endorsements))->values(),
         ];
     }
 
@@ -61,17 +62,18 @@ class MentorCourseResponseBuilder
         return [
             'id' => $t->id,
             'vatsimId' => $t->vatsim_id,
-            'name' => $t->first_name . ' ' . $t->last_name,
+            'name' => $t->first_name.' '.$t->last_name,
             'claimedBy' => $this->resolveClaimedBy($t, $user),
             'claimedByMentorId' => $t->claimed_by_mentor_id,
-            'progress' => $traineeLog->filter(fn($l) => $l->result !== null)->map(fn($l) => (bool) $l->result)->values()->toArray(),
+            'progress' => $traineeLog->filter(fn ($l) => $l->result !== null)->map(fn ($l) => (bool) $l->result)->values()->toArray(),
             'lastSession' => $latest?->session_date,
             'nextStep' => $latest?->next_step ?? '',
             'remark' => $t->remarks ? [
                 'text' => $t->remarks,
                 'updated_at' => $t->remark_updated_at,
-                'author_name' => $t->author_first_name ? $t->author_first_name . ' ' . $t->author_last_name : null,
+                'author_name' => $t->author_first_name ? $t->author_first_name.' '.$t->author_last_name : null,
             ] : null,
+            'soloDaysUsed' => (int) $t->solo_days_used,
             'soloStatus' => $endorsements[$t->vatsim_id]['soloStatus'] ?? null,
             'endorsementStatus' => $endorsements[$t->vatsim_id]['endorsementStatus'] ?? null,
         ];
@@ -79,10 +81,12 @@ class MentorCourseResponseBuilder
 
     private function resolveClaimedBy(object $t, User $user): ?string
     {
-        if (!$t->claimed_by_mentor_id)
+        if (! $t->claimed_by_mentor_id) {
             return null;
+        }
+
         return $t->claimed_by_mentor_id === $user->id
             ? 'You'
-            : $t->claimed_first_name . ' ' . $t->claimed_last_name;
+            : $t->claimed_first_name.' '.$t->claimed_last_name;
     }
 }

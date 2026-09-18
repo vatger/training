@@ -2,10 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Integrations\Moodle\MoodleClient;
+use App\Models\Course;
+use App\Models\TrainingLog;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class UserSearchController extends Controller
@@ -20,21 +24,21 @@ class UserSearchController extends Controller
 
         try {
             if (is_numeric($query)) {
-                $users = User::where('vatsim_id', 'LIKE', $query . '%')
+                $users = User::where('vatsim_id', 'LIKE', $query.'%')
                     ->whereNotNull('vatsim_id')
                     ->limit(10)
                     ->get(['id', 'vatsim_id', 'first_name', 'last_name', 'email']);
             } else {
                 $searchTerm = strtolower($query);
-                
+
                 $users = User::select(['id', 'vatsim_id', 'first_name', 'last_name', 'email'])
                     ->whereNotNull('vatsim_id')
                     ->where(function ($q) use ($searchTerm) {
-                        $q->whereRaw('LOWER(first_name) LIKE ?', [$searchTerm . '%'])
-                            ->orWhereRaw('LOWER(last_name) LIKE ?', [$searchTerm . '%'])
-                            ->orWhereRaw('LOWER(CONCAT(first_name, \' \', last_name)) LIKE ?', [$searchTerm . '%'])
-                            ->orWhereRaw('LOWER(first_name) LIKE ?', ['%' . $searchTerm . '%'])
-                            ->orWhereRaw('LOWER(last_name) LIKE ?', ['%' . $searchTerm . '%']);
+                        $q->whereRaw('LOWER(first_name) LIKE ?', [$searchTerm.'%'])
+                            ->orWhereRaw('LOWER(last_name) LIKE ?', [$searchTerm.'%'])
+                            ->orWhereRaw('LOWER(CONCAT(first_name, \' \', last_name)) LIKE ?', [$searchTerm.'%'])
+                            ->orWhereRaw('LOWER(first_name) LIKE ?', ['%'.$searchTerm.'%'])
+                            ->orWhereRaw('LOWER(last_name) LIKE ?', ['%'.$searchTerm.'%']);
                     })
                     ->orderByRaw("
                         CASE
@@ -46,11 +50,11 @@ class UserSearchController extends Controller
                             ELSE 6
                         END
                     ", [
-                        $searchTerm . '%',
-                        $searchTerm . '%',
-                        $searchTerm . '%',
-                        '%' . $searchTerm . '%',
-                        '%' . $searchTerm . '%'
+                        $searchTerm.'%',
+                        $searchTerm.'%',
+                        $searchTerm.'%',
+                        '%'.$searchTerm.'%',
+                        '%'.$searchTerm.'%',
                     ])
                     ->limit(10)
                     ->get();
@@ -67,18 +71,18 @@ class UserSearchController extends Controller
 
             return response()->json([
                 'success' => true,
-                'users' => $results
+                'users' => $results,
             ]);
 
         } catch (\Exception $e) {
             Log::error('User search error', [
                 'query' => $query,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Search failed'
+                'message' => 'Search failed',
             ], 500);
         }
     }
@@ -91,14 +95,14 @@ class UserSearchController extends Controller
 
         $currentUser = auth()->user();
 
-        if (!$currentUser->isMentor() && !$currentUser->isSuperuser() && !$currentUser->is_admin) {
+        if (! $currentUser->isMentor() && ! $currentUser->isSuperuser() && ! $currentUser->is_admin) {
             abort(403, 'Only mentors can view user profiles.');
         }
 
         $isPrivilegedUser = $currentUser->isSuperuser() || $currentUser->is_admin;
-        
+
         if ($isPrivilegedUser) {
-            $mentorCourseIds = \App\Models\Course::pluck('id')->toArray();
+            $mentorCourseIds = Course::pluck('id')->toArray();
         } else {
             $mentorCourseIds = $currentUser->mentorCourses()->pluck('courses.id')->toArray();
         }
@@ -120,7 +124,7 @@ class UserSearchController extends Controller
 
                 if ($isMentor) {
                     try {
-                        $logs = \App\Models\TrainingLog::where('course_id', $course->id)
+                        $logs = TrainingLog::where('course_id', $course->id)
                             ->where('trainee_id', $user->id)
                             ->with(['mentor:id,first_name,last_name'])
                             ->select([
@@ -154,7 +158,7 @@ class UserSearchController extends Controller
                         \Log::error('Error fetching training logs', [
                             'course_id' => $course->id,
                             'user_id' => $user->id,
-                            'error' => $e->getMessage()
+                            'error' => $e->getMessage(),
                         ]);
                         $courseData['logs'] = [];
                     }
@@ -177,13 +181,13 @@ class UserSearchController extends Controller
                     'courses.type',
                     'courses.position',
                     'course_trainees.completed_at',
-                    'course_trainees.status'
+                    'course_trainees.status',
                 ])
                 ->get();
 
             $courseIds = $completedData->pluck('id');
 
-            $logsGrouped = \App\Models\TrainingLog::whereIn('course_id', $courseIds)
+            $logsGrouped = TrainingLog::whereIn('course_id', $courseIds)
                 ->where('trainee_id', $user->id)
                 ->with(['mentor:id,first_name,last_name'])
                 ->select([
@@ -203,7 +207,7 @@ class UserSearchController extends Controller
 
             foreach ($completedData as $courseData) {
                 $isMentor = $isPrivilegedUser || in_array($courseData->id, $mentorCourseIds);
-                
+
                 $logs = [];
                 if ($isMentor) {
                     $logs = $logsGrouped->get($courseData->id, collect())->map(function ($log) {
@@ -226,7 +230,7 @@ class UserSearchController extends Controller
                     'name' => $courseData->name,
                     'type' => $courseData->type,
                     'position' => $courseData->position,
-                    'completed_at' => \Carbon\Carbon::parse($courseData->completed_at)->format('Y-m-d'),
+                    'completed_at' => Carbon::parse($courseData->completed_at)->format('Y-m-d'),
                     'is_mentor' => $isMentor,
                     'total_sessions' => $logsGrouped->get($courseData->id, collect())->count(),
                     'logs' => $logs,
@@ -242,12 +246,12 @@ class UserSearchController extends Controller
         } catch (\Exception $e) {
             \Log::error('Error fetching completed courses', [
                 'user_id' => $user->id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
             $completedCourses = collect();
             $removedCourses = collect();
         }
-        
+
         $endorsements = $user->endorsementActivities()
             ->select([
                 'position',
@@ -276,8 +280,8 @@ class UserSearchController extends Controller
             ->with('sector:id,name,fir')
             ->get()
             ->groupBy('sector.fir')
-            ->map(function($fams) {
-                return $fams->map(function($fam) {
+            ->map(function ($fams) {
+                return $fams->map(function ($fam) {
                     return [
                         'id' => $fam->id,
                         'sector_name' => $fam->sector->name,
@@ -287,10 +291,10 @@ class UserSearchController extends Controller
             });
 
         $moodleCourses = [];
-        $moodleClient = app(\App\Integrations\Moodle\MoodleClient::class);
+        $moodleClient = app(MoodleClient::class);
 
         $courseIds = $activeCourses->pluck('id');
-        $coursesWithMoodle = \App\Models\Course::whereIn('id', $courseIds)
+        $coursesWithMoodle = Course::whereIn('id', $courseIds)
             ->whereNotNull('moodle_course_ids')
             ->get();
 
@@ -314,7 +318,7 @@ class UserSearchController extends Controller
                     } catch (\Exception $e) {
                         \Log::warning('Failed to fetch Moodle course info', [
                             'moodle_id' => $moodleId,
-                            'error' => $e->getMessage()
+                            'error' => $e->getMessage(),
                         ]);
                     }
                 }
