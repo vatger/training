@@ -75,8 +75,10 @@ class CoursesTable
                         3 => 'S2',
                         4 => 'S3',
                         5 => 'C1',
+                        6 => 'C2',
                         7 => 'C3',
                         8 => 'I1',
+                        9 => 'I2',
                         10 => 'I3',
                         default => (string) $state,
                     })
@@ -92,8 +94,10 @@ class CoursesTable
                         3 => 'S2',
                         4 => 'S3',
                         5 => 'C1',
+                        6 => 'C2',
                         7 => 'C3',
                         8 => 'I1',
+                        9 => 'I2',
                         10 => 'I3',
                         default => (string) $state,
                     })

@@ -6,6 +6,8 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class WaitingListRestrictionsTable
@@ -31,7 +33,25 @@ class WaitingListRestrictionsTable
                     ->date(),
             ])
             ->filters([
-                //
+                SelectFilter::make('type')
+                    ->options([
+                        'RTG' => 'Rating (RTG)',
+                        'EDMT' => 'Endorsement (EDMT)',
+                        'GST' => 'Visitor (GST)',
+                        'FAM' => 'Familiarisation (FAM)',
+                        'RST' => 'Roster Reentry (RST)',
+                    ])
+                    ->multiple(),
+
+                Filter::make('active')
+                    ->label('Currently Active')
+                    ->query(fn ($query) => $query->where(function ($q) {
+                        $q->whereNull('expires_at')->orWhere('expires_at', '>=', now());
+                    })),
+
+                Filter::make('expired')
+                    ->label('Expired')
+                    ->query(fn ($query) => $query->whereNotNull('expires_at')->where('expires_at', '<', now())),
             ])
             ->recordActions([
                 EditAction::make(),

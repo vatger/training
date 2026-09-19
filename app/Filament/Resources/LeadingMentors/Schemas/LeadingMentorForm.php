@@ -18,8 +18,7 @@ class LeadingMentorForm
                     ->getSearchResultsUsing(UserSearch::callback())
                     ->getOptionLabelFromRecordUsing(UserSearch::optionLabel())
                     ->searchable()
-                    ->required()
-                    ->helperText('Select the user who will be Leading Mentor for this FIR'),
+                    ->required(),
 
                 Forms\Components\Select::make('fir')
                     ->label('FIR')
@@ -28,8 +27,7 @@ class LeadingMentorForm
                         'EDMM' => 'EDMM (München)',
                         'EDWW' => 'EDWW (Bremen)',
                     ])
-                    ->required()
-                    ->helperText('Select the FIR this user will manage'),
+                    ->required(),
             ]);
     }
 }

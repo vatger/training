@@ -21,10 +21,22 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Vite;
+use Illuminate\Support\HtmlString;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
 {
+    public function boot(): void
+    {
+        // Applies to nearly every action panel-wide (buttons, row actions, modal submit
+        // buttons, etc.) via ->defaultColor(), which only takes effect where a color hasn't
+        // already been set explicitly — so DeleteAction/DeleteBulkAction's own ->defaultColor('danger')
+        // (set later, since it's declared on the more specific subclass) still wins, keeping
+        // destructive actions red while everything else gets this neutral blue instead of the
+        // brand-red 'primary' color.
+        Action::configureUsing(fn (Action $action) => $action->defaultColor('info'));
+    }
+
     public function panel(Panel $panel): Panel
     {
         return $panel
@@ -106,6 +118,22 @@ class AdminPanelProvider extends PanelProvider
                     900 => 'oklch(0.323 0.05 152.7)',
                     950 => 'oklch(0.228 0.034 153.71)',
                 ],
+                // A muted, non-brand blue for neutral/utility actions (Add, Edit, Remove-from-list,
+                // etc.) — kept at a similar chroma to the palette above rather than Filament's
+                // stock "info" blue, which is far more saturated and reads as jarring next to it.
+                'info' => [
+                    50 => 'oklch(0.977 0.013 255)',
+                    100 => 'oklch(0.943 0.03 256)',
+                    200 => 'oklch(0.882 0.055 254)',
+                    300 => 'oklch(0.809 0.078 253)',
+                    400 => 'oklch(0.735 0.095 254)',
+                    500 => 'oklch(0.646 0.11 255)',
+                    600 => 'oklch(0.564 0.105 256)',
+                    700 => 'oklch(0.488 0.095 257)',
+                    800 => 'oklch(0.398 0.08 258)',
+                    900 => 'oklch(0.31 0.062 260)',
+                    950 => 'oklch(0.23 0.045 262)',
+                ],
             ])
             ->userMenuItems([
                 MenuItem::make()
@@ -121,6 +149,53 @@ class AdminPanelProvider extends PanelProvider
                     '<script>localStorage.setItem(\'theme\', @js($theme));</script>',
                     ['theme' => view()->shared('theme', 'system')],
                 ),
+            )
+            ->renderHook(
+                PanelsRenderHook::HEAD_END,
+                fn () => new HtmlString(<<<'HTML'
+                    <style>
+                        /* Relation entry tables (RepeatableEntry) switch between a compact <table>
+                           layout and a much larger stacked "card" layout below a 36rem container
+                           width (Filament's own @container query). Force the compact table layout
+                           unconditionally, at every screen size, since the stacked layout takes up
+                           far too much vertical space with more than a couple of rows. */
+                        .fi-in-table-repeatable > table {
+                            display: table !important;
+                        }
+                        .fi-in-table-repeatable > table > thead {
+                            display: table-header-group !important;
+                            white-space: normal !important;
+                        }
+                        .fi-in-table-repeatable > table > tbody {
+                            display: table-row-group !important;
+                        }
+                        .fi-in-table-repeatable > table > tbody > tr {
+                            display: table-row !important;
+                            padding: 0 !important;
+                            gap: 0 !important;
+                        }
+                        .fi-in-table-repeatable > table > tbody > tr > td {
+                            display: table-cell !important;
+                        }
+                        .fi-in-table-repeatable > table > tbody > tr > td .fi-in-entry-label {
+                            display: none !important;
+                        }
+                        .fi-in-table-repeatable > table > tbody > tr > td .fi-in-entry {
+                            row-gap: 0 !important;
+                        }
+
+                        /* Tighter padding on top of the forced table layout, since the default
+                           table padding is still fairly generous with many rows. */
+                        .fi-in-table-repeatable > table > thead > tr > th {
+                            padding-inline: 0.5rem !important;
+                            padding-block: 0.25rem !important;
+                        }
+                        .fi-in-table-repeatable > table > tbody > tr > td {
+                            padding-inline: 0.5rem !important;
+                            padding-block: 0.25rem !important;
+                        }
+                    </style>
+                    HTML),
             )
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')

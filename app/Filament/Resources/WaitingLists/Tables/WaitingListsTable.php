@@ -5,7 +5,6 @@ namespace App\Filament\Resources\WaitingLists\Tables;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
@@ -36,15 +35,17 @@ class WaitingListsTable
                     ->sortable()
                     ->limit(30),
 
-                BadgeColumn::make('course.type')
+                TextColumn::make('course.type')
                     ->label('Type')
-                    ->colors([
-                        'success' => 'RTG',
-                        'warning' => 'EDMT',
-                        'info' => 'GST',
-                        'purple' => 'FAM',
-                        'gray' => 'RST',
-                    ])
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'RTG' => 'success',
+                        'EDMT' => 'warning',
+                        'GST' => 'info',
+                        'FAM' => 'purple',
+                        'RST' => 'gray',
+                        default => 'gray',
+                    })
                     ->formatStateUsing(fn (string $state): string => match ($state) {
                         'RTG' => 'Rating',
                         'EDMT' => 'Endorsement',
@@ -61,8 +62,9 @@ class WaitingListsTable
                     ->sortable()
                     ->color(fn ($state) => $state >= 10 ? 'success' : ($state >= 8 ? 'warning' : 'danger')),
 
-                BadgeColumn::make('position_in_queue')
+                TextColumn::make('position_in_queue')
                     ->label('Position')
+                    ->badge()
                     ->color('info'),
 
                 TextColumn::make('date_added')
@@ -139,8 +141,7 @@ class WaitingListsTable
                                             ->whereIn('user_id', $duplicateUserIdsForType($type));
                                     });
                                 }
-                            })
-                            ->orderBy('user_id');
+                            });
                     }),
             ])
             ->recordActions([

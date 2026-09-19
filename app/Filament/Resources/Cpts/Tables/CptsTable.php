@@ -4,6 +4,10 @@ namespace App\Filament\Resources\Cpts\Tables;
 
 use App\Filament\Resources\Courses\CourseResource;
 use App\Filament\Resources\Users\UserResource;
+use App\Filament\Support\UserSearch;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\IconColumn;
@@ -34,7 +38,7 @@ class CptsTable
                     ->searchable()
                     ->sortable()
                     ->limit(30)
-                    ->url(fn ($record) => CourseResource::getUrl('edit', ['record' => $record->course])),
+                    ->url(fn ($record) => $record->course ? CourseResource::getUrl('edit', ['record' => $record->course]) : null),
 
                 TextColumn::make('date')
                     ->label('CPT Date')
@@ -87,7 +91,8 @@ class CptsTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                SelectFilter::make('course')
+                SelectFilter::make('course_id')
+                    ->label('Course')
                     ->relationship('course', 'name')
                     ->searchable()
                     ->preload()
@@ -97,6 +102,7 @@ class CptsTable
                     ->label('Trainee')
                     ->relationship('trainee', 'first_name')
                     ->getOptionLabelFromRecordUsing(fn ($record) => $record->name)
+                    ->getSearchResultsUsing(UserSearch::callback())
                     ->searchable()
                     ->preload()
                     ->multiple(),
@@ -105,6 +111,7 @@ class CptsTable
                     ->label('Examiner')
                     ->relationship('examiner', 'first_name')
                     ->getOptionLabelFromRecordUsing(fn ($record) => $record->name)
+                    ->getSearchResultsUsing(UserSearch::callback())
                     ->searchable()
                     ->preload()
                     ->multiple(),
@@ -128,6 +135,12 @@ class CptsTable
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make(),
+                DeleteAction::make(),
+            ])
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                ]),
             ])
             ->defaultSort('date', 'desc')
             ->defaultPaginationPageOption(50)

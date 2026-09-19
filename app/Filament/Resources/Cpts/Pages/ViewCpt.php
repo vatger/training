@@ -5,8 +5,15 @@ namespace App\Filament\Resources\Cpts\Pages;
 use App\Filament\Resources\Courses\CourseResource;
 use App\Filament\Resources\Cpts\CptResource;
 use App\Filament\Resources\Users\UserResource;
+use Filament\Actions\Action;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\Select;
+use Filament\Infolists\Components\RepeatableEntry;
+use Filament\Infolists\Components\RepeatableEntry\TableColumn;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
@@ -21,6 +28,45 @@ class ViewCpt extends ViewRecord
     {
         return [
             EditAction::make(),
+            DeleteAction::make(),
+
+            Action::make('delete_log')
+                ->label('Delete a Log')
+                ->icon('heroicon-o-trash')
+                ->color('danger')
+                ->visible(fn () => $this->record->logs()->exists())
+                ->schema([
+                    Select::make('log_id')
+                        ->label('Log to delete')
+                        ->options(fn () => $this->record->logs()->get()->mapWithKeys(
+                            fn ($log) => [$log->id => $log->file_name],
+                        ))
+                        ->required(),
+                ])
+                ->requiresConfirmation()
+                ->modalHeading('Delete CPT Log')
+                ->modalDescription('This permanently deletes the log file. This is admin-only — there is no other way to remove a log.')
+                ->modalSubmitActionLabel('Yes, delete')
+                ->action(function (array $data) {
+                    $log = $this->record->logs()->find($data['log_id']);
+
+                    if (! $log) {
+                        return;
+                    }
+
+                    $log->deleteFile();
+
+                    if ($this->record->logs()->count() === 1) {
+                        $this->record->update(['log_uploaded' => false]);
+                    }
+
+                    $log->delete();
+
+                    Notification::make()
+                        ->title('Log deleted')
+                        ->success()
+                        ->send();
+                }),
         ];
     }
 
@@ -135,9 +181,22 @@ class ViewCpt extends ViewRecord
 
                 Section::make('Logs')
                     ->schema([
-                        Placeholder::make('logs_count')
-                            ->label('Number of Logs')
-                            ->content(fn ($record) => $record->logs()->count()),
+                        RepeatableEntry::make('logs')
+                            ->hiddenLabel()
+                            ->state(fn ($record) => $record->logs()->with('uploadedBy')->latest()->get())
+                            ->table([
+                                TableColumn::make('File'),
+                                TableColumn::make('Uploaded By'),
+                                TableColumn::make('Uploaded At'),
+                            ])
+                            ->schema([
+                                TextEntry::make('file_name')
+                                    ->url(fn ($record) => $record->file_url)
+                                    ->openUrlInNewTab(),
+                                TextEntry::make('uploadedBy.name')->placeholder('—'),
+                                TextEntry::make('created_at')->dateTime(),
+                            ])
+                            ->placeholder('No logs uploaded yet. Uploaded from the main app by the examiner or local contact.'),
                     ])
                     ->collapsible(),
 

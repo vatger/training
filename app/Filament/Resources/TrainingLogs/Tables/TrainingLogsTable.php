@@ -4,12 +4,14 @@ namespace App\Filament\Resources\TrainingLogs\Tables;
 
 use App\Filament\Resources\Courses\CourseResource;
 use App\Filament\Resources\Users\UserResource;
+use App\Filament\Support\UserSearch;
 use App\Models\TrainingLog;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
@@ -48,7 +50,7 @@ class TrainingLogsTable
                     ->searchable()
                     ->sortable()
                     ->limit(30)
-                    ->url(fn ($record) => CourseResource::getUrl('edit', ['record' => $record->course])),
+                    ->url(fn ($record) => $record->course ? CourseResource::getUrl('edit', ['record' => $record->course]) : null),
 
                 TextColumn::make('position')
                     ->badge()
@@ -102,6 +104,7 @@ class TrainingLogsTable
                     ->label('Trainee')
                     ->relationship('trainee', 'first_name')
                     ->getOptionLabelFromRecordUsing(fn ($record) => $record->name)
+                    ->getSearchResultsUsing(UserSearch::callback())
                     ->searchable()
                     ->preload()
                     ->multiple(),
@@ -110,11 +113,13 @@ class TrainingLogsTable
                     ->label('Mentor')
                     ->relationship('mentor', 'first_name')
                     ->getOptionLabelFromRecordUsing(fn ($record) => $record->name)
+                    ->getSearchResultsUsing(UserSearch::callback())
                     ->searchable()
                     ->preload()
                     ->multiple(),
 
-                SelectFilter::make('course')
+                SelectFilter::make('course_id')
+                    ->label('Course')
                     ->relationship('course', 'name')
                     ->searchable()
                     ->preload()
@@ -155,6 +160,24 @@ class TrainingLogsTable
                                 fn ($query, $date) => $query->whereDate('session_date', '<=', $date),
                             );
                     }),
+
+                Filter::make('recent')
+                    ->form([
+                        Select::make('days')
+                            ->label('Recency')
+                            ->options([
+                                7 => 'Last 7 days',
+                                30 => 'Last 30 days',
+                                90 => 'Last 90 days',
+                            ]),
+                    ])
+                    ->query(fn ($query, array $data) => $query->when(
+                        $data['days'] ?? null,
+                        fn ($query, $days) => $query->where('session_date', '>=', now()->subDays((int) $days)),
+                    ))
+                    ->indicateUsing(fn (array $data) => $data['days'] ?? null
+                        ? "Last {$data['days']} days"
+                        : null),
             ])
             ->recordActions([
                 ViewAction::make(),
