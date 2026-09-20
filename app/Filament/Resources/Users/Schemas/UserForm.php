@@ -163,6 +163,7 @@ class UserForm
                         Action::make('add_course_enrollment')
                             ->label('Add')
                             ->icon('heroicon-o-plus')
+                            ->outlined()
                             ->size('sm')
                             ->visible(fn ($livewire) => $livewire->record !== null)
                             ->schema([
@@ -199,6 +200,7 @@ class UserForm
                                         Action::make('edit')
                                             ->label('Edit')
                                             ->icon('heroicon-o-pencil')
+                                            ->outlined()
                                             ->fillForm(fn ($record) => [
                                                 'claimed_by_mentor_id' => $record->pivot->claimed_by_mentor_id,
                                                 'claimed_at' => $record->pivot->claimed_at,
@@ -220,6 +222,7 @@ class UserForm
                                         Action::make('remove')
                                             ->label('Remove')
                                             ->icon('heroicon-o-x-mark')
+                                            ->outlined()
                                             ->requiresConfirmation()
                                             ->action(fn ($record, $livewire) => $livewire->removeCourseEnrollment($record->id)),
                                     ]),
@@ -234,6 +237,7 @@ class UserForm
                         Action::make('add_waiting_list_entry')
                             ->label('Add')
                             ->icon('heroicon-o-plus')
+                            ->outlined()
                             ->size('sm')
                             ->visible(fn ($livewire) => $livewire->record !== null)
                             ->schema([
@@ -267,6 +271,7 @@ class UserForm
                                         Action::make('edit')
                                             ->label('Edit')
                                             ->icon('heroicon-o-pencil')
+                                            ->outlined()
                                             ->fillForm(fn ($record) => [
                                                 'activity' => $record->activity,
                                                 'remarks' => $record->remarks,
@@ -280,6 +285,7 @@ class UserForm
                                         Action::make('remove')
                                             ->label('Remove')
                                             ->icon('heroicon-o-x-mark')
+                                            ->outlined()
                                             ->requiresConfirmation()
                                             ->action(fn ($record, $livewire) => $livewire->removeWaitingListEntry($record->id)),
                                     ]),
@@ -318,6 +324,7 @@ class UserForm
                         Action::make('add_familiarisation')
                             ->label('Add')
                             ->icon('heroicon-o-plus')
+                            ->outlined()
                             ->size('sm')
                             ->visible(fn ($livewire) => $livewire->record !== null)
                             ->schema([
@@ -349,6 +356,7 @@ class UserForm
                                         Action::make('remove')
                                             ->label('Remove')
                                             ->icon('heroicon-o-x-mark')
+                                            ->outlined()
                                             ->requiresConfirmation()
                                             ->action(fn ($record, $livewire) => $livewire->removeFamiliarisation($record->id)),
                                     ]),
@@ -387,6 +395,7 @@ class UserForm
                         Action::make('add_chief_of_training_course')
                             ->label('Add CoT Course')
                             ->icon('heroicon-o-plus')
+                            ->outlined()
                             ->size('sm')
                             ->visible(fn ($livewire) => $livewire->record !== null)
                             ->schema([
@@ -401,6 +410,7 @@ class UserForm
                         Action::make('add_leading_mentor_fir')
                             ->label('Add LM FIR')
                             ->icon('heroicon-o-plus')
+                            ->outlined()
                             ->size('sm')
                             ->visible(fn ($livewire) => $livewire->record !== null)
                             ->schema([
@@ -433,6 +443,7 @@ class UserForm
                                         Action::make('remove')
                                             ->label('Remove')
                                             ->icon('heroicon-o-x-mark')
+                                            ->outlined()
                                             ->requiresConfirmation()
                                             ->action(fn ($record, $livewire) => $livewire->removeChiefOfTrainingCourse($record->id)),
                                     ]),
@@ -454,6 +465,7 @@ class UserForm
                                         Action::make('remove')
                                             ->label('Remove')
                                             ->icon('heroicon-o-x-mark')
+                                            ->outlined()
                                             ->requiresConfirmation()
                                             ->action(fn ($record, $livewire) => $livewire->removeLeadingMentorFir($record->id)),
                                     ]),

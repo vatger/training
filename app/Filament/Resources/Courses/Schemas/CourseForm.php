@@ -167,6 +167,7 @@ class CourseForm
                         Action::make('add_mentor')
                             ->label('Add')
                             ->icon('heroicon-o-plus')
+                            ->outlined()
                             ->size('sm')
                             ->visible(fn ($livewire) => $livewire->record !== null)
                             ->schema([
@@ -197,6 +198,7 @@ class CourseForm
                                         Action::make('remove')
                                             ->label('Remove')
                                             ->icon('heroicon-o-x-mark')
+                                            ->outlined()
                                             ->requiresConfirmation()
                                             ->action(fn ($record, $livewire) => $livewire->removeMentor($record->id)),
                                     ]),
@@ -211,6 +213,7 @@ class CourseForm
                         Action::make('add_trainee')
                             ->label('Add')
                             ->icon('heroicon-o-plus')
+                            ->outlined()
                             ->size('sm')
                             ->visible(fn ($livewire) => $livewire->record !== null)
                             ->schema([
@@ -248,6 +251,7 @@ class CourseForm
                                         Action::make('edit')
                                             ->label('Edit')
                                             ->icon('heroicon-o-pencil')
+                                            ->outlined()
                                             ->fillForm(fn ($record) => [
                                                 'claimed_by_mentor_id' => $record->pivot->claimed_by_mentor_id,
                                                 'claimed_at' => $record->pivot->claimed_at,
@@ -269,6 +273,7 @@ class CourseForm
                                         Action::make('remove')
                                             ->label('Remove')
                                             ->icon('heroicon-o-x-mark')
+                                            ->outlined()
                                             ->requiresConfirmation()
                                             ->action(fn ($record, $livewire) => $livewire->removeTrainee($record->id)),
                                     ]),
@@ -283,6 +288,7 @@ class CourseForm
                         Action::make('add_chief_of_training')
                             ->label('Add')
                             ->icon('heroicon-o-plus')
+                            ->outlined()
                             ->size('sm')
                             ->visible(fn ($livewire) => $livewire->record !== null)
                             ->schema([
@@ -316,6 +322,7 @@ class CourseForm
                                         Action::make('remove')
                                             ->label('Remove')
                                             ->icon('heroicon-o-x-mark')
+                                            ->outlined()
                                             ->requiresConfirmation()
                                             ->action(fn ($record, $livewire) => $livewire->removeChiefOfTraining($record->id)),
                                     ]),
