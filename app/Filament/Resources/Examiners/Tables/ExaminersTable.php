@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Examiners\Tables;
 
 use App\Filament\Resources\Users\UserResource;
+use App\Filament\Support\UserSearch;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -50,6 +51,7 @@ class ExaminersTable
                     ->label('User')
                     ->relationship('user', 'first_name')
                     ->getOptionLabelFromRecordUsing(fn ($record) => $record->name)
+                    ->getSearchResultsUsing(UserSearch::callback())
                     ->searchable()
                     ->preload()
                     ->multiple(),

@@ -34,7 +34,8 @@ class ExaminerForm
                             ->label('Authorized Positions')
                             ->options(Examiner::getPositionOptions())
                             ->required()
-                            ->columns(3),
+                            ->columns(3)
+                            ->columnSpanFull(),
                     ])->columns(2),
             ]);
     }

@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Familiarisations\Tables;
 
 use App\Filament\Resources\Users\UserResource;
+use App\Filament\Support\UserSearch;
 use App\Models\FamiliarisationSector;
 use Filament\Actions\DeleteAction;
 use Filament\Tables\Columns\TextColumn;
@@ -78,6 +79,7 @@ class FamiliarisationsTable
                     ->label('User')
                     ->relationship('user', 'first_name')
                     ->getOptionLabelFromRecordUsing(fn ($record) => $record->name)
+                    ->getSearchResultsUsing(UserSearch::callback())
                     ->searchable()
                     ->preload()
                     ->multiple(),

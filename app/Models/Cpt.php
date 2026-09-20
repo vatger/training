@@ -93,5 +93,9 @@ class Cpt extends Model
         static::saving(function ($cpt) {
             $cpt->confirmed = $cpt->examiner_id !== null && $cpt->local_id !== null;
         });
+
+        static::deleting(function (Cpt $cpt) {
+            $cpt->logs->each(fn (CptLog $log) => $log->deleteFile());
+        });
     }
 }

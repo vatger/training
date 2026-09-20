@@ -21,16 +21,14 @@ class FamiliarisationForm
                             ->getSearchResultsUsing(UserSearch::callback())
                             ->getOptionLabelFromRecordUsing(UserSearch::optionLabel())
                             ->searchable()
-                            ->required()
-                            ->helperText('Select the user to grant familiarisation'),
+                            ->required(),
 
                         Forms\Components\Select::make('familiarisation_sector_id')
                             ->label('Sector')
                             ->relationship('sector', 'name')
                             ->searchable()
                             ->required()
-                            ->preload()
-                            ->helperText('Select the familiarisation sector'),
+                            ->preload(),
                     ])->columns(2),
             ]);
     }

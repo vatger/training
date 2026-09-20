@@ -4,6 +4,7 @@ namespace App\Filament\Resources\ActivityLogs\Tables;
 
 use App\Enums\ActivityAction;
 use App\Filament\Resources\Users\UserResource;
+use App\Filament\Support\UserSearch;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
@@ -89,6 +90,7 @@ class ActivityLogsTable
                     ->label('User')
                     ->relationship('user', 'first_name')
                     ->getOptionLabelFromRecordUsing(fn ($record) => $record->name)
+                    ->getSearchResultsUsing(UserSearch::callback())
                     ->searchable()
                     ->preload()
                     ->multiple(),
@@ -97,9 +99,9 @@ class ActivityLogsTable
                     ->label('Subject Type')
                     ->options([
                         'App\Models\Course' => 'Course',
+                        'App\Models\Cpt' => 'CPT',
                         'App\Models\User' => 'User',
                         'App\Models\WaitingListEntry' => 'Waiting List',
-                        'App\Models\TrainingLog' => 'Training Log',
                         'App\Models\EndorsementActivity' => 'Endorsement',
                     ])
                     ->multiple(),

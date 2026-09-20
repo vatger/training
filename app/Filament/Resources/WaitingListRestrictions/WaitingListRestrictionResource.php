@@ -40,6 +40,14 @@ class WaitingListRestrictionResource extends Resource
         return [];
     }
 
+    /**
+     * @return array<string>
+     */
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['user.first_name', 'user.last_name', 'user.vatsim_id'];
+    }
+
     public static function canViewAny(): bool
     {
         $user = Filament::auth()->user();

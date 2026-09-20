@@ -38,6 +38,14 @@ class UserResource extends Resource
         return [];
     }
 
+    /**
+     * @return array<string>
+     */
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['first_name', 'last_name', 'vatsim_id'];
+    }
+
     public static function getPages(): array
     {
         return [

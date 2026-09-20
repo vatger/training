@@ -2,10 +2,12 @@
 
 namespace App\Filament\Resources\Tier2Endorsements\Tables;
 
+use App\Models\Tier2Endorsement;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class Tier2EndorsementsTable
@@ -38,7 +40,13 @@ class Tier2EndorsementsTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                SelectFilter::make('position')
+                    ->options(fn () => Tier2Endorsement::query()
+                        ->distinct()
+                        ->orderBy('position')
+                        ->pluck('position', 'position')
+                        ->all())
+                    ->multiple(),
             ])
             ->recordActions([
                 EditAction::make(),

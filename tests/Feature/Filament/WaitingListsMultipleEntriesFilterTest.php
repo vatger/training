@@ -117,3 +117,17 @@ test('filter is off by default and shows all entries', function () {
     Livewire::test(ListWaitingLists::class)
         ->assertCanSeeTableRecords([$entry]);
 });
+
+test('multiple_entries filter does not override the default date_added sort', function () {
+    $userA = User::factory()->create();
+    $userB = User::factory()->create();
+
+    $olderA1 = makeWaitingListEntry($userA, Course::factory()->rtg()->create(), ['date_added' => now()->subDays(3)]);
+    $olderA2 = makeWaitingListEntry($userA, Course::factory()->rtg()->create(), ['date_added' => now()->subDays(2)]);
+    $newerB1 = makeWaitingListEntry($userB, Course::factory()->edmt()->create(), ['date_added' => now()->subDay()]);
+    $newerB2 = makeWaitingListEntry($userB, Course::factory()->edmt()->create(), ['date_added' => now()]);
+
+    Livewire::test(ListWaitingLists::class)
+        ->filterTable('multiple_entries', true)
+        ->assertCanSeeTableRecords([$newerB2, $newerB1, $olderA2, $olderA1], inOrder: true);
+});

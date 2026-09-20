@@ -50,6 +50,15 @@ class UserSearch
         return fn (User $record) => self::format($record);
     }
 
+    /**
+     * Returns a getOptionLabelUsing callback (resolves a raw user ID to a label)
+     * for Select fields with no ->relationship(), e.g. plain Action form fields.
+     */
+    public static function optionLabelById(): Closure
+    {
+        return fn ($value) => ($user = User::find($value)) ? self::format($user) : null;
+    }
+
     private static function format(User $user): string
     {
         return "{$user->first_name} {$user->last_name} ({$user->vatsim_id})";
