@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\EndorsementActivities;
 
+use App\Filament\Clusters\EndorsementsCluster;
 use App\Filament\Resources\EndorsementActivities\Pages\EditEndorsementActivity;
 use App\Filament\Resources\EndorsementActivities\Pages\ListEndorsementActivities;
 use App\Filament\Resources\EndorsementActivities\Pages\ViewEndorsementActivity;
@@ -23,6 +24,8 @@ class EndorsementActivityResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCheckCircle;
 
     protected static ?string $recordTitleAttribute = 'position';
+
+    protected static ?string $cluster = EndorsementsCluster::class;
 
     public static function form(Schema $schema): Schema
     {
@@ -48,11 +51,6 @@ class EndorsementActivityResource extends Resource
         ];
     }
 
-    public static function getNavigationGroup(): ?string
-    {
-        return 'Endorsements & Ratings';
-    }
-
     public static function getNavigationSort(): ?int
     {
         return 1;
@@ -60,7 +58,7 @@ class EndorsementActivityResource extends Resource
 
     public static function getNavigationLabel(): string
     {
-        return 'Endorsement Activities';
+        return 'Tier 1 Endorsement Activities';
     }
 
     public static function canViewAny(): bool

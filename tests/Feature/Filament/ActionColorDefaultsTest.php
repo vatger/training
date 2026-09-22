@@ -4,7 +4,10 @@ use App\Filament\Resources\Courses\Pages\EditCourse;
 use App\Models\Course;
 use App\Models\User;
 use Filament\Actions\Action;
+use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 
@@ -24,6 +27,30 @@ test('DeleteAction keeps its own danger color despite the panel-wide info defaul
     $action = DeleteAction::make();
 
     expect($action->getColor())->toBe('danger');
+});
+
+test('DeleteBulkAction keeps its own danger color despite the panel-wide info default', function () {
+    $action = DeleteBulkAction::make();
+
+    expect($action->getColor())->toBe('danger');
+});
+
+test('CreateAction picks up the panel-wide info default', function () {
+    $action = CreateAction::make();
+
+    expect($action->getColor())->toBe('info');
+});
+
+test('EditAction is overridden to info instead of falling back to the brand-red primary color', function () {
+    // EditAction sets its own ->defaultColor('primary') in its setUp(), which — because
+    // subclass setUp() runs after Action::configureUsing() in Filament's configuration
+    // order — would otherwise silently override the panel-wide info default back to
+    // 'primary' (this panel's brand color, which is red). AdminPanelProvider registers a
+    // second, EditAction-specific override to fix this; this test guards against it
+    // regressing back to a red "Edit" button.
+    $action = EditAction::make();
+
+    expect($action->getColor())->toBe('info');
 });
 
 test('an explicit color set on an action still wins over the panel-wide default', function () {

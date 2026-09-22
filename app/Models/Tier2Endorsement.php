@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\LogsActivity;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Tier2Endorsement extends Model
 {
     use HasFactory;
+    use LogsActivity;
 
     protected $fillable = [
         'name',

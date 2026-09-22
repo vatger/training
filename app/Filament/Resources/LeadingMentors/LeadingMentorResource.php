@@ -41,7 +41,12 @@ class LeadingMentorResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Permissions';
+        return 'Users & Access';
+    }
+
+    public static function getNavigationSort(): ?int
+    {
+        return 3;
     }
 
     public static function getPages(): array

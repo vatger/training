@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\FamiliarisationSectors;
 
+use App\Filament\Clusters\FamiliarisationCluster;
 use App\Filament\Resources\FamiliarisationSectors\Pages\CreateFamiliarisationSector;
 use App\Filament\Resources\FamiliarisationSectors\Pages\EditFamiliarisationSector;
 use App\Filament\Resources\FamiliarisationSectors\Pages\ListFamiliarisationSectors;
@@ -23,6 +24,8 @@ class FamiliarisationSectorResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedMap;
 
     protected static ?string $recordTitleAttribute = 'name';
+
+    protected static ?string $cluster = FamiliarisationCluster::class;
 
     public static function form(Schema $schema): Schema
     {
@@ -48,14 +51,9 @@ class FamiliarisationSectorResource extends Resource
         ];
     }
 
-    public static function getNavigationGroup(): ?string
-    {
-        return 'Endorsements & Ratings';
-    }
-
     public static function getNavigationSort(): ?int
     {
-        return 5;
+        return 2;
     }
 
     public static function getNavigationLabel(): string

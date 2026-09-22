@@ -222,6 +222,7 @@ class UserForm
                                         Action::make('remove')
                                             ->label('Remove')
                                             ->icon('heroicon-o-x-mark')
+                                            ->color('danger')
                                             ->outlined()
                                             ->requiresConfirmation()
                                             ->action(fn ($record, $livewire) => $livewire->removeCourseEnrollment($record->id)),
@@ -285,6 +286,7 @@ class UserForm
                                         Action::make('remove')
                                             ->label('Remove')
                                             ->icon('heroicon-o-x-mark')
+                                            ->color('danger')
                                             ->outlined()
                                             ->requiresConfirmation()
                                             ->action(fn ($record, $livewire) => $livewire->removeWaitingListEntry($record->id)),
@@ -356,6 +358,7 @@ class UserForm
                                         Action::make('remove')
                                             ->label('Remove')
                                             ->icon('heroicon-o-x-mark')
+                                            ->color('danger')
                                             ->outlined()
                                             ->requiresConfirmation()
                                             ->action(fn ($record, $livewire) => $livewire->removeFamiliarisation($record->id)),
@@ -443,6 +446,7 @@ class UserForm
                                         Action::make('remove')
                                             ->label('Remove')
                                             ->icon('heroicon-o-x-mark')
+                                            ->color('danger')
                                             ->outlined()
                                             ->requiresConfirmation()
                                             ->action(fn ($record, $livewire) => $livewire->removeChiefOfTrainingCourse($record->id)),
@@ -465,6 +469,7 @@ class UserForm
                                         Action::make('remove')
                                             ->label('Remove')
                                             ->icon('heroicon-o-x-mark')
+                                            ->color('danger')
                                             ->outlined()
                                             ->requiresConfirmation()
                                             ->action(fn ($record, $livewire) => $livewire->removeLeadingMentorFir($record->id)),

@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\LogsActivity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 class ApiKey extends Model
 {
+    use LogsActivity;
+
     protected $fillable = [
         'name',
         'key',
@@ -15,6 +18,15 @@ class ApiKey extends Model
         'expires_at',
         'last_used_at',
         'last_used_ip',
+    ];
+
+    // Excludes the hashed `key` and usage-tracking fields (last_used_*), which
+    // change on every API request rather than through an admin action.
+    protected $loggedAttributes = [
+        'name',
+        'permissions',
+        'is_active',
+        'expires_at',
     ];
 
     protected $casts = [

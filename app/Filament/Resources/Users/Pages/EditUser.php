@@ -4,7 +4,9 @@ namespace App\Filament\Resources\Users\Pages;
 
 use App\Filament\Concerns\HasUnlockableFields;
 use App\Filament\Resources\Users\UserResource;
+use App\Models\ActivityLog;
 use App\Models\ChiefOfTraining;
+use App\Models\Course;
 use App\Models\Familiarisation;
 use App\Models\LeadingMentor;
 use App\Models\WaitingListEntry;
@@ -18,6 +20,12 @@ class EditUser extends EditRecord
     use HasUnlockableFields;
 
     protected static string $resource = UserResource::class;
+
+    /** @var array<int, string> */
+    protected array $originalRoleNames = [];
+
+    /** @var array<int, string> */
+    protected array $originalPermissionNames = [];
 
     protected function getHeaderActions(): array
     {
@@ -36,6 +44,47 @@ class EditUser extends EditRecord
         return $record;
     }
 
+    protected function beforeSave(): void
+    {
+        $this->originalRoleNames = $this->record->roles()->pluck('name')->sort()->values()->all();
+        $this->originalPermissionNames = $this->record->permissions()->pluck('name')->sort()->values()->all();
+    }
+
+    protected function afterSave(): void
+    {
+        $newRoleNames = $this->record->roles()->pluck('name')->sort()->values()->all();
+        $newPermissionNames = $this->record->permissions()->pluck('name')->sort()->values()->all();
+
+        if ($newRoleNames !== $this->originalRoleNames) {
+            ActivityLog::record(
+                'user.roles_updated',
+                "{$this->getAdminName()} updated roles for {$this->record->name}",
+                $this->record,
+                [
+                    'added' => array_values(array_diff($newRoleNames, $this->originalRoleNames)),
+                    'removed' => array_values(array_diff($this->originalRoleNames, $newRoleNames)),
+                ],
+            );
+        }
+
+        if ($newPermissionNames !== $this->originalPermissionNames) {
+            ActivityLog::record(
+                'user.permissions_updated',
+                "{$this->getAdminName()} updated direct permissions for {$this->record->name}",
+                $this->record,
+                [
+                    'added' => array_values(array_diff($newPermissionNames, $this->originalPermissionNames)),
+                    'removed' => array_values(array_diff($this->originalPermissionNames, $newPermissionNames)),
+                ],
+            );
+        }
+    }
+
+    protected function getAdminName(): string
+    {
+        return auth()->user()?->name ?? 'System';
+    }
+
     public function addCourseEnrollment(int $courseId): void
     {
         if ($this->record->activeCourses()->where('course_id', $courseId)->exists()) {
@@ -45,12 +94,30 @@ class EditUser extends EditRecord
         }
 
         $this->record->activeCourses()->attach($courseId);
+
+        $course = Course::find($courseId);
+        ActivityLog::record(
+            'user.course_enrollment_added',
+            "{$this->getAdminName()} enrolled {$this->record->name} in {$course?->name}",
+            $this->record,
+            ['course_id' => $courseId, 'course_name' => $course?->name],
+        );
+
         Notification::make()->title('Course enrollment added')->success()->send();
     }
 
     public function removeCourseEnrollment(int $courseId): void
     {
         $this->record->activeCourses()->detach($courseId);
+
+        $course = Course::find($courseId);
+        ActivityLog::record(
+            'user.course_enrollment_removed',
+            "{$this->getAdminName()} removed {$this->record->name} from {$course?->name}",
+            $this->record,
+            ['course_id' => $courseId, 'course_name' => $course?->name],
+        );
+
         Notification::make()->title('Course enrollment removed')->success()->send();
     }
 
@@ -62,6 +129,15 @@ class EditUser extends EditRecord
             'completed_at' => $data['completed_at'] ?? null,
             'remarks' => $data['remarks'] ?? null,
         ]);
+
+        $course = Course::find($courseId);
+        ActivityLog::record(
+            'user.course_enrollment_updated',
+            "{$this->getAdminName()} updated {$this->record->name}'s enrollment in {$course?->name}",
+            $this->record,
+            ['course_id' => $courseId, 'course_name' => $course?->name, 'changes' => $data],
+        );
+
         Notification::make()->title('Course enrollment updated')->success()->send();
     }
 

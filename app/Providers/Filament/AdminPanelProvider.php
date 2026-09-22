@@ -5,6 +5,7 @@ namespace App\Providers\Filament;
 use App\Filament\Pages\Dashboard;
 use App\Http\Middleware\HandleAppearance;
 use Filament\Actions\Action;
+use Filament\Actions\EditAction;
 use Filament\Enums\ThemeMode;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -35,6 +36,13 @@ class AdminPanelProvider extends PanelProvider
         // destructive actions red while everything else gets this neutral blue instead of the
         // brand-red 'primary' color.
         Action::configureUsing(fn (Action $action) => $action->defaultColor('info'));
+
+        // EditAction is the one built-in action that also sets its own ->defaultColor()
+        // (to 'primary') inside its setUp(), which — because subclass setUp() always runs
+        // after the Action::configureUsing() callback above in Filament's configuration
+        // order — overrides it back to the brand-red 'primary' color. Override it a second
+        // time, specifically for EditAction, so every edit button in the panel is blue too.
+        EditAction::configureUsing(fn (EditAction $action) => $action->defaultColor('info'));
     }
 
     public function panel(Panel $panel): Panel
@@ -198,6 +206,7 @@ class AdminPanelProvider extends PanelProvider
                     HTML),
             )
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
+            ->discoverClusters(in: app_path('Filament/Clusters'), for: 'App\Filament\Clusters')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
                 Dashboard::class,
