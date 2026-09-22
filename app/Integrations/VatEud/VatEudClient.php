@@ -313,15 +313,23 @@ class VatEudClient implements VatEudClientInterface
                 return false;
             }
 
-            $success = true;
-
+            // The roster removal itself has already taken effect at this
+            // point and cannot be undone. A failure to clean up a leftover
+            // endorsement below must not be reported as an overall failure
+            // - callers use this return value to decide whether to log the
+            // removal at all, and a false negative here would make a real
+            // removal invisible in the audit trail. Endorsement cleanup
+            // failures are logged individually instead.
             foreach ($this->getTier1Endorsements() as $endorsement) {
                 if ($endorsement->userCid !== $vatsimId) {
                     continue;
                 }
 
                 if (! $this->deleteTier1Endorsement($endorsement->id)) {
-                    $success = false;
+                    Log::error('Failed to clean up Tier 1 endorsement after roster removal', [
+                        'vatsim_id' => $vatsimId,
+                        'endorsement_id' => $endorsement->id,
+                    ]);
                 }
             }
 
@@ -331,11 +339,14 @@ class VatEudClient implements VatEudClientInterface
                 }
 
                 if (! $this->deleteTier2Endorsement($endorsement->id)) {
-                    $success = false;
+                    Log::error('Failed to clean up Tier 2 endorsement after roster removal', [
+                        'vatsim_id' => $vatsimId,
+                        'endorsement_id' => $endorsement->id,
+                    ]);
                 }
             }
 
-            return $success;
+            return true;
         } catch (\Throwable $e) {
             Log::error('Error removing roster and endorsements', [
                 'vatsim_id' => $vatsimId,

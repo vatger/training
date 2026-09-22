@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Gdpr\Actions\AnonymizeUser;
 use App\Domain\Gdpr\Events\UserDeleted;
 use App\Integrations\VatEud\FakeVatEudClient;
 use App\Integrations\VatEud\VatEudClientInterface;
@@ -500,6 +501,32 @@ describe('GdprController', function () {
         expect($log)->not->toBeNull();
         expect($log->properties['vatsim_id'])->toBe(7654321);
         expect($log->properties['user_name'])->toBe($user->name);
+    });
+
+    test('activity log survives even when anonymization fails after roster removal already happened', function () {
+        apiCreateKey(['gdpr.delete']);
+        $user = User::factory()->create(['vatsim_id' => 7654326]);
+
+        $this->app->bind(AnonymizeUser::class, fn () => new class extends AnonymizeUser
+        {
+            public function execute(User $user): void
+            {
+                throw new Exception('simulated anonymization failure');
+            }
+        });
+
+        $this->withHeaders(apiAuthHeaders())
+            ->deleteJson('/api/gdpr-removal/7654326')
+            ->assertStatus(500);
+
+        // The VatEUD roster removal already happened (irreversibly) before
+        // anonymization ran, so its audit trail must not be rolled back
+        // along with the failed anonymization.
+        $log = ActivityLog::where('action', 'gdpr.deletion')
+            ->where('properties->vatsim_id', 7654326)
+            ->first();
+
+        expect($log)->not->toBeNull();
     });
 
     test('anonymizes the user in place instead of deleting the row', function () {

@@ -21,6 +21,8 @@ class LogRosterRemovalWarningIssued
             'properties' => [
                 'vatsim_id' => $event->vatsimId,
                 'removal_date' => $event->entry->removal_date?->toIso8601String(),
+                'last_session' => $event->entry->last_session?->toIso8601String(),
+                'inactive_days' => $event->inactiveDays,
             ],
         ]);
     }

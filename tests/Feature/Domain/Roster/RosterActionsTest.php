@@ -97,6 +97,65 @@ test('CheckUserRosterStatus removes user when inactive 366 days and removal_date
     });
 });
 
+test('CheckUserRosterStatus does not flag a brand-new entry as inactive when the first activity fetch fails', function () {
+    Event::fake();
+
+    $vatsimId = 5566778;
+
+    $this->app->bind(VatgerClientInterface::class, fn () => new class extends FakeVatgerClient
+    {
+        public function getLastGermanSession(int $vatsimId): ?Carbon
+        {
+            return null; // simulates a transient failure of the stats API
+        }
+    });
+
+    app(CheckUserRosterStatus::class)->execute($vatsimId);
+
+    $entry = RosterEntry::where('user_id', $vatsimId)->first();
+
+    expect($entry)->not->toBeNull();
+    expect($entry->last_session)->toBeNull();
+    expect($entry->removal_date)->toBeNull();
+
+    Event::assertNotDispatched(RosterRemovalWarningIssued::class);
+    Event::assertNotDispatched(UserRemovedFromRoster::class);
+});
+
+test('CheckUserRosterStatus keeps the local entry for retry when VatEUD removal fails', function () {
+    Event::fake();
+
+    $vatsimId = 8899001;
+
+    RosterEntry::create([
+        'user_id' => $vatsimId,
+        'last_session' => now()->subDays(366),
+        'removal_date' => now()->subDay(),
+    ]);
+
+    $this->app->bind(VatgerClientInterface::class, fn () => new class extends FakeVatgerClient
+    {
+        public function getLastGermanSession(int $vatsimId): ?Carbon
+        {
+            return Carbon::now()->subDays(366);
+        }
+    });
+
+    $this->app->bind(VatEudClientInterface::class, fn () => new class extends FakeVatEudClient
+    {
+        public function removeRosterAndEndorsements(int $vatsimId): bool
+        {
+            return false;
+        }
+    });
+
+    app(CheckUserRosterStatus::class)->execute($vatsimId);
+
+    $this->assertDatabaseHas('roster_entries', ['user_id' => $vatsimId]);
+
+    Event::assertNotDispatched(UserRemovedFromRoster::class);
+});
+
 test('CheckUserRosterStatus clears removal_date when user becomes active again', function () {
     $vatsimId = 1122334;
 

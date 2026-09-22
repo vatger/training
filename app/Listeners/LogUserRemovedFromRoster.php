@@ -22,6 +22,8 @@ class LogUserRemovedFromRoster
                 'vatsim_id' => $event->vatsimId,
                 'reason' => 'inactivity',
                 'removed_by' => 'system',
+                'last_session' => $event->lastSession?->toIso8601String(),
+                'inactive_days' => $event->inactiveDays,
             ],
         ]);
     }
