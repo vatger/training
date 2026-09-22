@@ -45,11 +45,6 @@ class GdprController extends Controller
                 'is_visitor' => $isVisitor,
             ]);
 
-            // The VatEUD roster/endorsement removal (and visitor deletion) are
-            // irreversible external API calls with no rollback. They - and the
-            // audit log entry for them - must happen outside the DB transaction
-            // below: if anonymization fails afterward, the transaction rolls
-            // back, but the removal already happened and must stay logged.
             $this->vatEudService->removeRosterAndEndorsements($vatsimId);
 
             if ($isVisitor) {
@@ -61,9 +56,6 @@ class GdprController extends Controller
             DB::beginTransaction();
 
             try {
-                // Personal data is scrubbed in place rather than deleting the row,
-                // so training logs, waiting list entries, roles, etc. that reference
-                // this user are preserved and simply display "Deleted User".
                 $this->anonymizeUser->execute($user);
 
                 DB::commit();

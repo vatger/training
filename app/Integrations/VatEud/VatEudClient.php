@@ -313,13 +313,6 @@ class VatEudClient implements VatEudClientInterface
                 return false;
             }
 
-            // The roster removal itself has already taken effect at this
-            // point and cannot be undone. A failure to clean up a leftover
-            // endorsement below must not be reported as an overall failure
-            // - callers use this return value to decide whether to log the
-            // removal at all, and a false negative here would make a real
-            // removal invisible in the audit trail. Endorsement cleanup
-            // failures are logged individually instead.
             foreach ($this->getTier1Endorsements() as $endorsement) {
                 if ($endorsement->userCid !== $vatsimId) {
                     continue;

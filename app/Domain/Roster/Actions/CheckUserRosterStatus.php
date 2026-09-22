@@ -67,10 +67,6 @@ class CheckUserRosterStatus
             $entry->removal_date &&
             now()->gte($entry->removal_date)
         ) {
-            // Only drop the local record once the removal actually took effect
-            // at VatEUD - deleting it unconditionally would let a user who is
-            // still on the roster (because the removal call failed) start over
-            // from a fresh, un-flagged entry next run instead of retrying.
             if ($this->removeUser->execute($vatsimId, $entry->last_session, $inactiveDays)) {
                 $entry->delete();
             }
