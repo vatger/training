@@ -86,6 +86,11 @@ class User extends Authenticatable implements FilamentUser
         return 'vatsim_id';
     }
 
+    public function getAuthPassword()
+    {
+        return $this->password ?? '';
+    }
+
     public function getFullNameAttribute(): string
     {
         return "{$this->first_name} {$this->last_name}";
