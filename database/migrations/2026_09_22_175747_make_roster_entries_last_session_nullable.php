@@ -15,14 +15,15 @@ return new class extends Migration
         // known session yet" guard in CheckUserRosterStatus never caught it
         // — so a single failed activity fetch made a brand-new entry look
         // ~56 years inactive and could trigger a bogus warning/removal.
-        // Clear any rows still stuck on the sentinel value.
-        DB::table('roster_entries')
-            ->where('last_session', '1970-01-01 00:00:00')
-            ->update(['last_session' => null]);
-
+        // Clear any rows still stuck on the sentinel value. The column must
+        // be made nullable first, since it is still NOT NULL at this point.
         Schema::table('roster_entries', function (Blueprint $table) {
             $table->dateTime('last_session')->nullable()->change();
         });
+
+        DB::table('roster_entries')
+            ->where('last_session', '1970-01-01 00:00:00')
+            ->update(['last_session' => null]);
     }
 
     public function down(): void
