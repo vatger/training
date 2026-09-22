@@ -9,5 +9,6 @@ readonly class RosterRemovalWarningIssued
     public function __construct(
         public int $vatsimId,
         public RosterEntry $entry,
+        public ?int $inactiveDays = null,
     ) {}
 }

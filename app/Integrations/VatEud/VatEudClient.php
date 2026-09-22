@@ -313,15 +313,16 @@ class VatEudClient implements VatEudClientInterface
                 return false;
             }
 
-            $success = true;
-
             foreach ($this->getTier1Endorsements() as $endorsement) {
                 if ($endorsement->userCid !== $vatsimId) {
                     continue;
                 }
 
                 if (! $this->deleteTier1Endorsement($endorsement->id)) {
-                    $success = false;
+                    Log::error('Failed to clean up Tier 1 endorsement after roster removal', [
+                        'vatsim_id' => $vatsimId,
+                        'endorsement_id' => $endorsement->id,
+                    ]);
                 }
             }
 
@@ -331,11 +332,14 @@ class VatEudClient implements VatEudClientInterface
                 }
 
                 if (! $this->deleteTier2Endorsement($endorsement->id)) {
-                    $success = false;
+                    Log::error('Failed to clean up Tier 2 endorsement after roster removal', [
+                        'vatsim_id' => $vatsimId,
+                        'endorsement_id' => $endorsement->id,
+                    ]);
                 }
             }
 
-            return $success;
+            return true;
         } catch (\Throwable $e) {
             Log::error('Error removing roster and endorsements', [
                 'vatsim_id' => $vatsimId,

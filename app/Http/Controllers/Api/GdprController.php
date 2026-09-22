@@ -45,20 +45,17 @@ class GdprController extends Controller
                 'is_visitor' => $isVisitor,
             ]);
 
+            $this->vatEudService->removeRosterAndEndorsements($vatsimId);
+
+            if ($isVisitor) {
+                $this->deleteVisitorFromVatEUD($vatsimId);
+            }
+
+            event(new UserDeleted($user, $request->ip()));
+
             DB::beginTransaction();
 
             try {
-                $this->vatEudService->removeRosterAndEndorsements($vatsimId);
-
-                if ($isVisitor) {
-                    $this->deleteVisitorFromVatEUD($vatsimId);
-                }
-
-                event(new UserDeleted($user, $request->ip()));
-
-                // Personal data is scrubbed in place rather than deleting the row,
-                // so training logs, waiting list entries, roles, etc. that reference
-                // this user are preserved and simply display "Deleted User".
                 $this->anonymizeUser->execute($user);
 
                 DB::commit();

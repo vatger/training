@@ -57,7 +57,7 @@ class CheckUserRosterStatus
             $entry->removal_date = now()->addDays(self::GRACE_DAYS);
             $entry->save();
 
-            event(new RosterRemovalWarningIssued($vatsimId, $entry));
+            event(new RosterRemovalWarningIssued($vatsimId, $entry, $inactiveDays));
 
             return;
         }
@@ -67,8 +67,9 @@ class CheckUserRosterStatus
             $entry->removal_date &&
             now()->gte($entry->removal_date)
         ) {
-            $this->removeUser->execute($vatsimId);
-            $entry->delete();
+            if ($this->removeUser->execute($vatsimId, $entry->last_session, $inactiveDays)) {
+                $entry->delete();
+            }
         }
     }
 
