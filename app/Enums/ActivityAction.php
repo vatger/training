@@ -36,10 +36,15 @@ enum ActivityAction: string
     case REMARKS_UPDATED = 'remarks.updated';
 
     case FAMILIARISATION_ADDED = 'familiarisation.added';
+    case FAMILIARISATION_CREATED = 'familiarisation.created';
+    case FAMILIARISATION_UPDATED = 'familiarisation.updated';
+    case FAMILIARISATION_DELETED = 'familiarisation.deleted';
 
     case TRAININGLOG_ADDED = 'traininglog.added';
+    case TRAININGLOG_CREATED = 'traininglog.created';
     case TRAININGLOG_UPDATED = 'traininglog.updated';
     case TRAININGLOG_REMOVED = 'traininglog.removed';
+    case TRAININGLOG_DELETED = 'traininglog.deleted';
 
     case COURSE_CREATED = 'course.created';
     case COURSE_UPDATED = 'course.updated';
@@ -65,6 +70,49 @@ enum ActivityAction: string
 
     case GDPR_DELETION = 'gdpr.deletion';
     case API_USER_RETRIEVAL = 'api.user.retrieval';
+
+    case USER_ROLES_UPDATED = 'user.roles_updated';
+    case USER_PERMISSIONS_UPDATED = 'user.permissions_updated';
+    case USER_COURSE_ENROLLMENT_ADDED = 'user.course_enrollment_added';
+    case USER_COURSE_ENROLLMENT_REMOVED = 'user.course_enrollment_removed';
+    case USER_COURSE_ENROLLMENT_UPDATED = 'user.course_enrollment_updated';
+
+    case ROLE_PERMISSIONS_UPDATED = 'role.permissions_updated';
+
+    case API_KEY_CREATED = 'apikey.created';
+    case API_KEY_UPDATED = 'apikey.updated';
+    case API_KEY_DELETED = 'apikey.deleted';
+
+    case EXAMINER_CREATED = 'examiner.created';
+    case EXAMINER_UPDATED = 'examiner.updated';
+    case EXAMINER_DELETED = 'examiner.deleted';
+
+    case FAMILIARISATION_SECTOR_CREATED = 'familiarisationsector.created';
+    case FAMILIARISATION_SECTOR_UPDATED = 'familiarisationsector.updated';
+    case FAMILIARISATION_SECTOR_DELETED = 'familiarisationsector.deleted';
+
+    case LEADING_MENTOR_CREATED = 'leadingmentor.created';
+    case LEADING_MENTOR_DELETED = 'leadingmentor.deleted';
+
+    case ROLE_CREATED = 'role.created';
+    case ROLE_UPDATED = 'role.updated';
+    case ROLE_DELETED = 'role.deleted';
+
+    case TIER2_ENDORSEMENT_CREATED = 'tier2endorsement.created';
+    case TIER2_ENDORSEMENT_UPDATED = 'tier2endorsement.updated';
+    case TIER2_ENDORSEMENT_DELETED = 'tier2endorsement.deleted';
+
+    case ENDORSEMENT_ACTIVITY_UPDATED = 'endorsementactivity.updated';
+
+    case WAITING_LIST_ENTRY_UPDATED = 'waitinglistentry.updated';
+
+    case WAITING_LIST_RESTRICTION_CREATED = 'waitinglistrestriction.created';
+    case WAITING_LIST_RESTRICTION_UPDATED = 'waitinglistrestriction.updated';
+    case WAITING_LIST_RESTRICTION_DELETED = 'waitinglistrestriction.deleted';
+
+    case USER_CREATED = 'user.created';
+    case USER_UPDATED = 'user.updated';
+    case USER_DELETED = 'user.deleted';
 
     case CREATED = 'created';
     case UPDATED = 'updated';
@@ -105,10 +153,15 @@ enum ActivityAction: string
             self::REMARKS_UPDATED => 'Remarks Updated',
 
             self::FAMILIARISATION_ADDED => 'Familiarisation Added',
+            self::FAMILIARISATION_CREATED => 'Familiarisation Created',
+            self::FAMILIARISATION_UPDATED => 'Familiarisation Updated',
+            self::FAMILIARISATION_DELETED => 'Familiarisation Deleted',
 
             self::TRAININGLOG_ADDED => 'Training Log Added',
+            self::TRAININGLOG_CREATED => 'Training Log Created',
             self::TRAININGLOG_UPDATED => 'Training Log Updated',
             self::TRAININGLOG_REMOVED => 'Training Log Removed',
+            self::TRAININGLOG_DELETED => 'Training Log Deleted',
 
             self::COURSE_CREATED => 'Course Created',
             self::COURSE_UPDATED => 'Course Updated',
@@ -133,6 +186,50 @@ enum ActivityAction: string
             self::ROSTER_NOTIFIED => 'Notified Roster Removal',
 
             self::GDPR_DELETION => 'GDPR User Deletion',
+            self::API_USER_RETRIEVAL => 'API User Data Retrieval',
+
+            self::USER_ROLES_UPDATED => 'User Roles Updated',
+            self::USER_PERMISSIONS_UPDATED => 'User Permissions Updated',
+            self::USER_COURSE_ENROLLMENT_ADDED => 'Course Enrollment Added',
+            self::USER_COURSE_ENROLLMENT_REMOVED => 'Course Enrollment Removed',
+            self::USER_COURSE_ENROLLMENT_UPDATED => 'Course Enrollment Updated',
+
+            self::ROLE_PERMISSIONS_UPDATED => 'Role Permissions Updated',
+
+            self::API_KEY_CREATED => 'API Key Created',
+            self::API_KEY_UPDATED => 'API Key Updated',
+            self::API_KEY_DELETED => 'API Key Deleted',
+
+            self::EXAMINER_CREATED => 'Examiner Created',
+            self::EXAMINER_UPDATED => 'Examiner Updated',
+            self::EXAMINER_DELETED => 'Examiner Deleted',
+
+            self::FAMILIARISATION_SECTOR_CREATED => 'Familiarisation Sector Created',
+            self::FAMILIARISATION_SECTOR_UPDATED => 'Familiarisation Sector Updated',
+            self::FAMILIARISATION_SECTOR_DELETED => 'Familiarisation Sector Deleted',
+
+            self::LEADING_MENTOR_CREATED => 'Leading Mentor Added',
+            self::LEADING_MENTOR_DELETED => 'Leading Mentor Removed',
+
+            self::ROLE_CREATED => 'Role Created',
+            self::ROLE_UPDATED => 'Role Updated',
+            self::ROLE_DELETED => 'Role Deleted',
+
+            self::TIER2_ENDORSEMENT_CREATED => 'Tier 2 Endorsement Created',
+            self::TIER2_ENDORSEMENT_UPDATED => 'Tier 2 Endorsement Updated',
+            self::TIER2_ENDORSEMENT_DELETED => 'Tier 2 Endorsement Deleted',
+
+            self::ENDORSEMENT_ACTIVITY_UPDATED => 'Endorsement Activity Updated',
+
+            self::WAITING_LIST_ENTRY_UPDATED => 'Waiting List Entry Updated',
+
+            self::WAITING_LIST_RESTRICTION_CREATED => 'Waiting List Restriction Added',
+            self::WAITING_LIST_RESTRICTION_UPDATED => 'Waiting List Restriction Updated',
+            self::WAITING_LIST_RESTRICTION_DELETED => 'Waiting List Restriction Removed',
+
+            self::USER_CREATED => 'User Created',
+            self::USER_UPDATED => 'User Updated',
+            self::USER_DELETED => 'User Deleted',
 
             self::CREATED => 'Created',
             self::UPDATED => 'Updated',
@@ -153,11 +250,23 @@ enum ActivityAction: string
             self::TRAINEE_REACTIVATED,
             self::MENTOR_ADDED,
             self::FAMILIARISATION_ADDED,
+            self::FAMILIARISATION_CREATED,
+            self::TRAININGLOG_ADDED,
+            self::TRAININGLOG_CREATED,
             self::CORE_TEST_ASSIGNED,
             self::CPT_CREATED,
             self::CPT_PASSED,
             self::COURSE_CREATED,
             self::COT_CREATED,
+            self::API_KEY_CREATED,
+            self::EXAMINER_CREATED,
+            self::FAMILIARISATION_SECTOR_CREATED,
+            self::LEADING_MENTOR_CREATED,
+            self::ROLE_CREATED,
+            self::TIER2_ENDORSEMENT_CREATED,
+            self::WAITING_LIST_RESTRICTION_CREATED,
+            self::USER_CREATED,
+            self::USER_COURSE_ENROLLMENT_ADDED,
             self::CREATED => 'success',
 
             self::WAITING_LIST_LEFT,
@@ -172,6 +281,18 @@ enum ActivityAction: string
             self::GDPR_DELETION,
             self::COURSE_DELETED,
             self::COT_DELETED,
+            self::TRAININGLOG_REMOVED,
+            self::TRAININGLOG_DELETED,
+            self::FAMILIARISATION_DELETED,
+            self::API_KEY_DELETED,
+            self::EXAMINER_DELETED,
+            self::FAMILIARISATION_SECTOR_DELETED,
+            self::LEADING_MENTOR_DELETED,
+            self::ROLE_DELETED,
+            self::TIER2_ENDORSEMENT_DELETED,
+            self::WAITING_LIST_RESTRICTION_DELETED,
+            self::USER_DELETED,
+            self::USER_COURSE_ENROLLMENT_REMOVED,
             self::DELETED => 'danger',
 
             self::SOLO_EXTENDED,
@@ -182,6 +303,20 @@ enum ActivityAction: string
             self::COURSE_UPDATED,
             self::COT_UPDATED,
             self::ROSTER_NOTIFIED,
+            self::FAMILIARISATION_UPDATED,
+            self::API_KEY_UPDATED,
+            self::EXAMINER_UPDATED,
+            self::FAMILIARISATION_SECTOR_UPDATED,
+            self::ROLE_UPDATED,
+            self::ROLE_PERMISSIONS_UPDATED,
+            self::TIER2_ENDORSEMENT_UPDATED,
+            self::ENDORSEMENT_ACTIVITY_UPDATED,
+            self::WAITING_LIST_ENTRY_UPDATED,
+            self::WAITING_LIST_RESTRICTION_UPDATED,
+            self::USER_UPDATED,
+            self::USER_ROLES_UPDATED,
+            self::USER_PERMISSIONS_UPDATED,
+            self::USER_COURSE_ENROLLMENT_UPDATED,
             self::UPDATED => 'warning',
 
             self::CPT_EXAMINER_JOINED,
@@ -189,8 +324,7 @@ enum ActivityAction: string
             self::CPT_LOCAL_JOINED,
             self::CPT_LOCAL_LEFT,
             self::CPT_LOG_UPLOADED,
-            self::CPT_UPDATED,
-            self::TRAININGLOG_ADDED => 'info',
+            self::CPT_UPDATED => 'info',
 
             default => 'info',
         };
@@ -220,6 +354,14 @@ enum ActivityAction: string
             'course' => 'Course',
             'remarks' => 'Remarks',
             'familiarisation' => 'Familiarisation',
+            'cpt' => 'CPT',
+            'apikey' => 'API Key',
+            'examiner' => 'Examiner',
+            'role' => 'Role',
+            'tier2endorsement' => 'Tier 2 Endorsement',
+            'endorsementactivity' => 'Endorsement Activity',
+            'waitinglistrestriction' => 'Waiting List Restriction',
+            'user' => 'User',
             'created' => 'Created',
             'updated' => 'Updated',
             'deleted' => 'Deleted',

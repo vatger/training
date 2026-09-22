@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Familiarisations;
 
+use App\Filament\Clusters\FamiliarisationCluster;
 use App\Filament\Resources\Familiarisations\Pages\CreateFamiliarisation;
 use App\Filament\Resources\Familiarisations\Pages\EditFamiliarisation;
 use App\Filament\Resources\Familiarisations\Pages\ListFamiliarisations;
@@ -23,6 +24,8 @@ class FamiliarisationResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedGlobeEuropeAfrica;
 
     protected static ?string $recordTitleAttribute = 'id';
+
+    protected static ?string $cluster = FamiliarisationCluster::class;
 
     public static function form(Schema $schema): Schema
     {
@@ -48,14 +51,9 @@ class FamiliarisationResource extends Resource
         ];
     }
 
-    public static function getNavigationGroup(): ?string
-    {
-        return 'Endorsements & Ratings';
-    }
-
     public static function getNavigationSort(): ?int
     {
-        return 4;
+        return 1;
     }
 
     public static function getNavigationLabel(): string

@@ -3,6 +3,7 @@
 namespace App\Traits;
 
 use App\Models\ActivityLog;
+use Filament\Facades\Filament;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Request;
 
@@ -37,17 +38,26 @@ trait LogsActivity
             return;
         }
 
-        $old = $action === 'updated' ? $this->getOriginal() : [];
-        $new = $action !== 'deleted' ? $this->attributesToArray() : [];
-
-        if ($action === 'updated') {
-            $attributesToLog = property_exists($this, 'loggedAttributes') && is_array($this->loggedAttributes)
-                ? $this->loggedAttributes
-                : array_keys($this->getAttributes());
-
-            $old = array_intersect_key($old, array_flip($attributesToLog));
-            $new = array_intersect_key($new, array_flip($attributesToLog));
+        // Only log actions performed through the admin panel. Changes made
+        // elsewhere (background sync jobs, the main app, console commands)
+        // are outside the scope of the admin activity log and are either
+        // not relevant here or already logged via a dedicated domain event.
+        if (! Filament::isServing()) {
+            return;
         }
+
+        $attributesToLog = property_exists($this, 'loggedAttributes') && is_array($this->loggedAttributes)
+            ? $this->loggedAttributes
+            : array_keys($this->getAttributes());
+
+        // For deletions the record is already gone, so snapshot whatever
+        // attributes are still held in memory into `old` for the audit trail.
+        $old = in_array($action, ['updated', 'deleted'], true)
+            ? array_intersect_key($action === 'updated' ? $this->getOriginal() : $this->attributesToArray(), array_flip($attributesToLog))
+            : [];
+        $new = $action !== 'deleted'
+            ? array_intersect_key($this->attributesToArray(), array_flip($attributesToLog))
+            : [];
 
         $causer = Auth::user();
         $changes = [];
@@ -83,6 +93,7 @@ trait LogsActivity
             'description' => $description,
             'ip_address' => Request::ip(),
             'user_agent' => Request::userAgent(),
+            'is_admin_action' => true,
         ]);
     }
 

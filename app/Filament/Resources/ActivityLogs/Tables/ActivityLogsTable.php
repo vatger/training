@@ -102,7 +102,17 @@ class ActivityLogsTable
                         'App\Models\Cpt' => 'CPT',
                         'App\Models\User' => 'User',
                         'App\Models\WaitingListEntry' => 'Waiting List',
-                        'App\Models\EndorsementActivity' => 'Endorsement',
+                        'App\Models\WaitingListRestriction' => 'Waiting List Restriction',
+                        'App\Models\EndorsementActivity' => 'Endorsement Activity',
+                        'App\Models\Tier2Endorsement' => 'Tier 2 Endorsement',
+                        'App\Models\Examiner' => 'Examiner',
+                        'App\Models\Familiarisation' => 'Familiarisation',
+                        'App\Models\FamiliarisationSector' => 'Familiarisation Sector',
+                        'App\Models\LeadingMentor' => 'Leading Mentor',
+                        'App\Models\Role' => 'Role',
+                        'App\Models\ApiKey' => 'API Key',
+                        'App\Models\TrainingLog' => 'Training Log',
+                        'App\Models\ChiefOfTraining' => 'Chief of Training',
                     ])
                     ->multiple(),
 

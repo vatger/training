@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\LogsActivity;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -13,6 +14,7 @@ use Illuminate\Support\Collection;
 class User extends Authenticatable implements FilamentUser
 {
     use HasFactory, Notifiable;
+    use LogsActivity;
 
     protected $fillable = [
         'vatsim_id',
@@ -31,6 +33,27 @@ class User extends Authenticatable implements FilamentUser
         'rating_upgrade_pending',
         'solo_days_used',
         'gdpr_deleted_at',
+    ];
+
+    // Excludes the password hash/remember token (never worth logging), and
+    // gdpr_deleted_at (already covered by the dedicated GDPR deletion log
+    // entry, App\Listeners\LogUserDeleted) — everything else here is fair
+    // game for an audit trail, including the is_superuser/is_admin/is_staff flags.
+    protected $loggedAttributes = [
+        'vatsim_id',
+        'first_name',
+        'last_name',
+        'email',
+        'subdivision',
+        'rating',
+        'last_rating_change',
+        'is_staff',
+        'is_superuser',
+        'is_admin',
+        'last_known_rating',
+        'rating_upgraded_at',
+        'rating_upgrade_pending',
+        'solo_days_used',
     ];
 
     protected $hidden = [

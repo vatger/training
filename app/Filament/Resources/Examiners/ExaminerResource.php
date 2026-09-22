@@ -50,12 +50,15 @@ class ExaminerResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Endorsements & Ratings';
+        // Grouped with Training, right next to CPTs — examiners are the
+        // people who run them, so keeping the two adjacent in the sidebar
+        // makes that relationship obvious at a glance.
+        return 'Training';
     }
 
     public static function getNavigationSort(): ?int
     {
-        return 3;
+        return 5;
     }
 
     public static function getNavigationLabel(): string

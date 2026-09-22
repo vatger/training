@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Tier2Endorsements;
 
+use App\Filament\Clusters\EndorsementsCluster;
 use App\Filament\Resources\Tier2Endorsements\Pages\CreateTier2Endorsement;
 use App\Filament\Resources\Tier2Endorsements\Pages\EditTier2Endorsement;
 use App\Filament\Resources\Tier2Endorsements\Pages\ListTier2Endorsements;
@@ -23,6 +24,8 @@ class Tier2EndorsementResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCheckBadge;
 
     protected static ?string $recordTitleAttribute = 'name';
+
+    protected static ?string $cluster = EndorsementsCluster::class;
 
     public static function form(Schema $schema): Schema
     {
@@ -46,11 +49,6 @@ class Tier2EndorsementResource extends Resource
             'create' => CreateTier2Endorsement::route('/create'),
             'edit' => EditTier2Endorsement::route('/{record}/edit'),
         ];
-    }
-
-    public static function getNavigationGroup(): ?string
-    {
-        return 'Endorsements & Ratings';
     }
 
     public static function getNavigationSort(): ?int
