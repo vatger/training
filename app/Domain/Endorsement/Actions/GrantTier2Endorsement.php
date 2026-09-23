@@ -44,7 +44,7 @@ class GrantTier2Endorsement
         $success = $this->vatEud->createTier2Endorsement(
             $trainee->vatsim_id,
             $tier2Endorsement->position,
-            config('services.vateud.atd_lead_cid', 1441619),
+            config('services.vateud.atd_lead_cid', 1439600),
         );
 
         if (! $success) {

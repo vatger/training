@@ -1269,7 +1269,7 @@ test('superuser can remove a solo endorsement', function () {
                 userCid: $this->vatsimId,
                 position: $this->position,
                 facility: 9,
-                mentor: 1441619,
+                mentor: 1439600,
                 positionDays: 7,
                 expireAt: Carbon::now()->addDays(10),
                 createdAt: Carbon::now()->subDays(7),
@@ -1355,7 +1355,7 @@ test('authenticated vatsim user can request a tier2 endorsement', function () {
 
 test('tier2 request fails when user already has the endorsement', function () {
     $tier2 = Tier2Endorsement::create(['name' => 'Test Tier2', 'position' => 'EDXX_AFIS', 'moodle_course_id' => 0]);
-    $user = User::factory()->create(['vatsim_id' => 1441619]);
+    $user = User::factory()->create(['vatsim_id' => 1439600]);
 
     $this->actingAs($user)
         ->post(route('endorsements.tier2.request', $tier2->id))

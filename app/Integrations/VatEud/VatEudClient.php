@@ -64,7 +64,7 @@ class VatEudClient implements VatEudClientInterface
                 ->post("{$this->baseUrl}/facility/endorsements/tier-1", [
                     'user_cid' => $userCid,
                     'position' => $position,
-                    'instructor_cid' => config('services.vateud.atd_lead_cid', 1441619),
+                    'instructor_cid' => config('services.vateud.atd_lead_cid', 1439600),
                 ]);
 
             if (! $response->successful()) {
@@ -152,7 +152,7 @@ class VatEudClient implements VatEudClientInterface
                 ->post("{$this->baseUrl}/facility/endorsements/tier-2", [
                     'user_cid' => $userCid,
                     'position' => $position,
-                    'instructor_cid' => config('services.vateud.atd_lead_cid', 1441619),
+                    'instructor_cid' => config('services.vateud.atd_lead_cid', 1439600),
                 ]);
 
             if (! $response->successful()) {
@@ -241,7 +241,7 @@ class VatEudClient implements VatEudClientInterface
                     'user_cid' => $userCid,
                     'position' => $position,
                     'expire_at' => $expireAt,
-                    'instructor_cid' => config('services.vateud.atd_lead_cid', 1441619),
+                    'instructor_cid' => config('services.vateud.atd_lead_cid', 1439600),
                 ]);
 
             if ($response->successful()) {
@@ -389,7 +389,7 @@ class VatEudClient implements VatEudClientInterface
                 ->post("{$this->baseUrl}/facility/training/exams/assign", [
                     'user_cid' => $vatsimId,
                     'exam_id' => $examId,
-                    'instructor_cid' => config('services.vateud.atd_lead_cid', 1441619),
+                    'instructor_cid' => config('services.vateud.atd_lead_cid', 1439600),
                 ]);
 
             if ($response->successful()) {

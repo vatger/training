@@ -36,7 +36,7 @@ class FakeVatEudClient implements VatEudClientInterface
         return [
             Tier2EndorsementData::fromApiResponse([
                 'id' => 25,
-                'user_cid' => 1441619,
+                'user_cid' => 1439600,
                 'position' => 'EDXX_AFIS',
                 'facility' => 9,
                 'created_at' => '2024-02-29T22:39:33.000000Z',
@@ -102,6 +102,6 @@ class FakeVatEudClient implements VatEudClientInterface
 
     public function getRoster(): array
     {
-        return [1601613, 1441619, 10000010];
+        return [1601613, 1439600, 10000010];
     }
 }

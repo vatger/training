@@ -75,7 +75,7 @@ class GradeCpt
     {
         $upgradeResult = $this->vatEud->requestUpgrade(
             traineeCid: $cpt->trainee->vatsim_id,
-            instructorCid: config('services.vateud.atd_lead_cid', 1441619),
+            instructorCid: config('services.vateud.atd_lead_cid', 1439600),
             newRating: $cpt->trainee->rating + 1,
         );
 

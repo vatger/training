@@ -148,6 +148,10 @@ class AdminPanelProvider extends PanelProvider
                     ->label('Back to Application')
                     ->icon('heroicon-o-arrow-left')
                     ->url(fn () => route('dashboard'))
+                    // Menu items are converted to Actions under the hood, so without an
+                    // explicit color they'd inherit the panel-wide blue ->defaultColor('info')
+                    // set above, which looks out of place in the user menu's text list.
+                    ->color('gray')
                     ->sort(-1),
                 'logout' => fn (Action $action) => $action->hidden(),
             ])
