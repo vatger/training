@@ -63,6 +63,7 @@ class User extends Authenticatable implements FilamentUser
 
     protected $casts = [
         'last_rating_change' => 'datetime',
+        'rating_upgraded_at' => 'datetime',
         'is_staff' => 'boolean',
         'is_superuser' => 'boolean',
         'is_admin' => 'boolean',
