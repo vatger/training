@@ -60,7 +60,7 @@ class VatsimConnectService
 
     public function getAccessToken(string $code): array
     {
-        $response = Http::asForm()->post($this->tokenUrl, [
+        $response = Http::asForm()->timeout(10)->post($this->tokenUrl, [
             'grant_type' => 'authorization_code',
             'client_id' => $this->clientId,
             'client_secret' => $this->clientSecret,
@@ -82,7 +82,7 @@ class VatsimConnectService
         $response = Http::withHeaders([
             'Authorization' => 'Bearer '.$accessToken,
             'Accept' => 'application/json',
-        ])->get($this->apiBaseUrl.$path);
+        ])->timeout(10)->get($this->apiBaseUrl.$path);
 
         if (! $response->successful()) {
             throw new \Exception('Failed to fetch user profile: '.$response->body());

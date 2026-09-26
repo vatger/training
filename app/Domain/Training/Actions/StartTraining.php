@@ -85,6 +85,7 @@ class StartTraining
         foreach ($courseIds as $courseId) {
             try {
                 \Http::withHeaders(['Authorization' => "Token {$apiKey}"])
+                    ->timeout(10)
                     ->get("{$apiBaseUrl}/moodle/course/{$courseId}/user/{$user->vatsim_id}/enrol");
             } catch (\Exception $e) {
                 Log::warning('Failed to enroll user in Moodle course', [
@@ -107,20 +108,30 @@ class StartTraining
             return;
         }
 
-        $response = \Http::withHeaders(['Authorization' => "Token {$apiKey}"])
-            ->post("{$apiBaseUrl}/user/{$entry->user->vatsim_id}/send_notification", [
-                'title' => 'Start of Training',
-                'message' => "You have been enrolled in the {$entry->course->name} course. Check the training centre for moodle courses to start your training.",
-                'source_name' => 'vatger ATD',
-                'link_text' => 'Training Centre',
-                'link_url' => 'https://training.vatsim-germany.org',
-                'via' => 'board.ping',
-            ]);
+        try {
+            $response = \Http::withHeaders(['Authorization' => "Token {$apiKey}"])
+                ->timeout(10)
+                ->post("{$apiBaseUrl}/user/{$entry->user->vatsim_id}/send_notification", [
+                    'title' => 'Start of Training',
+                    'message' => "You have been enrolled in the {$entry->course->name} course. Check the training centre for moodle courses to start your training.",
+                    'source_name' => 'vatger ATD',
+                    'link_text' => 'Training Centre',
+                    'link_url' => 'https://training.vatsim-germany.org',
+                    'via' => 'board.ping',
+                ]);
 
-        if (! $response->successful()) {
+            if (! $response->successful()) {
+                Log::warning('Failed to send training start notification', [
+                    'trainee_id' => $entry->user_id,
+                    'response' => $response->body(),
+                ]);
+            }
+        } catch (\Exception $e) {
+            // Training itself already succeeded (this runs after the DB transaction commits) — a
+            // notification failure must never bubble up and cause the action to report failure.
             Log::warning('Failed to send training start notification', [
                 'trainee_id' => $entry->user_id,
-                'response' => $response->body(),
+                'error' => $e->getMessage(),
             ]);
         }
     }

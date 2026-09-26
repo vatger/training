@@ -298,13 +298,25 @@ class UserSearchController extends Controller
             ->whereNotNull('moodle_course_ids')
             ->get();
 
+        $moodleLookupDeadline = microtime(true) + 8.0;
+        $moodleLookupTruncated = false;
+
         foreach ($coursesWithMoodle as $course) {
+            if ($moodleLookupTruncated) {
+                break;
+            }
+
             $moodleIds = is_array($course->moodle_course_ids)
                 ? $course->moodle_course_ids
                 : json_decode($course->moodle_course_ids, true);
 
             if (is_array($moodleIds)) {
                 foreach ($moodleIds as $moodleId) {
+                    if (microtime(true) >= $moodleLookupDeadline) {
+                        $moodleLookupTruncated = true;
+                        break;
+                    }
+
                     try {
                         $courseName = $moodleClient->getCourseName($moodleId);
                         $isPassed = $moodleClient->getCourseCompletion($user->vatsim_id, $moodleId);
@@ -323,6 +335,15 @@ class UserSearchController extends Controller
                     }
                 }
             }
+        }
+
+        if ($moodleLookupTruncated) {
+            \Log::warning('Moodle course enrichment truncated on user profile: upstream API too slow', [
+                'user_id' => $user->id,
+                'vatsim_id' => $user->vatsim_id,
+                'loaded_count' => count($moodleCourses),
+                'total_course_ids_considered' => $coursesWithMoodle->count(),
+            ]);
         }
 
         $userData = [

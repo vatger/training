@@ -2,6 +2,7 @@
 
 namespace App\Integrations\Moodle;
 
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -41,6 +42,13 @@ class MoodleClient implements MoodleClientInterface
 
     public function getCourseCompletion(int $vatsimId, int $courseId): bool
     {
+        $cacheKey = "moodle:completion:{$vatsimId}:{$courseId}";
+        $cached = Cache::get($cacheKey);
+
+        if ($cached !== null) {
+            return $cached;
+        }
+
         try {
             $response = Http::withHeaders(['Authorization' => "Token {$this->apiKey}"])
                 ->timeout(5)
@@ -48,7 +56,10 @@ class MoodleClient implements MoodleClientInterface
                 ->get("{$this->baseUrl}/moodle/course/{$courseId}/user/{$vatsimId}/completion");
 
             if ($response->successful()) {
-                return $response->json()['completed'] ?? false;
+                $completed = $response->json()['completed'] ?? false;
+                Cache::put($cacheKey, $completed, config('moodle.cache_ttl', 600));
+
+                return $completed;
             }
 
             Log::warning('Moodle completion check failed', [
@@ -59,20 +70,41 @@ class MoodleClient implements MoodleClientInterface
 
             return false;
         } catch (\Exception $e) {
+            Log::error('Error checking Moodle course completion', [
+                'vatsim_id' => $vatsimId,
+                'course_id' => $courseId,
+                'error' => $e->getMessage(),
+            ]);
+
             return false;
         }
     }
 
     public function getCourseName(int $courseId): ?string
     {
+        $cacheKey = "moodle:course_name:{$courseId}";
+        $cached = Cache::get($cacheKey);
+
+        if ($cached !== null) {
+            return $cached;
+        }
+
         try {
             $response = Http::withHeaders(['Authorization' => "Token {$this->apiKey}"])
                 ->timeout(5)
                 ->get("{$this->baseUrl}/moodle/course/{$courseId}");
 
             if ($response->successful()) {
-                return $response->json()['displayname'] ?? null;
+                $name = $response->json()['displayname'] ?? null;
+
+                if ($name !== null) {
+                    Cache::put($cacheKey, $name, config('moodle.cache_ttl', 600));
+                }
+
+                return $name;
             }
+
+            Log::warning('Moodle course name lookup failed', ['course_id' => $courseId, 'status' => $response->status()]);
 
             return null;
         } catch (\Exception $e) {

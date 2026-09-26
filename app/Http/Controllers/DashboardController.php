@@ -126,7 +126,14 @@ class DashboardController extends Controller
         $moodleCourses = [];
         $moodleClient = app(MoodleClient::class);
 
+        $moodleLookupDeadline = microtime(true) + 8.0;
+        $moodleLookupTruncated = false;
+
         foreach ($activeCourses as $course) {
+            if ($moodleLookupTruncated) {
+                break;
+            }
+
             $fullCourse = Course::find($course['id']);
             if ($fullCourse && $fullCourse->moodle_course_ids) {
                 $moodleIds = is_array($fullCourse->moodle_course_ids)
@@ -135,6 +142,11 @@ class DashboardController extends Controller
 
                 if (is_array($moodleIds)) {
                     foreach ($moodleIds as $moodleId) {
+                        if (microtime(true) >= $moodleLookupDeadline) {
+                            $moodleLookupTruncated = true;
+                            break;
+                        }
+
                         try {
                             $courseName = $moodleClient->getCourseName($moodleId);
                             $isPassed = $moodleClient->getCourseCompletion($user->vatsim_id, $moodleId);
@@ -154,6 +166,14 @@ class DashboardController extends Controller
                     }
                 }
             }
+        }
+
+        if ($moodleLookupTruncated) {
+            \Log::warning('Moodle course enrichment truncated on dashboard: upstream API too slow', [
+                'user_id' => $user->id,
+                'vatsim_id' => $user->vatsim_id,
+                'loaded_count' => count($moodleCourses),
+            ]);
         }
 
         $familiarisations = $user->familiarisations()
