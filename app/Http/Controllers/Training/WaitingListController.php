@@ -137,23 +137,32 @@ class WaitingListController extends Controller
     public function startTraining(Request $request, WaitingListEntry $entry)
     {
         if (! Gate::allows('mentor')) {
-            return response()->json(['error' => 'Access denied'], 403);
+            return back()->withErrors(['error' => 'Access denied. Mentor privileges required.']);
         }
 
         $user = $request->user();
 
         if (! $this->userCanMentorEntry($user, $entry)) {
-            return response()->json(['error' => 'You cannot mentor this course'], 403);
+            return back()->withErrors(['error' => 'You cannot mentor this course. You are not listed as a mentor for it and are not a Leading Mentor for its FIR.']);
         }
 
         try {
             [$success, $message] = $this->startTraining->execute($entry, $user);
 
-            return back()->with('flash', ['success' => $success, 'message' => $message]);
-        } catch (\Exception $e) {
-            Log::error('Error starting training', ['entry_id' => $entry->id, 'mentor_id' => $user->id, 'error' => $e->getMessage()]);
+            if (! $success) {
+                return back()->withErrors(['error' => $message]);
+            }
 
-            return response()->json(['error' => 'An error occurred while starting training.'], 500);
+            return back()->with('success', $message);
+        } catch (\Exception $e) {
+            Log::error('Unexpected error starting training', [
+                'entry_id' => $entry->id,
+                'mentor_id' => $user->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return back()->withErrors(['error' => 'An unexpected error occurred while starting training. Please try again or contact an administrator.']);
         }
     }
 

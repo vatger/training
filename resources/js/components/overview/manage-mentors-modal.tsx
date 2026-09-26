@@ -1,6 +1,7 @@
 import { router } from "@inertiajs/react"
 import { Loader2, UserMinus, UserPlus, X } from "lucide-react"
 import { useEffect, useState } from "react"
+import { toast } from "sonner"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -111,10 +112,20 @@ export function ManageMentorsModal({
 			},
 			{
 				onSuccess: () => {
+					toast.success(`${user.name} was added as a mentor`)
 					fetchMentors()
 					setSearchQuery("")
 					setSearchResults([])
 					setShowAddSection(false)
+				},
+				onError: (errors) => {
+					const errorMessage =
+						Object.values(errors).flat()[0] || "Failed to add mentor"
+					toast.error(
+						typeof errorMessage === "string"
+							? errorMessage
+							: "Failed to add mentor",
+					)
 				},
 				onFinish: () => {
 					setIsAdding(false)
@@ -135,7 +146,17 @@ export function ManageMentorsModal({
 			},
 			{
 				onSuccess: () => {
+					toast.success("Mentor removed")
 					fetchMentors()
+				},
+				onError: (errors) => {
+					const errorMessage =
+						Object.values(errors).flat()[0] || "Failed to remove mentor"
+					toast.error(
+						typeof errorMessage === "string"
+							? errorMessage
+							: "Failed to remove mentor",
+					)
 				},
 				onFinish: () => {
 					setIsRemoving(null)

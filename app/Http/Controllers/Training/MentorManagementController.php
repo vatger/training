@@ -13,6 +13,7 @@ use App\Models\Familiarisation;
 use App\Models\User;
 use App\Models\WaitingListEntry;
 use App\Services\CourseValidationService;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
@@ -115,7 +116,11 @@ class MentorManagementController extends Controller
             ->first();
 
         if ($existing) {
-            [, $message] = $this->leaveWaitingList->execute($course, $user);
+            [$left, $message] = $this->leaveWaitingList->execute($course, $user);
+
+            if (! $left) {
+                return back()->withErrors(['join' => $message]);
+            }
 
             return back()->with('success', $message);
         }
@@ -161,10 +166,29 @@ class MentorManagementController extends Controller
             $this->addMentorToCourse->execute($course, $mentorToAdd, $user);
 
             return back()->with('success', "Successfully added {$mentorToAdd->name} as a mentor");
-        } catch (\Exception $e) {
-            Log::error('Error adding mentor to course', ['admin_id' => $user->id, 'new_mentor_id' => $validated['user_id'], 'course_id' => $course->id, 'error' => $e->getMessage()]);
+        } catch (QueryException $e) {
+            Log::error('Error adding mentor to course: database constraint violation', [
+                'admin_id' => $user->id,
+                'new_mentor_id' => $validated['user_id'],
+                'course_id' => $course->id,
+                'error' => $e->getMessage(),
+            ]);
 
-            return back()->withErrors(['error' => 'An error occurred while adding the mentor.']);
+            if (str_contains($e->getMessage(), 'course_mentor_unique')) {
+                return back()->withErrors(['error' => 'This user was just added as a mentor for this course by someone else. Please refresh and try again.']);
+            }
+
+            return back()->withErrors(['error' => 'A database error occurred while adding the mentor. Please try again or contact an administrator.']);
+        } catch (\Exception $e) {
+            Log::error('Unexpected error adding mentor to course', [
+                'admin_id' => $user->id,
+                'new_mentor_id' => $validated['user_id'],
+                'course_id' => $course->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return back()->withErrors(['error' => 'An unexpected error occurred while adding the mentor. Please try again or contact an administrator.']);
         }
     }
 
@@ -251,9 +275,15 @@ class MentorManagementController extends Controller
 
             return back()->with('success', "Successfully removed {$mentorToRemove->name} as a mentor");
         } catch (\Exception $e) {
-            Log::error('Error removing mentor from course', ['admin_id' => $user->id, 'mentor_id' => $validated['mentor_id'], 'course_id' => $course->id, 'error' => $e->getMessage()]);
+            Log::error('Unexpected error removing mentor from course', [
+                'admin_id' => $user->id,
+                'mentor_id' => $validated['mentor_id'],
+                'course_id' => $course->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
 
-            return back()->withErrors(['error' => 'An error occurred while removing the mentor.']);
+            return back()->withErrors(['error' => 'An unexpected error occurred while removing the mentor. Please try again or contact an administrator.']);
         }
     }
 }

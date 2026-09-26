@@ -26,6 +26,7 @@ import {
 	Users,
 } from "lucide-react"
 import { useEffect, useState } from "react"
+import { toast } from "sonner"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -386,7 +387,13 @@ export function TraineeDataTable({
 				preserveScroll: true,
 				preserveState: true,
 				onError: (errors) => {
-					console.error("Failed to update trainee order:", errors)
+					const errorMessage =
+						Object.values(errors).flat()[0] || "Failed to update trainee order"
+					toast.error(
+						typeof errorMessage === "string"
+							? errorMessage
+							: "Failed to update trainee order",
+					)
 					setData(trainees)
 				},
 			},

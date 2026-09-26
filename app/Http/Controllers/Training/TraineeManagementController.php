@@ -56,7 +56,7 @@ class TraineeManagementController extends Controller
 
             return redirect()->route('overview.index', ['last_course_id' => $course->id]);
         } catch (\Exception $e) {
-            Log::error('Error claiming trainee', ['mentor_id' => $user->id, 'trainee_id' => $trainee->id, 'course_id' => $course->id, 'error' => $e->getMessage()]);
+            Log::error('Error claiming trainee', ['mentor_id' => $user->id, 'trainee_id' => $trainee->id, 'course_id' => $course->id, 'error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
 
             return back()->withErrors(['error' => 'An error occurred while claiming the trainee.']);
         }
@@ -91,7 +91,7 @@ class TraineeManagementController extends Controller
 
             return redirect()->route('overview.index', ['last_course_id' => $course->id]);
         } catch (\Exception $e) {
-            Log::error('Error unclaiming trainee', ['mentor_id' => $user->id, 'trainee_id' => $trainee->id, 'course_id' => $course->id, 'error' => $e->getMessage()]);
+            Log::error('Error unclaiming trainee', ['mentor_id' => $user->id, 'trainee_id' => $trainee->id, 'course_id' => $course->id, 'error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
 
             return back()->withErrors(['error' => 'An error occurred while unclaiming the trainee.']);
         }
@@ -132,7 +132,7 @@ class TraineeManagementController extends Controller
 
             return redirect()->route('overview.index', ['last_course_id' => $course->id]);
         } catch (\Exception $e) {
-            Log::error('Error assigning trainee', ['mentor_id' => $user->id, 'trainee_id' => $trainee->id, 'course_id' => $course->id, 'new_mentor_id' => $validated['mentor_id'], 'error' => $e->getMessage()]);
+            Log::error('Error assigning trainee', ['mentor_id' => $user->id, 'trainee_id' => $trainee->id, 'course_id' => $course->id, 'new_mentor_id' => $validated['mentor_id'], 'error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
 
             return back()->withErrors(['error' => 'An error occurred while assigning the trainee.']);
         }
@@ -163,7 +163,7 @@ class TraineeManagementController extends Controller
 
             return redirect()->route('overview.index', ['last_course_id' => $course->id]);
         } catch (\Exception $e) {
-            Log::error('Error removing trainee from course', ['mentor_id' => $user->id, 'trainee_id' => $trainee->id, 'course_id' => $course->id, 'error' => $e->getMessage()]);
+            Log::error('Error removing trainee from course', ['mentor_id' => $user->id, 'trainee_id' => $trainee->id, 'course_id' => $course->id, 'error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
 
             return back()->withErrors(['error' => 'An error occurred while removing the trainee.']);
         }
@@ -198,7 +198,7 @@ class TraineeManagementController extends Controller
 
             return redirect()->route('overview.index', ['last_course_id' => $course->id]);
         } catch (\Exception $e) {
-            Log::error('Error reactivating trainee', ['mentor_id' => $user->id, 'trainee_id' => $trainee->id, 'course_id' => $course->id, 'error' => $e->getMessage()]);
+            Log::error('Error reactivating trainee', ['mentor_id' => $user->id, 'trainee_id' => $trainee->id, 'course_id' => $course->id, 'error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
 
             return back()->withErrors(['error' => 'An error occurred while reactivating the trainee.']);
         }
@@ -237,7 +237,7 @@ class TraineeManagementController extends Controller
 
             return redirect()->route('overview.index', ['last_course_id' => $course->id]);
         } catch (\Exception $e) {
-            Log::error('Error adding trainee to course', ['mentor_id' => $user->id, 'trainee_id' => $trainee->id, 'course_id' => $course->id, 'error' => $e->getMessage()]);
+            Log::error('Error adding trainee to course', ['mentor_id' => $user->id, 'trainee_id' => $trainee->id, 'course_id' => $course->id, 'error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
 
             return back()->withErrors(['error' => 'An error occurred while adding the trainee.']);
         }

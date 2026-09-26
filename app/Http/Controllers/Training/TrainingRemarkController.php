@@ -41,7 +41,7 @@ class TrainingRemarkController extends Controller
 
             return redirect()->route('overview.index', ['last_course_id' => $course->id]);
         } catch (\Exception $e) {
-            Log::error('Error updating trainee remark', ['mentor_id' => $user->id, 'trainee_id' => $validated['trainee_id'], 'course_id' => $validated['course_id'], 'error' => $e->getMessage()]);
+            Log::error('Error updating trainee remark', ['mentor_id' => $user->id, 'trainee_id' => $validated['trainee_id'], 'course_id' => $validated['course_id'], 'error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
 
             return back()->withErrors(['error' => 'An error occurred while updating the remark.']);
         }
