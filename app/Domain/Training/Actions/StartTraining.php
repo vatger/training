@@ -15,7 +15,7 @@ class StartTraining
     {
         $minActivity = config('services.training.display_activity', 8);
 
-        if ($entry->course->type === 'RTG' && $entry->activity < $minActivity) {
+        if ($entry->course->type === 'RTG' && $entry->course->position !== 'CTR' && $entry->activity < $minActivity) {
             return [false, 'Trainee does not have sufficient activity to start training.'];
         }
 

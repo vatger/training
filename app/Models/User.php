@@ -252,6 +252,22 @@ class User extends Authenticatable implements FilamentUser
             ->withTimestamps();
     }
 
+    public function courses()
+    {
+        return $this->belongsToMany(Course::class, 'course_trainees')
+            ->withPivot([
+                'claimed_by_mentor_id',
+                'claimed_at',
+                'completed_at',
+                'status',
+                'remarks',
+                'remark_author_id',
+                'remark_updated_at',
+                'custom_order',
+            ])
+            ->withTimestamps();
+    }
+
     public function mentorCourses()
     {
         return $this->belongsToMany(Course::class, 'course_mentors');

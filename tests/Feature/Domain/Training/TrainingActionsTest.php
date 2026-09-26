@@ -545,7 +545,7 @@ test('RemoveTrainee fires TraineeRemoved event', function () {
 test('StartTraining returns false when RTG course trainee has insufficient activity', function () {
     Event::fake();
     Http::fake();
-    $course = Course::factory()->rtg()->create();
+    $course = Course::factory()->rtg()->tower()->create();
     $trainee = User::factory()->create();
     $mentor = User::factory()->create();
 
@@ -567,7 +567,7 @@ test('StartTraining returns false when RTG course trainee has insufficient activ
 test('StartTraining does not remove the waiting list entry when activity check fails', function () {
     Event::fake();
     Http::fake();
-    $course = Course::factory()->rtg()->create();
+    $course = Course::factory()->rtg()->tower()->create();
     $trainee = User::factory()->create();
     $mentor = User::factory()->create();
 
@@ -583,6 +583,28 @@ test('StartTraining does not remove the waiting list entry when activity check f
     app(StartTraining::class)->execute($entry, $mentor);
 
     expect(WaitingListEntry::where('id', $entry->id)->exists())->toBeTrue();
+});
+
+test('StartTraining ignores activity for RTG courses with CTR position', function () {
+    Event::fake();
+    Http::fake();
+    $course = Course::factory()->rtg()->create(['position' => 'CTR']);
+    $trainee = User::factory()->create();
+    $mentor = User::factory()->create();
+
+    config(['services.training.display_activity' => 8]);
+
+    $entry = WaitingListEntry::create([
+        'user_id' => $trainee->id,
+        'course_id' => $course->id,
+        'date_added' => now(),
+        'activity' => 0,
+    ]);
+
+    [$success, $message] = app(StartTraining::class)->execute($entry, $mentor);
+
+    expect($success)->toBeTrue();
+    expect($message)->toBe('Training started successfully.');
 });
 
 test('StartTraining returns true and attaches trainee when RTG activity meets the threshold', function () {

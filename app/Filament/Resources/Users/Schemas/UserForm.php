@@ -157,7 +157,7 @@ class UserForm
                             ->gridDirection('row'),
                     ])->columns(1),
 
-                Section::make('Active Course Enrollments')
+                Section::make('Course Enrollments')
                     ->collapsed()
                     ->headerActions([
                         Action::make('add_course_enrollment')
@@ -177,11 +177,12 @@ class UserForm
 
                     ])
                     ->schema([
-                        RepeatableEntry::make('activeCourses')
+                        RepeatableEntry::make('courses')
                             ->hiddenLabel()
-                            ->state(fn ($record) => $record?->activeCourses()->with('mentorGroup')->get() ?? [])
+                            ->state(fn ($record) => $record?->courses()->with('mentorGroup')->get() ?? [])
                             ->table([
                                 TableColumn::make('Course'),
+                                TableColumn::make('Status'),
                                 TableColumn::make('Claimed By'),
                                 TableColumn::make('Claimed At'),
                                 TableColumn::make('Remarks'),
@@ -190,6 +191,15 @@ class UserForm
                             ->schema([
                                 TextEntry::make('name')
                                     ->url(fn ($record) => CourseResource::getUrl('edit', ['record' => $record])),
+                                TextEntry::make('pivot.status')
+                                    ->label('Status')
+                                    ->badge()
+                                    ->color(fn ($state) => match ($state) {
+                                        'active' => 'success',
+                                        'completed' => 'info',
+                                        'removed' => 'danger',
+                                        default => 'gray',
+                                    }),
                                 TextEntry::make('pivot.claimed_by_mentor_id')
                                     ->label('Claimed By')
                                     ->formatStateUsing(fn ($state) => $state ? User::find($state)?->name : '—'),
@@ -229,7 +239,7 @@ class UserForm
                                     ]),
                                 ]),
                             ])
-                            ->placeholder('No active course enrollments.'),
+                            ->placeholder('No course enrollments.'),
                     ])->columns(1),
 
                 Section::make('Waiting List Entries')
