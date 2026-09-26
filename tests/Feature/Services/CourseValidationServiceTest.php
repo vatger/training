@@ -202,6 +202,30 @@ test('user with active rtg course cannot join another rtg course', function () {
         ->and($reason)->toBe('You already have an active RTG course.');
 });
 
+// ─── Active trainee of the same course ────────────────────────────────────────
+
+test('user actively training in an endorsement course cannot join its waiting list again', function () {
+    $user = gerUserOnRoster(['rating' => 3]);
+    $course = Course::factory()->create(['type' => 'EDMT', 'min_rating' => 1, 'max_rating' => 7, 'position' => 'GND']);
+    $user->activeCourses()->attach($course->id, ['completed_at' => null]);
+
+    [$canJoin, $reason] = makeService()->canUserJoinCourse($course, $user);
+
+    expect($canJoin)->toBeFalse()
+        ->and($reason)->toBe('You are already an active trainee in this course.');
+});
+
+test('user with completed enrollment in a course can join its waiting list again', function () {
+    $user = gerUserOnRoster(['rating' => 3]);
+    $course = Course::factory()->create(['type' => 'EDMT', 'min_rating' => 1, 'max_rating' => 7, 'position' => 'GND']);
+    $user->courses()->attach($course->id, ['completed_at' => now()]);
+
+    [$canJoin, $reason] = makeService()->canUserJoinCourse($course, $user);
+
+    expect($canJoin)->toBeTrue()
+        ->and($reason)->toBe('');
+});
+
 // ─── Waiting list restriction ─────────────────────────────────────────────────
 
 test('user restricted from course type cannot join', function () {

@@ -95,6 +95,14 @@ class CourseValidationService
             return [false, 'You are currently restricted from joining this type of waiting list.'];
         }
 
+        $isActiveTraineeOfCourse = $user->activeCourses()
+            ->where('course_id', $course->id)
+            ->exists();
+
+        if ($isActiveTraineeOfCourse) {
+            return [false, 'You are already an active trainee in this course.'];
+        }
+
         if ($course->type === 'RTG') {
             $hasActiveRtg = Cache::remember(
                 "user_{$user->id}_has_active_rtg",
