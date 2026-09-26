@@ -50,7 +50,7 @@ class DashboardController extends Controller
                     ->map(function ($log) {
                         return [
                             'id' => $log->id,
-                            'session_date' => $log->session_date->format('Y-m-d'),
+                            'session_date' => $log->session_date?->format('Y-m-d') ?? 'Unknown',
                             'position' => $log->position ?? 'N/A',
                             'type' => $log->type ?? 'O',
                             'type_display' => $log->type_display ?? 'Online',
@@ -95,7 +95,7 @@ class DashboardController extends Controller
                 ->map(function ($log) {
                     return [
                         'id' => $log->id,
-                        'session_date' => $log->session_date->format('Y-m-d'),
+                        'session_date' => $log->session_date?->format('Y-m-d') ?? 'Unknown',
                         'position' => $log->position ?? 'N/A',
                         'type' => $log->type ?? 'O',
                         'type_display' => $log->type_display ?? 'Online',

@@ -127,8 +127,6 @@ class StartTraining
                 ]);
             }
         } catch (\Exception $e) {
-            // Training itself already succeeded (this runs after the DB transaction commits) — a
-            // notification failure must never bubble up and cause the action to report failure.
             Log::warning('Failed to send training start notification', [
                 'trainee_id' => $entry->user_id,
                 'error' => $e->getMessage(),

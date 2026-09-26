@@ -142,7 +142,7 @@ class UserSearchController extends Controller
                             ->map(function ($log) {
                                 return [
                                     'id' => $log->id,
-                                    'session_date' => $log->session_date->format('Y-m-d'),
+                                    'session_date' => $log->session_date?->format('Y-m-d') ?? 'Unknown',
                                     'position' => $log->position ?? 'N/A',
                                     'type' => $log->type ?? 'O',
                                     'type_display' => $log->type_display ?? 'Online',
@@ -154,7 +154,7 @@ class UserSearchController extends Controller
                             });
 
                         $courseData['logs'] = $logs->toArray();
-                    } catch (\Exception $e) {
+                    } catch (\Throwable $e) {
                         \Log::error('Error fetching training logs', [
                             'course_id' => $course->id,
                             'user_id' => $user->id,
@@ -213,7 +213,7 @@ class UserSearchController extends Controller
                     $logs = $logsGrouped->get($courseData->id, collect())->map(function ($log) {
                         return [
                             'id' => $log->id,
-                            'session_date' => $log->session_date->format('Y-m-d'),
+                            'session_date' => $log->session_date?->format('Y-m-d') ?? 'Unknown',
                             'position' => $log->position ?? 'N/A',
                             'type' => $log->type ?? 'O',
                             'type_display' => $log->type_display ?? 'Online',
@@ -243,7 +243,7 @@ class UserSearchController extends Controller
                     $completedCourses->push($courseArray);
                 }
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             \Log::error('Error fetching completed courses', [
                 'user_id' => $user->id,
                 'error' => $e->getMessage(),

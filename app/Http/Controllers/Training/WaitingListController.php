@@ -137,13 +137,13 @@ class WaitingListController extends Controller
     public function startTraining(Request $request, WaitingListEntry $entry)
     {
         if (! Gate::allows('mentor')) {
-            return back()->withErrors(['error' => 'Access denied. Mentor privileges required.']);
+            return response()->json(['error' => 'Access denied'], 403);
         }
 
         $user = $request->user();
 
         if (! $this->userCanMentorEntry($user, $entry)) {
-            return back()->withErrors(['error' => 'You cannot mentor this course. You are not listed as a mentor for it and are not a Leading Mentor for its FIR.']);
+            return response()->json(['error' => 'You cannot mentor this course'], 403);
         }
 
         try {
