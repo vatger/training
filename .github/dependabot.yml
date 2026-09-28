@@ -1,43 +1,148 @@
 version: 2
 updates:
+  # ---------------------------------------------------------------------
+  # GitHub Actions (workflow files)
+  # ---------------------------------------------------------------------
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
     labels:
       - automated
+      - dependencies
+      - github-actions
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+    open-pull-requests-limit: 10
+    groups:
+      # actions/* and docker/* each version their actions in lockstep as an
+      # org, so batching same-org minor/patch bumps is safe and cuts noise.
+      actions:
+        patterns:
+          - "actions/*"
+        update-types:
+          - "minor"
+          - "patch"
+      docker-actions:
+        patterns:
+          - "docker/*"
+        update-types:
+          - "minor"
+          - "patch"
 
+  # ---------------------------------------------------------------------
+  # Composer (PHP / Laravel backend)
+  # ---------------------------------------------------------------------
   - package-ecosystem: "composer"
     directory: "/"
     schedule:
       interval: "daily"
     labels:
       - automated
+      - dependencies
+      - php
+    commit-message:
+      prefix: "build"
+      prefix-development: "build"
+      include: "scope"
+    open-pull-requests-limit: 10
     groups:
       laravel:
         patterns:
           - "laravel/*"
+        update-types:
+          - "minor"
+          - "patch"
       filament:
         patterns:
           - "filament/*"
+        update-types:
+          - "minor"
+          - "patch"
+      pest:
+        patterns:
+          - "pestphp/*"
+        update-types:
+          - "minor"
+          - "patch"
 
+  # ---------------------------------------------------------------------
+  # npm (React / Inertia frontend)
+  # ---------------------------------------------------------------------
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
       interval: "daily"
     labels:
       - automated
+      - dependencies
+      - javascript
+    commit-message:
+      prefix: "build"
+      prefix-development: "build"
+      include: "scope"
+    open-pull-requests-limit: 10
     groups:
+      # react + its @types/* counterparts must land together or `npm run
+      # types` breaks; group every update type, including majors.
+      react:
+        patterns:
+          - "react"
+          - "react-dom"
+          - "@types/react"
+          - "@types/react-dom"
+      # ziggy-js and its type definitions are the same kind of pairing.
+      ziggy:
+        patterns:
+          - "ziggy-js"
+          - "@types/ziggy-js"
+      # Radix primitives (both @radix-ui/* and the unified radix-ui
+      # package) and Tiptap extensions are each released as one family.
       radix:
         patterns:
           - "@radix-ui/*"
+          - "radix-ui"
+        update-types:
+          - "minor"
+          - "patch"
       tiptap:
         patterns:
           - "@tiptap/*"
+        update-types:
+          - "minor"
+          - "patch"
+      # Vite + its plugins, and Tailwind + its plugins, tend to require
+      # matching majors to keep working; batch their minor/patch bumps.
+      vite:
+        patterns:
+          - "vite"
+          - "@vitejs/plugin-react"
+          - "laravel-vite-plugin"
+        update-types:
+          - "minor"
+          - "patch"
+      tailwind:
+        patterns:
+          - "tailwindcss"
+          - "tailwindcss-animate"
+          - "@tailwindcss/vite"
+        update-types:
+          - "minor"
+          - "patch"
 
+  # ---------------------------------------------------------------------
+  # Docker (base images used by ./Dockerfile)
+  # ---------------------------------------------------------------------
   - package-ecosystem: "docker"
     directory: "/"
     schedule:
       interval: "weekly"
     labels:
       - automated
+      - dependencies
+      - docker
+    commit-message:
+      prefix: "build"
+      include: "scope"
+    open-pull-requests-limit: 5
