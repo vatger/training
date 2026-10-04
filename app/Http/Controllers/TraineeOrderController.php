@@ -13,7 +13,7 @@ class TraineeOrderController extends Controller
     {
         $user = $request->user();
 
-        if (! $user->isMentor() && ! $user->is_superuser) {
+        if (! $user->isMentor() && ! $user->is_superuser && ! $user->isChiefOfTraining() && ! $user->isLeadingMentor()) {
             return response()->json(['error' => 'Access denied'], 403);
         }
 
@@ -25,7 +25,7 @@ class TraineeOrderController extends Controller
 
         $course = Course::findOrFail($request->course_id);
 
-        if (! $user->is_superuser && ! $user->is_admin && ! $user->mentorCourses()->where('courses.id', $course->id)->exists()) {
+        if (! $user->isMentorForCourse($course)) {
             return response()->json(['error' => 'You cannot modify this course'], 403);
         }
 
@@ -61,7 +61,7 @@ class TraineeOrderController extends Controller
     {
         $user = $request->user();
 
-        if (! $user->isMentor() && ! $user->is_superuser) {
+        if (! $user->isMentor() && ! $user->is_superuser && ! $user->isChiefOfTraining() && ! $user->isLeadingMentor()) {
             return response()->json(['error' => 'Access denied'], 403);
         }
 
@@ -71,7 +71,7 @@ class TraineeOrderController extends Controller
 
         $course = Course::findOrFail($request->course_id);
 
-        if (! $user->is_superuser && ! $user->is_admin && ! $user->mentorCourses()->where('courses.id', $course->id)->exists()) {
+        if (! $user->isMentorForCourse($course)) {
             return response()->json(['error' => 'You cannot modify this course'], 403);
         }
 

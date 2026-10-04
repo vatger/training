@@ -11,7 +11,7 @@ class EndorsementPolicy
      */
     public function mentor(User $user): bool
     {
-        return $user->isMentor() || $user->is_superuser;
+        return $user->isMentor() || $user->is_superuser || $user->isChiefOfTraining() || $user->isLeadingMentor();
     }
 
     /**

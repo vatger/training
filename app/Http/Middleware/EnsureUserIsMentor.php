@@ -24,7 +24,7 @@ class EnsureUserIsMentor
             $user->load('roles');
         }
 
-        if (! $user->isMentor()) {
+        if (! $user->isMentor() && ! $user->isChiefOfTraining() && ! $user->isLeadingMentor()) {
             abort(403, 'This action requires mentor permissions.');
         }
 

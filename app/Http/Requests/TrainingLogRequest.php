@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Course;
 use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -14,25 +15,21 @@ class TrainingLogRequest extends FormRequest
     {
         $user = $this->user();
 
-        // Must be a mentor or superuser
-        if (! $user || (! $user->isMentor() && ! $user->is_superuser)) {
+        // Must be a mentor, chief of training, leading mentor, or superuser
+        if (! $user || (! $user->isMentor() && ! $user->is_superuser && ! $user->isChiefOfTraining() && ! $user->isLeadingMentor())) {
             return false;
         }
 
-        // If updating, check if user is the mentor who created the log
+        // If updating, check if user is allowed to edit this training log
         if ($this->route('training_log')) {
-            $log = $this->route('training_log');
-
-            return $user->id === $log->mentor_id || $user->is_superuser;
+            return $user->canEditTrainingLog($this->route('training_log'));
         }
 
-        // If creating, check if user is a mentor for the course
+        // If creating, check if user has mentor-level access to the course
         if ($this->has('course_id')) {
-            $courseId = $this->input('course_id');
+            $course = Course::find($this->input('course_id'));
 
-            return $user->is_superuser
-                || $user->is_admin
-                || $user->mentorCourses()->where('courses.id', $courseId)->exists();
+            return $course && $user->isMentorForCourse($course);
         }
 
         return true;

@@ -29,7 +29,7 @@ class SoloController extends Controller
     {
         $user = $request->user();
 
-        if (! $user->isMentor() && ! $user->is_superuser) {
+        if (! $user->isMentor() && ! $user->is_superuser && ! $user->isChiefOfTraining() && ! $user->isLeadingMentor()) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
@@ -41,7 +41,7 @@ class SoloController extends Controller
         $trainee = User::findOrFail($validated['trainee_id']);
         $course = Course::findOrFail($validated['course_id']);
 
-        if (! $user->is_superuser && ! $user->is_admin && ! $user->mentorCourses()->where('courses.id', $course->id)->exists()) {
+        if (! $user->isMentorForCourse($course)) {
             return response()->json(['error' => 'Access denied'], 403);
         }
 
@@ -61,7 +61,7 @@ class SoloController extends Controller
     {
         $user = $request->user();
 
-        if (! $user->isMentor() && ! $user->is_superuser) {
+        if (! $user->isMentor() && ! $user->is_superuser && ! $user->isChiefOfTraining() && ! $user->isLeadingMentor()) {
             return response()->json(['error' => 'Access denied'], 403);
         }
 
@@ -73,7 +73,7 @@ class SoloController extends Controller
         $trainee = User::findOrFail($validated['trainee_id']);
         $course = Course::findOrFail($validated['course_id']);
 
-        if (! $user->is_superuser && ! $user->is_admin && ! $user->mentorCourses()->where('courses.id', $course->id)->exists()) {
+        if (! $user->isMentorForCourse($course)) {
             return response()->json(['error' => 'Access denied'], 403);
         }
 
@@ -115,7 +115,7 @@ class SoloController extends Controller
     {
         $user = $request->user();
 
-        if (! $user->isMentor() && ! $user->is_superuser) {
+        if (! $user->isMentor() && ! $user->is_superuser && ! $user->isChiefOfTraining() && ! $user->isLeadingMentor()) {
             return back()->withErrors(['error' => 'Access denied']);
         }
 
@@ -129,7 +129,7 @@ class SoloController extends Controller
         $course = Course::findOrFail($validated['course_id']);
         $expiryDate = Carbon::parse($validated['expiry_date']);
 
-        if (! $user->is_superuser && ! $user->is_admin && ! $user->mentorCourses()->where('courses.id', $course->id)->exists()) {
+        if (! $user->isMentorForCourse($course)) {
             return back()->withErrors(['error' => 'You cannot manage this course']);
         }
 
@@ -167,7 +167,7 @@ class SoloController extends Controller
     {
         $user = $request->user();
 
-        if (! $user->isMentor() && ! $user->is_superuser) {
+        if (! $user->isMentor() && ! $user->is_superuser && ! $user->isChiefOfTraining() && ! $user->isLeadingMentor()) {
             return back()->withErrors(['error' => 'Access denied']);
         }
 
@@ -181,7 +181,7 @@ class SoloController extends Controller
         $course = Course::findOrFail($validated['course_id']);
         $expiryDate = Carbon::parse($validated['expiry_date']);
 
-        if (! $user->is_superuser && ! $user->is_admin && ! $user->mentorCourses()->where('courses.id', $course->id)->exists()) {
+        if (! $user->isMentorForCourse($course)) {
             return back()->withErrors(['error' => 'You cannot manage this course']);
         }
 
@@ -211,7 +211,7 @@ class SoloController extends Controller
     {
         $user = $request->user();
 
-        if (! $user->isMentor() && ! $user->is_superuser) {
+        if (! $user->isMentor() && ! $user->is_superuser && ! $user->isChiefOfTraining() && ! $user->isLeadingMentor()) {
             return back()->withErrors(['error' => 'Access denied']);
         }
 
@@ -223,7 +223,7 @@ class SoloController extends Controller
         $trainee = User::findOrFail($validated['trainee_id']);
         $course = Course::findOrFail($validated['course_id']);
 
-        if (! $user->is_superuser && ! $user->is_admin && ! $user->mentorCourses()->where('courses.id', $course->id)->exists()) {
+        if (! $user->isMentorForCourse($course)) {
             return back()->withErrors(['error' => 'You cannot manage this course']);
         }
 

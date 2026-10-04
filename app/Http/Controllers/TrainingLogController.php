@@ -71,7 +71,7 @@ class TrainingLogController extends Controller
         $trainee = User::findOrFail($traineeId);
         $course = Course::findOrFail($courseId);
 
-        if (! $user->is_superuser && ! $user->is_admin && ! $user->mentorCourses()->where('courses.id', $course->id)->exists()) {
+        if (! $user->isMentorForCourse($course)) {
             abort(403, 'You are not a mentor for this course.');
         }
 

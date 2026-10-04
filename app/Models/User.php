@@ -597,7 +597,7 @@ class User extends Authenticatable implements FilamentUser
         return array_unique($courseIds);
     }
 
-    public function canViewCourse(Course $course): bool
+    public function isMentorForCourse(Course $course): bool
     {
         if ($this->is_superuser || $this->is_admin) {
             return true;
@@ -622,6 +622,11 @@ class User extends Authenticatable implements FilamentUser
         }
 
         return false;
+    }
+
+    public function canViewCourse(Course $course): bool
+    {
+        return $this->isMentorForCourse($course);
     }
 
     public function canEditTrainingLog(TrainingLog $log): bool

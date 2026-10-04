@@ -31,7 +31,7 @@ class TraineeManagementController extends Controller
     {
         $user = $request->user();
 
-        if (! $user->isMentor() && ! $user->is_superuser) {
+        if (! $user->isMentor() && ! $user->is_superuser && ! $user->isChiefOfTraining() && ! $user->isLeadingMentor()) {
             return back()->withErrors(['error' => 'Access denied']);
         }
 
@@ -66,7 +66,7 @@ class TraineeManagementController extends Controller
     {
         $user = $request->user();
 
-        if (! $user->isMentor() && ! $user->is_superuser) {
+        if (! $user->isMentor() && ! $user->is_superuser && ! $user->isChiefOfTraining() && ! $user->isLeadingMentor()) {
             return back()->withErrors(['error' => 'Access denied']);
         }
 
@@ -101,7 +101,7 @@ class TraineeManagementController extends Controller
     {
         $user = $request->user();
 
-        if (! $user->isMentor() && ! $user->is_superuser) {
+        if (! $user->isMentor() && ! $user->is_superuser && ! $user->isChiefOfTraining() && ! $user->isLeadingMentor()) {
             return back()->withErrors(['error' => 'Access denied']);
         }
 
@@ -119,7 +119,7 @@ class TraineeManagementController extends Controller
             return back()->withErrors(['error' => 'You cannot assign trainees for this course']);
         }
 
-        if (! $newMentor->is_superuser && ! $newMentor->is_admin && ! $newMentor->mentorCourses()->where('courses.id', $course->id)->exists()) {
+        if (! $newMentor->isMentorForCourse($course)) {
             return back()->withErrors(['error' => 'Selected mentor cannot mentor this course']);
         }
 
@@ -142,7 +142,7 @@ class TraineeManagementController extends Controller
     {
         $user = $request->user();
 
-        if (! $user->isMentor() && ! $user->is_superuser) {
+        if (! $user->isMentor() && ! $user->is_superuser && ! $user->isChiefOfTraining() && ! $user->isLeadingMentor()) {
             return back()->withErrors(['error' => 'Access denied']);
         }
 
@@ -173,7 +173,7 @@ class TraineeManagementController extends Controller
     {
         $user = $request->user();
 
-        if (! $user->isMentor() && ! $user->is_superuser) {
+        if (! $user->isMentor() && ! $user->is_superuser && ! $user->isChiefOfTraining() && ! $user->isLeadingMentor()) {
             return back()->withErrors(['error' => 'Access denied']);
         }
 
@@ -208,7 +208,7 @@ class TraineeManagementController extends Controller
     {
         $user = $request->user();
 
-        if (! $user->isMentor() && ! $user->is_superuser) {
+        if (! $user->isMentor() && ! $user->is_superuser && ! $user->isChiefOfTraining() && ! $user->isLeadingMentor()) {
             return back()->withErrors(['error' => 'Access denied']);
         }
 
@@ -247,7 +247,7 @@ class TraineeManagementController extends Controller
     {
         $user = $request->user();
 
-        if (! $user->isMentor() && ! $user->is_superuser) {
+        if (! $user->isMentor() && ! $user->is_superuser && ! $user->isChiefOfTraining() && ! $user->isLeadingMentor()) {
             return back()->withErrors(['error' => 'Access denied']);
         }
 

@@ -59,7 +59,7 @@ class CptController extends Controller
                 'time_formatted' => $cpt->date->format('H:i'),
                 'confirmed' => $cpt->confirmed,
                 'log_uploaded' => $cpt->log_uploaded,
-                'can_delete' => $user->isSuperuser() || $cpt->course->mentors->contains($user->id),
+                'can_delete' => $user->isSuperuser() || $user->isMentorForCourse($cpt->course),
                 'can_view_upload' => $user->isSuperuser() || $user->isLeadership() || $cpt->examiner_id === $user->id || $cpt->local_id === $user->id,
                 'can_upload' => $user->isSuperuser() || $cpt->examiner_id === $user->id || $cpt->local_id === $user->id,
                 'can_join_examiner' => $this->canJoinAsExaminer($user, $cpt),
@@ -83,7 +83,10 @@ class CptController extends Controller
 
         $courses = $user->isSuperuser()
             ? Course::where('type', 'RTG')->orderBy('name')->get()
-            : $user->mentorCourses()->where('type', 'RTG')->orderBy('name')->get();
+            : Course::where('type', 'RTG')
+                ->whereIn('id', $user->getAccessibleCourseIds())
+                ->orderBy('name')
+                ->get();
 
         return Inertia::render('cpt/create', [
             'courses' => $courses->map(fn ($c) => [
@@ -166,7 +169,7 @@ class CptController extends Controller
         $user = $request->user();
         $cpt->load('course.mentors', 'trainee');
 
-        if (! $user->isSuperuser() && ! $cpt->course->mentors->contains($user->id)) {
+        if (! $user->isMentorForCourse($cpt->course)) {
             return back()->withErrors(['error' => 'You do not have permission to delete this CPT.']);
         }
 

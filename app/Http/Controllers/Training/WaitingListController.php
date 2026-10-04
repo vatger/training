@@ -41,15 +41,22 @@ class WaitingListController extends Controller
 
         if (! $user->is_superuser && ! $user->is_admin) {
             $lmFirs = $user->getLeadingMentorFirs();
+            $cotCourseIds = $user->getChiefOfTrainingCourseIds();
 
-            if (! empty($lmFirs)) {
-                $query->where(function ($q) use ($user, $lmFirs) {
-                    $q->whereExists(function ($subQuery) use ($user) {
-                        $subQuery->select(DB::raw(1))
-                            ->from('course_mentors')
-                            ->whereRaw('course_mentors.course_id = courses.id')
-                            ->where('course_mentors.user_id', $user->id);
-                    })->orWhereExists(function ($subQuery) use ($lmFirs) {
+            $query->where(function ($q) use ($user, $lmFirs, $cotCourseIds) {
+                $q->whereExists(function ($subQuery) use ($user) {
+                    $subQuery->select(DB::raw(1))
+                        ->from('course_mentors')
+                        ->whereRaw('course_mentors.course_id = courses.id')
+                        ->where('course_mentors.user_id', $user->id);
+                });
+
+                if (! empty($cotCourseIds)) {
+                    $q->orWhereIn('courses.id', $cotCourseIds);
+                }
+
+                if (! empty($lmFirs)) {
+                    $q->orWhereExists(function ($subQuery) use ($lmFirs) {
                         $subQuery->select(DB::raw(1))
                             ->from('roles')
                             ->whereRaw('courses.mentor_group_id = roles.id')
@@ -59,11 +66,8 @@ class WaitingListController extends Controller
                                 }
                             });
                     });
-                });
-            } else {
-                $query->join('course_mentors', 'courses.id', '=', 'course_mentors.course_id')
-                    ->where('course_mentors.user_id', $user->id);
-            }
+                }
+            });
         }
 
         $courses = $query->get();
@@ -197,27 +201,9 @@ class WaitingListController extends Controller
 
     private function userCanMentorEntry(User $user, WaitingListEntry $entry): bool
     {
-        if ($user->is_superuser || $user->is_admin) {
-            return true;
-        }
-
-        if (DB::table('course_mentors')->where('course_id', $entry->course_id)->where('user_id', $user->id)->exists()) {
-            return true;
-        }
-
         $course = Course::find($entry->course_id);
-        if (! $course?->mentor_group_id) {
-            return false;
-        }
 
-        $mentorGroupName = DB::table('roles')->where('id', $course->mentor_group_id)->value('name');
-        if (! $mentorGroupName) {
-            return false;
-        }
-
-        $fir = $user->getFirFromMentorGroup($mentorGroupName);
-
-        return $fir && $user->isLeadingMentorForFir($fir);
+        return $course && $user->isMentorForCourse($course);
     }
 
     private function getTypeDisplay(string $type): string

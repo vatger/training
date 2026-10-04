@@ -95,17 +95,13 @@ class UserSearchController extends Controller
 
         $currentUser = auth()->user();
 
-        if (! $currentUser->isMentor() && ! $currentUser->isSuperuser() && ! $currentUser->is_admin) {
+        if (! $currentUser->isMentor() && ! $currentUser->isSuperuser() && ! $currentUser->is_admin && ! $currentUser->isChiefOfTraining() && ! $currentUser->isLeadingMentor()) {
             abort(403, 'Only mentors can view user profiles.');
         }
 
         $isPrivilegedUser = $currentUser->isSuperuser() || $currentUser->is_admin;
 
-        if ($isPrivilegedUser) {
-            $mentorCourseIds = Course::pluck('id')->toArray();
-        } else {
-            $mentorCourseIds = $currentUser->mentorCourses()->pluck('courses.id')->toArray();
-        }
+        $mentorCourseIds = $currentUser->getAccessibleCourseIds();
 
         $activeCourses = $user->activeCourses()
             ->with(['mentorGroup'])

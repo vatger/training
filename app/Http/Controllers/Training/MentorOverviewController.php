@@ -185,7 +185,7 @@ class MentorOverviewController extends Controller
     {
         $user = $request->user();
 
-        if (! $user->isMentor() && ! $user->is_superuser) {
+        if (! $user->isMentor() && ! $user->is_superuser && ! $user->isChiefOfTraining() && ! $user->isLeadingMentor()) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
@@ -235,7 +235,7 @@ class MentorOverviewController extends Controller
         $user = $request->user();
         $course = Course::findOrFail($courseId);
 
-        if (! $user->isMentor() && ! $user->isSuperuser()) {
+        if (! $user->isMentor() && ! $user->isSuperuser() && ! $user->isChiefOfTraining() && ! $user->isLeadingMentor()) {
             return response()->json(['error' => 'Access denied'], 403);
         }
 
@@ -271,7 +271,7 @@ class MentorOverviewController extends Controller
         $user = $request->user();
         $course = Course::findOrFail($courseId);
 
-        if (! $user->isMentor() && ! $user->isSuperuser()) {
+        if (! $user->isMentor() && ! $user->isSuperuser() && ! $user->isChiefOfTraining() && ! $user->isLeadingMentor()) {
             return response()->json(['error' => 'Access denied'], 403);
         }
 
@@ -339,7 +339,7 @@ class MentorOverviewController extends Controller
     {
         $user = $request->user();
 
-        if (! $user->isMentor() && ! $user->is_superuser) {
+        if (! $user->isMentor() && ! $user->is_superuser && ! $user->isChiefOfTraining() && ! $user->isLeadingMentor()) {
             return back()->withErrors(['error' => 'Access denied']);
         }
 

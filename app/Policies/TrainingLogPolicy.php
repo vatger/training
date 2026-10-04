@@ -39,7 +39,7 @@ class TrainingLogPolicy
             return true;
         }
 
-        if ($log->course && $user->mentorCourses()->where('courses.id', $log->course_id)->exists()) {
+        if ($log->course && $user->isMentorForCourse($log->course)) {
             return true;
         }
 
@@ -51,7 +51,7 @@ class TrainingLogPolicy
      */
     public function create(User $user): bool
     {
-        return $user->isMentor() || $user->is_superuser || $user->is_admin;
+        return $user->isMentor() || $user->is_superuser || $user->is_admin || $user->isChiefOfTraining() || $user->isLeadingMentor();
     }
 
     /**
@@ -68,7 +68,7 @@ class TrainingLogPolicy
         if ($user->id === $log->mentor_id) {
             // Check if user is still a mentor for the course
             if ($log->course) {
-                return $user->mentorCourses()->where('courses.id', $log->course_id)->exists();
+                return $user->isMentorForCourse($log->course);
             }
 
             return true;
@@ -104,7 +104,7 @@ class TrainingLogPolicy
             return true;
         }
 
-        if ($log->course && $user->mentorCourses()->where('courses.id', $log->course_id)->exists()) {
+        if ($log->course && $user->isMentorForCourse($log->course)) {
             return true;
         }
 
