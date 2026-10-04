@@ -47,9 +47,11 @@ export default function WaitingListButton({
 		"joining" | "leaving" | null
 	>(null)
 	const [showLeaveConfirmation, setShowLeaveConfirmation] = useState(false)
+	const [showForumAccountNotice, setShowForumAccountNotice] = useState(false)
 
 	const isEdmtType = course.type === "EDMT"
 	const isFamType = course.type === "FAM"
+	const isGstType = course.type === "GST"
 
 	const handleJoinWaitingList = async () => {
 		if (isLoading || !course.can_join) return
@@ -195,8 +197,17 @@ export default function WaitingListButton({
 		if (course.is_on_waiting_list) {
 			setShowLeaveConfirmation(true)
 		} else if (course.can_join) {
-			handleJoinWaitingList()
+			if (isGstType) {
+				setShowForumAccountNotice(true)
+			} else {
+				handleJoinWaitingList()
+			}
 		}
+	}
+
+	const handleConfirmForumAccountNotice = () => {
+		setShowForumAccountNotice(false)
+		handleJoinWaitingList()
 	}
 
 	const getButtonContent = () => {
@@ -367,6 +378,40 @@ export default function WaitingListButton({
 						</Button>
 						<Button onClick={handleLeaveWaitingList} variant="destructive">
 							Leave Queue
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
+
+			<Dialog
+				onOpenChange={setShowForumAccountNotice}
+				open={showForumAccountNotice}
+			>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>Forum Account Required</DialogTitle>
+						<DialogDescription className="space-y-2 pt-2">
+							<p>
+								Visitor courses are coordinated through the vatger forum. Please
+								make sure you have an active forum account before joining the
+								waiting list for{" "}
+								<strong>{course.trainee_display_name || course.name}</strong>.
+							</p>
+							<p className="text-sm">
+								Without a forum account you will not be able to receive
+								important updates about this course.
+							</p>
+						</DialogDescription>
+					</DialogHeader>
+					<DialogFooter>
+						<Button
+							onClick={() => setShowForumAccountNotice(false)}
+							variant="outline"
+						>
+							Cancel
+						</Button>
+						<Button onClick={handleConfirmForumAccountNotice}>
+							I have a forum account, join waiting list
 						</Button>
 					</DialogFooter>
 				</DialogContent>
