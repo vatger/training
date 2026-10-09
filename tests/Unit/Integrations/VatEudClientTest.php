@@ -31,6 +31,73 @@ function fakeTier2Endorsement(int $vatsimId): array
     ];
 }
 
+test('createSoloEndorsement extracts a readable string from a 422 validation failure array', function () {
+    Http::fake([
+        '*/facility/endorsements/solo' => Http::response([
+            'error' => 'Validation failure.',
+            'message' => ['The expire at field must be a date after tomorrow.'],
+        ], 422),
+    ]);
+
+    $client = new VatEudClient;
+
+    $result = $client->createSoloEndorsement(1234567, 'EDDF_TWR', now()->addDays(7)->toISOString(), 1439600);
+
+    expect($result['success'])->toBeFalse();
+    expect($result['message'])->toBeString();
+    expect($result['message'])->toBe('The expire at field must be a date after tomorrow.');
+});
+
+test('createSoloEndorsement flattens multiple validation failure messages into one string', function () {
+    Http::fake([
+        '*/facility/endorsements/solo' => Http::response([
+            'error' => 'Validation failure.',
+            'message' => [
+                'The position field is required.',
+                'The expire at field is required.',
+            ],
+        ], 422),
+    ]);
+
+    $client = new VatEudClient;
+
+    $result = $client->createSoloEndorsement(1234567, 'EDDF_TWR', now()->addDays(7)->toISOString(), 1439600);
+
+    expect($result['success'])->toBeFalse();
+    expect($result['message'])->toBeString();
+    expect($result['message'])
+        ->toContain('The position field is required.')
+        ->toContain('The expire at field is required.');
+});
+
+test('createSoloEndorsement surfaces the plain-string message on a 403 permission failure', function () {
+    Http::fake([
+        '*/facility/endorsements/solo' => Http::response([
+            'message' => 'Instructor lacking permission or user not a resident or a visiting controller in your vACC.',
+        ], 403),
+    ]);
+
+    $client = new VatEudClient;
+
+    $result = $client->createSoloEndorsement(1234567, 'EDDF_TWR', now()->addDays(7)->toISOString(), 1439600);
+
+    expect($result['success'])->toBeFalse();
+    expect($result['message'])->toBe('Instructor lacking permission or user not a resident or a visiting controller in your vACC.');
+});
+
+test('createSoloEndorsement falls back to a generic message when the response body is unparseable', function () {
+    Http::fake([
+        '*/facility/endorsements/solo' => Http::response('', 500),
+    ]);
+
+    $client = new VatEudClient;
+
+    $result = $client->createSoloEndorsement(1234567, 'EDDF_TWR', now()->addDays(7)->toISOString(), 1439600);
+
+    expect($result['success'])->toBeFalse();
+    expect($result['message'])->toBe('Failed to create solo endorsement');
+});
+
 test('removeRosterAndEndorsements succeeds when roster and all endorsement deletions succeed', function () {
     $vatsimId = 1111111;
 

@@ -14,6 +14,8 @@ class GrantSoloEndorsement
 {
     private const CORE_THEORY_IDS = ['GND' => 6, 'TWR' => 9, 'APP' => 10, 'CTR' => 11];
 
+    public const MAX_SOLO_DAYS = 90;
+
     public function __construct(
         private readonly VatEudService $vatEud,
         private readonly MoodleClientInterface $moodle,
@@ -24,6 +26,7 @@ class GrantSoloEndorsement
         $this->assertMoodleComplete($trainee, $course);
         $this->assertCoreTheoryPassed($trainee, $course);
         $this->assertNoExistingSolo($trainee, $course);
+        $this->assertWithinSoloDayBudget($trainee, $expiryDate);
 
         $formattedExpiry = $expiryDate->setTime(23, 59, 0)->format('Y-m-d\TH:i:s.v\Z');
 
@@ -88,6 +91,28 @@ class GrantSoloEndorsement
         if ($existing) {
             throw ValidationException::withMessages([
                 'error' => 'Trainee already has a solo endorsement for this position',
+            ]);
+        }
+    }
+
+    private function assertWithinSoloDayBudget(User $trainee, Carbon $expiryDate): void
+    {
+        $used = $trainee->solo_days_used ?? 0;
+        $remaining = self::MAX_SOLO_DAYS - $used;
+
+        if ($remaining <= 0) {
+            throw ValidationException::withMessages([
+                'error' => "Trainee has already used {$used}/".self::MAX_SOLO_DAYS.' solo days allowed at this rating (GCAP 7.3c). No further solo endorsement can be issued until they are upgraded to the next rating.',
+            ]);
+        }
+
+        $requestedDays = Carbon::now()->startOfDay()->diffInDays($expiryDate->copy()->startOfDay());
+
+        if ($requestedDays > $remaining) {
+            $maxExpiry = Carbon::now()->startOfDay()->addDays($remaining)->format('Y-m-d');
+
+            throw ValidationException::withMessages([
+                'error' => "This expiry date would exceed the 90-day GCAP solo limit for this rating. Trainee has used {$used}/".self::MAX_SOLO_DAYS." days, so only {$remaining} day(s) remain. Maximum expiry date is {$maxExpiry}.",
             ]);
         }
     }

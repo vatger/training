@@ -72,7 +72,7 @@ class HandleInertiaRequests extends Middleware
             'theme' => $theme,
             'flash' => [
                 'success' => $request->session()->get('flash.success', $request->session()->get('success')),
-                'error' => $request->session()->get('flash.error', $request->session()->get('errors')?->first('error')),
+                'error' => $request->session()->get('flash.error', $request->session()->get('error', $request->session()->get('errors')?->first('error'))),
             ],
         ];
     }

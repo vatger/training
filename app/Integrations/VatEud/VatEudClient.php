@@ -24,6 +24,36 @@ class VatEudClient implements VatEudClientInterface
         ];
     }
 
+    private function extractErrorMessage(mixed $data, string $fallback): string
+    {
+        if (! is_array($data)) {
+            return $fallback;
+        }
+
+        $message = $data['message'] ?? null;
+
+        if (is_string($message) && $message !== '') {
+            return $message;
+        }
+
+        if (is_array($message) && $message !== []) {
+            $flattened = collect($message)
+                ->flatten()
+                ->filter(fn ($m) => is_string($m) && $m !== '')
+                ->implode(' ');
+
+            if ($flattened !== '') {
+                return $flattened;
+            }
+        }
+
+        if (is_string($data['error'] ?? null) && $data['error'] !== '') {
+            return $data['error'];
+        }
+
+        return $fallback;
+    }
+
     public function getTier1Endorsements(): array
     {
         try {
@@ -248,14 +278,15 @@ class VatEudClient implements VatEudClientInterface
                 return ['success' => true];
             }
 
-            $data = $response->json();
-            $message = is_array($data) ? ($data['message'] ?? 'Failed to create solo endorsement') : 'Failed to create solo endorsement';
+            $message = $this->extractErrorMessage($response->json(), 'Failed to create solo endorsement');
 
             Log::error('Failed to create solo endorsement', [
                 'user_cid' => $userCid,
                 'position' => $position,
+                'expire_at' => $expireAt,
                 'status' => $response->status(),
                 'message' => $message,
+                'body' => $response->body(),
             ]);
 
             return ['success' => false, 'message' => $message];

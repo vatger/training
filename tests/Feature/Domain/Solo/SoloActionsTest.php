@@ -243,6 +243,81 @@ test('GrantSoloEndorsement succeeds for GND position with passing core theory ex
     Event::assertDispatched(SoloGranted::class);
 });
 
+test('GrantSoloEndorsement throws a clear GCAP message when trainee has already used all 90 solo days', function () {
+    Event::fake();
+
+    $trainee = User::factory()->create(['vatsim_id' => 9999992, 'solo_days_used' => 90]);
+    $mentor = User::factory()->create();
+
+    $course = Course::factory()->create([
+        'solo_station' => 'EDDF_TWR',
+        'position' => 'TWR',
+        'moodle_course_ids' => [],
+    ]);
+
+    $this->app->bind(VatEudClientInterface::class, fn () => fakeClientWithPassingExam(9));
+    Cache::flush();
+
+    try {
+        app(GrantSoloEndorsement::class)->execute($course, $trainee, $mentor, now()->addDays(7));
+        $this->fail('Expected ValidationException');
+    } catch (ValidationException $e) {
+        expect($e->errors()['error'][0])->toContain('90/90')
+            ->toContain('GCAP 7.3c');
+    }
+
+    Event::assertNotDispatched(SoloGranted::class);
+});
+
+test('GrantSoloEndorsement throws when the requested expiry would exceed the remaining 90-day budget', function () {
+    Event::fake();
+
+    // 79/90 used — 11 days remain, but the mentor asks for a 20-day solo.
+    $trainee = User::factory()->create(['vatsim_id' => 9999991, 'solo_days_used' => 79]);
+    $mentor = User::factory()->create();
+
+    $course = Course::factory()->create([
+        'solo_station' => 'EDDF_TWR',
+        'position' => 'TWR',
+        'moodle_course_ids' => [],
+    ]);
+
+    $this->app->bind(VatEudClientInterface::class, fn () => fakeClientWithPassingExam(9));
+    Cache::flush();
+
+    try {
+        app(GrantSoloEndorsement::class)->execute($course, $trainee, $mentor, now()->addDays(20));
+        $this->fail('Expected ValidationException');
+    } catch (ValidationException $e) {
+        expect($e->errors()['error'][0])
+            ->toContain('11 day(s) remain')
+            ->toContain('79/90');
+    }
+
+    Event::assertNotDispatched(SoloGranted::class);
+});
+
+test('GrantSoloEndorsement succeeds when the requested expiry fits within the remaining 90-day budget', function () {
+    Event::fake();
+
+    // 79/90 used — 11 days remain, mentor asks for a 7-day solo.
+    $trainee = User::factory()->create(['vatsim_id' => 9999990, 'solo_days_used' => 79]);
+    $mentor = User::factory()->create();
+
+    $course = Course::factory()->create([
+        'solo_station' => 'EDDF_TWR',
+        'position' => 'TWR',
+        'moodle_course_ids' => [],
+    ]);
+
+    $this->app->bind(VatEudClientInterface::class, fn () => fakeClientWithPassingExam(9));
+    Cache::flush();
+
+    app(GrantSoloEndorsement::class)->execute($course, $trainee, $mentor, now()->addDays(7));
+
+    Event::assertDispatched(SoloGranted::class);
+});
+
 // ─── ExtendSoloEndorsement ────────────────────────────────────────────────────
 
 test('ExtendSoloEndorsement throws when no existing solo found', function () {
@@ -348,6 +423,66 @@ test('ExtendSoloEndorsement fires SoloExtended with correct course and trainee',
         return $event->course->id === $course->id
             && $event->trainee->id === $trainee->id;
     });
+});
+
+test('ExtendSoloEndorsement throws when extension would exceed the 90-day budget, and does not delete the existing solo', function () {
+    Event::fake();
+
+    $trainee = User::factory()->create(['vatsim_id' => 1601613, 'solo_days_used' => 79]);
+    $mentor = User::factory()->create();
+
+    $course = Course::factory()->create([
+        'solo_station' => 'EDDL_TWR',
+        'position' => 'TWR',
+        'moodle_course_ids' => [],
+    ]);
+
+    $deleteWasCalled = false;
+
+    $this->app->bind(
+        VatEudClientInterface::class,
+        fn () => new class($deleteWasCalled) extends FakeVatEudClient
+        {
+            public function __construct(private bool &$deleteWasCalled) {}
+
+            public function getSoloEndorsements(): array
+            {
+                return [
+                    SoloEndorsementData::fromApiResponse([
+                        'id' => 88,
+                        'user_cid' => 1601613,
+                        'position' => 'EDDL_TWR',
+                        'facility' => 9,
+                        'instructor_cid' => 1439600,
+                        'position_days' => 79,
+                        'expiry' => now()->addDays(10)->toISOString(),
+                        'created_at' => now()->subDays(79)->toISOString(),
+                    ]),
+                ];
+            }
+
+            public function deleteSoloEndorsement(int $soloId): bool
+            {
+                $this->deleteWasCalled = true;
+
+                return true;
+            }
+        },
+    );
+    Cache::flush();
+
+    try {
+        // 11 days remain, but the mentor asks to extend by 20 days.
+        app(ExtendSoloEndorsement::class)->execute($course, $trainee, $mentor, now()->addDays(20));
+        $this->fail('Expected ValidationException');
+    } catch (ValidationException $e) {
+        expect($e->errors()['error'][0])
+            ->toContain('11 day(s) remain')
+            ->toContain('79/90');
+    }
+
+    expect($deleteWasCalled)->toBeFalse();
+    Event::assertNotDispatched(SoloExtended::class);
 });
 
 // ─── RemoveSoloEndorsement ────────────────────────────────────────────────────

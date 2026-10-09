@@ -98,7 +98,7 @@ class EndorsementController extends Controller
         $user = $request->user();
 
         if (! $user->isVatsimUser()) {
-            return back()->with('error', 'VATSIM account required');
+            return back()->with('flash', ['error' => 'VATSIM account required']);
         }
 
         $tier2Endorsement = Tier2Endorsement::findOrFail($tier2Id);
@@ -106,11 +106,11 @@ class EndorsementController extends Controller
         try {
             $this->grantTier2->execute($tier2Endorsement, $user);
         } catch (ValidationException $e) {
-            return back()->with('error', $e->errors()['endorsement'][0]);
+            return back()->with('flash', ['error' => $e->errors()['endorsement'][0]]);
         } catch (\RuntimeException $e) {
-            return back()->with('error', 'Failed to create endorsement');
+            return back()->with('flash', ['error' => 'Failed to create endorsement']);
         }
 
-        return redirect()->route('endorsements.trainee')->with('success', 'Tier 2 endorsement granted successfully');
+        return redirect()->route('endorsements.trainee')->with('flash', ['success' => 'Tier 2 endorsement granted successfully']);
     }
 }

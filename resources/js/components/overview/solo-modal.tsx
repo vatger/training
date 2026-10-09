@@ -50,6 +50,11 @@ interface SoloModalProps {
 	onClose: () => void
 }
 
+const MAX_SOLO_DAYS = 90
+const MIN_SOLO_DURATION_DAYS = 7
+// Local policy (enforced server-side too): a single solo/extension is capped at 31 days from today.
+const LOCAL_POLICY_MAX_OFFSET_DAYS = 29
+
 interface RequirementsStatus {
 	trainee_id?: number
 	moodle: {
@@ -83,6 +88,15 @@ export function SoloModal({
 		null,
 	)
 	const [isAssigningTest, setIsAssigningTest] = useState(false)
+
+	const soloDaysRemaining = trainee
+		? Math.max(0, MAX_SOLO_DAYS - trainee.soloDaysUsed)
+		: MAX_SOLO_DAYS
+	const canIssueAnySolo = soloDaysRemaining >= MIN_SOLO_DURATION_DAYS
+	const maxOffsetDays = Math.min(
+		LOCAL_POLICY_MAX_OFFSET_DAYS,
+		soloDaysRemaining,
+	)
 
 	useEffect(() => {
 		if (isOpen && trainee) {
@@ -183,14 +197,27 @@ export function SoloModal({
 
 	const validateExpiryDate = (date: Date): boolean => {
 		const minDate = new Date()
-		minDate.setDate(minDate.getDate() + 7)
+		minDate.setDate(minDate.getDate() + MIN_SOLO_DURATION_DAYS)
 		minDate.setHours(0, 0, 0, 0)
 
 		const maxDate = new Date()
-		maxDate.setDate(maxDate.getDate() + 29)
+		maxDate.setDate(maxDate.getDate() + maxOffsetDays)
+
+		if (!canIssueAnySolo) {
+			setError(
+				`Trainee has used ${trainee?.soloDaysUsed ?? 0}/${MAX_SOLO_DAYS} solo days at this rating (GCAP 7.3c). No further solo can be issued until the next rating.`,
+			)
+			return false
+		}
 
 		if (date > maxDate) {
-			setError("Solo endorsement cannot exceed 30 days from today")
+			if (maxOffsetDays < LOCAL_POLICY_MAX_OFFSET_DAYS) {
+				setError(
+					`This would exceed the 90-day GCAP solo limit for this rating. Only ${soloDaysRemaining} day(s) remain (${trainee?.soloDaysUsed ?? 0}/${MAX_SOLO_DAYS} used) — maximum expiry date is ${format(maxDate, "PPP")}.`,
+				)
+			} else {
+				setError("Solo endorsement cannot exceed 30 days from today")
+			}
 			return false
 		}
 
@@ -461,7 +488,7 @@ export function SoloModal({
 										className={cn(
 											"font-semibold",
 											trainee.soloDaysUsed >= 90 &&
-												"text-danger-600 dark:text-danger-400",
+											"text-danger-600 dark:text-danger-400",
 										)}
 									>
 										{trainee.soloDaysUsed} / 90
@@ -559,12 +586,25 @@ export function SoloModal({
 
 					{mode === "none" && (
 						<div className="space-y-3">
+							{!canIssueAnySolo && (
+								<Alert variant="destructive">
+									<AlertCircle className="h-4 w-4" />
+									<AlertDescription>
+										Trainee has used {trainee?.soloDaysUsed}/{MAX_SOLO_DAYS}{" "}
+										solo days at this rating (GCAP 7.3c). No new or extended
+										solo endorsement can be issued until they are upgraded to
+										the next rating.
+									</AlertDescription>
+								</Alert>
+							)}
 							{!trainee?.soloStatus ? (
 								<Button
 									className="w-full"
-									disabled={!canProceed && !requirementsError}
+									disabled={
+										(!canProceed && !requirementsError) || !canIssueAnySolo
+									}
 									onClick={() => {
-										if (canProceed || requirementsError) {
+										if ((canProceed || requirementsError) && canIssueAnySolo) {
 											setMode("add")
 										}
 									}}
@@ -578,6 +618,7 @@ export function SoloModal({
 								<>
 									<Button
 										className="w-full"
+										disabled={!canIssueAnySolo}
 										onClick={() => setMode("extend")}
 										variant="default"
 									>
@@ -624,10 +665,12 @@ export function SoloModal({
 										<Calendar
 											disabled={(date) => {
 												const minDate = new Date()
-												minDate.setDate(minDate.getDate() + 7)
+												minDate.setDate(
+													minDate.getDate() + MIN_SOLO_DURATION_DAYS,
+												)
 												minDate.setHours(0, 0, 0, 0)
 												const maxDate = new Date()
-												maxDate.setDate(maxDate.getDate() + 29)
+												maxDate.setDate(maxDate.getDate() + maxOffsetDays)
 												return date < minDate || date > maxDate
 											}}
 											mode="single"
@@ -641,8 +684,16 @@ export function SoloModal({
 								</Popover>
 								<p className="text-xs text-muted-foreground">
 									{mode === "add"
-										? "Select when this solo endorsement will expire (minimum 7 days, maximum 30 days from today)"
-										: "Select new expiry date to extend the solo endorsement (minimum 7 days, maximum 30 days from today)"}
+										? `Select when this solo endorsement will expire (minimum 7 days, maximum ${maxOffsetDays + 1} days from today)`
+										: `Select new expiry date to extend the solo endorsement (minimum 7 days, maximum ${maxOffsetDays + 1} days from today)`}
+									{maxOffsetDays < LOCAL_POLICY_MAX_OFFSET_DAYS && (
+										<>
+											{" "}
+											— limited by the 90-day GCAP solo cap ({soloDaysRemaining}{" "}
+											day(s) remaining, {trainee?.soloDaysUsed}/{MAX_SOLO_DAYS}{" "}
+											used)
+										</>
+									)}
 								</p>
 							</div>
 

@@ -27,6 +27,8 @@ class ExtendSoloEndorsement
             ]);
         }
 
+        $this->assertWithinSoloDayBudget($trainee, $expiryDate);
+
         $this->vatEud->deleteSoloEndorsement($solo->id);
 
         $formattedExpiry = $expiryDate->setTime(23, 59, 0)->format('Y-m-d\TH:i:s.v\Z');
@@ -47,5 +49,27 @@ class ExtendSoloEndorsement
         $this->vatEud->refreshEndorsementCache();
 
         event(new SoloExtended($course, $trainee, $mentor, $course->solo_station, $formattedExpiry));
+    }
+
+    private function assertWithinSoloDayBudget(User $trainee, Carbon $expiryDate): void
+    {
+        $used = $trainee->solo_days_used ?? 0;
+        $remaining = GrantSoloEndorsement::MAX_SOLO_DAYS - $used;
+
+        if ($remaining <= 0) {
+            throw ValidationException::withMessages([
+                'error' => "Trainee has already used {$used}/".GrantSoloEndorsement::MAX_SOLO_DAYS.' solo days allowed at this rating (GCAP 7.3c). The solo endorsement cannot be extended further until they are upgraded to the next rating.',
+            ]);
+        }
+
+        $requestedDays = Carbon::now()->startOfDay()->diffInDays($expiryDate->copy()->startOfDay());
+
+        if ($requestedDays > $remaining) {
+            $maxExpiry = Carbon::now()->startOfDay()->addDays($remaining)->format('Y-m-d');
+
+            throw ValidationException::withMessages([
+                'error' => "This expiry date would exceed the 90-day GCAP solo limit for this rating. Trainee has used {$used}/".GrantSoloEndorsement::MAX_SOLO_DAYS." days, so only {$remaining} day(s) remain. Maximum expiry date is {$maxExpiry}.",
+            ]);
+        }
     }
 }

@@ -1362,6 +1362,18 @@ test('tier2 request fails when user already has the endorsement', function () {
         ->assertRedirect();
 });
 
+test('tier2 request failure surfaces an error message via the shared flash prop', function () {
+    $tier2 = Tier2Endorsement::create(['name' => 'Test Tier2', 'position' => 'EDXX_AFIS', 'moodle_course_id' => 0]);
+    $user = User::factory()->create(['vatsim_id' => 1439600]);
+
+    $this->actingAs($user)
+        ->post(route('endorsements.tier2.request', $tier2->id))
+        ->assertSessionHas('flash.error');
+
+    $this->get(route('endorsements.trainee'))
+        ->assertInertia(fn ($page) => $page->where('flash.error', fn ($error) => filled($error)));
+});
+
 // ─── MentorManagementController: courses index ────────────────────────────────
 
 test('unauthenticated user is redirected from courses index', function () {
