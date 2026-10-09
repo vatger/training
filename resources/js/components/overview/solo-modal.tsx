@@ -103,6 +103,13 @@ export function SoloModal({
 		return leftover > 0 && leftover < MIN_SOLO_DURATION_DAYS
 	}
 
+	// Below 2x the minimum solo length, the dead zone swallows most or all of the
+	// pickable range — at 13 days remaining, granting the entire budget is the
+	// ONLY valid choice; at 14, it's one of just two. Above that threshold there's
+	// always a comfortable safe range below the max, so calling this out would
+	// just be clutter for a constraint the mentor is unlikely to ever hit.
+	const showDeadZoneHint = soloDaysRemaining <= MIN_SOLO_DURATION_DAYS * 2
+
 	useEffect(() => {
 		if (isOpen && trainee) {
 			const defaultDate = new Date()
@@ -718,21 +725,28 @@ export function SoloModal({
 											day(s) remaining, {trainee?.soloDaysUsed}/{MAX_SOLO_DAYS}{" "}
 											used)
 										</>
-									)}{" "}
-									Dates that would leave an unusable 1–6 day remainder are
-									disabled, since any future solo needs at least 7 days (GCAP
-									7.3c).
+									)}
+									{showDeadZoneHint && (
+										<>
+											{" "}
+											Dates that would leave an unusable 1–6 day remainder are
+											disabled, since any future solo needs at least 7 days
+											(GCAP 7.3c).
+										</>
+									)}
 								</p>
-								<Button
-									className="w-full"
-									onClick={useFullRemainingBudget}
-									size="sm"
-									type="button"
-									variant="outline"
-								>
-									Use entire remaining budget ({soloDaysRemaining} day
-									{soloDaysRemaining === 1 ? "" : "s"})
-								</Button>
+								{showDeadZoneHint && (
+									<Button
+										className="w-full"
+										onClick={useFullRemainingBudget}
+										size="sm"
+										type="button"
+										variant="outline"
+									>
+										Use entire remaining budget ({soloDaysRemaining} day
+										{soloDaysRemaining === 1 ? "" : "s"})
+									</Button>
+								)}
 							</div>
 
 							{error && (
