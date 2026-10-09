@@ -1,5 +1,5 @@
 import { router } from "@inertiajs/react"
-import { format } from "date-fns"
+import { differenceInCalendarDays, format } from "date-fns"
 import {
 	AlertCircle,
 	AlertTriangle,
@@ -97,6 +97,11 @@ export function SoloModal({
 		LOCAL_POLICY_MAX_OFFSET_DAYS,
 		soloDaysRemaining,
 	)
+
+	const isDeadZoneOffset = (offsetDays: number): boolean => {
+		const leftover = soloDaysRemaining - offsetDays
+		return leftover > 0 && leftover < MIN_SOLO_DURATION_DAYS
+	}
 
 	useEffect(() => {
 		if (isOpen && trainee) {
@@ -226,7 +231,24 @@ export function SoloModal({
 			return false
 		}
 
+		const offsetDays = differenceInCalendarDays(date, new Date())
+
+		if (isDeadZoneOffset(offsetDays)) {
+			const leftover = soloDaysRemaining - offsetDays
+			setError(
+				`This would leave only ${leftover} day(s) of the 90-day GCAP budget remaining — below the 7-day minimum for any future solo, so that time could never be used. Either grant the entire ${soloDaysRemaining} remaining day(s), or pick a duration that leaves at least ${MIN_SOLO_DURATION_DAYS} day(s) spare.`,
+			)
+			return false
+		}
+
 		return true
+	}
+
+	const useFullRemainingBudget = () => {
+		const date = new Date()
+		date.setDate(date.getDate() + soloDaysRemaining)
+		setExpiryDate(date)
+		setError(null)
 	}
 
 	const handleAddSolo = () => {
@@ -671,7 +693,10 @@ export function SoloModal({
 												minDate.setHours(0, 0, 0, 0)
 												const maxDate = new Date()
 												maxDate.setDate(maxDate.getDate() + maxOffsetDays)
-												return date < minDate || date > maxDate
+												if (date < minDate || date > maxDate) return true
+												return isDeadZoneOffset(
+													differenceInCalendarDays(date, new Date()),
+												)
 											}}
 											mode="single"
 											onSelect={(date) => {
@@ -693,8 +718,21 @@ export function SoloModal({
 											day(s) remaining, {trainee?.soloDaysUsed}/{MAX_SOLO_DAYS}{" "}
 											used)
 										</>
-									)}
+									)}{" "}
+									Dates that would leave an unusable 1–6 day remainder are
+									disabled, since any future solo needs at least 7 days (GCAP
+									7.3c).
 								</p>
+								<Button
+									className="w-full"
+									onClick={useFullRemainingBudget}
+									size="sm"
+									type="button"
+									variant="outline"
+								>
+									Use entire remaining budget ({soloDaysRemaining} day
+									{soloDaysRemaining === 1 ? "" : "s"})
+								</Button>
 							</div>
 
 							{error && (

@@ -63,12 +63,19 @@ class ExtendSoloEndorsement
         }
 
         $requestedDays = Carbon::now()->startOfDay()->diffInDays($expiryDate->copy()->startOfDay());
+        $maxExpiry = Carbon::now()->startOfDay()->addDays($remaining)->format('Y-m-d');
 
         if ($requestedDays > $remaining) {
-            $maxExpiry = Carbon::now()->startOfDay()->addDays($remaining)->format('Y-m-d');
-
             throw ValidationException::withMessages([
                 'error' => "This expiry date would exceed the 90-day GCAP solo limit for this rating. Trainee has used {$used}/".GrantSoloEndorsement::MAX_SOLO_DAYS." days, so only {$remaining} day(s) remain. Maximum expiry date is {$maxExpiry}.",
+            ]);
+        }
+
+        $leftover = $remaining - $requestedDays;
+
+        if ($leftover > 0 && $leftover < GrantSoloEndorsement::MIN_SOLO_DURATION_DAYS) {
+            throw ValidationException::withMessages([
+                'error' => "Extending to a {$requestedDays}-day solo would leave only {$leftover} day(s) of the 90-day GCAP budget remaining — below the 7-day minimum for any future solo, so that time could never be used. Either extend to use the entire {$remaining} remaining day(s) (expiry {$maxExpiry}), or pick a duration that leaves at least ".GrantSoloEndorsement::MIN_SOLO_DURATION_DAYS.' day(s) spare.',
             ]);
         }
     }

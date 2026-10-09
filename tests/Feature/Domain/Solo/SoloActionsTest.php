@@ -300,8 +300,9 @@ test('GrantSoloEndorsement throws when the requested expiry would exceed the rem
 test('GrantSoloEndorsement succeeds when the requested expiry fits within the remaining 90-day budget', function () {
     Event::fake();
 
-    // 79/90 used — 11 days remain, mentor asks for a 7-day solo.
-    $trainee = User::factory()->create(['vatsim_id' => 9999990, 'solo_days_used' => 79]);
+    // 70/90 used — 20 days remain, mentor asks for a 7-day solo, leaving 13
+    // days spare (>= the 7-day minimum), so no dead zone is created.
+    $trainee = User::factory()->create(['vatsim_id' => 9999990, 'solo_days_used' => 70]);
     $mentor = User::factory()->create();
 
     $course = Course::factory()->create([
@@ -314,6 +315,57 @@ test('GrantSoloEndorsement succeeds when the requested expiry fits within the re
     Cache::flush();
 
     app(GrantSoloEndorsement::class)->execute($course, $trainee, $mentor, now()->addDays(7));
+
+    Event::assertDispatched(SoloGranted::class);
+});
+
+test('GrantSoloEndorsement throws when the requested duration would strand an unusable leftover under 7 days', function () {
+    Event::fake();
+
+    // 79/90 used — 11 days remain. A minimal 7-day grant would leave only 4
+    // days spare, below the 7-day minimum any future solo needs — a dead zone.
+    $trainee = User::factory()->create(['vatsim_id' => 9999989, 'solo_days_used' => 79]);
+    $mentor = User::factory()->create();
+
+    $course = Course::factory()->create([
+        'solo_station' => 'EDDF_TWR',
+        'position' => 'TWR',
+        'moodle_course_ids' => [],
+    ]);
+
+    $this->app->bind(VatEudClientInterface::class, fn () => fakeClientWithPassingExam(9));
+    Cache::flush();
+
+    try {
+        app(GrantSoloEndorsement::class)->execute($course, $trainee, $mentor, now()->addDays(7));
+        $this->fail('Expected ValidationException');
+    } catch (ValidationException $e) {
+        expect($e->errors()['error'][0])
+            ->toContain('leave only 4 day(s)')
+            ->toContain('entire 11 remaining day(s)');
+    }
+
+    Event::assertNotDispatched(SoloGranted::class);
+});
+
+test('GrantSoloEndorsement succeeds when granting the entire remaining budget even if it is under 14 days', function () {
+    Event::fake();
+
+    // 79/90 used — 11 days remain. Granting exactly the full 11 remaining days
+    // leaves a 0-day leftover, which is fine (no future solo is stranded).
+    $trainee = User::factory()->create(['vatsim_id' => 9999988, 'solo_days_used' => 79]);
+    $mentor = User::factory()->create();
+
+    $course = Course::factory()->create([
+        'solo_station' => 'EDDF_TWR',
+        'position' => 'TWR',
+        'moodle_course_ids' => [],
+    ]);
+
+    $this->app->bind(VatEudClientInterface::class, fn () => fakeClientWithPassingExam(9));
+    Cache::flush();
+
+    app(GrantSoloEndorsement::class)->execute($course, $trainee, $mentor, now()->addDays(11));
 
     Event::assertDispatched(SoloGranted::class);
 });
@@ -479,6 +531,67 @@ test('ExtendSoloEndorsement throws when extension would exceed the 90-day budget
         expect($e->errors()['error'][0])
             ->toContain('11 day(s) remain')
             ->toContain('79/90');
+    }
+
+    expect($deleteWasCalled)->toBeFalse();
+    Event::assertNotDispatched(SoloExtended::class);
+});
+
+test('ExtendSoloEndorsement throws when extending would strand an unusable leftover under 7 days, and does not delete the existing solo', function () {
+    Event::fake();
+
+    // 79/90 used — 11 days remain. A minimal 7-day extension would leave only
+    // 4 days spare, below the 7-day minimum any future solo needs.
+    $trainee = User::factory()->create(['vatsim_id' => 1601614, 'solo_days_used' => 79]);
+    $mentor = User::factory()->create();
+
+    $course = Course::factory()->create([
+        'solo_station' => 'EDDL_TWR',
+        'position' => 'TWR',
+        'moodle_course_ids' => [],
+    ]);
+
+    $deleteWasCalled = false;
+
+    $this->app->bind(
+        VatEudClientInterface::class,
+        fn () => new class($deleteWasCalled) extends FakeVatEudClient
+        {
+            public function __construct(private bool &$deleteWasCalled) {}
+
+            public function getSoloEndorsements(): array
+            {
+                return [
+                    SoloEndorsementData::fromApiResponse([
+                        'id' => 89,
+                        'user_cid' => 1601614,
+                        'position' => 'EDDL_TWR',
+                        'facility' => 9,
+                        'instructor_cid' => 1439600,
+                        'position_days' => 79,
+                        'expiry' => now()->addDays(5)->toISOString(),
+                        'created_at' => now()->subDays(79)->toISOString(),
+                    ]),
+                ];
+            }
+
+            public function deleteSoloEndorsement(int $soloId): bool
+            {
+                $this->deleteWasCalled = true;
+
+                return true;
+            }
+        },
+    );
+    Cache::flush();
+
+    try {
+        app(ExtendSoloEndorsement::class)->execute($course, $trainee, $mentor, now()->addDays(7));
+        $this->fail('Expected ValidationException');
+    } catch (ValidationException $e) {
+        expect($e->errors()['error'][0])
+            ->toContain('leave only 4 day(s)')
+            ->toContain('entire 11 remaining day(s)');
     }
 
     expect($deleteWasCalled)->toBeFalse();
