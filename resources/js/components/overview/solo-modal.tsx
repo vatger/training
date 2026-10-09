@@ -510,7 +510,7 @@ export function SoloModal({
 										className={cn(
 											"font-semibold",
 											trainee.soloDaysUsed >= 90 &&
-											"text-danger-600 dark:text-danger-400",
+												"text-danger-600 dark:text-danger-400",
 										)}
 									>
 										{trainee.soloDaysUsed} / 90
