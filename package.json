@@ -46,7 +46,7 @@
 		"@vitejs/plugin-react": "^6.1.2",
 		"class-variance-authority": "^0.7.1",
 		"clsx": "^2.1.1",
-		"concurrently": "^10.0.5",
+		"concurrently": "^10.0.6",
 		"date-fns": "^4.4.0",
 		"globals": "^17.13.0",
 		"laravel-vite-plugin": "^3.2.0",
