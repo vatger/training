@@ -35,10 +35,6 @@ class User extends Authenticatable implements FilamentUser
         'gdpr_deleted_at',
     ];
 
-    // Excludes the password hash/remember token (never worth logging), and
-    // gdpr_deleted_at (already covered by the dedicated GDPR deletion log
-    // entry, App\Listeners\LogUserDeleted) — everything else here is fair
-    // game for an audit trail, including the is_superuser/is_admin/is_staff flags.
     protected $loggedAttributes = [
         'vatsim_id',
         'first_name',

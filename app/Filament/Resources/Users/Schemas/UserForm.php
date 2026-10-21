@@ -12,7 +12,9 @@ use App\Filament\Support\UserSearch;
 use App\Models\ChiefOfTraining;
 use App\Models\Course;
 use App\Models\FamiliarisationSector;
+use App\Models\Subfamiliarisation;
 use App\Models\User;
+use App\Services\SubfamiliarisationService;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Forms;
@@ -376,6 +378,69 @@ class UserForm
                                 ]),
                             ])
                             ->placeholder('No familiarisations on record.'),
+                    ])->columns(1),
+
+                Section::make('Subfamiliarisations')
+                    ->collapsed()
+                    ->description('A user who holds only one sector of a subfamiliarisation may still be cleared for combined control of both if the extra requirements below are met. Sessions are logged via Subfamiliarisation Sessions, or by a mentor from the overview page.')
+                    ->schema([
+                        RepeatableEntry::make('subfamiliarisations')
+                            ->hiddenLabel()
+                            ->state(function ($record) {
+                                if (! $record) {
+                                    return [];
+                                }
+
+                                $service = app(SubfamiliarisationService::class);
+
+                                return Subfamiliarisation::with(['primarySector', 'secondarySector'])
+                                    ->get()
+                                    ->map(function (Subfamiliarisation $subfamiliarisation) use ($record, $service) {
+                                        $held = $service->heldSectorIds($record, $subfamiliarisation);
+                                        $session = $subfamiliarisation->sessions()->with('mentor')->where('user_id', $record->id)->first();
+
+                                        return [
+                                            'name' => $subfamiliarisation->name,
+                                            'held' => collect($held)->isEmpty()
+                                                ? '—'
+                                                : collect($held)
+                                                    ->map(fn ($id) => $id === $subfamiliarisation->primary_sector_id ? $subfamiliarisation->primarySector->name : $subfamiliarisation->secondarySector->name)
+                                                    ->implode(', '),
+                                            'moodle_complete' => count($held) === 1
+                                                ? ($service->hasCompletedMoodleRequirements($record, $subfamiliarisation) ? 'Complete' : 'Incomplete')
+                                                : 'N/A',
+                                            'session' => $session
+                                                ? "{$session->completed_at->format('Y-m-d')} by {$session->mentor->name}"
+                                                : 'Not logged',
+                                            'qualified' => $service->isQualifiedForCombinedControl($record, $subfamiliarisation) ? 'Yes' : 'No',
+                                        ];
+                                    })
+                                    ->values()
+                                    ->all();
+                            })
+                            ->table([
+                                TableColumn::make('Subfamiliarisation'),
+                                TableColumn::make('Sector(s) Held'),
+                                TableColumn::make('Moodle Courses'),
+                                TableColumn::make('Practical Session'),
+                                TableColumn::make('Combined Control'),
+                            ])
+                            ->schema([
+                                TextEntry::make('name'),
+                                TextEntry::make('held'),
+                                TextEntry::make('moodle_complete')
+                                    ->badge()
+                                    ->color(fn ($state) => match ($state) {
+                                        'Complete' => 'success',
+                                        'N/A' => 'gray',
+                                        default => 'warning',
+                                    }),
+                                TextEntry::make('session'),
+                                TextEntry::make('qualified')
+                                    ->badge()
+                                    ->color(fn ($state) => $state === 'Yes' ? 'success' : 'danger'),
+                            ])
+                            ->placeholder('No subfamiliarisations configured.'),
                     ])->columns(1),
 
                 Section::make('Training Logs')

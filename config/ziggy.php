@@ -42,6 +42,8 @@ return [
         // Familiarisation routes
         'familiarisations.index',
         'familiarisations.user',
+        'subfamiliarisation-sessions.create',
+        'subfamiliarisation-sessions.store',
 
         // Find user
         'users.search',

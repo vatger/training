@@ -11,6 +11,7 @@ use App\Http\Controllers\Solo\SoloController;
 use App\Http\Controllers\TraineeOrderController;
 use App\Http\Controllers\Training\MentorManagementController;
 use App\Http\Controllers\Training\MentorOverviewController;
+use App\Http\Controllers\Training\SubfamiliarisationSessionController;
 use App\Http\Controllers\Training\TraineeManagementController;
 use App\Http\Controllers\Training\TrainingRemarkController;
 use App\Http\Controllers\Training\WaitingListController;
@@ -66,6 +67,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware('mentor')->group(function () {
         Route::post('users/search', [UserSearchController::class, 'search'])->name('users.search');
         Route::get('users/{vatsimId}', [UserSearchController::class, 'show'])->name('users.profile');
+
+        Route::prefix('subfamiliarisation-sessions')->name('subfamiliarisation-sessions.')->middleware('mentor')->group(function () {
+            Route::get('/create/{traineeId}/{courseId}', [SubfamiliarisationSessionController::class, 'create'])->name('create');
+            Route::post('/', [SubfamiliarisationSessionController::class, 'store'])->name('store');
+        });
 
         Route::prefix('overview')->name('overview.')->group(function () {
             Route::get('/', [MentorOverviewController::class, 'index'])

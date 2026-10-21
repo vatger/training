@@ -11,6 +11,8 @@ use App\Filament\Resources\Familiarisations\FamiliarisationResource;
 use App\Filament\Resources\FamiliarisationSectors\FamiliarisationSectorResource;
 use App\Filament\Resources\LeadingMentors\LeadingMentorResource;
 use App\Filament\Resources\Roles\RoleResource;
+use App\Filament\Resources\Subfamiliarisations\SubfamiliarisationResource;
+use App\Filament\Resources\SubfamiliarisationSessions\SubfamiliarisationSessionResource;
 use App\Filament\Resources\Tier2Endorsements\Tier2EndorsementResource;
 use App\Filament\Resources\TrainingLogs\TrainingLogResource;
 use App\Filament\Resources\Users\UserResource;
@@ -39,6 +41,8 @@ $resources = [
     FamiliarisationSectorResource::class,
     LeadingMentorResource::class,
     RoleResource::class,
+    SubfamiliarisationResource::class,
+    SubfamiliarisationSessionResource::class,
     Tier2EndorsementResource::class,
     TrainingLogResource::class,
     UserResource::class,

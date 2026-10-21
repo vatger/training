@@ -93,7 +93,7 @@ class CourseForm
                             ->relationship('familiarisationSector', 'name')
                             ->searchable()
                             ->preload()
-                            ->visible(fn (Get $get) => $get('type') === 'FAM'),
+                            ->visible(fn (Get $get) => $get('type') === 'FAM' || ($get('type') === 'RTG' && $get('position') === 'CTR')),
 
                         Select::make('requiredFamiliarisationSectors')
                             ->label('Required Familiarisations')

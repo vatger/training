@@ -22,6 +22,7 @@ export interface Trainee {
 		updated_at: string | null
 		author_name: string | null
 	} | null
+	hasSubfamiliarisationSession: boolean
 }
 
 export function getInitials(name: string): string {
@@ -39,6 +40,7 @@ export interface MentorCourse {
 	activeTrainees: number
 	trainees: Trainee[]
 	loaded?: boolean
+	subfamiliarisations?: { id: number; name: string }[]
 }
 
 export interface MentorStatistics {

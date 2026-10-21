@@ -17,6 +17,7 @@ import {
 	Clock,
 	Eye,
 	FileText,
+	GraduationCap,
 	Loader2,
 	MoreVertical,
 	Plus,
@@ -484,6 +485,37 @@ export function TraineeDataTable({
 								>
 									<Plus className="h-3 w-3" />
 								</Button>
+								{course.subfamiliarisations &&
+									course.subfamiliarisations.length > 0 &&
+									!trainee.hasSubfamiliarisationSession && (
+										<TooltipProvider>
+											<Tooltip>
+												<TooltipTrigger asChild>
+													<Button
+														className="size-6"
+														onClick={() => {
+															router.visit(
+																route("subfamiliarisation-sessions.create", {
+																	traineeId: trainee.id,
+																	courseId: course.id,
+																}),
+															)
+														}}
+														size="icon"
+														variant="outline"
+													>
+														<GraduationCap className="h-3 w-3" />
+													</Button>
+												</TooltipTrigger>
+												<TooltipContent>
+													Log subfamiliarisation session:{" "}
+													{course.subfamiliarisations
+														.map((sub) => sub.name)
+														.join(", ")}
+												</TooltipContent>
+											</Tooltip>
+										</TooltipProvider>
+									)}
 							</div>
 						) : (
 							<div className="flex items-center gap-1">
@@ -505,6 +537,37 @@ export function TraineeDataTable({
 								>
 									<Plus className="h-3 w-3" />
 								</Button>
+								{course.subfamiliarisations &&
+									course.subfamiliarisations.length > 0 &&
+									!trainee.hasSubfamiliarisationSession && (
+										<TooltipProvider>
+											<Tooltip>
+												<TooltipTrigger asChild>
+													<Button
+														className="size-6"
+														onClick={() => {
+															router.visit(
+																route("subfamiliarisation-sessions.create", {
+																	traineeId: trainee.id,
+																	courseId: course.id,
+																}),
+															)
+														}}
+														size="icon"
+														variant="outline"
+													>
+														<GraduationCap className="h-3 w-3" />
+													</Button>
+												</TooltipTrigger>
+												<TooltipContent>
+													Log subfamiliarisation session:{" "}
+													{course.subfamiliarisations
+														.map((sub) => sub.name)
+														.join(", ")}
+												</TooltipContent>
+											</Tooltip>
+										</TooltipProvider>
+									)}
 							</div>
 						)}
 						{trainee.lastSession && (

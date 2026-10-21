@@ -3,11 +3,17 @@
 namespace App\Services;
 
 use App\Models\Course;
+use App\Models\Subfamiliarisation;
 use App\Models\User;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class MentorCourseResponseBuilder
 {
+    public function __construct(
+        private SubfamiliarisationService $subfamiliarisationService,
+    ) {}
+
     public function build(Course $course, User $user, array $endorsements = []): array
     {
         $trainees = DB::table('course_trainees')
@@ -42,6 +48,18 @@ class MentorCourseResponseBuilder
             ->get()
             ->groupBy('trainee_id');
 
+        $relevantSubfamiliarisationIds = $this->subfamiliarisationService
+            ->relevantSubfamiliarisationsForCourse($course)
+            ->pluck('id');
+
+        $traineesWithSubfamiliarisationSession = $relevantSubfamiliarisationIds->isEmpty()
+            ? collect()
+            : DB::table('subfamiliarisation_sessions')
+                ->whereIn('subfamiliarisation_id', $relevantSubfamiliarisationIds)
+                ->whereIn('user_id', $trainees->pluck('id')->toArray())
+                ->pluck('user_id')
+                ->unique();
+
         return [
             'id' => $course->id,
             'name' => $course->name,
@@ -50,11 +68,15 @@ class MentorCourseResponseBuilder
             'soloStation' => $course->solo_station,
             'activeTrainees' => $trainees->count(),
             'loaded' => true,
-            'trainees' => $trainees->map(fn ($t) => $this->mapTrainee($t, $user, $logs, $endorsements))->values(),
+            'trainees' => $trainees->map(fn ($t) => $this->mapTrainee($t, $user, $logs, $endorsements, $traineesWithSubfamiliarisationSession))->values(),
+            'subfamiliarisations' => $this->subfamiliarisationService
+                ->relevantSubfamiliarisationsForCourse($course)
+                ->map(fn (Subfamiliarisation $s) => ['id' => $s->id, 'name' => $s->name])
+                ->values(),
         ];
     }
 
-    private function mapTrainee(object $t, User $user, $logs, array $endorsements): array
+    private function mapTrainee(object $t, User $user, $logs, array $endorsements, Collection $traineesWithSubfamiliarisationSession): array
     {
         $traineeLog = $logs->get($t->id, collect());
         $latest = $traineeLog->last();
@@ -76,6 +98,7 @@ class MentorCourseResponseBuilder
             'soloDaysUsed' => (int) $t->solo_days_used,
             'soloStatus' => $endorsements[$t->vatsim_id]['soloStatus'] ?? null,
             'endorsementStatus' => $endorsements[$t->vatsim_id]['endorsementStatus'] ?? null,
+            'hasSubfamiliarisationSession' => $traineesWithSubfamiliarisationSession->contains($t->id),
         ];
     }
 

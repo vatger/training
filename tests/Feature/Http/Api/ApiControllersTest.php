@@ -2,6 +2,7 @@
 
 use App\Domain\Gdpr\Actions\AnonymizeUser;
 use App\Domain\Gdpr\Events\UserDeleted;
+use App\Integrations\Moodle\MoodleClientInterface;
 use App\Integrations\VatEud\FakeVatEudClient;
 use App\Integrations\VatEud\VatEudClientInterface;
 use App\Models\ActivityLog;
@@ -10,6 +11,8 @@ use App\Models\Course;
 use App\Models\Cpt;
 use App\Models\Familiarisation;
 use App\Models\FamiliarisationSector;
+use App\Models\Subfamiliarisation;
+use App\Models\SubfamiliarisationSession;
 use App\Models\TrainingLog;
 use App\Models\User;
 use App\Models\WaitingListEntry;
@@ -449,6 +452,87 @@ describe('FamiliarisationController', function () {
         expect($response->json('data'))->toHaveCount(2);
         $response->assertJsonFragment(['vatsim_id' => 6666666, 'fir' => 'EDGG'])
             ->assertJsonFragment(['vatsim_id' => 7777777, 'fir' => 'EDMM']);
+    });
+
+    test('does not list a user holding only one subfamiliarisation sector as qualified when requirements are unmet', function () {
+        apiCreateKey(['familiarisations.read']);
+
+        $primary = FamiliarisationSector::create(['name' => 'EMS', 'fir' => 'EDMM']);
+        $secondary = FamiliarisationSector::create(['name' => 'NH', 'fir' => 'EDMM']);
+        $subfamiliarisation = Subfamiliarisation::create([
+            'name' => 'EMS / NH Maastricht Combined Control',
+            'primary_sector_id' => $primary->id,
+            'secondary_sector_id' => $secondary->id,
+            'moodle_course_ids' => [101, 102],
+        ]);
+
+        $user = User::factory()->create(['vatsim_id' => 8888888]);
+        Familiarisation::create(['user_id' => $user->id, 'familiarisation_sector_id' => $subfamiliarisation->primary_sector_id]);
+
+        $response = $this->withHeaders(apiAuthHeaders())
+            ->getJson('/api/familiarisations');
+
+        $response->assertOk();
+        expect($response->json('subfamiliarisation_qualifications'))->toBeEmpty();
+    });
+
+    test('lists a user who qualifies via the subfamiliarisation in subfamiliarisation_qualifications', function () {
+        apiCreateKey(['familiarisations.read']);
+
+        $primary = FamiliarisationSector::create(['name' => 'EMS', 'fir' => 'EDMM']);
+        $secondary = FamiliarisationSector::create(['name' => 'NH', 'fir' => 'EDMM']);
+        $subfamiliarisation = Subfamiliarisation::create([
+            'name' => 'EMS / NH Maastricht Combined Control',
+            'primary_sector_id' => $primary->id,
+            'secondary_sector_id' => $secondary->id,
+            'moodle_course_ids' => [101, 102],
+        ]);
+
+        $user = User::factory()->create(['vatsim_id' => 9999999]);
+        Familiarisation::create(['user_id' => $user->id, 'familiarisation_sector_id' => $subfamiliarisation->primary_sector_id]);
+
+        $mentor = User::factory()->create();
+        SubfamiliarisationSession::create([
+            'subfamiliarisation_id' => $subfamiliarisation->id,
+            'user_id' => $user->id,
+            'mentor_id' => $mentor->id,
+            'completed_at' => now(),
+        ]);
+
+        $moodleClient = new class implements MoodleClientInterface
+        {
+            public function userExists(int $vatsimId): bool
+            {
+                return true;
+            }
+
+            public function getCourseCompletion(int $vatsimId, int $courseId): bool
+            {
+                return true;
+            }
+
+            public function getCourseName(int $courseId): ?string
+            {
+                return 'Moodle Course';
+            }
+
+            public function enrollUser(int $vatsimId, int $courseId): bool
+            {
+                return true;
+            }
+        };
+        $this->app->instance(MoodleClientInterface::class, $moodleClient);
+
+        $response = $this->withHeaders(apiAuthHeaders())
+            ->getJson('/api/familiarisations');
+
+        $response->assertOk()
+            ->assertJsonFragment([
+                'vatsim_id' => 9999999,
+                'subfamiliarisation' => 'EMS / NH Maastricht Combined Control',
+                'granted_sector' => 'NH',
+                'granted_fir' => 'EDMM',
+            ]);
     });
 });
 
