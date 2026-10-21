@@ -1,5 +1,10 @@
 FROM php:8.4-alpine AS frontend
 
+# Security floor for CVE-2026-109618 / CVE-2026-109619 (unauthenticated RCE). Fails the
+# build if the resolved base image is older than the patched release, instead of silently
+# shipping a vulnerable PHP.
+RUN php -r 'if (version_compare(PHP_VERSION, "8.4.27", "<")) { fwrite(STDERR, "PHP ".PHP_VERSION." is below the required security minimum 8.4.27 (CVE-2026-109618/109619)\n"); exit(1); }'
+
 RUN apk add --no-cache \
     nodejs \
     npm \
@@ -32,6 +37,11 @@ RUN npm run build
 RUN rm -rf node_modules
 
 FROM php:8.4-fpm-alpine
+
+# Security floor for CVE-2026-109618 / CVE-2026-109619 (unauthenticated RCE). Fails the
+# build if the resolved base image is older than the patched release, instead of silently
+# shipping a vulnerable PHP.
+RUN php -r 'if (version_compare(PHP_VERSION, "8.4.27", "<")) { fwrite(STDERR, "PHP ".PHP_VERSION." is below the required security minimum 8.4.27 (CVE-2026-109618/109619)\n"); exit(1); }'
 
 RUN apk add --no-cache \
     icu-libs \
