@@ -12,7 +12,8 @@
 			"**",
 			"!public",
 			"!resources/js/components/ui/*",
-			"!resources/js/images/*.svg"
+			"!resources/js/images/*.svg",
+			"!.github/ISSUE_TEMPLATE"
 		]
 	},
 	"formatter": { "enabled": true, "indentStyle": "tab" },
