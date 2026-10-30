@@ -251,7 +251,7 @@ export function SoloModal({
 		return true
 	}
 
-	const useFullRemainingBudget = () => {
+	const fillRemainingBudget = () => {
 		const date = new Date()
 		date.setDate(date.getDate() + soloDaysRemaining)
 		setExpiryDate(date)
@@ -738,7 +738,7 @@ export function SoloModal({
 								{showDeadZoneHint && (
 									<Button
 										className="w-full"
-										onClick={useFullRemainingBudget}
+										onClick={fillRemainingBudget}
 										size="sm"
 										type="button"
 										variant="outline"

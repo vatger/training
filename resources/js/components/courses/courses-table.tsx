@@ -49,6 +49,40 @@ const getTypeColor = (type: string) => {
 	}
 }
 
+function SortableHeader({
+	field,
+	sortField,
+	sortDirection,
+	onSort,
+	children,
+}: {
+	field: SortField
+	sortField: SortField
+	sortDirection: SortDirection
+	onSort: (field: SortField) => void
+	children: React.ReactNode
+}) {
+	return (
+		<TableHead
+			className="cursor-pointer select-none hover:bg-muted/50"
+			onClick={() => onSort(field)}
+		>
+			<div className="flex items-center gap-2">
+				{children}
+				{sortField === field ? (
+					sortDirection === "asc" ? (
+						<ArrowUp className="h-4 w-4" />
+					) : (
+						<ArrowDown className="h-4 w-4" />
+					)
+				) : (
+					<ArrowUpDown className="h-4 w-4 opacity-50" />
+				)}
+			</div>
+		</TableHead>
+	)
+}
+
 export default function SortableCoursesTable({
 	courses: initialCourses,
 	onCourseUpdate,
@@ -140,42 +174,49 @@ export default function SortableCoursesTable({
 		})
 	}, [courses, sortField, sortDirection])
 
-	const SortableHeader = ({
-		field,
-		children,
-	}: {
-		field: SortField
-		children: React.ReactNode
-	}) => (
-		<TableHead
-			className="cursor-pointer select-none hover:bg-muted/50"
-			onClick={() => handleSort(field)}
-		>
-			<div className="flex items-center gap-2">
-				{children}
-				{sortField === field ? (
-					sortDirection === "asc" ? (
-						<ArrowUp className="h-4 w-4" />
-					) : (
-						<ArrowDown className="h-4 w-4" />
-					)
-				) : (
-					<ArrowUpDown className="h-4 w-4 opacity-50" />
-				)}
-			</div>
-		</TableHead>
-	)
-
 	return (
 		<div className="rounded-md border">
 			<Table>
 				<TableHeader>
 					<TableRow>
-						<SortableHeader field="name">Course Name</SortableHeader>
-						<SortableHeader field="airport_name">Airport</SortableHeader>
-						<SortableHeader field="type">Type</SortableHeader>
-						<SortableHeader field="position">Position</SortableHeader>
-						<SortableHeader field="waiting_list_joined_at">
+						<SortableHeader
+							field="name"
+							onSort={handleSort}
+							sortDirection={sortDirection}
+							sortField={sortField}
+						>
+							Course Name
+						</SortableHeader>
+						<SortableHeader
+							field="airport_name"
+							onSort={handleSort}
+							sortDirection={sortDirection}
+							sortField={sortField}
+						>
+							Airport
+						</SortableHeader>
+						<SortableHeader
+							field="type"
+							onSort={handleSort}
+							sortDirection={sortDirection}
+							sortField={sortField}
+						>
+							Type
+						</SortableHeader>
+						<SortableHeader
+							field="position"
+							onSort={handleSort}
+							sortDirection={sortDirection}
+							sortField={sortField}
+						>
+							Position
+						</SortableHeader>
+						<SortableHeader
+							field="waiting_list_joined_at"
+							onSort={handleSort}
+							sortDirection={sortDirection}
+							sortField={sortField}
+						>
 							Queue Status
 						</SortableHeader>
 						<TableHead>Actions</TableHead>
