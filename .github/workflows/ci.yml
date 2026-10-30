@@ -11,8 +11,8 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  PHP_VERSION: '8.4'
-  NODE_VERSION: '22'
+  PHP_VERSION: "8.4"
+  NODE_VERSION: "22"
 
 jobs:
   lint:

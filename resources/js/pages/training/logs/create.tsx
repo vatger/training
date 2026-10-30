@@ -142,6 +142,56 @@ interface LogFormData {
 const DRAFT_STORAGE_KEY_PREFIX_CREATE = "training-log-draft-"
 const DRAFT_STORAGE_KEY_PREFIX_EDIT = "training-log-edit-draft-"
 
+function RatingButton({
+	value,
+	label,
+	selected,
+	onClick,
+}: {
+	value: number
+	label: string
+	selected: boolean
+	onClick: () => void
+}) {
+	const getColorClasses = () => {
+		if (!selected) return ""
+
+		switch (value) {
+			case 4:
+				return "border-2 border-success-500 bg-success-500 text-white hover:bg-success-600 hover:text-white"
+			case 3:
+				return "border-2 border-primary-500 bg-primary-500 text-white hover:bg-primary-600 hover:text-white"
+			case 2:
+				return "border-2 border-warning-500 bg-warning-500 text-white hover:bg-warning-600 hover:text-white"
+			case 1:
+				return "border-2 border-danger-500 bg-danger-500 text-white hover:bg-danger-600 hover:text-white"
+			default:
+				return "border-2 dark:border-primary"
+		}
+	}
+
+	return (
+		<Tooltip delayDuration={200}>
+			<TooltipTrigger asChild>
+				<Button
+					className={cn(
+						"flex size-8 items-center justify-center rounded-lg text-base font-bold transition-all duration-200",
+						getColorClasses(),
+					)}
+					onClick={onClick}
+					type="button"
+					variant={"outline"}
+				>
+					{value === 0 ? "—" : value}
+				</Button>
+			</TooltipTrigger>
+			<TooltipContent>
+				<p>{label}</p>
+			</TooltipContent>
+		</Tooltip>
+	)
+}
+
 export default function CreateEditTrainingLog({
 	log,
 	trainee,
@@ -427,56 +477,6 @@ export default function CreateEditTrainingLog({
 		} else {
 			router.visit(route("overview.index"))
 		}
-	}
-
-	const RatingButton = ({
-		value,
-		label,
-		selected,
-		onClick,
-	}: {
-		value: number
-		label: string
-		selected: boolean
-		onClick: () => void
-	}) => {
-		const getColorClasses = () => {
-			if (!selected) return ""
-
-			switch (value) {
-				case 4:
-					return "border-2 border-success-500 bg-success-500 text-white hover:bg-success-600 hover:text-white"
-				case 3:
-					return "border-2 border-primary-500 bg-primary-500 text-white hover:bg-primary-600 hover:text-white"
-				case 2:
-					return "border-2 border-warning-500 bg-warning-500 text-white hover:bg-warning-600 hover:text-white"
-				case 1:
-					return "border-2 border-danger-500 bg-danger-500 text-white hover:bg-danger-600 hover:text-white"
-				default:
-					return "border-2 dark:border-primary"
-			}
-		}
-
-		return (
-			<Tooltip delayDuration={200}>
-				<TooltipTrigger asChild>
-					<Button
-						className={cn(
-							"flex size-8 items-center justify-center rounded-lg text-base font-bold transition-all duration-200",
-							getColorClasses(),
-						)}
-						onClick={onClick}
-						type="button"
-						variant={"outline"}
-					>
-						{value === 0 ? "—" : value}
-					</Button>
-				</TooltipTrigger>
-				<TooltipContent>
-					<p>{label}</p>
-				</TooltipContent>
-			</Tooltip>
-		)
 	}
 
 	return (
