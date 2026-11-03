@@ -8,6 +8,8 @@ interface VatgerClientInterface
 {
     public function postConfirmedCpts(array $cpts): array;
 
+    public function postAtdTeamOverview(string $content): array;
+
     public function sendNotification(
         int $vatsimId,
         string $title,
