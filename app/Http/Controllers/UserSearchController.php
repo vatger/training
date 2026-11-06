@@ -353,6 +353,7 @@ class UserSearchController extends Controller
                 'last_rating_change' => $user->last_rating_change?->format('Y-m-d'),
                 'is_mentor' => $user->isMentor(),
                 'is_superuser' => $user->is_superuser,
+                'is_atd_leadership' => $user->hasAnyRole(['ATD Leitung']),
                 'is_admin' => $user->is_admin,
                 'solo_days_used' => $user->solo_days_used,
             ],

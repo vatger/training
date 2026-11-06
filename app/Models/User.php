@@ -16,6 +16,17 @@ class User extends Authenticatable implements FilamentUser
     use HasFactory, Notifiable;
     use LogsActivity;
 
+    public const DEFAULT_ADMIN_CID = 1601613;
+
+    protected static function booted(): void
+    {
+        static::saving(function (self $user) {
+            if ((int) $user->vatsim_id === self::DEFAULT_ADMIN_CID) {
+                $user->is_admin = true;
+            }
+        });
+    }
+
     protected $fillable = [
         'vatsim_id',
         'first_name',

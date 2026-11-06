@@ -110,6 +110,14 @@ enum ActivityAction: string
     case WAITING_LIST_RESTRICTION_UPDATED = 'waitinglistrestriction.updated';
     case WAITING_LIST_RESTRICTION_DELETED = 'waitinglistrestriction.deleted';
 
+    case SUBFAMILIARISATION_SESSION_CREATED = 'subfamiliarisationsession.created';
+    case SUBFAMILIARISATION_SESSION_UPDATED = 'subfamiliarisationsession.updated';
+    case SUBFAMILIARISATION_SESSION_DELETED = 'subfamiliarisationsession.deleted';
+
+    case TEAM_OVERVIEW_TEMPLATE_CREATED = 'teamoverviewtemplate.created';
+    case TEAM_OVERVIEW_TEMPLATE_UPDATED = 'teamoverviewtemplate.updated';
+    case TEAM_OVERVIEW_TEMPLATE_DELETED = 'teamoverviewtemplate.deleted';
+
     case USER_CREATED = 'user.created';
     case USER_UPDATED = 'user.updated';
     case USER_DELETED = 'user.deleted';
@@ -227,6 +235,14 @@ enum ActivityAction: string
             self::WAITING_LIST_RESTRICTION_UPDATED => 'Waiting List Restriction Updated',
             self::WAITING_LIST_RESTRICTION_DELETED => 'Waiting List Restriction Removed',
 
+            self::SUBFAMILIARISATION_SESSION_CREATED => 'Subfamiliarisation Session Created',
+            self::SUBFAMILIARISATION_SESSION_UPDATED => 'Subfamiliarisation Session Updated',
+            self::SUBFAMILIARISATION_SESSION_DELETED => 'Subfamiliarisation Session Deleted',
+
+            self::TEAM_OVERVIEW_TEMPLATE_CREATED => 'ATD Team Overview Template Created',
+            self::TEAM_OVERVIEW_TEMPLATE_UPDATED => 'ATD Team Overview Template Updated',
+            self::TEAM_OVERVIEW_TEMPLATE_DELETED => 'ATD Team Overview Template Deleted',
+
             self::USER_CREATED => 'User Created',
             self::USER_UPDATED => 'User Updated',
             self::USER_DELETED => 'User Deleted',
@@ -265,6 +281,8 @@ enum ActivityAction: string
             self::ROLE_CREATED,
             self::TIER2_ENDORSEMENT_CREATED,
             self::WAITING_LIST_RESTRICTION_CREATED,
+            self::SUBFAMILIARISATION_SESSION_CREATED,
+            self::TEAM_OVERVIEW_TEMPLATE_CREATED,
             self::USER_CREATED,
             self::USER_COURSE_ENROLLMENT_ADDED,
             self::CREATED => 'success',
@@ -291,6 +309,8 @@ enum ActivityAction: string
             self::ROLE_DELETED,
             self::TIER2_ENDORSEMENT_DELETED,
             self::WAITING_LIST_RESTRICTION_DELETED,
+            self::SUBFAMILIARISATION_SESSION_DELETED,
+            self::TEAM_OVERVIEW_TEMPLATE_DELETED,
             self::USER_DELETED,
             self::USER_COURSE_ENROLLMENT_REMOVED,
             self::DELETED => 'danger',
@@ -313,6 +333,8 @@ enum ActivityAction: string
             self::ENDORSEMENT_ACTIVITY_UPDATED,
             self::WAITING_LIST_ENTRY_UPDATED,
             self::WAITING_LIST_RESTRICTION_UPDATED,
+            self::SUBFAMILIARISATION_SESSION_UPDATED,
+            self::TEAM_OVERVIEW_TEMPLATE_UPDATED,
             self::USER_UPDATED,
             self::USER_ROLES_UPDATED,
             self::USER_PERMISSIONS_UPDATED,
@@ -361,6 +383,8 @@ enum ActivityAction: string
             'tier2endorsement' => 'Tier 2 Endorsement',
             'endorsementactivity' => 'Endorsement Activity',
             'waitinglistrestriction' => 'Waiting List Restriction',
+            'subfamiliarisationsession' => 'Subfamiliarisation Session',
+            'teamoverviewtemplate' => 'ATD Team Overview Template',
             'user' => 'User',
             'created' => 'Created',
             'updated' => 'Updated',

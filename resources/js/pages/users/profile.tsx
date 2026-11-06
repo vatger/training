@@ -50,6 +50,7 @@ interface UserProfile {
 	last_rating_change?: string
 	is_mentor: boolean
 	is_superuser: boolean
+	is_atd_leadership: boolean
 	is_admin: boolean
 	solo_days_used: number
 }
@@ -416,10 +417,10 @@ export default function UserProfilePage({ userData }: { userData: UserData }) {
 								</div>
 							</div>
 							<div className="flex flex-col gap-2">
-								{(user.is_admin || user.vatsim_id === 1601613) && (
+								{user.is_admin && (
 									<Badge variant="destructive">Administrator</Badge>
 								)}
-								{user.is_superuser && user.vatsim_id !== 1601613 && (
+								{user.is_atd_leadership && (
 									<Badge variant="default">ATD Leadership</Badge>
 								)}
 								{user.is_mentor && <Badge variant="secondary">Mentor</Badge>}

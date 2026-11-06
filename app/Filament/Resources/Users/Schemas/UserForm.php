@@ -17,6 +17,7 @@ use App\Models\User;
 use App\Services\SubfamiliarisationService;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
+use Filament\Facades\Filament;
 use Filament\Forms;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
@@ -122,6 +123,7 @@ class UserForm
 
                         Forms\Components\Toggle::make('is_admin')
                             ->label('Admin Account')
+                            ->visible(fn () => Filament::auth()->user()?->isAdmin() === true)
                             ->helperText('Not synced from VATSIM.')
                             ->disabled(fn ($livewire) => ! $livewire->isFieldUnlocked('system_permissions'))
                             ->dehydrated(),

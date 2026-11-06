@@ -67,57 +67,21 @@ class ApiKeyResource extends Resource
 
     public static function canViewAny(): bool
     {
-        $user = Filament::auth()->user();
-
-        if (! $user) {
-            return false;
-        }
-
-        if ($user->is_admin || $user->is_superuser) {
-            return true;
-        }
-
-        return $user->canAccessAdminResource('api_keys');
+        return Filament::auth()->user()?->isAdmin() === true;
     }
 
     public static function canCreate(): bool
     {
-        $user = Filament::auth()->user();
-
-        if (! $user) {
-            return false;
-        }
-
-        if ($user->is_superuser || $user->is_admin) {
-            return true;
-        }
-
-        return $user->canEditAdminResource('api_keys');
+        return static::canViewAny();
     }
 
     public static function canEdit(Model $record): bool
     {
-        $user = Filament::auth()->user();
-
-        if (! $user) {
-            return false;
-        }
-
-        if ($user->is_superuser || $user->is_admin) {
-            return true;
-        }
-
-        return $user->canEditAdminResource('api_keys');
+        return static::canViewAny();
     }
 
     public static function canDelete(Model $record): bool
     {
-        $user = Filament::auth()->user();
-
-        if (! $user) {
-            return false;
-        }
-
-        return $user->is_superuser || $user->is_admin;
+        return static::canViewAny();
     }
 }

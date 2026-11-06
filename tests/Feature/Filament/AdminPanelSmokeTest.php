@@ -2,7 +2,6 @@
 
 use App\Filament\Resources\ActivityLogs\ActivityLogResource;
 use App\Filament\Resources\ActivityLogs\Pages\ListActivityLogs;
-use App\Filament\Resources\ApiKeys\ApiKeyResource;
 use App\Filament\Resources\Courses\CourseResource;
 use App\Filament\Resources\Cpts\CptResource;
 use App\Filament\Resources\EndorsementActivities\EndorsementActivityResource;
@@ -32,7 +31,6 @@ beforeEach(function () {
 
 $resources = [
     ActivityLogResource::class,
-    ApiKeyResource::class,
     CourseResource::class,
     CptResource::class,
     EndorsementActivityResource::class,
