@@ -113,6 +113,7 @@ class ActivityLogsTable
                         'App\Models\ApiKey' => 'API Key',
                         'App\Models\TrainingLog' => 'Training Log',
                         'App\Models\ChiefOfTraining' => 'Chief of Training',
+                        'App\Models\TeamOverviewTemplate' => 'ATD Team Overview Template',
                     ])
                     ->multiple(),
 

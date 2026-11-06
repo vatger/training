@@ -14,6 +14,13 @@ class FakeVatgerClient implements VatgerClientInterface
         return ['success' => true];
     }
 
+    public function postAtdTeamOverview(string $content): array
+    {
+        Log::info('[FakeVatger] postAtdTeamOverview', ['length' => strlen($content)]);
+
+        return ['success' => true];
+    }
+
     public function sendNotification(
         int $vatsimId,
         string $title,

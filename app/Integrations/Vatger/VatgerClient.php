@@ -50,6 +50,33 @@ class VatgerClient implements VatgerClientInterface
         }
     }
 
+    public function postAtdTeamOverview(string $content): array
+    {
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => "Token {$this->apiKey}",
+                'Accept' => 'application/json',
+            ])
+                ->timeout(10)
+                ->post("{$this->baseUrl}/board/post/atd-team-overview", [
+                    'text_data' => $content,
+                ]);
+
+            if ($response->successful()) {
+                return ['success' => true];
+            }
+
+            $message = $response->json()['message'] ?? 'Failed to update team overview post';
+            Log::error('Failed to update VATGER ATD team overview post', ['status' => $response->status(), 'error' => $message]);
+
+            return ['success' => false, 'message' => $message];
+        } catch (\Exception $e) {
+            Log::error('Exception updating VATGER ATD team overview post', ['error' => $e->getMessage()]);
+
+            return ['success' => false, 'message' => $e->getMessage()];
+        }
+    }
+
     public function sendNotification(
         int $vatsimId,
         string $title,
