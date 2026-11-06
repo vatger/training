@@ -63,7 +63,7 @@ class VatgerClient implements VatgerClientInterface
                 ]);
 
             if ($response->successful()) {
-                if (in_array(trim($response->body()), ['1', 'true'], true)) {
+                if (! in_array(strtolower(trim($response->body())), ['', '0', 'false', 'null'], true)) {
                     return ['success' => true];
                 }
 

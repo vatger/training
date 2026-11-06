@@ -7,6 +7,7 @@ use App\Models\Examiner;
 use App\Models\LeadingMentor;
 use App\Models\User;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 
 class TeamOverviewData
 {
@@ -39,9 +40,16 @@ class TeamOverviewData
         return Examiner::with('user')
             ->get()
             ->sortBy('callsign', SORT_NATURAL)
-            ->map(fn (Examiner $examiner) => "{$examiner->callsign} - {$examiner->user->full_name}")
+            ->map(fn (Examiner $examiner) => "{$examiner->callsign} - {$examiner->user->full_name}".$this->stations($examiner))
             ->values()
             ->all();
+    }
+
+    private function stations(Examiner $examiner): string
+    {
+        $stations = array_values(array_intersect(Examiner::VALID_POSITIONS, $examiner->positions ?? []));
+
+        return $stations === [] ? '' : ', '.implode('/', $stations);
     }
 
     /** @return list<string> */
@@ -60,9 +68,14 @@ class TeamOverviewData
 
         $rows = $users->map(fn (User $user) => [
             'name' => $user->full_name,
-            'leading' => $leadingMentorIds->contains($user->id),
+            'rank' => match (true) {
+                $leadingMentorIds->contains($user->id) => 0,
+                $chiefs->has($user->id) => 1,
+                $examinerIds->has($user->id) => 2,
+                default => 3,
+            },
             'tags' => $this->tags($user, $leadingMentorIds, $examinerIds, $chiefs),
-        ])->sort(fn ($a, $b) => [! $a['leading'], $a['name']] <=> [! $b['leading'], $b['name']]);
+        ])->sort(fn ($a, $b) => [$a['rank'], Str::lower(Str::ascii($a['name']))] <=> [$b['rank'], Str::lower(Str::ascii($b['name']))]);
 
         $width = $rows->max(fn ($row) => mb_strlen($row['name'])) ?? 0;
 
