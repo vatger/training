@@ -63,7 +63,13 @@ class VatgerClient implements VatgerClientInterface
                 ]);
 
             if ($response->successful()) {
-                return ['success' => true];
+                if (in_array(trim($response->body()), ['1', 'true'], true)) {
+                    return ['success' => true];
+                }
+
+                Log::error('VATGER API accepted the ATD team overview request but the forum post was not updated', ['body' => $response->body()]);
+
+                return ['success' => false, 'message' => 'The forum post was not updated; check the homepage logs.'];
             }
 
             $message = $response->json()['message'] ?? 'Failed to update team overview post';

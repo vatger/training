@@ -28,7 +28,7 @@ test('job posts the rendered overview to the configured forum post', function ()
         'services.vatger.api_key' => 'secret',
     ]);
     app()->bind(VatgerClientInterface::class, VatgerClient::class);
-    Http::fake(['*' => Http::response([], 200)]);
+    Http::fake(['*' => Http::response('1', 200)]);
 
     UpdateTeamOverviewPost::dispatchSync();
 
@@ -41,4 +41,11 @@ test('renderer uses the saved template instead of the default', function () {
     TeamOverviewTemplate::create(['content' => "Custom\n{{pruefer}}{{bremen}}{{langen}}{{muenchen}}"]);
 
     expect(app(TeamOverviewRenderer::class)->render())->toStartWith('Custom');
+});
+
+test('an empty 200 from the api is reported as a failed update', function () {
+    config(['services.vatger.api_url' => 'https://forum.test/api', 'services.vatger.api_key' => 'secret']);
+    Http::fake(['*' => Http::response('', 200)]);
+
+    expect((new VatgerClient)->postAtdTeamOverview('text'))->toMatchArray(['success' => false]);
 });
