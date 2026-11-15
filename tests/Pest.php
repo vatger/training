@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\TrainingLog;
 use Tests\TestCase;
 
 /*
@@ -46,4 +47,29 @@ expect()->extend('toBeOne', function () {
 function something()
 {
     // ..
+}
+
+/**
+ * There is no TrainingLog factory; this fills in the required evaluation columns.
+ */
+function createTrainingLog(array $overrides = []): TrainingLog
+{
+    return TrainingLog::create(array_merge([
+        'session_date' => now()->toDateString(),
+        'position' => 'EDDF_TWR',
+        'type' => 'O',
+        'theory' => 3,
+        'phraseology' => 3,
+        'coordination' => 3,
+        'tag_management' => 3,
+        'situational_awareness' => 3,
+        'problem_recognition' => 3,
+        'traffic_planning' => 3,
+        'reaction' => 3,
+        'separation' => 3,
+        'efficiency' => 3,
+        'ability_to_work_under_pressure' => 3,
+        'motivation' => 3,
+        'result' => true,
+    ], $overrides));
 }

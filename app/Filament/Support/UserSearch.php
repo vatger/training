@@ -17,6 +17,7 @@ class UserSearch
             $search = trim($search);
 
             $query = User::query()
+                ->excludeGdprDeleted()
                 ->orderBy('first_name')
                 ->orderBy('last_name')
                 ->limit(50);
