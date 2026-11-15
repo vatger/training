@@ -1,6 +1,7 @@
 <?php
 
 use Filament\Facades\Filament;
+use Filament\Resources\RelationManagers\RelationGroup;
 use Illuminate\Support\Facades\Gate;
 
 // The admin panel runs in strict authorization mode: Filament throws instead of allowing an action
@@ -10,9 +11,23 @@ test('the admin panel enforces strict authorization', function () {
     expect(Filament::getPanel('admin')->isAuthorizationStrict())->toBeTrue();
 });
 
-test('every admin panel resource model has a policy covering the abilities its actions check', function () {
+test('every model an admin panel resource or relation manager works with has a policy covering the abilities its actions check', function () {
+    $models = [];
+
     foreach (Filament::getPanel('admin')->getResources() as $resource) {
-        $model = $resource::getModel();
+        $models[] = $resource::getModel();
+
+        foreach ($resource::getRelations() as $relation) {
+            $relationManager = $relation instanceof RelationGroup ? $relation->getManagers() : [$relation];
+
+            foreach ($relationManager as $manager) {
+                $manager = is_string($manager) ? $manager : $manager->getManager();
+                $models[] = (new ($resource::getModel()))->{$manager::getRelationshipName()}()->getRelated()::class;
+            }
+        }
+    }
+
+    foreach (array_unique($models) as $model) {
         $policy = Gate::getPolicyFor($model);
 
         expect($policy)->not->toBeNull("{$model} has no policy");
