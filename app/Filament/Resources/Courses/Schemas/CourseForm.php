@@ -191,7 +191,7 @@ class CourseForm
                             ])
                             ->schema([
                                 TextEntry::make('name')
-                                    ->url(fn ($record) => UserResource::getUrl('edit', ['record' => $record])),
+                                    ->url(fn ($record) => UserResource::getEditUrl($record)),
                                 TextEntry::make('vatsim_id'),
                                 Actions::make([
                                     ActionGroup::make([
@@ -240,7 +240,7 @@ class CourseForm
                             ])
                             ->schema([
                                 TextEntry::make('name')
-                                    ->url(fn ($record) => UserResource::getUrl('edit', ['record' => $record])),
+                                    ->url(fn ($record) => UserResource::getEditUrl($record)),
                                 TextEntry::make('pivot.claimed_by_mentor_id')
                                     ->label('Claimed By')
                                     ->formatStateUsing(fn ($state) => $state ? User::find($state)?->name : '—'),
@@ -315,7 +315,7 @@ class CourseForm
                             ])
                             ->schema([
                                 TextEntry::make('user.name')
-                                    ->url(fn ($record) => UserResource::getUrl('edit', ['record' => $record->user])),
+                                    ->url(fn ($record) => UserResource::getEditUrl($record->user)),
                                 TextEntry::make('user.vatsim_id'),
                                 Actions::make([
                                     ActionGroup::make([

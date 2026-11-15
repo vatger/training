@@ -12,7 +12,6 @@ use Filament\Resources\Resource;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
 
 class ActivityLogResource extends Resource
 {
@@ -56,52 +55,5 @@ class ActivityLogResource extends Resource
     public static function getNavigationSort(): ?int
     {
         return 1;
-    }
-
-    public static function canCreate(): bool
-    {
-        return false;
-    }
-
-    public static function canViewAny(): bool
-    {
-        $user = Filament::auth()->user();
-
-        if (! $user) {
-            return false;
-        }
-
-        if ($user->is_admin || $user->is_superuser) {
-            return true;
-        }
-
-        return $user->canAccessAdminResource('activity_logs');
-    }
-
-    public static function canView(Model $record): bool
-    {
-        $user = Filament::auth()->user();
-
-        if (! $user) {
-            return false;
-        }
-
-        // A record of an admin-panel change is admin-only, even for someone
-        // who can otherwise open this resource — the query scope already
-        // keeps these off the list, but guard direct URL access too.
-        if ($record->is_admin_action && ! $user->is_admin) {
-            return false;
-        }
-
-        if ($user->is_admin || $user->is_superuser) {
-            return true;
-        }
-
-        return $user->canAccessAdminResource('activity_logs');
-    }
-
-    public static function canEdit(Model $record): bool
-    {
-        return false;
     }
 }

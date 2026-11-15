@@ -8,17 +8,12 @@ use App\Filament\Resources\SubfamiliarisationSessions\Pages\EditSubfamiliarisati
 use App\Filament\Resources\SubfamiliarisationSessions\Pages\ListSubfamiliarisationSessions;
 use App\Filament\Resources\SubfamiliarisationSessions\Schemas\SubfamiliarisationSessionForm;
 use App\Filament\Resources\SubfamiliarisationSessions\Tables\SubfamiliarisationSessionsTable;
-use App\Models\Subfamiliarisation;
 use App\Models\SubfamiliarisationSession;
-use App\Models\User;
-use App\Services\SubfamiliarisationService;
 use BackedEnum;
-use Filament\Facades\Filament;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Model;
 
 class SubfamiliarisationSessionResource extends Resource
 {
@@ -62,65 +57,5 @@ class SubfamiliarisationSessionResource extends Resource
     public static function getNavigationLabel(): string
     {
         return 'Subfamiliarisation Sessions';
-    }
-
-    public static function canViewAny(): bool
-    {
-        $user = Filament::auth()->user();
-
-        if (! $user) {
-            return false;
-        }
-
-        if ($user->is_admin || $user->is_superuser || $user->canAccessAdminResource('familiarisations')) {
-            return true;
-        }
-
-        return static::isMentorOfAnySubfamiliarisation($user);
-    }
-
-    public static function canCreate(): bool
-    {
-        $user = Filament::auth()->user();
-
-        if (! $user) {
-            return false;
-        }
-
-        if ($user->is_admin || $user->is_superuser) {
-            return true;
-        }
-
-        return static::isMentorOfAnySubfamiliarisation($user);
-    }
-
-    public static function canEdit(Model $record): bool
-    {
-        $user = Filament::auth()->user();
-
-        if (! $user) {
-            return false;
-        }
-
-        if ($user->is_admin || $user->is_superuser) {
-            return true;
-        }
-
-        return app(SubfamiliarisationService::class)->canLogSession($user, $record->subfamiliarisation);
-    }
-
-    public static function canDelete(Model $record): bool
-    {
-        $user = Filament::auth()->user();
-
-        return (bool) $user && ($user->is_superuser || $user->is_admin);
-    }
-
-    private static function isMentorOfAnySubfamiliarisation(User $user): bool
-    {
-        $service = app(SubfamiliarisationService::class);
-
-        return Subfamiliarisation::all()
-            ->contains(fn (Subfamiliarisation $subfamiliarisation) => $service->canLogSession($user, $subfamiliarisation));
     }
 }

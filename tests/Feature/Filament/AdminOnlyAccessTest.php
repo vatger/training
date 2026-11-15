@@ -3,6 +3,7 @@
 use App\Enums\ActivityAction;
 use App\Filament\Resources\ApiKeys\ApiKeyResource;
 use App\Filament\Resources\Users\Pages\EditUser;
+use App\Filament\Resources\Users\Pages\ListUsers;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -104,4 +105,13 @@ test('subfamiliarisation session changes have a label and colour in the activity
     expect($action)->not->toBeNull()
         ->and($action->getLabel())->toBe('Subfamiliarisation Session Created')
         ->and($action->getColor())->toBe('success');
+});
+
+test('the users list renders for a GDPR-anonymised user without a vatsim id', function () {
+    $this->actingAs(User::factory()->create(['is_admin' => true]));
+    $anonymised = User::factory()->create(['vatsim_id' => null, 'first_name' => 'GDPR', 'last_name' => 'Removed']);
+
+    Livewire::test(ListUsers::class)
+        ->assertSuccessful()
+        ->assertCanSeeTableRecords([$anonymised]);
 });

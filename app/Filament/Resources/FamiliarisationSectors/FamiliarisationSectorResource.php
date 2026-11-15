@@ -10,12 +10,10 @@ use App\Filament\Resources\FamiliarisationSectors\Schemas\FamiliarisationSectorF
 use App\Filament\Resources\FamiliarisationSectors\Tables\FamiliarisationSectorsTable;
 use App\Models\FamiliarisationSector;
 use BackedEnum;
-use Filament\Facades\Filament;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Model;
 
 class FamiliarisationSectorResource extends Resource
 {
@@ -59,61 +57,5 @@ class FamiliarisationSectorResource extends Resource
     public static function getNavigationLabel(): string
     {
         return 'Familiarisation Sectors';
-    }
-
-    public static function canViewAny(): bool
-    {
-        $user = Filament::auth()->user();
-
-        if (! $user) {
-            return false;
-        }
-
-        if ($user->is_admin || $user->is_superuser) {
-            return true;
-        }
-
-        return $user->canAccessAdminResource('familiarisation_sectors');
-    }
-
-    public static function canCreate(): bool
-    {
-        $user = Filament::auth()->user();
-
-        if (! $user) {
-            return false;
-        }
-
-        if ($user->is_superuser || $user->is_admin) {
-            return true;
-        }
-
-        return $user->canEditAdminResource('familiarisation_sectors');
-    }
-
-    public static function canEdit(Model $record): bool
-    {
-        $user = Filament::auth()->user();
-
-        if (! $user) {
-            return false;
-        }
-
-        if ($user->is_superuser || $user->is_admin) {
-            return true;
-        }
-
-        return $user->canEditAdminResource('familiarisation_sectors');
-    }
-
-    public static function canDelete(Model $record): bool
-    {
-        $user = Filament::auth()->user();
-
-        if (! $user) {
-            return false;
-        }
-
-        return $user->is_superuser || $user->is_admin;
     }
 }

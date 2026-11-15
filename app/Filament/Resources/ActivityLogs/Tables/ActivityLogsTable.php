@@ -37,7 +37,7 @@ class ActivityLogsTable
                     ->searchable(['first_name', 'last_name'])
                     ->sortable()
                     ->default('System')
-                    ->url(fn ($record) => $record->user ? UserResource::getUrl('edit', ['record' => $record->user]) : null),
+                    ->url(fn ($record) => $record->user ? UserResource::getEditUrl($record->user) : null),
 
                 TextColumn::make('description')
                     ->limit(50)

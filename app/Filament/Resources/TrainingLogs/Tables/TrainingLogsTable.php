@@ -33,7 +33,10 @@ class TrainingLogsTable
                     ->label('Trainee')
                     ->searchable(['first_name', 'last_name'])
                     ->sortable()
-                    ->url(fn ($record) => UserResource::getUrl('edit', ['record' => $record->trainee])),
+                    ->url(fn ($record) => $record->trainee
+                        ? UserResource::getEditUrl($record->trainee)
+                        : null
+                    ),
 
                 TextColumn::make('mentor.name')
                     ->label('Mentor')
@@ -41,7 +44,7 @@ class TrainingLogsTable
                     ->sortable()
                     ->formatStateUsing(fn ($record) => $record->mentor?->name ?? '—')
                     ->url(fn ($record) => $record->mentor
-                        ? UserResource::getUrl('edit', ['record' => $record->mentor])
+                        ? UserResource::getEditUrl($record->mentor)
                         : null
                     ),
 

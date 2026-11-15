@@ -31,7 +31,7 @@ class CptsTable
                     ->label('Trainee')
                     ->searchable(['first_name', 'last_name'])
                     ->sortable()
-                    ->url(fn ($record) => $record->trainee ? UserResource::getUrl('edit', ['record' => $record->trainee]) : null),
+                    ->url(fn ($record) => $record->trainee ? UserResource::getEditUrl($record->trainee) : null),
 
                 TextColumn::make('course.name')
                     ->label('Course')
@@ -50,14 +50,14 @@ class CptsTable
                     ->searchable(['first_name', 'last_name'])
                     ->sortable()
                     ->placeholder('Not assigned')
-                    ->url(fn ($record) => $record->examiner ? UserResource::getUrl('edit', ['record' => $record->examiner]) : null),
+                    ->url(fn ($record) => $record->examiner ? UserResource::getEditUrl($record->examiner) : null),
 
                 TextColumn::make('local.name')
                     ->label('Local Contact')
                     ->searchable(['first_name', 'last_name'])
                     ->sortable()
                     ->placeholder('Not assigned')
-                    ->url(fn ($record) => $record->local ? UserResource::getUrl('edit', ['record' => $record->local]) : null),
+                    ->url(fn ($record) => $record->local ? UserResource::getEditUrl($record->local) : null),
 
                 IconColumn::make('confirmed')
                     ->label('Confirmed')

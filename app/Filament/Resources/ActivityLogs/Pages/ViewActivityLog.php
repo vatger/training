@@ -55,7 +55,7 @@ class ViewActivityLog extends ViewRecord
                                     ->content(
                                         fn ($record) => $record->user
                                         ? new HtmlString(
-                                            '<a href="'.UserResource::getUrl('edit', ['record' => $record->user]).'" class="text-primary-600 hover:underline font-medium">'
+                                            '<a href="'.e(UserResource::getEditUrl($record->user) ?? '#').'" class="text-primary-600 hover:underline font-medium">'
                                             .e($record->user->name)
                                             .' ('.e($record->user->vatsim_id).')'
                                             .'</a>'
