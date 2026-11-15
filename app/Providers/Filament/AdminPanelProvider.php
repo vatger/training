@@ -50,6 +50,7 @@ class AdminPanelProvider extends PanelProvider
         return $panel
             ->default()
             ->id('admin')
+            ->strictAuthorization()
             ->path('admin')
             ->defaultThemeMode(ThemeMode::System)
             ->themeSwitcher(false)

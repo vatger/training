@@ -15,7 +15,6 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
 
 class CourseResource extends Resource
 {
@@ -57,101 +56,6 @@ class CourseResource extends Resource
     public static function getNavigationSort(): ?int
     {
         return 1;
-    }
-
-    public static function canViewAny(): bool
-    {
-        $user = Filament::auth()->user();
-
-        if (! $user) {
-            return false;
-        }
-
-        if ($user->is_admin || $user->is_superuser) {
-            return true;
-        }
-
-        if ($user->isLeadingMentor()) {
-            return true;
-        }
-
-        return $user->canAccessAdminResource('courses');
-    }
-
-    public static function canCreate(): bool
-    {
-        $user = Filament::auth()->user();
-
-        if (! $user) {
-            return false;
-        }
-
-        return $user->is_superuser || $user->is_admin;
-    }
-
-    public static function canEdit(Model $record): bool
-    {
-        $user = Filament::auth()->user();
-
-        if (! $user) {
-            return false;
-        }
-
-        if ($user->is_superuser || $user->is_admin) {
-            return true;
-        }
-
-        if ($user->isLeadingMentor() && $record->mentor_group_id) {
-            $mentorGroupName = $record->mentorGroup?->name;
-            if ($mentorGroupName) {
-                $fir = $user->getFirFromMentorGroup($mentorGroupName);
-                if ($fir && $user->isLeadingMentorForFir($fir)) {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        return $user->canEditAdminResource('courses');
-    }
-
-    public static function canDelete(Model $record): bool
-    {
-        $user = Filament::auth()->user();
-
-        if (! $user) {
-            return false;
-        }
-
-        return $user->is_superuser || $user->is_admin;
-    }
-
-    public static function canView(Model $record): bool
-    {
-        $user = Filament::auth()->user();
-
-        if (! $user) {
-            return false;
-        }
-
-        if ($user->is_superuser || $user->is_admin) {
-            return true;
-        }
-
-        if ($user->isLeadingMentor() && $record->mentor_group_id) {
-            $mentorGroupName = $record->mentorGroup?->name;
-            if ($mentorGroupName) {
-                $fir = $user->getFirFromMentorGroup($mentorGroupName);
-                if ($fir && $user->isLeadingMentorForFir($fir)) {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        return $user->canAccessAdminResource('courses');
     }
 
     public static function getEloquentQuery(): Builder

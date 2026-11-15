@@ -10,12 +10,10 @@ use App\Filament\Resources\TrainingLogs\Schemas\TrainingLogForm;
 use App\Filament\Resources\TrainingLogs\Tables\TrainingLogsTable;
 use App\Models\TrainingLog;
 use BackedEnum;
-use Filament\Facades\Filament;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Model;
 
 class TrainingLogResource extends Resource
 {
@@ -63,61 +61,5 @@ class TrainingLogResource extends Resource
     public static function getNavigationLabel(): string
     {
         return 'Training Logs';
-    }
-
-    public static function canViewAny(): bool
-    {
-        $user = Filament::auth()->user();
-
-        if (! $user) {
-            return false;
-        }
-
-        if ($user->is_admin || $user->is_superuser) {
-            return true;
-        }
-
-        return $user->canAccessAdminResource('training_logs');
-    }
-
-    public static function canCreate(): bool
-    {
-        $user = Filament::auth()->user();
-
-        if (! $user) {
-            return false;
-        }
-
-        if ($user->is_superuser || $user->is_admin) {
-            return true;
-        }
-
-        return $user->canEditAdminResource('training_logs');
-    }
-
-    public static function canEdit(Model $record): bool
-    {
-        $user = Filament::auth()->user();
-
-        if (! $user) {
-            return false;
-        }
-
-        if ($user->is_superuser || $user->is_admin) {
-            return true;
-        }
-
-        return $user->canEditAdminResource('training_logs');
-    }
-
-    public static function canDelete(Model $record): bool
-    {
-        $user = Filament::auth()->user();
-
-        if (! $user) {
-            return false;
-        }
-
-        return $user->is_superuser || $user->is_admin;
     }
 }

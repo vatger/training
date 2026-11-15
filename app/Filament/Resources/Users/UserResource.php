@@ -8,13 +8,11 @@ use App\Filament\Resources\Users\Schemas\UserForm;
 use App\Filament\Resources\Users\Tables\UsersTable;
 use App\Models\User;
 use BackedEnum;
-use Filament\Facades\Filament;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
 
 class UserResource extends Resource
 {
@@ -61,50 +59,13 @@ class UserResource extends Resource
         ];
     }
 
-    public static function canCreate(): bool
+    /**
+     * Users are routed by VATSIM ID, which GDPR-anonymised users no longer have,
+     * so there is no edit page to link to for them.
+     */
+    public static function getEditUrl(?User $user): ?string
     {
-        return false;
-    }
-
-    public static function canViewAny(): bool
-    {
-        $user = Filament::auth()->user();
-
-        if (! $user) {
-            return false;
-        }
-
-        if ($user->is_admin || $user->is_superuser) {
-            return true;
-        }
-
-        return $user->canAccessAdminResource('users');
-    }
-
-    public static function canEdit(Model $record): bool
-    {
-        $user = Filament::auth()->user();
-
-        if (! $user) {
-            return false;
-        }
-
-        if ($user->is_superuser || $user->is_admin) {
-            return true;
-        }
-
-        return $user->canEditAdminResource('users');
-    }
-
-    public static function canDelete(Model $record): bool
-    {
-        $user = Filament::auth()->user();
-
-        if (! $user) {
-            return false;
-        }
-
-        return $user->is_superuser || $user->is_admin;
+        return filled($user?->vatsim_id) ? static::getUrl('edit', ['record' => $user]) : null;
     }
 
     public static function getNavigationGroup(): ?string

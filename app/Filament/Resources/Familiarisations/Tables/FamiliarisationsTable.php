@@ -20,7 +20,7 @@ class FamiliarisationsTable
                     ->label('User')
                     ->searchable(['first_name', 'last_name'])
                     ->sortable()
-                    ->url(fn ($record) => UserResource::getUrl('edit', ['record' => $record->user])),
+                    ->url(fn ($record) => UserResource::getEditUrl($record->user)),
 
                 TextColumn::make('user.vatsim_id')
                     ->label('VATSIM ID')

@@ -7,13 +7,11 @@ use App\Filament\Resources\GdprRemovalRequests\Pages\ViewGdprRemovalRequest;
 use App\Filament\Resources\GdprRemovalRequests\RelationManagers\ReviewItemsRelationManager;
 use App\Models\GdprRemovalRequest;
 use BackedEnum;
-use Filament\Facades\Filament;
 use Filament\Resources\Resource;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
 
 class GdprRemovalRequestResource extends Resource
 {
@@ -122,25 +120,5 @@ class GdprRemovalRequestResource extends Resource
     public static function getNavigationBadgeColor(): ?string
     {
         return 'warning';
-    }
-
-    public static function canViewAny(): bool
-    {
-        return Filament::auth()->user()?->canReviewGdprRequests() === true;
-    }
-
-    public static function canCreate(): bool
-    {
-        return false;
-    }
-
-    public static function canEdit(Model $record): bool
-    {
-        return false;
-    }
-
-    public static function canDelete(Model $record): bool
-    {
-        return false;
     }
 }

@@ -12,8 +12,9 @@ class TrainingLogPolicy
      */
     public function viewAny(User $user): bool
     {
-        // Anyone authenticated can view logs (filtered by controller)
-        return true;
+        // The public log pages filter by participation themselves and never ask for
+        // this, so it only gates the admin panel's training log list.
+        return $user->canAccessAdminResource('training_logs');
     }
 
     /**
@@ -27,7 +28,7 @@ class TrainingLogPolicy
         // - A mentor for the course
         // - A superuser/admin
 
-        if ($user->is_superuser || $user->is_admin) {
+        if ($user->canAccessAdminResource('training_logs')) {
             return true;
         }
 
@@ -51,7 +52,7 @@ class TrainingLogPolicy
      */
     public function create(User $user): bool
     {
-        return $user->isMentor() || $user->is_superuser || $user->is_admin || $user->isChiefOfTraining() || $user->isLeadingMentor();
+        return $user->isMentor() || $user->isChiefOfTraining() || $user->isLeadingMentor() || $user->canEditAdminResource('training_logs');
     }
 
     /**
@@ -74,7 +75,7 @@ class TrainingLogPolicy
             return true;
         }
 
-        return $user->canEditTrainingLog($log);
+        return $user->canEditTrainingLog($log) || $user->canEditAdminResource('training_logs');
     }
 
     /**
@@ -84,6 +85,14 @@ class TrainingLogPolicy
     {
         // Only the mentor who created the log or superusers can delete
         return $user->id === $log->mentor_id || $user->is_superuser || $user->is_admin;
+    }
+
+    /**
+     * Determine if the user can bulk delete training logs (admin panel only).
+     */
+    public function deleteAny(User $user): bool
+    {
+        return $user->is_superuser || $user->is_admin;
     }
 
     /**

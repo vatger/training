@@ -9,12 +9,10 @@ use App\Filament\Resources\WaitingLists\Schemas\WaitingListForm;
 use App\Filament\Resources\WaitingLists\Tables\WaitingListsTable;
 use App\Models\WaitingListEntry;
 use BackedEnum;
-use Filament\Facades\Filament;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Model;
 
 class WaitingListResource extends Resource
 {
@@ -61,61 +59,5 @@ class WaitingListResource extends Resource
     public static function getNavigationLabel(): string
     {
         return 'Waiting Lists';
-    }
-
-    public static function canViewAny(): bool
-    {
-        $user = Filament::auth()->user();
-
-        if (! $user) {
-            return false;
-        }
-
-        if ($user->is_admin || $user->is_superuser) {
-            return true;
-        }
-
-        return $user->canAccessAdminResource('waiting_list_entries');
-    }
-
-    public static function canCreate(): bool
-    {
-        $user = Filament::auth()->user();
-
-        if (! $user) {
-            return false;
-        }
-
-        if ($user->is_superuser || $user->is_admin) {
-            return true;
-        }
-
-        return $user->canEditAdminResource('waiting_list_entries');
-    }
-
-    public static function canEdit(Model $record): bool
-    {
-        $user = Filament::auth()->user();
-
-        if (! $user) {
-            return false;
-        }
-
-        if ($user->is_superuser || $user->is_admin) {
-            return true;
-        }
-
-        return $user->canEditAdminResource('waiting_list_entries');
-    }
-
-    public static function canDelete(Model $record): bool
-    {
-        $user = Filament::auth()->user();
-
-        if (! $user) {
-            return false;
-        }
-
-        return $user->is_superuser || $user->is_admin;
     }
 }

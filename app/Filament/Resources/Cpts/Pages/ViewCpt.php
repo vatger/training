@@ -102,7 +102,7 @@ class ViewCpt extends ViewRecord
                                     ->label('Trainee')
                                     ->content(fn ($record) => $record->trainee
                                         ? new HtmlString(
-                                            '<a href="'.UserResource::getUrl('edit', ['record' => $record->trainee]).'" class="text-primary-600 hover:underline font-medium">'
+                                            '<a href="'.e(UserResource::getEditUrl($record->trainee) ?? '#').'" class="text-primary-600 hover:underline font-medium">'
                                             .e($record->trainee->name).' ('.e($record->trainee->vatsim_id).')'
                                             .'</a>'
                                         )
@@ -113,7 +113,7 @@ class ViewCpt extends ViewRecord
                                     ->label('Examiner')
                                     ->content(fn ($record) => $record->examiner
                                         ? new HtmlString(
-                                            '<a href="'.UserResource::getUrl('edit', ['record' => $record->examiner]).'" class="text-primary-600 hover:underline font-medium">'
+                                            '<a href="'.e(UserResource::getEditUrl($record->examiner) ?? '#').'" class="text-primary-600 hover:underline font-medium">'
                                             .e($record->examiner->name).' ('.e($record->examiner->vatsim_id).')'
                                             .'</a>'
                                         )
@@ -124,7 +124,7 @@ class ViewCpt extends ViewRecord
                                     ->label('Local Contact')
                                     ->content(fn ($record) => $record->local
                                         ? new HtmlString(
-                                            '<a href="'.UserResource::getUrl('edit', ['record' => $record->local]).'" class="text-primary-600 hover:underline font-medium">'
+                                            '<a href="'.e(UserResource::getEditUrl($record->local) ?? '#').'" class="text-primary-600 hover:underline font-medium">'
                                             .e($record->local->name).' ('.e($record->local->vatsim_id).')'
                                             .'</a>'
                                         )

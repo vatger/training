@@ -464,7 +464,7 @@ class UserForm
                                     ->url(fn ($record) => $record->course ? CourseResource::getUrl('edit', ['record' => $record->course]) : null),
                                 TextEntry::make('mentor.name')
                                     ->placeholder('—')
-                                    ->url(fn ($record) => $record->mentor ? UserResource::getUrl('edit', ['record' => $record->mentor]) : null),
+                                    ->url(fn ($record) => $record->mentor ? UserResource::getEditUrl($record->mentor) : null),
                             ])
                             ->placeholder('No training logs on record.'),
                     ])->columns(1),
@@ -576,7 +576,7 @@ class UserForm
                                     ->url(fn ($record) => $record->course ? CourseResource::getUrl('edit', ['record' => $record->course]) : null),
                                 TextEntry::make('examiner.name')
                                     ->placeholder('Not assigned')
-                                    ->url(fn ($record) => $record->examiner ? UserResource::getUrl('edit', ['record' => $record->examiner]) : null),
+                                    ->url(fn ($record) => $record->examiner ? UserResource::getEditUrl($record->examiner) : null),
                                 TextEntry::make('passed')
                                     ->badge()
                                     ->formatStateUsing(fn ($state) => match ($state) {

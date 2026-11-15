@@ -9,7 +9,6 @@ use App\Filament\Resources\WaitingListRestrictions\Schemas\WaitingListRestrictio
 use App\Filament\Resources\WaitingListRestrictions\Tables\WaitingListRestrictionsTable;
 use App\Models\WaitingListRestriction;
 use BackedEnum;
-use Filament\Facades\Filament;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -46,21 +45,6 @@ class WaitingListRestrictionResource extends Resource
     public static function getGloballySearchableAttributes(): array
     {
         return ['user.first_name', 'user.last_name', 'user.vatsim_id'];
-    }
-
-    public static function canViewAny(): bool
-    {
-        $user = Filament::auth()->user();
-
-        if (! $user) {
-            return false;
-        }
-
-        if ($user->is_admin || $user->is_superuser) {
-            return true;
-        }
-
-        return $user->canAccessAdminResource('users');
     }
 
     public static function getNavigationGroup(): ?string

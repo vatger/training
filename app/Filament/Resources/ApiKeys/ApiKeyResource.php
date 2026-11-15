@@ -10,12 +10,10 @@ use App\Filament\Resources\ApiKeys\Schemas\ApiKeyForm;
 use App\Filament\Resources\ApiKeys\Tables\ApiKeysTable;
 use App\Models\ApiKey;
 use BackedEnum;
-use Filament\Facades\Filament;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Model;
 
 class ApiKeyResource extends Resource
 {
@@ -63,25 +61,5 @@ class ApiKeyResource extends Resource
     public static function getNavigationSort(): ?int
     {
         return 2;
-    }
-
-    public static function canViewAny(): bool
-    {
-        return Filament::auth()->user()?->isAdmin() === true;
-    }
-
-    public static function canCreate(): bool
-    {
-        return static::canViewAny();
-    }
-
-    public static function canEdit(Model $record): bool
-    {
-        return static::canViewAny();
-    }
-
-    public static function canDelete(Model $record): bool
-    {
-        return static::canViewAny();
     }
 }
