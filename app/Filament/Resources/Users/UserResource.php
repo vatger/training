@@ -31,6 +31,12 @@ class UserResource extends Resource
         return UsersTable::configure($table);
     }
 
+    public static function getEloquentQuery(): Builder
+    {
+        // Keeps the "GDPR Removed" placeholder out of lists and searches.
+        return parent::getEloquentQuery()->excludeGdprDeleted();
+    }
+
     public static function getRelations(): array
     {
         return [];

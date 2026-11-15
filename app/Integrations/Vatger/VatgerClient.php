@@ -117,6 +117,32 @@ class VatgerClient implements VatgerClientInterface
         }
     }
 
+    public function getUserTeams(int $vatsimId): ?array
+    {
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => "Token {$this->apiKey}",
+                'Accept' => 'application/json',
+            ])
+                ->timeout(10)
+                ->get("{$this->baseUrl}/user/{$vatsimId}");
+
+            $teams = $response->json('teams');
+
+            if (! $response->successful() || ! is_array($teams)) {
+                Log::warning('Failed to fetch Vatger user teams', ['vatsim_id' => $vatsimId, 'status' => $response->status()]);
+
+                return null;
+            }
+
+            return array_values($teams);
+        } catch (\Exception $e) {
+            Log::error('Exception fetching Vatger user teams', ['vatsim_id' => $vatsimId, 'error' => $e->getMessage()]);
+
+            return null;
+        }
+    }
+
     public function getLastGermanSession(int $vatsimId): ?Carbon
     {
         try {

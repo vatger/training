@@ -17,6 +17,10 @@ Route::middleware(['api.auth:gdpr.delete'])->group(function () {
     Route::delete('gdpr-removal/{vatsimId}', [GdprController::class, 'delete']);
 });
 
+Route::middleware(['api.auth:gdpr.read'])->group(function () {
+    Route::get('gdpr-data/{vatsimId}', [GdprController::class, 'show']);
+});
+
 Route::middleware(['api.auth:users.read'])->group(function () {
     Route::get('user-data/{vatsimId}', [UserController::class, 'show']);
 });
