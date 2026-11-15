@@ -1,4 +1,36 @@
 @php
+    $current = $request->isPending() ? 1 : ($request->isApproved() ? 2 : 3);
+    $steps = [
+        1 => ['title' => 'Approve', 'text' => 'You decide whether the user is deleted. Approving deletes everything marked "Deleted" below. Nothing else is touched.'],
+        2 => ['title' => 'Review', 'text' => 'Only for the "Kept" records of other users. Remove anything that identifies the user, then mark each record as reviewed.'],
+        3 => ['title' => 'Completed', 'text' => 'Everything is deleted and reviewed. Only the VATSIM ID stays as proof.'],
+    ];
+@endphp
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: .75rem; margin-bottom: 1rem;">
+    @foreach ($steps as $number => $step)
+        @php
+            $state = $number < $current ? 'done' : ($number === $current ? 'current' : 'todo');
+            $badgeColor = ['done' => 'success', 'current' => 'primary', 'todo' => 'gray'][$state];
+            $borderColor = $state === 'current' ? 'rgb(var(--primary-500))' : 'rgba(128,128,128,.3)';
+            $opacity = $state === 'todo' ? '.6' : '1';
+        @endphp
+        <div style="padding: .75rem 1rem; border-radius: .5rem; border: 2px solid {{ $borderColor }}; opacity: {{ $opacity }};">
+            <div style="display: flex; align-items: center; gap: .5rem;">
+                <x-filament::badge :color="$badgeColor" style="display: inline-flex;">
+                    {{ $state === 'done' ? '✓' : $number }}
+                </x-filament::badge>
+                <strong>{{ $step['title'] }}</strong>
+                @if ($state === 'current')
+                    <span style="font-size: .75rem; opacity: .7;">· you are here</span>
+                @endif
+            </div>
+            <p style="margin: .35rem 0 0; font-size: .85rem; opacity: .85;">{{ $step['text'] }}</p>
+        </div>
+    @endforeach
+</div>
+
+@php
     $highlight = function (?string $text) use ($terms) {
         $safe = e($text ?? '');
         foreach ($terms as $term) {
@@ -20,18 +52,26 @@
 
 @if ($request->isPending() && $data)
     <div x-data="{ q: '' }" style="display: flex; flex-direction: column; gap: 1rem;">
-        <p style="margin: 0; font-size: .875rem;">
-            Anything matching <mark>one of these</mark> is highlighted yellow below, which makes it easy to spot:
-            @foreach ($terms as $term)
-                <code><mark>{{ $term }}</mark></code>
-            @endforeach
-        </p>
 
         <input type="search" x-model="q" placeholder="Search everything below..."
                class="fi-input" style="width: 100%; padding: .5rem .75rem; border: 1px solid rgba(128,128,128,.4); border-radius: .5rem; background: transparent;">
 
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(22rem, 1fr)); gap: .75rem;">
+            <div style="padding: .75rem 1rem; border-left: 4px solid rgb(var(--danger-500)); background: rgba(128,128,128,.08); border-radius: .5rem;">
+                <x-filament::badge color="danger" style="display: inline-flex;">Deleted</x-filament::badge>
+                <strong style="margin-left: .35rem;">Removed permanently on approval</strong>
+                <p style="margin: .35rem 0 0; font-size: .85rem; opacity: .85;">Everything that belongs to this user (their own trainings, CPTs, enrolments, waiting lists, profile). It cannot be restored.</p>
+            </div>
+            <div style="padding: .75rem 1rem; border-left: 4px solid rgb(var(--info-500)); background: rgba(128,128,128,.08); border-radius: .5rem;">
+                <x-filament::badge color="info" style="display: inline-flex;">Kept</x-filament::badge>
+                <strong style="margin-left: .35rem;">Stays because it belongs to other users</strong>
+                <p style="margin: .35rem 0 0; font-size: .85rem; opacity: .85;">Records of other people that this user wrote (e.g. as mentor or examiner). The user is replaced by "GDPR Removed" and you review the text for leftover personal data afterwards.</p>
+            </div>
+        </div>
+
         <x-filament::section heading="Profile" :compact="true">
-            <dl style="display: grid; grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr)); gap: .5rem 1.5rem; margin: 0;">
+            <x-slot name="description"><x-filament::badge color="danger" style="display: inline-flex;">Deleted</x-filament::badge> The profile is removed together with the user.</x-slot>
+            <dl style="display: grid; grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr)); gap: .5rem 1.5rem; margin: 0;">
                 @foreach ($data['profile'] as $key => $value)
                     <div x-show="!q || $el.textContent.toLowerCase().includes(q.toLowerCase())">
                         <dt style="font-size: .75rem; opacity: .65;">{{ str($key)->replace('_', ' ')->title() }}</dt>
@@ -53,7 +93,7 @@
                     <span style="margin-left: .75rem; font-size: .85rem; opacity: .95;">{{ $group['hint'] }}</span>
                 </div>
 
-                <div style="padding: .75rem; display: flex; flex-direction: column; gap: .75rem;">
+                <div style="padding: 1rem; display: flex; flex-direction: column; gap: 1rem;">
                     @forelse ($sections as $section)
                         <x-filament::section :collapsible="true" :collapsed="$kind === 'owned' && count($section['rows']) > 5" :compact="true">
                             <x-slot name="heading">
@@ -62,12 +102,15 @@
                                 <span style="opacity: .6; font-weight: 400;">· {{ count($section['rows']) }}</span>
                             </x-slot>
 
+                            <p style="margin: 0 0 .5rem; font-size: .8rem; opacity: .7;">
+                                {{ $kind === 'owned' ? 'All '.count($section['rows']).' row(s) below will be deleted.' : 'These '.count($section['rows']).' row(s) are kept, with this user shown as "GDPR Removed".' }}
+                            </p>
                             <div style="overflow-x: auto;">
-                                <table style="width: 100%; border-collapse: collapse; font-size: .85rem;">
+                                <table style="width: 100%; border-collapse: collapse; font-size: .9rem;">
                                     <thead>
                                         <tr>
                                             @foreach (array_keys($section['rows'][0]) as $column)
-                                                <th style="text-align: left; padding: .25rem .5rem; opacity: .65; font-weight: 500;">{{ str($column)->replace('_', ' ')->title() }}</th>
+                                                <th style="text-align: left; padding: .4rem .75rem; opacity: .65; font-weight: 500;">{{ str($column)->replace('_', ' ')->title() }}</th>
                                             @endforeach
                                         </tr>
                                     </thead>
@@ -75,7 +118,7 @@
                                         @foreach ($section['rows'] as $row)
                                             <tr x-show="!q || $el.textContent.toLowerCase().includes(q.toLowerCase())" style="border-top: 1px solid rgba(128,128,128,.2);">
                                                 @foreach ($row as $value)
-                                                    <td style="padding: .25rem .5rem; vertical-align: top; max-width: 28rem; overflow-wrap: anywhere;">{{ $highlight(\Illuminate\Support\Str::limit(strip_tags($format($value)), 200)) }}</td>
+                                                    <td style="padding: .4rem .75rem; vertical-align: top; min-width: 8rem; max-width: 40rem; overflow-wrap: anywhere;">{{ $highlight(\Illuminate\Support\Str::limit(strip_tags($format($value)), 200)) }}</td>
                                                 @endforeach
                                             </tr>
                                         @endforeach

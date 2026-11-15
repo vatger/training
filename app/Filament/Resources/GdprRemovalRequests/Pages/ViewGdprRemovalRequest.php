@@ -39,7 +39,7 @@ class ViewGdprRemovalRequest extends ViewRecord
                 ->visible(fn () => $this->record->isPending())
                 ->requiresConfirmation()
                 ->modalHeading('Delete this user and all of their data?')
-                ->modalDescription('This permanently deletes the user and everything that belongs to them. Records of other users that they wrote are kept and show "GDPR Removed". This cannot be undone.')
+                ->modalDescription('This permanently deletes the user and everything that belongs to them. Records of other users that they wrote are kept and show "GDPR Removed"; you review those in the next step. The homepage keeps getting 202 until that review is done. This cannot be undone.')
                 ->modalSubmitActionLabel('Yes, delete everything')
                 ->action(function () {
                     try {
@@ -64,12 +64,14 @@ class ViewGdprRemovalRequest extends ViewRecord
     {
         return $schema->components([
             Section::make(fn (GdprRemovalRequest $record) => match ($record->status) {
-                GdprRemovalRequest::STATUS_PENDING => 'Stored data of this user',
-                GdprRemovalRequest::STATUS_APPROVED => 'User deleted - review the remaining records below',
-                default => 'Completed',
+                GdprRemovalRequest::STATUS_PENDING => 'Step 1 of 3 · Approve the deletion of this user',
+                GdprRemovalRequest::STATUS_APPROVED => 'Step 2 of 3 · Review the kept records',
+                default => 'Step 3 of 3 · Completed',
             })
+                ->columnSpanFull()
                 ->schema([
                     View::make('filament.resources.gdpr-removal-requests.overview')
+                        ->columnSpanFull()
                         ->viewData(function (GdprRemovalRequest $record): array {
                             $user = $record->isPending() ? User::find($record->user_id) : null;
 
