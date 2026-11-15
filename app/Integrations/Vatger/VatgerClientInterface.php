@@ -19,5 +19,7 @@ interface VatgerClientInterface
         string $linkText = '',
     ): array;
 
+    public function getUserTeams(int $vatsimId): ?array;
+
     public function getLastGermanSession(int $vatsimId): ?Carbon;
 }

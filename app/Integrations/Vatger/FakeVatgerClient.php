@@ -34,6 +34,13 @@ class FakeVatgerClient implements VatgerClientInterface
         return ['success' => true];
     }
 
+    public function getUserTeams(int $vatsimId): ?array
+    {
+        Log::info('[FakeVatger] getUserTeams', ['vatsim_id' => $vatsimId]);
+
+        return null;
+    }
+
     public function getLastGermanSession(int $vatsimId): ?Carbon
     {
         return Carbon::now()->subDays(10);
