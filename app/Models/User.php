@@ -185,10 +185,9 @@ class User extends Authenticatable implements FilamentUser
         return $this->gdpr_deleted_at !== null;
     }
 
-    /** VATGER Leitung, admins and superusers review and approve GDPR removal requests. */
     public function canReviewGdprRequests(): bool
     {
-        return $this->isSuperuser() || $this->hasAnyRole(['VATGER Leitung']);
+        return $this->isAdmin() || $this->hasAnyRole(['VATGER Leitung']);
     }
 
     public function isVisitor(): bool

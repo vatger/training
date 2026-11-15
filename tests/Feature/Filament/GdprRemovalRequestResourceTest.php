@@ -50,15 +50,36 @@ test('VATGER Leitung can open the admin panel and the GDPR requests', function (
 });
 
 test('admins can review GDPR requests too', function () {
+    $request = pendingGdprRequest();
     $this->actingAs(User::factory()->create(['is_admin' => true]));
+
+    expect(GdprRemovalRequestResource::canViewAny())->toBeTrue();
+    $this->get(GdprRemovalRequestResource::getUrl('view', ['record' => $request]))->assertSuccessful();
+});
+
+test('superusers without the Leitung role cannot see GDPR requests', function () {
+    $request = pendingGdprRequest();
+    $this->actingAs(User::factory()->create(['is_superuser' => true]));
+
+    expect(GdprRemovalRequestResource::canViewAny())->toBeFalse();
+    $this->get(GdprRemovalRequestResource::getUrl('index'))->assertForbidden();
+    $this->get(GdprRemovalRequestResource::getUrl('view', ['record' => $request]))->assertForbidden();
+});
+
+test('a superuser who also has the Leitung role can review GDPR requests', function () {
+    $user = leitungUser();
+    $user->update(['is_superuser' => true]);
+    $this->actingAs($user);
 
     expect(GdprRemovalRequestResource::canViewAny())->toBeTrue();
 });
 
-test('superusers can review GDPR requests too', function () {
-    $this->actingAs(User::factory()->create(['is_superuser' => true]));
+test('plain users cannot see GDPR requests', function () {
+    $request = pendingGdprRequest();
+    $this->actingAs(User::factory()->create());
 
-    expect(GdprRemovalRequestResource::canViewAny())->toBeTrue();
+    expect(GdprRemovalRequestResource::canViewAny())->toBeFalse();
+    $this->get(GdprRemovalRequestResource::getUrl('view', ['record' => $request]))->assertForbidden();
 });
 
 test('mentors and leading mentors cannot see GDPR requests', function (array $attributes, ?string $role) {
