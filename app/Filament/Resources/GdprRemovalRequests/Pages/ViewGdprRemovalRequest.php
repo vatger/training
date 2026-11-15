@@ -56,6 +56,9 @@ class ViewGdprRemovalRequest extends ViewRecord
                         ->title($this->record->isCompleted() ? 'User deleted, request completed' : 'User deleted, remaining records need review')
                         ->success()
                         ->send();
+
+                    // Reload so the steps, the relation manager and the header action reflect the new status.
+                    $this->redirect(static::getUrl(['record' => $this->record]), navigate: true);
                 }),
         ];
     }
@@ -79,6 +82,7 @@ class ViewGdprRemovalRequest extends ViewRecord
                                 'request' => $record,
                                 'data' => $user ? UserDataMap::collect($user) : null,
                                 'terms' => $record->search_terms ?? [],
+                                'mentions' => $user ? UserDataMap::mentions($record->search_terms ?? [], $user) : [],
                             ];
                         }),
                 ]),

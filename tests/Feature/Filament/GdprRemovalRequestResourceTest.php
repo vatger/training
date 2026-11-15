@@ -92,7 +92,7 @@ test('the pending request shows all stored data and highlights the identifiers',
 
     Livewire::test(ViewGdprRemovalRequest::class, ['record' => $request->getKey()])
         ->assertSuccessful()
-        ->assertSee('Stored data of this user')
+        ->assertSee('Approve the deletion of this user')
         ->assertSee('Erika')
         ->assertSee('8000001')
         ->assertActionVisible('approve');

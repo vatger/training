@@ -127,8 +127,39 @@
                             </div>
                         </x-filament::section>
                     @empty
-                        <p style="margin: 0; opacity: .65; font-size: .875rem;">Nothing in this group.</p>
+                        @if ($kind !== 'authored' || count($mentions) === 0)
+                            <p style="margin: 0; opacity: .65; font-size: .875rem;">Nothing in this group.</p>
+                        @endif
                     @endforelse
+
+                    @if ($kind === 'authored' && count($mentions) > 0)
+                        <x-filament::section :collapsible="true" :compact="true">
+                            <x-slot name="heading">
+                                <x-filament::badge color="warning" style="display: inline-flex; margin-right: .5rem;">Kept</x-filament::badge>
+                                Records whose text mentions the user
+                                <span style="opacity: .6; font-weight: 400;">· {{ count($mentions) }}</span>
+                            </x-slot>
+                            <p style="margin: 0 0 .5rem; font-size: .8rem; opacity: .7;">Somebody else's records that contain the name, VATSIM ID or email in their text. They are kept unchanged and need a manual review after approval.</p>
+                            <table style="width: 100%; border-collapse: collapse; font-size: .9rem;">
+                                <thead><tr>
+                                    <th style="text-align: left; padding: .4rem .75rem; opacity: .65; font-weight: 500;">Record</th>
+                                    <th style="text-align: left; padding: .4rem .75rem; opacity: .65; font-weight: 500;">Matching text</th>
+                                </tr></thead>
+                                <tbody>
+                                    @foreach ($mentions as $mention)
+                                        <tr x-show="!q || $el.textContent.toLowerCase().includes(q.toLowerCase())" style="border-top: 1px solid rgba(128,128,128,.2);">
+                                            <td style="padding: .4rem .75rem; vertical-align: top; white-space: nowrap;">{{ $mention['label'] }} #{{ $mention['row']->id }}</td>
+                                            <td style="padding: .4rem .75rem; vertical-align: top; overflow-wrap: anywhere;">
+                                                @foreach ($mention['fields'] as $field)
+                                                    <div><span style="opacity: .65;">{{ str($field)->replace('_', ' ')->title() }}:</span> {{ $highlight(\Illuminate\Support\Str::limit(strip_tags($mention['row']->{$field}), 200)) }}</div>
+                                                @endforeach
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </x-filament::section>
+                    @endif
                 </div>
             </div>
         @endforeach
@@ -148,9 +179,8 @@
                 <li><strong>Written by the user</strong>: the user was the author. They are now shown as "GDPR Removed", but the text may still name them.</li>
                 <li><strong>Text mentions the user</strong>: somebody else's record whose text contains the name, VATSIM ID or email.</li>
             </ul>
-            <span style="display: block; margin-top: .35rem; font-size: .875rem;">The homepage keeps getting "pending" until every record is reviewed.</span>
         </div>
     </div>
 @else
-    <p style="margin: 0;">Completed {{ $request->completed_at?->format('Y-m-d H:i') }}. The homepage is answered with success.</p>
+    <p style="margin: 0;">Completed {{ $request->completed_at?->format('Y-m-d H:i') }}</p>
 @endif

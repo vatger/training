@@ -4,6 +4,7 @@ namespace App\Filament\Resources\GdprRemovalRequests\RelationManagers;
 
 use App\Domain\Gdpr\Actions\ReviewGdprItem;
 use App\Domain\Gdpr\UserDataMap;
+use App\Filament\Resources\GdprRemovalRequests\Pages\ViewGdprRemovalRequest;
 use App\Models\GdprReviewItem;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Textarea;
@@ -71,6 +72,9 @@ class ReviewItemsRelationManager extends RelationManager
                         app(ReviewGdprItem::class)->execute($record, auth()->user(), $data);
 
                         Notification::make()->title('Marked as reviewed')->success()->send();
+
+                        // Reload so the step overview and the request status follow along (the last review completes it).
+                        $this->redirect(ViewGdprRemovalRequest::getUrl(['record' => $this->getOwnerRecord()]), navigate: true);
                     }),
             ]);
     }

@@ -276,7 +276,7 @@ class UserDataMap
      * Tables whose free text may still identify the user and is therefore reviewed
      * by hand. "authors" are the columns that made the user the writer of the text.
      *
-     * @return array<string, array{fields: array<int, string>, authors: array<int, string>, label: string}>
+     * @return array<string, array{fields: array<int, string>, authors: array<int, string>, owner: string, label: string}>
      */
     public static function reviewTables(): array
     {
@@ -292,21 +292,25 @@ class UserDataMap
                 'label' => 'Training log',
                 'fields' => $trainingLogFields,
                 'authors' => ['mentor_id'],
+                'owner' => 'trainee_id',
             ],
             'course_trainees' => [
                 'label' => 'Course enrolment remark',
                 'fields' => ['remarks'],
                 'authors' => ['remark_author_id'],
+                'owner' => 'user_id',
             ],
             'subfamiliarisation_sessions' => [
                 'label' => 'Subfamiliarisation session',
                 'fields' => ['remarks'],
                 'authors' => ['mentor_id'],
+                'owner' => 'user_id',
             ],
             'waiting_list_entries' => [
                 'label' => 'Waiting list entry',
                 'fields' => ['remarks'],
                 'authors' => [],
+                'owner' => 'user_id',
             ],
         ];
     }
@@ -364,6 +368,53 @@ class UserDataMap
             $user->vatsim_id ? (string) $user->vatsim_id : null,
             $user->email,
         ], fn ($term) => filled($term)));
+    }
+
+    /**
+     * Rows of review tables whose free text contains one of the terms, with the fields that matched.
+     * Shared by the approval (which turns them into review items) and the pre-approval overview.
+     *
+     * @param  array<int, string>  $terms
+     * @param  User|null  $except  rows this user owns or wrote are left out (they are handled elsewhere), for use before the user is deleted
+     * @return array<int, array{table: string, label: string, row: object, fields: array<int, string>}>
+     */
+    public static function mentions(array $terms, ?User $except = null): array
+    {
+        if ($terms === []) {
+            return [];
+        }
+
+        $found = [];
+
+        foreach (self::reviewTables() as $table => $config) {
+            $rows = DB::table($table)->where(function ($query) use ($config, $terms) {
+                foreach ($config['fields'] as $field) {
+                    foreach ($terms as $term) {
+                        $query->orWhere($field, 'like', "%{$term}%");
+                    }
+                }
+            })->get();
+
+            foreach ($rows as $row) {
+                if ($except && collect([$config['owner'], ...$config['authors']])->contains(fn ($column) => $row->{$column} == $except->id)) {
+                    continue;
+                }
+
+                $fields = array_values(array_filter($config['fields'], function ($field) use ($row, $terms) {
+                    foreach ($terms as $term) {
+                        if (filled($row->{$field}) && stripos((string) $row->{$field}, $term) !== false) {
+                            return true;
+                        }
+                    }
+
+                    return false;
+                }));
+
+                $found[] = ['table' => $table, 'label' => $config['label'], 'row' => $row, 'fields' => $fields];
+            }
+        }
+
+        return $found;
     }
 
     public static function deleteCptLogFile(string $path): void

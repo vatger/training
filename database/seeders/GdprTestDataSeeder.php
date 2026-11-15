@@ -17,9 +17,16 @@ use Illuminate\Support\Facades\DB;
  *
  *   php artisan db:seed --class=GdprTestDataSeeder
  *
- * Creates a VATGER Leitung user (9000000) to review with, two pending removal requests
- * (the trainee 9000001 and the mentor 9000002) and a bystander trainee (9000003) whose
- * records mention both of them. Safe to run repeatedly.
+ * Creates a VATGER Leitung user (9000000) to review with, and these pending removal requests:
+ *
+ *   9000001 Erika (trainee)  - own data is deleted, other people's records mention her
+ *   9000002 Max (mentor)     - his logs/remarks for others are kept and need a review
+ *   9000005 Paula (trainee)  - a mix: Max examined her CPT, her own logs are deleted
+ *   9000006 Gerd             - nothing to review, completes right after approval
+ *
+ * Bystanders 9000003 (Tim) and 9000004 (Nina) own the records that stay. Nina's records
+ * only name people in ways the search does NOT catch (first name only), to see the limits.
+ * Safe to run repeatedly.
  */
 class GdprTestDataSeeder extends Seeder
 {
@@ -63,11 +70,54 @@ class GdprTestDataSeeder extends Seeder
             $this->log(['trainee_id' => $bystander->id, 'mentor_id' => $leitung->id, 'course_id' => $course->id, 'internal_remarks' => 'Rücksprache mit Max Mentor gehalten']);
         }
 
-        foreach ([$trainee, $mentor] as $user) {
+        // More mentions of Erika and Max in other people's text, in different tables and spellings.
+        $this->mentions($bystander, $trainee, $mentor, $leitung, $course);
+
+        // Paula (trainee): Max examined her CPT, so that CPT is deleted with her and Max is only a name in it.
+        $paula = $this->user(9000005, 'Paula', 'Pending', ['email' => 'paula.pending@example.com']);
+        if (! TrainingLog::where('trainee_id', $paula->id)->exists()) {
+            $this->log(['trainee_id' => $paula->id, 'mentor_id' => $mentor->id, 'course_id' => $course->id, 'final_comment' => 'Paula Pending hat die Prüfung bestanden', 'internal_remarks' => 'Kontakt: paula.pending@example.com']);
+            $this->log(['trainee_id' => $paula->id, 'mentor_id' => $leitung->id, 'course_id' => $course->id, 'final_comment' => 'Weiter so']);
+        }
+        WaitingListEntry::firstOrCreate(['user_id' => $paula->id, 'course_id' => $course->id], ['remarks' => 'Paula wartet seit Mai']);
+
+        // Gerd: owns nothing but a settings row, and nobody mentions him.
+        $gerd = $this->user(9000006, 'Gerd', 'Gelöscht');
+        DB::table('user_settings')->insertOrIgnore(['user_id' => $gerd->id, 'created_at' => now(), 'updated_at' => now()]);
+
+        foreach ([$trainee, $mentor, $paula, $gerd] as $user) {
             GdprRemovalRequest::firstOrCreate(
                 ['vatsim_id' => $user->vatsim_id, 'status' => GdprRemovalRequest::STATUS_PENDING],
                 ['user_id' => $user->id, 'user_name' => $user->name, 'search_terms' => UserDataMap::searchTerms($user)],
             );
+        }
+    }
+
+    private function mentions(User $bystander, User $trainee, User $mentor, User $leitung, Course $course): void
+    {
+        // Text mentions in the other tables the search looks at.
+        WaitingListEntry::firstOrCreate(
+            ['user_id' => $bystander->id, 'course_id' => $course->id],
+            ['remarks' => 'Will gemeinsam mit Erika Musterfrau eingeteilt werden'],
+        );
+        DB::table('course_trainees')->insertOrIgnore([
+            'course_id' => $course->id, 'user_id' => $bystander->id, 'status' => 'active',
+            'remarks' => 'Betreut von Max Mentor, Rückfragen an max.mentor@example.com', 'remark_author_id' => $leitung->id,
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+
+        if (! TrainingLog::where('trainee_id', $bystander->id)->where('internal_remarks', 'like', '%9000001%')->exists()) {
+            // Matched through the VATSIM id and the e-mail, not the name.
+            $this->log(['trainee_id' => $bystander->id, 'mentor_id' => $leitung->id, 'course_id' => $course->id, 'internal_remarks' => 'Siehe Notiz zu CID 9000001', 'next_step' => 'Rückfrage an erika.musterfrau@example.com']);
+            // Same name in a different case.
+            $this->log(['trainee_id' => $bystander->id, 'mentor_id' => $leitung->id, 'course_id' => $course->id, 'theory_positives' => 'ERIKA MUSTERFRAU hat das gut erklärt']);
+        }
+
+        // Nina: only first names or initials, which the exact-name search does not find.
+        $nina = $this->user(9000004, 'Nina', 'Neu');
+        if (! TrainingLog::where('trainee_id', $nina->id)->exists()) {
+            $this->log(['trainee_id' => $nina->id, 'mentor_id' => $leitung->id, 'course_id' => $course->id, 'final_comment' => 'Max hat mir viel geholfen']);
+            $this->log(['trainee_id' => $nina->id, 'mentor_id' => $leitung->id, 'course_id' => $course->id, 'final_comment' => 'Danke an M. Mentor und Erika']);
         }
     }
 

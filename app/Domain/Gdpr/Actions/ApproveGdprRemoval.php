@@ -187,24 +187,10 @@ class ApproveGdprRemoval
      */
     private function findMentions(array $terms): array
     {
-        if ($terms === []) {
-            return [];
-        }
-
         $items = [];
 
-        foreach (UserDataMap::reviewTables() as $table => $config) {
-            $rows = DB::table($table)->where(function ($query) use ($config, $terms) {
-                foreach ($config['fields'] as $field) {
-                    foreach ($terms as $term) {
-                        $query->orWhere($field, 'like', "%{$term}%");
-                    }
-                }
-            })->get();
-
-            foreach ($rows as $row) {
-                $items["{$table}:{$row->id}"] = $this->reviewItem($table, $row, GdprReviewItem::REASON_MENTION);
-            }
+        foreach (UserDataMap::mentions($terms) as $mention) {
+            $items["{$mention['table']}:{$mention['row']->id}"] = $this->reviewItem($mention['table'], $mention['row'], GdprReviewItem::REASON_MENTION);
         }
 
         return $items;
