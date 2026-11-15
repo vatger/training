@@ -2,127 +2,91 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Domain\Gdpr\Actions\AnonymizeUser;
-use App\Domain\Gdpr\Events\UserDeleted;
+use App\Domain\Gdpr\UserDataMap;
 use App\Http\Controllers\Controller;
-use App\Integrations\VatEud\VatEudService;
+use App\Models\GdprRemovalRequest;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class GdprController extends Controller
 {
-    protected $vatEudService;
-
-    protected AnonymizeUser $anonymizeUser;
-
-    public function __construct(VatEudService $vatEudService, AnonymizeUser $anonymizeUser)
-    {
-        $this->vatEudService = $vatEudService;
-        $this->anonymizeUser = $anonymizeUser;
-    }
-
+    /**
+     * Polled by the VATGER homepage (roughly hourly) until it gets a 200.
+     *
+     * The first call opens a removal request for Leitung to review, every call until
+     * that request is completed is answered with 202, which the homepage does not
+     * count as success. Nothing is deleted here.
+     */
     public function delete(Request $request, int $vatsimId): JsonResponse
     {
         try {
-            $user = User::where('vatsim_id', $vatsimId)->first();
+            $removal = DB::transaction(function () use ($vatsimId) {
+                $open = GdprRemovalRequest::open()->where('vatsim_id', $vatsimId)->first();
 
-            if (! $user) {
-                Log::info('GDPR deletion - user not found', ['vatsim_id' => $vatsimId]);
+                if ($open) {
+                    return $open;
+                }
 
+                $user = User::where('vatsim_id', $vatsimId)->lockForUpdate()->first();
+
+                if (! $user) {
+                    return null;
+                }
+
+                return GdprRemovalRequest::create([
+                    'user_id' => $user->id,
+                    'vatsim_id' => $vatsimId,
+                    'user_name' => $user->name,
+                    'search_terms' => UserDataMap::searchTerms($user),
+                    'status' => GdprRemovalRequest::STATUS_PENDING,
+                ]);
+            });
+
+            if (! $removal) {
+                // Nothing stored (anymore), which is what the caller wants to hear.
                 return response()->json(['error' => 'User not found'], 200);
             }
 
-            $isVisitor = $user->isVisitor();
-
-            Log::info('GDPR deletion initiated', [
-                'vatsim_id' => $vatsimId,
-                'user_id' => $user->id,
-                'user_name' => $user->name,
-                'is_visitor' => $isVisitor,
-            ]);
-
-            $this->vatEudService->removeRosterAndEndorsements($vatsimId);
-
-            if ($isVisitor) {
-                $this->deleteVisitorFromVatEUD($vatsimId);
+            if ($removal->wasRecentlyCreated) {
+                Log::info('GDPR removal request created', ['vatsim_id' => $vatsimId, 'request_id' => $removal->id]);
             }
-
-            event(new UserDeleted($user, $request->ip()));
-
-            DB::beginTransaction();
-
-            try {
-                $this->anonymizeUser->execute($user);
-
-                DB::commit();
-
-                Log::info('GDPR deletion completed', ['vatsim_id' => $vatsimId]);
-
-                return response()->json(['message' => 'User deleted successfully'], 200);
-
-            } catch (\Exception $e) {
-                DB::rollBack();
-                throw $e;
-            }
-
-        } catch (\Exception $e) {
-            Log::error('GDPR deletion failed', [
-                'vatsim_id' => $vatsimId,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
 
             return response()->json([
-                'error' => 'Failed to delete user',
-                'message' => $e->getMessage(),
-            ], 500);
+                'message' => 'Removal is pending review',
+                'status' => $removal->status,
+            ], 202);
+        } catch (\Exception $e) {
+            Log::error('GDPR removal request failed', ['vatsim_id' => $vatsimId, 'error' => $e->getMessage()]);
+
+            return response()->json(['error' => 'Failed to process removal request'], 500);
         }
     }
 
-    protected function deleteVisitorFromVatEUD(int $vatsimId): void
+    /**
+     * Everything this system stores about a user, as JSON.
+     */
+    public function show(int $vatsimId): JsonResponse
     {
-        $eudToken = config('services.vateud.token');
+        $user = User::where('vatsim_id', $vatsimId)->first();
 
-        if (! $eudToken) {
-            Log::warning('VatEUD token not configured, skipping VatEUD visitor deletion', [
-                'vatsim_id' => $vatsimId,
-            ]);
-
-            return;
+        if (! $user) {
+            return response()->json(['error' => 'User not found'], 404);
         }
 
-        try {
-            Log::info('Deleting visitor from VatEUD', ['vatsim_id' => $vatsimId]);
+        $data = UserDataMap::collect($user, full: true);
 
-            $response = Http::withHeaders([
-                'X-API-KEY' => $eudToken,
-                'Accept' => 'application/json',
-            ])
-                ->timeout(10)
-                ->delete("https://core.vateud.net/api/facility/visitors/{$vatsimId}/delete");
-
-            if ($response->successful()) {
-                Log::info('Successfully deleted visitor from VatEUD', [
-                    'vatsim_id' => $vatsimId,
-                    'status' => $response->status(),
-                ]);
-            } else {
-                Log::warning('VatEUD visitor deletion returned non-success status', [
-                    'vatsim_id' => $vatsimId,
-                    'status' => $response->status(),
-                    'body' => $response->body(),
-                ]);
-            }
-
-        } catch (\Exception $e) {
-            Log::error('Failed to delete visitor from VatEUD', [
-                'vatsim_id' => $vatsimId,
-                'error' => $e->getMessage(),
-            ]);
-        }
+        return response()->json([
+            'generated_at' => now()->toIso8601String(),
+            'user' => $data['profile'],
+            'data' => collect($data['sections'])->map(fn (array $section) => [
+                'description' => $section['label'],
+                'kind' => $section['kind'] === 'owned' ? 'own_data' : 'written_by_user_on_other_records',
+                'count' => count($section['rows']),
+                'records' => $section['rows'],
+            ]),
+        ]);
     }
 }

@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 
 class User extends Authenticatable implements FilamentUser
 {
@@ -162,9 +163,32 @@ class User extends Authenticatable implements FilamentUser
         return ! empty($this->vatsim_id);
     }
 
+    /**
+     * Stand-in that records of other users (training logs, CPTs, ...) point at once the
+     * person who wrote them has been removed. It shows up as "GDPR Removed" everywhere
+     * a name is displayed, owns no roles and has no VATSIM id, so it can never log in.
+     */
+    public static function gdprPlaceholder(): self
+    {
+        return static::query()->whereNotNull('gdpr_deleted_at')->where(['first_name' => 'GDPR', 'last_name' => 'Removed'])->first()
+            ?? static::query()->create([
+                'first_name' => 'GDPR',
+                'last_name' => 'Removed',
+                'rating' => 0,
+                'password' => Str::random(40),
+                'gdpr_deleted_at' => now(),
+            ]);
+    }
+
     public function isGdprDeleted(): bool
     {
         return $this->gdpr_deleted_at !== null;
+    }
+
+    /** VATGER Leitung, admins and superusers review and approve GDPR removal requests. */
+    public function canReviewGdprRequests(): bool
+    {
+        return $this->isSuperuser() || $this->hasAnyRole(['VATGER Leitung']);
     }
 
     public function isVisitor(): bool
@@ -301,7 +325,7 @@ class User extends Authenticatable implements FilamentUser
             return true;
         }
 
-        if ($this->isLeadingMentor()) {
+        if ($this->isLeadingMentor() || $this->hasAnyRole(['VATGER Leitung'])) {
             return true;
         }
 

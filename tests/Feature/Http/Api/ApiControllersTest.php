@@ -1,19 +1,16 @@
 <?php
 
-use App\Domain\Gdpr\Actions\AnonymizeUser;
-use App\Domain\Gdpr\Events\UserDeleted;
 use App\Integrations\Moodle\MoodleClientInterface;
 use App\Integrations\VatEud\FakeVatEudClient;
 use App\Integrations\VatEud\VatEudClientInterface;
-use App\Models\ActivityLog;
 use App\Models\ApiKey;
 use App\Models\Course;
 use App\Models\Cpt;
 use App\Models\Familiarisation;
 use App\Models\FamiliarisationSector;
+use App\Models\GdprRemovalRequest;
 use App\Models\Subfamiliarisation;
 use App\Models\SubfamiliarisationSession;
-use App\Models\TrainingLog;
 use App\Models\User;
 use App\Models\WaitingListEntry;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -30,7 +27,6 @@ beforeEach(function () {
     Event::fakeExcept([
         'eloquent.creating: App\Models\ApiKey',
         'eloquent.saving: App\Models\Cpt',
-        UserDeleted::class,
     ]);
 });
 
@@ -538,7 +534,7 @@ describe('FamiliarisationController', function () {
 
 // ─── GdprController ──────────────────────────────────────────────────────────
 
-describe('GdprController', function () {
+describe('GdprController removal requests', function () {
     test('returns 401 when no api key is provided', function () {
         $this->deleteJson('/api/gdpr-removal/1234567')
             ->assertStatus(401);
@@ -553,149 +549,110 @@ describe('GdprController', function () {
             ->assertJson(['error' => 'Insufficient permissions']);
     });
 
-    test('returns 403 when api key has no permissions', function () {
-        apiCreateKey([], 'no-perm-key');
-
-        $this->withHeaders(apiAuthHeaders('no-perm-key'))
-            ->deleteJson('/api/gdpr-removal/1234567')
-            ->assertStatus(403);
-    });
-
-    test('returns 200 with user not found message when vatsim id does not exist', function () {
+    test('returns 200 when there is no user and no request for the vatsim id', function () {
         apiCreateKey(['gdpr.delete']);
 
         $this->withHeaders(apiAuthHeaders())
             ->deleteJson('/api/gdpr-removal/9999999')
-            ->assertOk()
-            ->assertJson(['error' => 'User not found']);
-    });
-
-    test('deletes user, fires UserDeleted event, writes activity log, and returns success', function () {
-        apiCreateKey(['gdpr.delete']);
-        $user = User::factory()->create(['vatsim_id' => 7654321]);
-
-        $this->withHeaders(apiAuthHeaders())
-            ->deleteJson('/api/gdpr-removal/'.$user->vatsim_id)
-            ->assertOk()
-            ->assertJson(['message' => 'User deleted successfully']);
-
-        expect(User::where('vatsim_id', 7654321)->exists())->toBeFalse();
-
-        $log = ActivityLog::where('action', 'gdpr.deletion')->first();
-        expect($log)->not->toBeNull();
-        expect($log->properties['vatsim_id'])->toBe(7654321);
-        expect($log->properties['user_name'])->toBe($user->name);
-    });
-
-    test('activity log survives even when anonymization fails after roster removal already happened', function () {
-        apiCreateKey(['gdpr.delete']);
-        $user = User::factory()->create(['vatsim_id' => 7654326]);
-
-        $this->app->bind(AnonymizeUser::class, fn () => new class extends AnonymizeUser
-        {
-            public function execute(User $user): void
-            {
-                throw new Exception('simulated anonymization failure');
-            }
-        });
-
-        $this->withHeaders(apiAuthHeaders())
-            ->deleteJson('/api/gdpr-removal/7654326')
-            ->assertStatus(500);
-
-        // The VatEUD roster removal already happened (irreversibly) before
-        // anonymization ran, so its audit trail must not be rolled back
-        // along with the failed anonymization.
-        $log = ActivityLog::where('action', 'gdpr.deletion')
-            ->where('properties->vatsim_id', 7654326)
-            ->first();
-
-        expect($log)->not->toBeNull();
-    });
-
-    test('anonymizes the user in place instead of deleting the row', function () {
-        apiCreateKey(['gdpr.delete']);
-        $user = User::factory()->create(['vatsim_id' => 7654322, 'email' => 'someone@example.com']);
-
-        $this->withHeaders(apiAuthHeaders())
-            ->deleteJson('/api/gdpr-removal/7654322')
             ->assertOk();
 
-        $user->refresh();
-
-        expect($user->vatsim_id)->toBeNull()
-            ->and($user->first_name)->toBe('Deleted')
-            ->and($user->last_name)->toBe('User')
-            ->and($user->name)->toBe('Deleted User')
-            ->and($user->email)->toBeNull()
-            ->and($user->is_admin)->toBeFalse()
-            ->and($user->is_staff)->toBeFalse()
-            ->and($user->is_superuser)->toBeFalse()
-            ->and($user->gdpr_deleted_at)->not->toBeNull();
+        expect(GdprRemovalRequest::count())->toBe(0);
     });
 
-    test('preserves related records and shows them as Deleted User', function () {
+    test('the first request creates a pending removal request and is answered with 202', function () {
         apiCreateKey(['gdpr.delete']);
-        $user = User::factory()->create(['vatsim_id' => 7654323]);
-        $course = Course::factory()->create();
-
-        WaitingListEntry::create([
-            'user_id' => $user->id,
-            'course_id' => $course->id,
-        ]);
-
-        $trainingLog = TrainingLog::create([
-            'trainee_id' => $user->id,
-            'session_date' => now(),
-            'position' => 'EDDF_TWR',
-            'type' => 'O',
-            'theory' => 3,
-            'phraseology' => 3,
-            'coordination' => 3,
-            'tag_management' => 3,
-            'situational_awareness' => 3,
-            'problem_recognition' => 3,
-            'traffic_planning' => 3,
-            'reaction' => 3,
-            'separation' => 3,
-            'efficiency' => 3,
-            'ability_to_work_under_pressure' => 3,
-            'motivation' => 3,
-            'result' => true,
-        ]);
+        $user = User::factory()->create(['vatsim_id' => 7654321, 'first_name' => 'Max', 'last_name' => 'Muster']);
 
         $this->withHeaders(apiAuthHeaders())
-            ->deleteJson('/api/gdpr-removal/7654323')
-            ->assertOk();
+            ->deleteJson('/api/gdpr-removal/7654321')
+            ->assertStatus(202)
+            ->assertJson(['status' => 'pending']);
 
-        expect(WaitingListEntry::where('user_id', $user->id)->exists())->toBeTrue();
-        expect(TrainingLog::where('id', $trainingLog->id)->exists())->toBeTrue();
-
-        $trainingLog->refresh();
-        expect($trainingLog->trainee->name)->toBe('Deleted User');
+        $request = GdprRemovalRequest::sole();
+        expect($request->vatsim_id)->toBe(7654321)
+            ->and($request->user_id)->toBe($user->id)
+            ->and($request->user_name)->toBe('Max Muster')
+            ->and($request->isPending())->toBeTrue()
+            ->and($request->search_terms)->toContain('Max Muster', '7654321');
     });
 
-    test('deletes the visitor from VatEUD when the user is not GER subdivision', function () {
-        config(['services.vateud.token' => 'fake-token']);
+    test('nothing is deleted by the request', function () {
         apiCreateKey(['gdpr.delete']);
-        $user = User::factory()->create(['vatsim_id' => 7654324, 'subdivision' => 'USA']);
+        $user = User::factory()->create(['vatsim_id' => 7654322]);
+
+        $this->withHeaders(apiAuthHeaders())->deleteJson('/api/gdpr-removal/7654322')->assertStatus(202);
+
+        expect($user->fresh())->not->toBeNull();
+    });
+
+    test('further requests for the same user are answered the same way without creating more requests', function () {
+        apiCreateKey(['gdpr.delete']);
+        User::factory()->create(['vatsim_id' => 7654323]);
+
+        foreach (range(1, 3) as $_) {
+            $this->withHeaders(apiAuthHeaders())
+                ->deleteJson('/api/gdpr-removal/7654323')
+                ->assertStatus(202);
+        }
+
+        expect(GdprRemovalRequest::count())->toBe(1);
+    });
+
+    test('is answered with 202 while an approved request still has records to review', function () {
+        apiCreateKey(['gdpr.delete']);
+        GdprRemovalRequest::create(['user_id' => null, 'vatsim_id' => 7654324, 'status' => 'approved']);
 
         $this->withHeaders(apiAuthHeaders())
             ->deleteJson('/api/gdpr-removal/7654324')
-            ->assertOk();
-
-        Http::assertSent(fn ($request) => str_contains($request->url(), 'facility/visitors/7654324/delete'));
+            ->assertStatus(202)
+            ->assertJson(['status' => 'approved']);
     });
 
-    test('does not call VatEUD visitor deletion for a GER subdivision user', function () {
-        config(['services.vateud.token' => 'fake-token']);
+    test('is answered with 200 once the request is completed', function () {
         apiCreateKey(['gdpr.delete']);
-        User::factory()->create(['vatsim_id' => 7654325, 'subdivision' => 'GER']);
+        GdprRemovalRequest::create(['user_id' => null, 'vatsim_id' => 7654325, 'status' => 'completed']);
 
         $this->withHeaders(apiAuthHeaders())
             ->deleteJson('/api/gdpr-removal/7654325')
             ->assertOk();
+    });
+});
 
-        Http::assertNotSent(fn ($request) => str_contains($request->url(), 'facility/visitors'));
+describe('GdprController data export', function () {
+    test('requires the gdpr.read permission', function () {
+        $this->getJson('/api/gdpr-data/1234567')->assertStatus(401);
+
+        apiCreateKey(['gdpr.delete']);
+        $this->withHeaders(apiAuthHeaders())->getJson('/api/gdpr-data/1234567')->assertStatus(403);
+    });
+
+    test('returns 404 for an unknown user', function () {
+        apiCreateKey(['gdpr.read']);
+
+        $this->withHeaders(apiAuthHeaders())->getJson('/api/gdpr-data/9999999')->assertNotFound();
+    });
+
+    test('returns the profile and everything stored about the user, without secrets', function () {
+        apiCreateKey(['gdpr.read']);
+        $user = User::factory()->create(['vatsim_id' => 7654330, 'email' => 'max@example.com']);
+        $mentor = User::factory()->create();
+        $course = Course::factory()->create();
+
+        WaitingListEntry::create(['user_id' => $user->id, 'course_id' => $course->id]);
+        createTrainingLog(['trainee_id' => $user->id, 'mentor_id' => $mentor->id, 'course_id' => $course->id]);
+        createTrainingLog(['trainee_id' => $mentor->id, 'mentor_id' => $user->id]);
+
+        $response = $this->withHeaders(apiAuthHeaders())
+            ->getJson('/api/gdpr-data/7654330')
+            ->assertOk()
+            ->assertJsonPath('user.vatsim_id', 7654330)
+            ->assertJsonPath('user.email', 'max@example.com')
+            ->assertJsonPath('data.waiting_list_entries.count', 1)
+            ->assertJsonPath('data.training_logs.count', 1)
+            ->assertJsonPath('data.training_logs.kind', 'own_data')
+            ->assertJsonPath('data.training_logs_as_mentor.count', 1)
+            ->assertJsonPath('data.training_logs_as_mentor.kind', 'written_by_user_on_other_records');
+
+        $response->assertJsonMissingPath('user.password')->assertJsonMissingPath('user.remember_token');
     });
 });

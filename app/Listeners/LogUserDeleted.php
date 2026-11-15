@@ -7,20 +7,24 @@ use App\Models\ActivityLog;
 
 class LogUserDeleted
 {
+    /**
+     * Deliberately records no name or email: the entry has to outlive the erasure.
+     */
     public function handle(UserDeleted $event): void
     {
         ActivityLog::create([
             'action' => 'gdpr.deletion',
-            'model_type' => $event->user::class,
-            'model_id' => $event->user->id,
-            'description' => "GDPR deletion for user {$event->user->name} (VATSIM ID: {$event->user->vatsim_id})",
-            'user_id' => null,
+            'model_type' => $event->request::class,
+            'model_id' => $event->request->id,
+            'description' => "GDPR deletion approved for VATSIM ID {$event->request->vatsim_id} (request #{$event->request->id})",
+            'user_id' => $event->approver?->id,
             'properties' => [
-                'vatsim_id' => $event->user->vatsim_id,
-                'user_name' => $event->user->name,
-                'user_email' => $event->user->email,
+                'vatsim_id' => $event->request->vatsim_id,
+                'request_id' => $event->request->id,
+                'approved_by_id' => $event->approver?->id,
                 'ip_address' => $event->ipAddress,
             ],
+            'ip_address' => $event->ipAddress,
         ]);
     }
 }
