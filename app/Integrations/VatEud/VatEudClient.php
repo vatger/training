@@ -513,6 +513,31 @@ class VatEudClient implements VatEudClientInterface
         }
     }
 
+    public function deleteVisitor(int $vatsimId): bool
+    {
+        try {
+            $response = Http::withHeaders($this->headers)
+                ->timeout(10)
+                ->delete("{$this->baseUrl}/facility/visitors/{$vatsimId}/delete");
+
+            if ($response->successful()) {
+                return true;
+            }
+
+            Log::warning('VatEUD visitor deletion returned non-success status', [
+                'vatsim_id' => $vatsimId,
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+
+            return false;
+        } catch (\Throwable $e) {
+            Log::error('Failed to delete visitor from VatEUD', ['vatsim_id' => $vatsimId, 'error' => $e->getMessage()]);
+
+            return false;
+        }
+    }
+
     public function getRoster(): array
     {
         try {

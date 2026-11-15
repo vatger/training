@@ -196,20 +196,19 @@ describe('approving a removal request', function () {
     });
 
     test('removes the visitor from VatEUD', function () {
-        config(['services.vateud.token' => 'fake-token']);
-        $user = User::factory()->create(['vatsim_id' => 7000009, 'subdivision' => 'USA']);
+        $client = Mockery::mock(FakeVatEudClient::class)->makePartial();
+        $client->shouldReceive('deleteVisitor')->once()->with(7000009)->andReturn(true);
+        $this->app->instance(VatEudClientInterface::class, $client);
 
-        gdprApprove(gdprRequestFor($user));
-
-        Http::assertSent(fn ($request) => str_contains($request->url(), 'facility/visitors/7000009/delete'));
+        gdprApprove(gdprRequestFor(User::factory()->create(['vatsim_id' => 7000009, 'subdivision' => 'USA'])));
     });
 
     test('does not touch VatEUD visitors for a GER user', function () {
-        config(['services.vateud.token' => 'fake-token']);
+        $client = Mockery::mock(FakeVatEudClient::class)->makePartial();
+        $client->shouldReceive('deleteVisitor')->never();
+        $this->app->instance(VatEudClientInterface::class, $client);
 
         gdprApprove(gdprRequestFor(User::factory()->create(['vatsim_id' => 7000010, 'subdivision' => 'GER'])));
-
-        Http::assertNotSent(fn ($request) => str_contains($request->url(), 'facility/visitors'));
     });
 
     test('the audit entry survives a failure while deleting', function () {

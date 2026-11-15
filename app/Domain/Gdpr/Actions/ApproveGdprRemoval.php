@@ -10,7 +10,6 @@ use App\Models\GdprRemovalRequest;
 use App\Models\GdprReviewItem;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class ApproveGdprRemoval
@@ -226,37 +225,9 @@ class ApproveGdprRemoval
         }
 
         if ($isVisitor) {
-            $this->deleteVisitorFromVatEud($vatsimId);
-        }
-    }
-
-    private function deleteVisitorFromVatEud(int $vatsimId): void
-    {
-        $eudToken = config('services.vateud.token');
-
-        if (! $eudToken) {
-            Log::warning('VatEUD token not configured, skipping VatEUD visitor deletion', ['vatsim_id' => $vatsimId]);
-
-            return;
-        }
-
-        try {
-            $response = Http::withHeaders([
-                'X-API-KEY' => $eudToken,
-                'Accept' => 'application/json',
-            ])
-                ->timeout(10)
-                ->delete("https://core.vateud.net/api/facility/visitors/{$vatsimId}/delete");
-
-            if (! $response->successful()) {
-                Log::warning('VatEUD visitor deletion returned non-success status', [
-                    'vatsim_id' => $vatsimId,
-                    'status' => $response->status(),
-                    'body' => $response->body(),
-                ]);
+            if (! $this->vatEudService->deleteVisitor($vatsimId)) {
+                Log::warning('GDPR removal: VatEUD visitor deletion reported failure', ['vatsim_id' => $vatsimId]);
             }
-        } catch (\Exception $e) {
-            Log::error('Failed to delete visitor from VatEUD', ['vatsim_id' => $vatsimId, 'error' => $e->getMessage()]);
         }
     }
 }

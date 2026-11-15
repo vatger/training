@@ -137,6 +137,11 @@ class VatEudService
         return $result;
     }
 
+    public function deleteVisitor(int $vatsimId): bool
+    {
+        return $this->client->deleteVisitor($vatsimId);
+    }
+
     public function getUserExams(int $vatsimId): UserExamsData
     {
         return $this->client->getUserExams($vatsimId);

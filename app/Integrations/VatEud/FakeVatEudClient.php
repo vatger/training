@@ -74,6 +74,11 @@ class FakeVatEudClient implements VatEudClientInterface
         return true;
     }
 
+    public function deleteVisitor(int $vatsimId): bool
+    {
+        return true;
+    }
+
     public function getUserExams(int $vatsimId): UserExamsData
     {
         return UserExamsData::fromApiResponse([]);

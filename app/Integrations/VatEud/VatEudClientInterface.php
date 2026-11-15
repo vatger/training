@@ -32,6 +32,8 @@ interface VatEudClientInterface
 
     public function removeRosterAndEndorsements(int $vatsimId): bool;
 
+    public function deleteVisitor(int $vatsimId): bool;
+
     public function getUserExams(int $vatsimId): UserExamsData;
 
     public function assignCoreTheoryTest(int $vatsimId, int $examId, int $instructorCid): array;
