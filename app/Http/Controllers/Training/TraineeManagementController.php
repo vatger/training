@@ -10,6 +10,7 @@ use App\Domain\Training\Actions\ReactivateTrainee;
 use App\Domain\Training\Actions\RemoveTrainee;
 use App\Domain\Training\Actions\UnclaimTrainee;
 use App\Http\Controllers\Controller;
+use App\Integrations\Moodle\MoodleEnrollmentException;
 use App\Models\Course;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -236,6 +237,10 @@ class TraineeManagementController extends Controller
             $this->addTraineeToCourse->execute($course, $trainee, $user);
 
             return redirect()->route('overview.index', ['last_course_id' => $course->id]);
+        } catch (MoodleEnrollmentException $e) {
+            Log::warning('Trainee not added: Moodle enrollment failed', ['mentor_id' => $user->id, 'trainee_id' => $trainee->id, 'course_id' => $course->id, 'error' => $e->getMessage()]);
+
+            return back()->withErrors(['error' => $e->getMessage()]);
         } catch (\Exception $e) {
             Log::error('Error adding trainee to course', ['mentor_id' => $user->id, 'trainee_id' => $trainee->id, 'course_id' => $course->id, 'error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
 

@@ -2,6 +2,7 @@
 
 namespace App\Integrations\Moodle;
 
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -23,7 +24,7 @@ class MoodleClient implements MoodleClientInterface
         try {
             $response = Http::withHeaders(['Authorization' => "Token {$this->apiKey}"])
                 ->timeout(3)
-                ->retry(2, 500)
+                ->retry(2, 500, fn ($e) => $this->shouldRetry($e), throw: false)
                 ->get("{$this->baseUrl}/moodle/user/{$vatsimId}");
 
             if ($response->successful()) {
@@ -52,7 +53,7 @@ class MoodleClient implements MoodleClientInterface
         try {
             $response = Http::withHeaders(['Authorization' => "Token {$this->apiKey}"])
                 ->timeout(5)
-                ->retry(2, 500)
+                ->retry(2, 500, fn ($e) => $this->shouldRetry($e), throw: false)
                 ->get("{$this->baseUrl}/moodle/course/{$courseId}/user/{$vatsimId}/completion");
 
             if ($response->successful()) {
@@ -60,6 +61,13 @@ class MoodleClient implements MoodleClientInterface
                 Cache::put($cacheKey, $completed, config('moodle.cache_ttl', 600));
 
                 return $completed;
+            }
+
+            // 404: the user has no Moodle account or is not enrolled in the course yet
+            if ($response->status() === 404) {
+                Cache::put($cacheKey, false, config('moodle.not_found_cache_ttl', 60));
+
+                return false;
             }
 
             Log::warning('Moodle completion check failed', [
@@ -119,6 +127,7 @@ class MoodleClient implements MoodleClientInterface
         try {
             $response = Http::withHeaders(['Authorization' => "Token {$this->apiKey}"])
                 ->timeout(10)
+                ->retry(2, 500, fn ($e) => $this->shouldRetry($e), throw: false)
                 ->get("{$this->baseUrl}/moodle/course/{$courseId}/user/{$vatsimId}/enrol");
 
             if ($response->successful()) {
@@ -141,5 +150,17 @@ class MoodleClient implements MoodleClientInterface
 
             return false;
         }
+    }
+
+    /**
+     * Retry on connection errors and server errors only, a 4xx will not change on retry.
+     */
+    private function shouldRetry(\Throwable $e): bool
+    {
+        if ($e instanceof RequestException) {
+            return $e->response->serverError();
+        }
+
+        return true;
     }
 }
