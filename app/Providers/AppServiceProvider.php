@@ -48,7 +48,6 @@ use App\Policies\Admin\Tier2EndorsementPolicy;
 use App\Policies\Admin\UserPolicy;
 use App\Policies\Admin\WaitingListEntryPolicy;
 use App\Policies\Admin\WaitingListRestrictionPolicy;
-use App\Policies\EndorsementPolicy;
 use App\Policies\TrainingLogPolicy;
 use App\Services\VatsimConnectService;
 use Illuminate\Support\Facades\Gate;
@@ -57,12 +56,8 @@ use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
     public function register(): void
     {
-        // Register VATSIM Connect Service
         $this->app->singleton(VatsimConnectService::class, function ($app) {
             return new VatsimConnectService;
         });
@@ -98,9 +93,6 @@ class AppServiceProvider extends ServiceProvider
         );
     }
 
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
         if (config('app.forcehttps')) {
@@ -109,13 +101,13 @@ class AppServiceProvider extends ServiceProvider
 
         date_default_timezone_set(config('app.timezone', 'UTC'));
 
-        Gate::define('mentor', [EndorsementPolicy::class, 'mentor']);
-        Gate::define('endorsements.manage', [EndorsementPolicy::class, 'viewManagement']);
-        Gate::define('endorsements.remove-tier1', [EndorsementPolicy::class, 'removeTier1']);
+        Gate::define('mentor', fn (User $user) => $user->isSuperuser()
+            || $user->isMentor()
+            || $user->isChiefOfTraining()
+            || $user->isLeadingMentor());
 
         Gate::policy(TrainingLog::class, TrainingLogPolicy::class);
 
-        // Policies backing the admin panel resources live in their own folder, so they are not auto-discovered.
         Gate::policy(ActivityLog::class, ActivityLogPolicy::class);
         Gate::policy(ApiKey::class, ApiKeyPolicy::class);
         Gate::policy(Course::class, CoursePolicy::class);

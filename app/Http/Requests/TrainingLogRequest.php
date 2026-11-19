@@ -3,29 +3,22 @@
 namespace App\Http\Requests;
 
 use App\Models\Course;
-use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class TrainingLogRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
         $user = $this->user();
 
-        // Must be a mentor, chief of training, leading mentor, or superuser
-        if (! $user || (! $user->isMentor() && ! $user->is_superuser && ! $user->isChiefOfTraining() && ! $user->isLeadingMentor())) {
+        if (! $user?->can('mentor')) {
             return false;
         }
 
-        // If updating, check if user is allowed to edit this training log
         if ($this->route('training_log')) {
             return $user->canEditTrainingLog($this->route('training_log'));
         }
 
-        // If creating, check if user has mentor-level access to the course
         if ($this->has('course_id')) {
             $course = Course::find($this->input('course_id'));
 
@@ -35,11 +28,6 @@ class TrainingLogRequest extends FormRequest
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, Rule|array|string>
-     */
     public function rules(): array
     {
         $rules = [
@@ -47,7 +35,6 @@ class TrainingLogRequest extends FormRequest
             'position' => 'required|string|max:25',
             'type' => 'required|string|in:O,S,L,C',
 
-            // Session details (optional)
             'traffic_level' => 'nullable|string|in:L,M,H',
             'traffic_complexity' => 'nullable|string|in:L,M,H',
             'runway_configuration' => 'nullable|string|max:50',
@@ -56,7 +43,6 @@ class TrainingLogRequest extends FormRequest
             'special_procedures' => 'nullable|string|max:5000',
             'airspace_restrictions' => 'nullable|string|max:5000',
 
-            // Rating categories - all required
             'theory' => 'required|integer|min:0|max:4',
             'theory_positives' => 'nullable|string|max:10000',
             'theory_negatives' => 'nullable|string|max:10000',
@@ -105,14 +91,12 @@ class TrainingLogRequest extends FormRequest
             'motivation_positives' => 'nullable|string|max:10000',
             'motivation_negatives' => 'nullable|string|max:10000',
 
-            // Final assessment
             'internal_remarks' => 'nullable|string|max:10000',
             'final_comment' => 'nullable|string|max:10000',
             'result' => 'required|boolean',
             'next_step' => 'nullable|string|max:500',
         ];
 
-        // Add trainee and course validation only for store requests
         if ($this->isMethod('post')) {
             $rules['trainee_id'] = 'required|integer|exists:users,id';
             $rules['course_id'] = 'required|integer|exists:courses,id';
@@ -121,9 +105,6 @@ class TrainingLogRequest extends FormRequest
         return $rules;
     }
 
-    /**
-     * Get custom attribute names for validation errors.
-     */
     public function attributes(): array
     {
         return [
@@ -196,9 +177,6 @@ class TrainingLogRequest extends FormRequest
         ];
     }
 
-    /**
-     * Get custom messages for validation errors.
-     */
     public function messages(): array
     {
         return [

@@ -29,7 +29,7 @@ class SoloController extends Controller
     {
         $user = $request->user();
 
-        if (! $user->isMentor() && ! $user->is_superuser && ! $user->isChiefOfTraining() && ! $user->isLeadingMentor()) {
+        if (! $user->can('mentor')) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
@@ -61,7 +61,7 @@ class SoloController extends Controller
     {
         $user = $request->user();
 
-        if (! $user->isMentor() && ! $user->is_superuser && ! $user->isChiefOfTraining() && ! $user->isLeadingMentor()) {
+        if (! $user->can('mentor')) {
             return response()->json(['error' => 'Access denied'], 403);
         }
 
@@ -115,7 +115,7 @@ class SoloController extends Controller
     {
         $user = $request->user();
 
-        if (! $user->isMentor() && ! $user->is_superuser && ! $user->isChiefOfTraining() && ! $user->isLeadingMentor()) {
+        if (! $user->can('mentor')) {
             return back()->withErrors(['error' => 'Access denied']);
         }
 
@@ -167,7 +167,7 @@ class SoloController extends Controller
     {
         $user = $request->user();
 
-        if (! $user->isMentor() && ! $user->is_superuser && ! $user->isChiefOfTraining() && ! $user->isLeadingMentor()) {
+        if (! $user->can('mentor')) {
             return back()->withErrors(['error' => 'Access denied']);
         }
 
@@ -211,7 +211,7 @@ class SoloController extends Controller
     {
         $user = $request->user();
 
-        if (! $user->isMentor() && ! $user->is_superuser && ! $user->isChiefOfTraining() && ! $user->isLeadingMentor()) {
+        if (! $user->can('mentor')) {
             return back()->withErrors(['error' => 'Access denied']);
         }
 

@@ -137,7 +137,7 @@ class MentorManagementController extends Controller
     {
         $user = $request->user();
 
-        if (! $user->isMentor() && ! $user->is_superuser && ! $user->isChiefOfTraining() && ! $user->isLeadingMentor()) {
+        if (! $user->can('mentor')) {
             return back()->withErrors(['error' => 'Access denied']);
         }
 
@@ -245,7 +245,7 @@ class MentorManagementController extends Controller
     {
         $user = $request->user();
 
-        if (! $user->isMentor() && ! $user->is_superuser && ! $user->isChiefOfTraining() && ! $user->isLeadingMentor()) {
+        if (! $user->can('mentor')) {
             return back()->withErrors(['error' => 'Access denied']);
         }
 

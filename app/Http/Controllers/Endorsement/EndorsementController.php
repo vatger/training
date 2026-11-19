@@ -41,7 +41,7 @@ class EndorsementController extends Controller
     {
         $user = $request->user();
 
-        if (! $user->isMentor() && ! $user->is_superuser) {
+        if (! $user->can('mentor')) {
             abort(403, 'Access denied. Mentor privileges required.');
         }
 
@@ -52,7 +52,7 @@ class EndorsementController extends Controller
     {
         $user = $request->user();
 
-        if (! $user->isMentor() && ! $user->is_superuser) {
+        if (! $user->can('mentor')) {
             return back()->with('flash', ['error' => 'Access denied. Mentor privileges required.']);
         }
 

@@ -95,7 +95,7 @@ class UserSearchController extends Controller
 
         $currentUser = auth()->user();
 
-        if (! $currentUser->isMentor() && ! $currentUser->isSuperuser() && ! $currentUser->is_admin && ! $currentUser->isChiefOfTraining() && ! $currentUser->isLeadingMentor()) {
+        if (! $currentUser->can('mentor')) {
             abort(403, 'Only mentors can view user profiles.');
         }
 

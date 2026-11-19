@@ -16,15 +16,7 @@ class EnsureUserIsMentor
             abort(403, 'Authentication required.');
         }
 
-        if ($user->isSuperuser()) {
-            return $next($request);
-        }
-
-        if (! $user->relationLoaded('roles')) {
-            $user->load('roles');
-        }
-
-        if (! $user->isMentor() && ! $user->isChiefOfTraining() && ! $user->isLeadingMentor()) {
+        if (! $user->can('mentor')) {
             abort(403, 'This action requires mentor permissions.');
         }
 

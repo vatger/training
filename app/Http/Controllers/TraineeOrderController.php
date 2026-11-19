@@ -13,7 +13,7 @@ class TraineeOrderController extends Controller
     {
         $user = $request->user();
 
-        if (! $user->isMentor() && ! $user->is_superuser && ! $user->isChiefOfTraining() && ! $user->isLeadingMentor()) {
+        if (! $user->can('mentor')) {
             return response()->json(['error' => 'Access denied'], 403);
         }
 
@@ -61,7 +61,7 @@ class TraineeOrderController extends Controller
     {
         $user = $request->user();
 
-        if (! $user->isMentor() && ! $user->is_superuser && ! $user->isChiefOfTraining() && ! $user->isLeadingMentor()) {
+        if (! $user->can('mentor')) {
             return response()->json(['error' => 'Access denied'], 403);
         }
 
