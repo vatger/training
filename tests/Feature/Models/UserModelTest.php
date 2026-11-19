@@ -175,21 +175,6 @@ test('isAdmin returns false when is_admin is false', function () {
     expect($user->isAdmin())->toBeFalse();
 });
 
-// ─── isVatsimUser ─────────────────────────────────────────────────────────────
-
-test('isVatsimUser returns true when vatsim_id is set', function () {
-    $user = User::factory()->create(['vatsim_id' => 1234567]);
-
-    expect($user->isVatsimUser())->toBeTrue();
-});
-
-test('isVatsimUser returns false when vatsim_id is null', function () {
-    // vatsim_id is NOT NULL in the DB, so we test via make() without persisting.
-    $user = User::factory()->make(['vatsim_id' => null]);
-
-    expect($user->isVatsimUser())->toBeFalse();
-});
-
 // ─── hasPermission (direct) ───────────────────────────────────────────────────
 
 test('hasPermission returns true for a directly attached permission', function () {

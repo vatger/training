@@ -14,7 +14,7 @@ class AuthUserData extends Data
      */
     public function __construct(
         public int $id,
-        public ?int $vatsim_id,
+        public int $vatsim_id,
         public string $name,
         public ?string $first_name,
         public ?string $last_name,
@@ -24,7 +24,6 @@ class AuthUserData extends Data
         public bool $is_staff,
         public bool $is_superuser,
         public bool $is_admin,
-        public bool $is_vatsim_user,
         public array $roles,
         public bool $is_mentor,
         public bool $is_leadership,
@@ -33,8 +32,6 @@ class AuthUserData extends Data
 
     public static function fromUser(User $user): self
     {
-        $isVatsimUser = $user->isVatsimUser();
-
         return new self(
             id: $user->id,
             vatsim_id: $user->vatsim_id,
@@ -47,11 +44,10 @@ class AuthUserData extends Data
             is_staff: (bool) $user->is_staff,
             is_superuser: (bool) $user->is_superuser,
             is_admin: (bool) $user->is_admin,
-            is_vatsim_user: $isVatsimUser,
-            roles: $isVatsimUser ? $user->roles->pluck('name')->all() : [],
-            is_mentor: $isVatsimUser && $user->isMentor(),
-            is_leadership: $isVatsimUser && $user->isLeadership(),
-            is_leading_mentor: $isVatsimUser && $user->isLeadingMentor(),
+            roles: $user->roles->pluck('name')->all(),
+            is_mentor: $user->isMentor(),
+            is_leadership: $user->isLeadership(),
+            is_leading_mentor: $user->isLeadingMentor(),
         );
     }
 }

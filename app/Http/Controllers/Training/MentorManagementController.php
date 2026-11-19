@@ -98,7 +98,6 @@ class MentorManagementController extends Controller
 
         return Inertia::render('training/courses', [
             'courses' => $courses->values(),
-            'isVatsimUser' => $user->isVatsimUser(),
             'moodleSignedUp' => $moodleSignedUp,
             'userHasActiveRtgCourse' => $userHasActiveRtgCourse,
             'userHasActiveEdmtCourse' => $userHasActiveEdmtCourse,

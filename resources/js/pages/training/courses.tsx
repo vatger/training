@@ -63,7 +63,6 @@ export interface Course {
 
 interface PageProps {
 	courses: Course[]
-	isVatsimUser: boolean
 	moodleSignedUp: boolean
 	userHasActiveRtgCourse: boolean
 	userHasActiveEdmtCourse: boolean
@@ -74,7 +73,6 @@ interface PageProps {
 
 export default function Courses({
 	courses: initialCourses = [],
-	isVatsimUser,
 	moodleSignedUp = false,
 	userHasActiveRtgCourse = false,
 	userHasActiveEdmtCourse = false,
@@ -182,25 +180,6 @@ export default function Courses({
 		setSearchTerm("")
 		setTypeFilter("all")
 		setFirFilter("all")
-	}
-
-	if (!isVatsimUser) {
-		return (
-			<AppLayout>
-				<div className="container mx-auto px-4 py-8">
-					<div className="text-center">
-						<AlertCircle className="mx-auto mb-4 h-16 w-16 text-muted-foreground" />
-						<h1 className="mb-2 text-2xl font-bold">VATSIM Account Required</h1>
-						<p className="mb-4 text-muted-foreground">
-							You need a vatger account to view and join training courses.
-						</p>
-						<Button onClick={() => (window.location.href = "/auth/vatsim")}>
-							Connect vatger Account
-						</Button>
-					</div>
-				</div>
-			</AppLayout>
-		)
 	}
 
 	return (
@@ -383,7 +362,7 @@ export default function Courses({
 				)}
 			</div>
 
-			{isVatsimUser && !moodleSignedUp && <MoodleSignupModal isOpen={true} />}
+			{!moodleSignedUp && <MoodleSignupModal isOpen={true} />}
 		</AppLayout>
 	)
 }

@@ -25,15 +25,6 @@ class EndorsementController extends Controller
     {
         $user = $request->user();
 
-        if (! $user->isVatsimUser()) {
-            return Inertia::render('endorsements/trainee', [
-                'tier1Endorsements' => [],
-                'tier2Endorsements' => [],
-                'soloEndorsements' => [],
-                'isVatsimUser' => false,
-            ]);
-        }
-
         try {
             return Inertia::render('endorsements/trainee', $this->viewService->getTraineeData($user));
         } catch (\Exception) {
@@ -41,7 +32,6 @@ class EndorsementController extends Controller
                 'tier1Endorsements' => [],
                 'tier2Endorsements' => [],
                 'soloEndorsements' => [],
-                'isVatsimUser' => true,
                 'error' => 'Failed to load endorsement data',
             ]);
         }
@@ -96,10 +86,6 @@ class EndorsementController extends Controller
     public function requestTier2(Request $request, int $tier2Id)
     {
         $user = $request->user();
-
-        if (! $user->isVatsimUser()) {
-            return back()->with('flash', ['error' => 'VATSIM account required']);
-        }
 
         $tier2Endorsement = Tier2Endorsement::findOrFail($tier2Id);
 

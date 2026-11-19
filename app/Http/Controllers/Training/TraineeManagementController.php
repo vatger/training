@@ -228,8 +228,8 @@ class TraineeManagementController extends Controller
             return back()->withErrors(['error' => 'This trainee is already active in this course']);
         }
 
-        if (! $trainee->isVatsimUser()) {
-            return back()->withErrors(['error' => 'This user does not have a VATSIM account']);
+        if ($trainee->isGdprDeleted()) {
+            return back()->withErrors(['error' => 'This user has been removed']);
         }
 
         try {

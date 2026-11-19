@@ -111,7 +111,6 @@ export default function EndorsementsDashboard() {
 		tier1Endorsements: Endorsement[]
 		tier2Endorsements: Endorsement[]
 		soloEndorsements: Endorsement[]
-		isVatsimUser: boolean
 	}>().props
 
 	const activeSolos = soloEndorsements.filter((e) => e.status === "active")

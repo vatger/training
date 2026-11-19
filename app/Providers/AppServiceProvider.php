@@ -112,8 +112,6 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('mentor', [EndorsementPolicy::class, 'mentor']);
         Gate::define('endorsements.manage', [EndorsementPolicy::class, 'viewManagement']);
         Gate::define('endorsements.remove-tier1', [EndorsementPolicy::class, 'removeTier1']);
-        Gate::define('endorsements.request-tier2', [EndorsementPolicy::class, 'requestTier2']);
-        Gate::define('endorsements.view-own', [EndorsementPolicy::class, 'viewOwn']);
 
         Gate::policy(TrainingLog::class, TrainingLogPolicy::class);
 

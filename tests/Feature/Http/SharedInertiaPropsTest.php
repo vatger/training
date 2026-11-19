@@ -32,7 +32,6 @@ test('authenticated users receive the shared user shape', function () {
             ->where('auth.user.id', $user->id)
             ->where('auth.user.vatsim_id', $user->vatsim_id)
             ->where('auth.user.name', $user->name)
-            ->where('auth.user.is_vatsim_user', true)
             ->where('auth.user.roles', [])
             ->where('auth.user.is_mentor', false)
             ->where('auth.user.is_leadership', false)

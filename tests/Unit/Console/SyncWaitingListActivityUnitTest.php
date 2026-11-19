@@ -209,27 +209,6 @@ test('updateEntryActivity writes calculated hours and updates hours_updated', fu
         ->and($entry->hours_updated->greaterThan($oldUpdated))->toBeTrue();
 });
 
-test('updateEntryActivity does not update a non-VATSIM user entry', function () {
-    $role = Role::create(['name' => 'EDGG Mentor']);
-    $course = Course::factory()->create(['type' => 'RTG', 'position' => 'APP', 'mentor_group_id' => $role->id, 'airport_icao' => 'EDDL']);
-    $user = User::factory()->create(['vatsim_id' => 0, 'rating' => 3, 'last_known_rating' => 3]);
-
-    $entry = WaitingListEntry::create([
-        'user_id' => $user->id,
-        'course_id' => $course->id,
-        'date_added' => now(),
-        'activity' => 7.5,
-        'hours_updated' => now()->subDay(),
-    ]);
-
-    $cmd = wlMakeCommand();
-    wlSetIO($cmd);
-    wlCallMethod($cmd, 'updateEntryActivity', $entry);
-
-    $entry->refresh();
-    expect($entry->activity)->toBe(7.5); // unchanged
-});
-
 // ─── calculateS2TowerHours ────────────────────────────────────────────────────
 
 function callCalculateS2TowerHours(array $connections, string $airport): float

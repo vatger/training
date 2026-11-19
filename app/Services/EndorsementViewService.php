@@ -26,7 +26,6 @@ class EndorsementViewService
             'tier1Endorsements' => $this->getUserTier1Endorsements($user->vatsim_id),
             'tier2Endorsements' => $this->getUserTier2Endorsements($user->vatsim_id),
             'soloEndorsements' => $this->getUserSoloEndorsements($user->vatsim_id),
-            'isVatsimUser' => true,
         ];
     }
 

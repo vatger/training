@@ -84,20 +84,7 @@ class SyncWaitingListActivity extends Command
             $course = $entry->course;
             $user = $entry->user;
 
-            if (! $user->isVatsimUser()) {
-                Log::info('User is not VATSIM user', ['entry_id' => $entry->id]);
-
-                return;
-            }
-
             $activityHours = $this->getActivityHours($course, $user);
-
-            /* Log::info('Calculated activity hours', [
-                'entry_id' => $entry->id,
-                'user_id' => $user->id,
-                'vatsim_id' => $user->vatsim_id,
-                'hours' => $activityHours
-            ]); */
 
             $entry->activity = $activityHours;
             $entry->hours_updated = now();
@@ -178,11 +165,6 @@ class SyncWaitingListActivity extends Command
                 ->pluck('logon')
                 ->toArray();
 
-            /* Log::info('S1 Tower stations for FIR', [
-                'fir' => $fir,
-                'stations' => $stations
-            ]); */
-
             $totalMinutes = 0;
             foreach ($connections as $session) {
                 $callsign = $session['callsign'] ?? '';
@@ -190,21 +172,10 @@ class SyncWaitingListActivity extends Command
                 foreach ($stations as $station) {
                     if ($this->equalStr($callsign, $station)) {
                         $totalMinutes += floatval($session['minutes_online'] ?? 0);
-                        /* Log::info('Matched session', [
-                            'callsign' => $callsign,
-                            'station' => $station,
-                            'minutes' => $session['minutes_online']
-                        ]); */
                         break;
                     }
                 }
             }
-
-            /* Log::info('Total S1 tower minutes calculated', [
-                'fir' => $fir,
-                'total_minutes' => $totalMinutes,
-                'total_hours' => $totalMinutes / 60
-            ]); */
 
             return $totalMinutes / 60;
 

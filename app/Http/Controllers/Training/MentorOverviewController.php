@@ -361,8 +361,8 @@ class MentorOverviewController extends Controller
             return back()->withErrors(['error' => 'This course has no endorsements configured']);
         }
 
-        if (! $trainee->isVatsimUser()) {
-            return back()->withErrors(['error' => 'Trainee does not have a VATSIM account']);
+        if ($trainee->isGdprDeleted()) {
+            return back()->withErrors(['error' => 'Trainee has been removed']);
         }
 
         $failed = [];

@@ -29,20 +29,4 @@ class EndorsementPolicy
     {
         return $this->mentor($user);
     }
-
-    /**
-     * Determine if the user can request tier 2 endorsements
-     */
-    public function requestTier2(User $user): bool
-    {
-        return $user->isVatsimUser();
-    }
-
-    /**
-     * Determine if the user can view their own endorsements
-     */
-    public function viewOwn(User $user): bool
-    {
-        return $user->isVatsimUser() || $user->is_admin;
-    }
 }

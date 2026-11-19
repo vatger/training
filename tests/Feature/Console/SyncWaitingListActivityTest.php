@@ -240,34 +240,6 @@ test('does NOT skip when RTG entries exist', function () {
         ->assertExitCode(0);
 });
 
-test('skips non-VATSIM users and does not attempt an API call', function () {
-    $role = Role::create(['name' => 'EDGG Mentor']);
-    $course = Course::factory()->create(['type' => 'RTG', 'mentor_group_id' => $role->id, 'airport_icao' => 'EDDL']);
-    // isVatsimUser() uses !empty($this->vatsim_id); 0 is falsy so the user is skipped.
-    // vatsim_id is NOT NULL in the schema, so we use 0 instead of null.
-    $user = User::factory()->create(['vatsim_id' => 0, 'rating' => 3, 'last_known_rating' => 3]);
-
-    WaitingListEntry::create([
-        'user_id' => $user->id,
-        'course_id' => $course->id,
-        'date_added' => now(),
-        'activity' => 5.0,
-        'hours_updated' => now(),
-    ]);
-
-    Http::swap(new HttpFactory);
-    Http::fake(['*' => Http::response([], 200)]);
-
-    $entry = WaitingListEntry::first();
-    $activityBefore = $entry->activity;
-
-    $this->artisan('waitinglists:sync-activities')->assertExitCode(0);
-
-    $entry->refresh();
-    // Activity should be unchanged for non-VATSIM users
-    expect($entry->activity)->toBe($activityBefore);
-});
-
 test('updates activity and hours_updated for an RTG entry via http response', function () {
     $role = Role::create(['name' => 'EDGG Mentor']);
     $course = Course::factory()->create(['type' => 'RTG', 'position' => 'APP', 'mentor_group_id' => $role->id, 'airport_icao' => 'EDDL']);

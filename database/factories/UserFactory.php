@@ -52,17 +52,7 @@ class UserFactory extends Factory
     }
 
     /**
-     * Indicate that the user is a VATSIM user (has vatsim_id).
-     */
-    public function vatsimUser(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'vatsim_id' => fake()->unique()->numberBetween(1000000, 9999999),
-        ]);
-    }
-
-    /**
-     * Indicate that the user is an admin (no vatsim_id).
+     * Indicate that the user is an admin.
      */
     public function admin(): static
     {

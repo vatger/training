@@ -164,16 +164,6 @@ class User extends Authenticatable implements FilamentUser
         return $this->is_admin === true;
     }
 
-    public function isVatsimUser(): bool
-    {
-        return ! empty($this->vatsim_id);
-    }
-
-    /**
-     * Stand-in that records of other users (training logs, CPTs, ...) point at once the
-     * person who wrote them has been removed. It shows up as "GDPR Removed" everywhere
-     * a name is displayed, owns no roles and has no VATSIM id, so it can never log in.
-     */
     public static function gdprPlaceholder(): self
     {
         return static::query()->whereNotNull('gdpr_deleted_at')->where(['first_name' => 'GDPR', 'last_name' => 'Removed'])->first()
@@ -211,11 +201,6 @@ class User extends Authenticatable implements FilamentUser
         return $query->where('is_admin', true);
     }
 
-    public function scopeVatsimUsers($query)
-    {
-        return $query->whereNotNull('vatsim_id');
-    }
-
     public function endorsementActivities()
     {
         return $this->hasMany(EndorsementActivity::class, 'vatsim_id', 'vatsim_id');
@@ -223,10 +208,6 @@ class User extends Authenticatable implements FilamentUser
 
     public function hasActiveTier1Endorsements(): bool
     {
-        if (! $this->isVatsimUser()) {
-            return false;
-        }
-
         return $this->endorsementActivities()
             ->where('activity_minutes', '>=', config('services.vateud.min_activity_minutes', 180))
             ->exists();
@@ -234,15 +215,6 @@ class User extends Authenticatable implements FilamentUser
 
     public function getEndorsementSummary(): array
     {
-        if (! $this->isVatsimUser()) {
-            return [
-                'tier1_count' => 0,
-                'tier2_count' => 0,
-                'solo_count' => 0,
-                'low_activity_count' => 0,
-            ];
-        }
-
         $tier1Count = $this->endorsementActivities()->count();
         $minRequiredMinutes = config('services.vateud.min_activity_minutes', 180);
         $lowActivityCount = $this->endorsementActivities()
@@ -259,10 +231,6 @@ class User extends Authenticatable implements FilamentUser
 
     public function needsEndorsementAttention(): bool
     {
-        if (! $this->isVatsimUser()) {
-            return false;
-        }
-
         return $this->endorsementActivities()
             ->where(function ($query) {
                 $minRequiredMinutes = config('services.vateud.min_activity_minutes', 180);
