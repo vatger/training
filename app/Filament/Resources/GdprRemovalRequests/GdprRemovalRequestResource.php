@@ -43,11 +43,13 @@ class GdprRemovalRequestResource extends Resource
                     ->formatStateUsing(fn (string $state) => match ($state) {
                         GdprRemovalRequest::STATUS_PENDING => 'Awaiting approval',
                         GdprRemovalRequest::STATUS_APPROVED => 'Review in progress',
+                        GdprRemovalRequest::STATUS_CANCELLED => 'Cancelled',
                         default => 'Completed',
                     })
                     ->color(fn (string $state) => match ($state) {
                         GdprRemovalRequest::STATUS_PENDING => 'warning',
                         GdprRemovalRequest::STATUS_APPROVED => 'info',
+                        GdprRemovalRequest::STATUS_CANCELLED => 'gray',
                         default => 'success',
                     }),
 
@@ -75,6 +77,7 @@ class GdprRemovalRequestResource extends Resource
                         GdprRemovalRequest::STATUS_PENDING => 'Awaiting approval',
                         GdprRemovalRequest::STATUS_APPROVED => 'Review in progress',
                         GdprRemovalRequest::STATUS_COMPLETED => 'Completed',
+                        GdprRemovalRequest::STATUS_CANCELLED => 'Cancelled',
                     ]),
             ])
             ->recordUrl(fn (GdprRemovalRequest $record) => static::getUrl('view', ['record' => $record]));

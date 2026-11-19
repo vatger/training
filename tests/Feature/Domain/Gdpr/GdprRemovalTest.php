@@ -5,6 +5,7 @@ use App\Domain\Gdpr\Actions\ReviewGdprItem;
 use App\Domain\Gdpr\UserDataMap;
 use App\Integrations\VatEud\FakeVatEudClient;
 use App\Integrations\VatEud\VatEudClientInterface;
+use App\Jobs\CancelStaleGdprRemoval;
 use App\Models\ActivityLog;
 use App\Models\ApiKey;
 use App\Models\Course;
@@ -16,6 +17,7 @@ use App\Models\WaitingListEntry;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Schema;
 
 uses(RefreshDatabase::class);
@@ -141,6 +143,60 @@ describe('approving a removal request', function () {
 
         apiCreateKeyForGdpr();
         $this->withHeaders(['Authorization' => 'Bearer gdpr-key'])->deleteJson('/api/gdpr-removal/7000005')->assertOk();
+    });
+
+    test('every poll refreshes last_polled_at of the open request', function () {
+        User::factory()->create(['vatsim_id' => 7000020]);
+        apiCreateKeyForGdpr();
+
+        $this->withHeaders(['Authorization' => 'Bearer gdpr-key'])->deleteJson('/api/gdpr-removal/7000020')->assertStatus(202);
+        GdprRemovalRequest::sole()->update(['last_polled_at' => now()->subDays(5)]);
+
+        $this->withHeaders(['Authorization' => 'Bearer gdpr-key'])->deleteJson('/api/gdpr-removal/7000020')->assertStatus(202);
+
+        expect(GdprRemovalRequest::sole()->last_polled_at->isToday())->toBeTrue();
+    });
+
+    test('queues a job for each request not polled for 7 days, which cancels it and wipes the identifiers', function () {
+        $stale = gdprRequestFor(User::factory()->create());
+        $stale->update(['last_polled_at' => now()->subDays(7)]);
+        $fresh = gdprRequestFor(User::factory()->create());
+        $fresh->update(['last_polled_at' => now()->subDays(6)]);
+
+        Queue::fake();
+        CancelStaleGdprRemoval::dispatchForStale();
+
+        Queue::assertPushed(CancelStaleGdprRemoval::class, 1);
+        (new CancelStaleGdprRemoval($stale->id))->handle();
+        (new CancelStaleGdprRemoval($fresh->id))->handle();
+
+        expect($stale->fresh())
+            ->isCancelled()->toBeTrue()
+            ->cancelled_at->not->toBeNull()
+            ->user_name->toBeNull()
+            ->search_terms->toBeNull()
+            ->and($fresh->fresh()->isPending())->toBeTrue();
+    });
+
+    test('approved requests are never cancelled', function () {
+        $request = gdprRequestFor(User::factory()->create());
+        $request->update(['status' => GdprRemovalRequest::STATUS_APPROVED, 'last_polled_at' => now()->subDays(30)]);
+
+        (new CancelStaleGdprRemoval($request->id))->handle();
+
+        expect($request->fresh()->isApproved())->toBeTrue();
+    });
+
+    test('a poll after the cancellation opens a new request', function () {
+        $user = User::factory()->create(['vatsim_id' => 7000021]);
+        gdprRequestFor($user)->update(['last_polled_at' => now()->subDays(8)]);
+        CancelStaleGdprRemoval::dispatchForStale();
+        apiCreateKeyForGdpr();
+
+        $this->withHeaders(['Authorization' => 'Bearer gdpr-key'])->deleteJson('/api/gdpr-removal/7000021')->assertStatus(202);
+
+        expect(GdprRemovalRequest::open()->count())->toBe(1)
+            ->and(GdprRemovalRequest::count())->toBe(2);
     });
 
     test('keeps answering 202 until the last review item is done', function () {

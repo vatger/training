@@ -7,6 +7,9 @@
     ];
 @endphp
 
+@if ($request->isCancelled())
+    <p style="margin: 0;">Cancelled {{ $request->cancelled_at?->format('Y-m-d H:i') }}. The homepage stopped polling this user for {{ \App\Models\GdprRemovalRequest::STALE_AFTER_DAYS }} days, so nothing was deleted. If it asks again, a new request is opened.</p>
+@else
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: .75rem; margin-bottom: 1rem;">
     @foreach ($steps as $number => $step)
         @php
@@ -183,4 +186,5 @@
     </div>
 @else
     <p style="margin: 0;">Completed {{ $request->completed_at?->format('Y-m-d H:i') }}</p>
+@endif
 @endif

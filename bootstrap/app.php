@@ -6,6 +6,7 @@ use App\Http\Middleware\EnsureSandboxAuthEnabled;
 use App\Http\Middleware\EnsureUserIsMentor;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Jobs\CancelStaleGdprRemoval;
 use App\Jobs\SyncTeamRoles;
 use App\Jobs\UpdateTeamOverviewPost;
 use Illuminate\Foundation\Application;
@@ -43,6 +44,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->command('endorsements:remove')
             ->dailyAt('01:00')
             ->withoutOverlapping();
+
+        $schedule->call(fn () => CancelStaleGdprRemoval::dispatchForStale())
+            ->name('gdpr-cancel-stale')
+            ->dailyAt('01:30');
 
         $schedule->command('roster:check')
             ->dailyAt('02:00')

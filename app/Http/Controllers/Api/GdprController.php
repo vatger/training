@@ -18,7 +18,8 @@ class GdprController extends Controller
      *
      * The first call opens a removal request for Leitung to review, every call until
      * that request is completed is answered with 202, which the homepage does not
-     * count as success. Nothing is deleted here.
+     * count as success. Nothing is deleted here. Every call is recorded, a pending request
+     * that is not polled for 7 days is cancelled (CancelStaleGdprRemoval).
      */
     public function delete(Request $request, int $vatsimId): JsonResponse
     {
@@ -27,6 +28,8 @@ class GdprController extends Controller
                 $open = GdprRemovalRequest::open()->where('vatsim_id', $vatsimId)->first();
 
                 if ($open) {
+                    $open->update(['last_polled_at' => now()]);
+
                     return $open;
                 }
 
@@ -41,6 +44,7 @@ class GdprController extends Controller
                     'vatsim_id' => $vatsimId,
                     'user_name' => $user->name,
                     'search_terms' => UserDataMap::searchTerms($user),
+                    'last_polled_at' => now(),
                     'status' => GdprRemovalRequest::STATUS_PENDING,
                 ]);
             });

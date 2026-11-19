@@ -69,6 +69,7 @@ class ViewGdprRemovalRequest extends ViewRecord
             Section::make(fn (GdprRemovalRequest $record) => match ($record->status) {
                 GdprRemovalRequest::STATUS_PENDING => 'Step 1 of 3 · Approve the deletion of this user',
                 GdprRemovalRequest::STATUS_APPROVED => 'Step 2 of 3 · Review the kept records',
+                GdprRemovalRequest::STATUS_CANCELLED => 'Cancelled',
                 default => 'Step 3 of 3 · Completed',
             })
                 ->columnSpanFull()

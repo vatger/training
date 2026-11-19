@@ -15,15 +15,23 @@ class GdprRemovalRequest extends Model
 
     public const STATUS_COMPLETED = 'completed';
 
+    /** The homepage stopped polling before the request was approved. */
+    public const STATUS_CANCELLED = 'cancelled';
+
+    /** Days without a poll after which a pending request is cancelled. */
+    public const STALE_AFTER_DAYS = 7;
+
     protected $fillable = [
         'user_id',
         'vatsim_id',
         'user_name',
         'search_terms',
+        'last_polled_at',
         'status',
         'approved_by_id',
         'approved_at',
         'completed_at',
+        'cancelled_at',
     ];
 
     protected $attributes = [
@@ -35,6 +43,8 @@ class GdprRemovalRequest extends Model
         'search_terms' => 'array',
         'approved_at' => 'datetime',
         'completed_at' => 'datetime',
+        'last_polled_at' => 'datetime',
+        'cancelled_at' => 'datetime',
     ];
 
     public function approvedBy(): BelongsTo
@@ -52,6 +62,13 @@ class GdprRemovalRequest extends Model
         return $query->whereIn('status', [self::STATUS_PENDING, self::STATUS_APPROVED]);
     }
 
+    /** Pending requests that have not been polled for STALE_AFTER_DAYS. */
+    public function scopeStale($query)
+    {
+        return $query->where('status', self::STATUS_PENDING)
+            ->where('last_polled_at', '<=', now()->subDays(self::STALE_AFTER_DAYS));
+    }
+
     public function isPending(): bool
     {
         return $this->status === self::STATUS_PENDING;
@@ -65,5 +82,10 @@ class GdprRemovalRequest extends Model
     public function isCompleted(): bool
     {
         return $this->status === self::STATUS_COMPLETED;
+    }
+
+    public function isCancelled(): bool
+    {
+        return $this->status === self::STATUS_CANCELLED;
     }
 }
