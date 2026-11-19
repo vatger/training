@@ -60,6 +60,9 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { useMoodleStatus } from "@/hooks/use-moodle-status"
+import overviewRoutes from "@/routes/overview"
+import subfamiliarisationSessionsRoutes from "@/routes/subfamiliarisation-sessions"
+import trainingLogsRoutes from "@/routes/training-logs"
 import { getInitials, type MentorCourse, type Trainee } from "@/types/mentor"
 import { ProgressModal } from "./progress-modal"
 import { SoloModal } from "./solo-modal"
@@ -106,7 +109,7 @@ function TraineeRowActions({
 	const handleRemoveTrainee = () => {
 		setIsRemoving(true)
 		router.post(
-			route("overview.remove-trainee"),
+			overviewRoutes.removeTrainee.url(),
 			{
 				trainee_id: trainee.id,
 				course_id: courseId,
@@ -123,7 +126,7 @@ function TraineeRowActions({
 	const handleFinishTrainee = () => {
 		setIsFinishing(true)
 		router.post(
-			route("overview.finish-trainee"),
+			overviewRoutes.finishTrainee.url(),
 			{
 				trainee_id: trainee.id,
 				course_id: courseId,
@@ -316,7 +319,7 @@ export function TraineeDataTable({
 	const handleUnclaimTrainee = (trainee: Trainee) => {
 		setIsUnclaiming(trainee.id)
 		router.post(
-			route("overview.unclaim-trainee"),
+			overviewRoutes.unclaimTrainee.url(),
 			{
 				trainee_id: trainee.id,
 				course_id: course.id,
@@ -332,7 +335,7 @@ export function TraineeDataTable({
 
 		setIsGrantingEndorsement(true)
 		router.post(
-			route("overview.grant-endorsement"),
+			overviewRoutes.grantEndorsement.url(),
 			{
 				trainee_id: selectedTraineeForGrant.id,
 				course_id: course.id,
@@ -379,7 +382,7 @@ export function TraineeDataTable({
 		const traineeIds = newData.map((t) => t.id)
 
 		router.post(
-			route("overview.update-trainee-order"),
+			overviewRoutes.updateTraineeOrder.url(),
 			{
 				course_id: course.id,
 				trainee_ids: traineeIds,
@@ -473,11 +476,13 @@ export function TraineeDataTable({
 									className="size-6"
 									onClick={() => {
 										router.visit(
-											route("training-logs.create", {
-												traineeId: trainee.id,
-												courseId: course.id,
-												continue: true,
-											}),
+											trainingLogsRoutes.create.url(
+												{
+													traineeId: trainee.id,
+													courseId: course.id,
+												},
+												{ query: { continue: true } },
+											),
 										)
 									}}
 									size="sm"
@@ -495,7 +500,7 @@ export function TraineeDataTable({
 														className="size-6"
 														onClick={() => {
 															router.visit(
-																route("subfamiliarisation-sessions.create", {
+																subfamiliarisationSessionsRoutes.create.url({
 																	traineeId: trainee.id,
 																	courseId: course.id,
 																}),
@@ -526,7 +531,7 @@ export function TraineeDataTable({
 									className="size-6"
 									onClick={() => {
 										router.visit(
-											route("training-logs.create", {
+											trainingLogsRoutes.create.url({
 												traineeId: trainee.id,
 												courseId: course.id,
 											}),
@@ -547,7 +552,7 @@ export function TraineeDataTable({
 														className="size-6"
 														onClick={() => {
 															router.visit(
-																route("subfamiliarisation-sessions.create", {
+																subfamiliarisationSessionsRoutes.create.url({
 																	traineeId: trainee.id,
 																	courseId: course.id,
 																}),

@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useMobileNavigation } from "@/hooks/use-mobile-navigation"
 import { logout } from "@/routes"
+import settingsRoutes from "@/routes/settings"
 
 interface UserMenuContentProps {
 	user: App.Data.AuthUserData
@@ -30,7 +31,7 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
 			</DropdownMenuLabel>
 			<DropdownMenuSeparator />
 			<DropdownMenuItem asChild>
-				<Link className="block w-full" href={route("settings.index")}>
+				<Link className="block w-full" href={settingsRoutes.index.url()}>
 					<Settings className="mr-2" />
 					Settings
 				</Link>

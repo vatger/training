@@ -33,6 +33,7 @@ import {
 import { Progress } from "@/components/ui/progress"
 import { ApiError, api } from "@/lib/api"
 import { cn } from "@/lib/utils"
+import overviewRoutes from "@/routes/overview"
 import type { Trainee } from "@/types/mentor"
 
 function extractErrorMessage(err: unknown, fallback: string): string {
@@ -138,7 +139,7 @@ export function SoloModal({
 
 		try {
 			const data = await api.post<RequirementsStatus>(
-				route("overview.get-solo-requirements"),
+				overviewRoutes.getSoloRequirements.url(),
 				{
 					trainee_id: trainee.id,
 					course_id: courseId,
@@ -173,7 +174,7 @@ export function SoloModal({
 
 		try {
 			const data = await api.post<{ success: boolean; message?: string }>(
-				route("overview.assign-core-test"),
+				overviewRoutes.assignCoreTest.url(),
 				{
 					trainee_id: trainee.id,
 					course_id: courseId,
@@ -267,7 +268,7 @@ export function SoloModal({
 		setError(null)
 
 		router.post(
-			route("overview.add-solo"),
+			overviewRoutes.addSolo.url(),
 			{
 				trainee_id: trainee.id,
 				course_id: courseId,
@@ -302,7 +303,7 @@ export function SoloModal({
 		setError(null)
 
 		router.post(
-			route("overview.extend-solo"),
+			overviewRoutes.extendSolo.url(),
 			{
 				trainee_id: trainee.id,
 				course_id: courseId,
@@ -335,7 +336,7 @@ export function SoloModal({
 		setError(null)
 
 		router.post(
-			route("overview.remove-solo"),
+			overviewRoutes.removeSolo.url(),
 			{
 				trainee_id: trainee.id,
 				course_id: courseId,

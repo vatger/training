@@ -9,6 +9,7 @@ import {
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
+import { dashboard } from "@/routes"
 
 interface MoodleSignupModalProps {
 	isOpen: boolean
@@ -20,7 +21,7 @@ export function MoodleSignupModal({ isOpen }: MoodleSignupModalProps) {
 	}
 
 	const handleBackToDashboard = () => {
-		router.visit(route("dashboard"))
+		router.visit(dashboard.url())
 	}
 
 	return (

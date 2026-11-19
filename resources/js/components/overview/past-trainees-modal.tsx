@@ -18,6 +18,8 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table"
+import overviewRoutes from "@/routes/overview"
+import usersRoutes from "@/routes/users"
 import type { MentorCourse } from "@/types/mentor"
 
 interface PastTrainee {
@@ -49,7 +51,7 @@ export function PastTraineesModal({
 			setError(null)
 
 			// Fetch past trainees from the API
-			fetch(route("overview.past-trainees", { course: course.id }))
+			fetch(overviewRoutes.pastTrainees.url({ course: course.id }))
 				.then((response) => {
 					if (!response.ok) {
 						throw new Error("Failed to fetch past trainees")
@@ -96,7 +98,7 @@ export function PastTraineesModal({
 		if (!course) return
 
 		router.post(
-			route("overview.reactivate-trainee"),
+			overviewRoutes.reactivateTrainee.url(),
 			{
 				trainee_id: traineeId,
 				course_id: course.id,
@@ -105,7 +107,7 @@ export function PastTraineesModal({
 				preserveScroll: true,
 				onSuccess: () => {
 					// Refresh the past trainees list
-					fetch(route("overview.past-trainees", { course: course.id }))
+					fetch(overviewRoutes.pastTrainees.url({ course: course.id }))
 						.then((response) => response.json())
 						.then((data) => {
 							if (data.success) {
@@ -190,7 +192,7 @@ export function PastTraineesModal({
 													<div className="flex flex-col">
 														<Link
 															className="font-medium hover:underline hover:text-accent-500"
-															href={route("users.profile", trainee.vatsim_id)}
+															href={usersRoutes.profile.url(trainee.vatsim_id)}
 														>
 															{trainee.name}
 														</Link>

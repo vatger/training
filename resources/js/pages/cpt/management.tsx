@@ -37,12 +37,13 @@ import {
 } from "@/components/ui/table"
 import AppLayout from "@/layouts/app-layout"
 import { cn } from "@/lib/utils"
+import cptRoutes from "@/routes/cpt"
 import type { BreadcrumbItem } from "@/types"
 
 const breadcrumbs: BreadcrumbItem[] = [
 	{
 		title: "CPT Management",
-		href: route("cpt.index"),
+		href: cptRoutes.index.url(),
 	},
 ]
 
@@ -170,7 +171,7 @@ export default function CptManagement({
 }: PageProps) {
 	const handleJoinExaminer = (cptId: number) => {
 		router.post(
-			route("cpt.join-examiner", cptId),
+			cptRoutes.joinExaminer.url(cptId),
 			{},
 			{
 				preserveScroll: true,
@@ -182,7 +183,7 @@ export default function CptManagement({
 
 	const handleLeaveExaminer = (cptId: number) => {
 		router.post(
-			route("cpt.leave-examiner", cptId),
+			cptRoutes.leaveExaminer.url(cptId),
 			{},
 			{
 				preserveScroll: true,
@@ -194,7 +195,7 @@ export default function CptManagement({
 
 	const handleJoinLocal = (cptId: number) => {
 		router.post(
-			route("cpt.join-local", cptId),
+			cptRoutes.joinLocal.url(cptId),
 			{},
 			{
 				preserveScroll: true,
@@ -206,7 +207,7 @@ export default function CptManagement({
 
 	const handleLeaveLocal = (cptId: number) => {
 		router.post(
-			route("cpt.leave-local", cptId),
+			cptRoutes.leaveLocal.url(cptId),
 			{},
 			{
 				preserveScroll: true,
@@ -222,7 +223,7 @@ export default function CptManagement({
 				"Are you sure you want to delete this CPT? This action cannot be undone.",
 			)
 		) {
-			router.delete(route("cpt.destroy", cptId), {
+			router.delete(cptRoutes.destroy.url(cptId), {
 				preserveScroll: true,
 				onSuccess: () => toast.success("CPT deleted successfully"),
 				onError: () => toast.error("Failed to delete CPT"),
@@ -283,7 +284,7 @@ export default function CptManagement({
 
 						<div className="flex gap-2">
 							<CptTemplatesModal templates={cpt_templates || []} />
-							<Button onClick={() => router.visit(route("cpt.create"))}>
+							<Button onClick={() => router.visit(cptRoutes.create.url())}>
 								<Plus className="mr-2 h-4 w-4" />
 								Schedule New CPT
 							</Button>
@@ -298,7 +299,7 @@ export default function CptManagement({
 								Get started by scheduling your first CPT.
 							</p>
 							<div className="mt-6">
-								<Button onClick={() => router.visit(route("cpt.create"))}>
+								<Button onClick={() => router.visit(cptRoutes.create.url())}>
 									<Plus className="mr-2 h-4 w-4" />
 									Schedule New CPT
 								</Button>
@@ -455,7 +456,7 @@ export default function CptManagement({
 													{cpt.can_view_upload && (
 														<Button
 															onClick={() =>
-																router.visit(route("cpt.upload", cpt.id))
+																router.visit(cptRoutes.upload.url(cpt.id))
 															}
 															size="sm"
 															variant={

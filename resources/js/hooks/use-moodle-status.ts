@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import { api } from "@/lib/api"
+import overviewRoutes from "@/routes/overview"
 
 export type MoodleStatus =
 	| "completed"
@@ -18,7 +19,7 @@ async function fetchStatusBatch(
 	signal: AbortSignal,
 ): Promise<MoodleStatuses> {
 	const data = await api.post<{ success: boolean; statuses?: MoodleStatuses }>(
-		route("overview.get-moodle-status-batch"),
+		overviewRoutes.getMoodleStatusBatch.url(),
 		{ course_id: courseId, trainee_ids: traineeIds },
 		{ signal },
 	)

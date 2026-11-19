@@ -22,6 +22,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import AppLayout from "@/layouts/app-layout"
 import { dashboard } from "@/routes"
+import endorsementsRoutes from "@/routes/endorsements"
 import type { BreadcrumbItem, Endorsement } from "@/types"
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -31,7 +32,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 	},
 	{
 		title: "My Endorsements",
-		href: route("endorsements.trainee"),
+		href: endorsementsRoutes.trainee.url(),
 	},
 ]
 

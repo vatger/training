@@ -10,6 +10,7 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
+import overviewRoutes from "@/routes/overview"
 import type { Trainee } from "@/types/mentor"
 
 interface RemarkDialogProps {
@@ -40,7 +41,7 @@ export function RemarkDialog({
 
 		setIsSaving(true)
 		router.post(
-			route("overview.update-remark"),
+			overviewRoutes.updateRemark.url(),
 			{
 				trainee_id: trainee.id,
 				course_id: courseId,

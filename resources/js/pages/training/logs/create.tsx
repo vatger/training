@@ -31,6 +31,9 @@ import {
 import { useDebounce } from "@/hooks/use-debounce"
 import AppLayout from "@/layouts/app-layout"
 import { cn } from "@/lib/utils"
+import coursesRoutes from "@/routes/courses"
+import overviewRoutes from "@/routes/overview"
+import trainingLogsRoutes from "@/routes/training-logs"
 import type { BreadcrumbItem } from "@/types"
 
 interface EvaluationCategory {
@@ -215,11 +218,11 @@ export default function CreateEditTrainingLog({
 	const breadcrumbs: BreadcrumbItem[] = [
 		{
 			title: "Training Logs",
-			href: isEditing ? route("training-logs.index") : "",
+			href: isEditing ? trainingLogsRoutes.index.url() : "",
 		},
 		{
 			title: isEditing ? "Edit Log" : "Create Log",
-			href: isEditing ? "" : route("courses.index"),
+			href: isEditing ? "" : coursesRoutes.index.url(),
 		},
 	]
 
@@ -461,11 +464,11 @@ export default function CreateEditTrainingLog({
 		e.preventDefault()
 
 		if (isEditing && log) {
-			put(route("training-logs.update", log.id), {
+			put(trainingLogsRoutes.update.url(log.id), {
 				onSuccess: () => localStorage.removeItem(storageKey),
 			})
 		} else {
-			post(route("training-logs.store"), {
+			post(trainingLogsRoutes.store.url(), {
 				onSuccess: () => localStorage.removeItem(storageKey),
 			})
 		}
@@ -473,9 +476,9 @@ export default function CreateEditTrainingLog({
 
 	const handleCancel = () => {
 		if (isEditing && log) {
-			router.visit(route("training-logs.show", log.id))
+			router.visit(trainingLogsRoutes.show.url(log.id))
 		} else {
-			router.visit(route("overview.index"))
+			router.visit(overviewRoutes.index.url())
 		}
 	}
 

@@ -5,12 +5,6 @@ import ReactDOMServer from "react-dom/server"
 
 const appName = import.meta.env.VITE_APP_NAME || "vatger Training System"
 
-declare global {
-	var route: typeof route
-}
-
-globalThis.route = route
-
 const pages = import.meta.glob<{ default: ResolvedComponent }>(
 	"./pages/**/*.tsx",
 )

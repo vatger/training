@@ -24,6 +24,7 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog"
 import { cn } from "@/lib/utils"
+import trainingLogsRoutes from "@/routes/training-logs"
 import { getInitials, type Trainee } from "@/types/mentor"
 
 interface TrainingLog {
@@ -142,11 +143,13 @@ export function ProgressModal({
 		if (!trainee || !courseId) return
 
 		router.visit(
-			route("training-logs.create", {
-				traineeId: trainee.id,
-				courseId: courseId,
-				continue: continueDraft ? "1" : undefined,
-			}),
+			trainingLogsRoutes.create.url(
+				{
+					traineeId: trainee.id,
+					courseId: courseId,
+				},
+				{ query: { continue: continueDraft ? "1" : undefined } },
+			),
 		)
 	}
 	const getSessionTypeColor = (type: string) => {
@@ -262,7 +265,7 @@ export function ProgressModal({
 														)}
 													</div>
 												</div>
-												<Link href={route("training-logs.show", log.id)}>
+												<Link href={trainingLogsRoutes.show.url(log.id)}>
 													<Button size="sm" variant="ghost">
 														<Eye className="h-4 w-4" />
 													</Button>

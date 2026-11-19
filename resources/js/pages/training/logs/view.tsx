@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/tooltip"
 import AppLayout from "@/layouts/app-layout"
 import { cn } from "@/lib/utils"
+import trainingLogsRoutes from "@/routes/training-logs"
 import type { BreadcrumbItem } from "@/types"
 
 interface EvaluationCategory {
@@ -90,7 +91,7 @@ interface TrainingLogShowProps {
 const breadcrumbs: BreadcrumbItem[] = [
 	{
 		title: "Training Logs",
-		href: route("training-logs.index"),
+		href: trainingLogsRoutes.index.url(),
 	},
 	{
 		title: "View Log",
@@ -245,7 +246,7 @@ export default function ViewTrainingLog({
 							</Badge>
 							{canEdit && (
 								<Button asChild size="sm" variant="outline">
-									<Link href={route("training-logs.edit", log.id)}>
+									<Link href={trainingLogsRoutes.edit.url(log.id)}>
 										<Edit className="mr-2 h-4 w-4" />
 										Edit Log
 									</Link>

@@ -34,16 +34,17 @@ import {
 } from "@/components/ui/tooltip"
 import AppLayout from "@/layouts/app-layout"
 import { cn } from "@/lib/utils"
+import endorsementsRoutes from "@/routes/endorsements"
 import type { BreadcrumbItem } from "@/types"
 
 const breadcrumbs: BreadcrumbItem[] = [
 	{
 		title: "Endorsements",
-		href: route("endorsements.trainee"),
+		href: endorsementsRoutes.trainee.url(),
 	},
 	{
 		title: "Manage",
-		href: route("endorsements.manage"),
+		href: endorsementsRoutes.manage.url(),
 	},
 ]
 

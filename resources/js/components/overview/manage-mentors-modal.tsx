@@ -23,6 +23,8 @@ import {
 	TableRow,
 } from "@/components/ui/table"
 import { api } from "@/lib/api"
+import overviewRoutes from "@/routes/overview"
+import usersRoutes from "@/routes/users"
 import type { Mentor, MentorCourse } from "@/types/mentor"
 
 interface User {
@@ -82,7 +84,7 @@ export function ManageMentorsModal({
 		setIsSearching(true)
 		try {
 			const data = await api.post<{ success: boolean; users: User[] }>(
-				route("users.search"),
+				usersRoutes.search.url(),
 				{ query: searchQuery },
 			)
 
@@ -105,7 +107,7 @@ export function ManageMentorsModal({
 
 		setIsAdding(true)
 		router.post(
-			route("overview.add-mentor"),
+			overviewRoutes.addMentor.url(),
 			{
 				course_id: course.id,
 				user_id: user.id,
@@ -139,7 +141,7 @@ export function ManageMentorsModal({
 
 		setIsRemoving(mentorId)
 		router.post(
-			route("overview.remove-mentor"),
+			overviewRoutes.removeMentor.url(),
 			{
 				course_id: course.id,
 				mentor_id: mentorId,

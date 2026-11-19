@@ -14,6 +14,8 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { api } from "@/lib/api"
+import overviewRoutes from "@/routes/overview"
+import usersRoutes from "@/routes/users"
 
 interface User {
 	id: number
@@ -60,7 +62,7 @@ export function AddTrainee({
 
 		try {
 			const data = await api.post<{ success: boolean; users: User[] }>(
-				route("users.search"),
+				usersRoutes.search.url(),
 				{ query: vatsimId },
 			)
 
@@ -92,7 +94,7 @@ export function AddTrainee({
 
 		setIsAdding(true)
 		router.post(
-			route("overview.add-trainee-to-course"),
+			overviewRoutes.addTraineeToCourse.url(),
 			{
 				course_id: courseId,
 				user_id: foundUser.id,

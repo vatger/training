@@ -28,6 +28,11 @@ import {
 } from "@/components/ui/sidebar"
 import { UserSearchModal } from "@/components/user-search-modal"
 import { dashboard } from "@/routes"
+import coursesRoutes from "@/routes/courses"
+import cptRoutes from "@/routes/cpt"
+import endorsementsRoutes from "@/routes/endorsements"
+import overviewRoutes from "@/routes/overview"
+import waitingListsRoutes from "@/routes/waiting-lists"
 import type { NavItem } from "@/types"
 import AppLogo from "./app-logo"
 
@@ -47,12 +52,12 @@ const navSections = [
 		items: [
 			{
 				title: "Courses",
-				href: route("courses.index"),
+				href: coursesRoutes.index.url(),
 				icon: BookOpenIcon,
 			},
 			{
 				title: "Endorsements",
-				href: route("endorsements.trainee"),
+				href: endorsementsRoutes.trainee.url(),
 				icon: CircleCheck,
 			},
 		] as NavItem[],
@@ -64,17 +69,17 @@ const mentorSection = {
 	items: [
 		{
 			title: "Overview",
-			href: route("overview.index"),
+			href: overviewRoutes.index.url(),
 			icon: Users,
 		},
 		{
 			title: "Waiting Lists",
-			href: route("waiting-lists.manage"),
+			href: waitingListsRoutes.manage.url(),
 			icon: ClipboardList,
 		},
 		{
 			title: "Endorsement Management",
-			href: route("endorsements.manage"),
+			href: endorsementsRoutes.manage.url(),
 			icon: CheckCircle,
 		},
 	] as NavItem[],
@@ -85,7 +90,7 @@ const atdSection = {
 	items: [
 		{
 			title: "CPT Planning",
-			href: route("cpt.index"),
+			href: cptRoutes.index.url(),
 			icon: GraduationCap,
 		},
 	],

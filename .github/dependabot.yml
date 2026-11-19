@@ -92,11 +92,6 @@ updates:
           - "react-dom"
           - "@types/react"
           - "@types/react-dom"
-      # ziggy-js and its type definitions are the same kind of pairing.
-      ziggy:
-        patterns:
-          - "ziggy-js"
-          - "@types/ziggy-js"
       # Radix primitives (both @radix-ui/* and the unified radix-ui
       # package) and Tiptap extensions are each released as one family.
       radix:

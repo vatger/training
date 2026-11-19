@@ -12,6 +12,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { api } from "@/lib/api"
+import usersRoutes from "@/routes/users"
 
 // biome-ignore lint/suspicious/noRedeclare: no factor
 interface User {
@@ -44,7 +45,7 @@ export function UserSearchModal({ open, onOpenChange }: UserSearchModalProps) {
 
 		try {
 			const data = await api.post<{ success: boolean; users: User[] }>(
-				route("users.search"),
+				usersRoutes.search.url(),
 				{ query },
 			)
 
@@ -71,7 +72,7 @@ export function UserSearchModal({ open, onOpenChange }: UserSearchModalProps) {
 	}
 
 	const handleSelectUser = (user: User) => {
-		router.visit(route("users.profile", user.vatsim_id))
+		router.visit(usersRoutes.profile.url(user.vatsim_id))
 		onOpenChange(false)
 		// Reset state
 		setQuery("")

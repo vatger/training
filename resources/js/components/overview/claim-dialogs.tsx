@@ -16,6 +16,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select"
+import overviewRoutes from "@/routes/overview"
 import type { Mentor, Trainee } from "@/types/mentor"
 
 interface ClaimConfirmDialogProps {
@@ -38,7 +39,7 @@ export function ClaimConfirmDialog({
 
 		setIsClaiming(true)
 		router.post(
-			route("overview.claim-trainee"),
+			overviewRoutes.claimTrainee.url(),
 			{
 				trainee_id: trainee.id,
 				course_id: courseId,
@@ -132,7 +133,7 @@ export function AssignDialog({
 
 		setIsAssigning(true)
 		router.post(
-			route("overview.assign-trainee"),
+			overviewRoutes.assignTrainee.url(),
 			{
 				trainee_id: trainee.id,
 				course_id: courseId,

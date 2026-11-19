@@ -38,6 +38,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import AppLayout from "@/layouts/app-layout"
 import { getPositionIcon, getTypeColor } from "@/lib/course-utils"
 import { cn } from "@/lib/utils"
+import trainingLogsRoutes from "@/routes/training-logs"
 import type { BreadcrumbItem } from "@/types"
 
 interface UserProfile {
@@ -292,7 +293,7 @@ const CourseAccordionItem = ({
 																)}
 															</div>
 														</div>
-														<Link href={route("training-logs.show", log.id)}>
+														<Link href={trainingLogsRoutes.show.url(log.id)}>
 															<Button size="sm" variant="ghost">
 																<Eye className="h-4 w-4" />
 															</Button>

@@ -28,6 +28,8 @@ import {
 	CardTitle,
 } from "@/components/ui/card"
 import AppLayout from "@/layouts/app-layout"
+import { dashboard } from "@/routes"
+import coursesRoutes from "@/routes/courses"
 import type { BreadcrumbItem } from "@/types"
 
 interface TrainingLog {
@@ -104,7 +106,7 @@ const getTypeColor = (type: string) => {
 const breadcrumbs: BreadcrumbItem[] = [
 	{
 		title: "Dashboard",
-		href: route("dashboard"),
+		href: dashboard.url(),
 	},
 ]
 
@@ -479,7 +481,7 @@ export default function TraineeDashboard(props: Props) {
 									courses to start your training journey.
 								</p>
 								<Button asChild>
-									<a href={route("courses.index")}>Browse Courses</a>
+									<a href={coursesRoutes.index.url()}>Browse Courses</a>
 								</Button>
 							</CardContent>
 						</Card>

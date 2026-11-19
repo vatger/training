@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dialog"
 import { cn } from "@/lib/utils"
 import type { Course } from "@/pages/trainee-dashboard"
+import trainingLogsRoutes from "@/routes/training-logs"
 
 interface CourseLogsModalProps {
 	course: Course | null
@@ -126,7 +127,7 @@ export function CourseLogsModal({
 													)}
 												</div>
 											</div>
-											<Link href={route("training-logs.show", log.id)}>
+											<Link href={trainingLogsRoutes.show.url(log.id)}>
 												<Button size="sm" variant="ghost">
 													<Eye className="h-4 w-4" />
 												</Button>

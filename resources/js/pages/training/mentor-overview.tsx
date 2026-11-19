@@ -10,13 +10,14 @@ import { RemarkDialog } from "@/components/overview/remark-dialog"
 import { StatisticsCards } from "@/components/overview/statistics-cards"
 import { useMentorStorage } from "@/hooks/use-mentor-storage"
 import AppLayout from "@/layouts/app-layout"
+import overviewRoutes from "@/routes/overview"
 import type { BreadcrumbItem } from "@/types"
 import type { MentorCourse, MentorStatistics, Trainee } from "@/types/mentor"
 
 const breadcrumbs: BreadcrumbItem[] = [
 	{
 		title: "Mentor Overview",
-		href: route("overview.index"),
+		href: overviewRoutes.index.url(),
 	},
 ]
 
@@ -79,7 +80,7 @@ export default function MentorOverview({
 
 		try {
 			const response = await fetch(
-				route("overview.course.trainees", { courseId }),
+				overviewRoutes.course.trainees.url({ courseId }),
 				{
 					headers: {
 						Accept: "application/json",

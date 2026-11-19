@@ -15,6 +15,8 @@ import {
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import AppLayout from "@/layouts/app-layout"
+import overviewRoutes from "@/routes/overview"
+import subfamiliarisationSessionsRoutes from "@/routes/subfamiliarisation-sessions"
 import type { BreadcrumbItem } from "@/types"
 
 interface Subfamiliarisation {
@@ -39,7 +41,7 @@ interface PageProps {
 const breadcrumbs: BreadcrumbItem[] = [
 	{
 		title: "Mentor Overview",
-		href: route("overview.index"),
+		href: overviewRoutes.index.url(),
 	},
 	{
 		title: "Log Subfamiliarisation Session",
@@ -67,7 +69,7 @@ export default function SubfamiliarisationSessionCreate({
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault()
-		post(route("subfamiliarisation-sessions.store"))
+		post(subfamiliarisationSessionsRoutes.store.url())
 	}
 
 	const selectedSubfamiliarisation = useMemo(
@@ -201,7 +203,7 @@ export default function SubfamiliarisationSessionCreate({
 
 									<div className="flex justify-end gap-3 border-t pt-6">
 										<Button
-											onClick={() => router.visit(route("overview.index"))}
+											onClick={() => router.visit(overviewRoutes.index.url())}
 											type="button"
 											variant="outline"
 										>

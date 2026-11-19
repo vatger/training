@@ -6,12 +6,13 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import AppLayout from "@/layouts/app-layout"
+import cptRoutes from "@/routes/cpt"
 import type { BreadcrumbItem } from "@/types"
 
 const breadcrumbs: BreadcrumbItem[] = [
 	{
 		title: "CPT Management",
-		href: route("cpt.index"),
+		href: cptRoutes.index.url(),
 	},
 	{
 		title: "Upload Log",
@@ -95,7 +96,7 @@ export default function CptUpload({
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault()
-		post(route("cpt.upload.store", cpt.id), {
+		post(cptRoutes.upload.store.url(cpt.id), {
 			forceFormData: true,
 			onSuccess: () => {
 				toast.success("Log uploaded successfully")
@@ -114,7 +115,7 @@ export default function CptUpload({
 			)
 		) {
 			router.post(
-				route("cpt.grade", { cpt: cpt.id, result: passed ? 1 : 0 }),
+				cptRoutes.grade.url({ cpt: cpt.id, result: passed ? 1 : 0 }),
 				{},
 				{
 					preserveScroll: true,

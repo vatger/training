@@ -26,6 +26,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import AppLayout from "@/layouts/app-layout"
 import { cn } from "@/lib/utils"
 import { dashboard } from "@/routes"
+import coursesRoutes from "@/routes/courses"
 import type { BreadcrumbItem } from "@/types"
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -35,7 +36,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 	},
 	{
 		title: "Courses",
-		href: route("courses.index"),
+		href: coursesRoutes.index.url(),
 	},
 ]
 

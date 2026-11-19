@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b09fcc64795ac9e793848a73b74dd2db",
+    "content-hash": "3ac6c32626f3a7e55a339d4b0572b469",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -9196,76 +9196,6 @@
                 }
             ],
             "time": "2026-10-26T21:55:04+00:00"
-        },
-        {
-            "name": "tightenco/ziggy",
-            "version": "v2.7.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/tighten/ziggy.git",
-                "reference": "332b33cdffae2a110312a19932f7344374653855"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/tighten/ziggy/zipball/332b33cdffae2a110312a19932f7344374653855",
-                "reference": "332b33cdffae2a110312a19932f7344374653855",
-                "shasum": ""
-            },
-            "require": {
-                "ext-json": "*",
-                "laravel/framework": ">=9.0",
-                "php": ">=8.1"
-            },
-            "require-dev": {
-                "laravel/folio": "^1.1",
-                "orchestra/testbench": "^8.0 || ^9.0 || ^10.0 || ^11.0",
-                "pestphp/pest": "^2.0 || ^3.0 || ^4.0",
-                "pestphp/pest-plugin-laravel": "^2.0 || ^3.0 || ^4.0"
-            },
-            "type": "library",
-            "extra": {
-                "laravel": {
-                    "providers": [
-                        "Tighten\\Ziggy\\ZiggyServiceProvider"
-                    ]
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Tighten\\Ziggy\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Daniel Coulbourne",
-                    "email": "daniel@tighten.co"
-                },
-                {
-                    "name": "Jake Bathman",
-                    "email": "jake@tighten.co"
-                },
-                {
-                    "name": "Jacob Baker-Kretzmar",
-                    "email": "jacob@tighten.co"
-                }
-            ],
-            "description": "Use your Laravel named routes in JavaScript.",
-            "homepage": "https://github.com/tighten/ziggy",
-            "keywords": [
-                "Ziggy",
-                "javascript",
-                "laravel",
-                "routes"
-            ],
-            "support": {
-                "issues": "https://github.com/tighten/ziggy/issues",
-                "source": "https://github.com/tighten/ziggy/tree/v2.7.0"
-            },
-            "time": "2026-11-14T21:30:33+00:00"
         },
         {
             "name": "tijsverkoyen/css-to-inline-styles",

@@ -14,12 +14,13 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import AppLayout from "@/layouts/app-layout"
 import { cn } from "@/lib/utils"
+import settingsRoutes from "@/routes/settings"
 import type { BreadcrumbItem } from "@/types"
 
 const breadcrumbs: BreadcrumbItem[] = [
 	{
 		title: "Settings",
-		href: route("settings.index"),
+		href: settingsRoutes.index.url(),
 	},
 ]
 
@@ -104,7 +105,7 @@ export default function SettingsPage({ settings: initialSettings }: Props) {
 
 		const themeChanged = data.theme !== initialTheme
 
-		post(route("settings.update"), {
+		post(settingsRoutes.update.url(), {
 			preserveScroll: true,
 			onSuccess: () => {
 				toast.success("Settings saved successfully")

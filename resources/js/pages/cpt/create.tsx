@@ -13,16 +13,17 @@ import {
 } from "@/components/ui/select"
 import AppLayout from "@/layouts/app-layout"
 import { api } from "@/lib/api"
+import cptRoutes from "@/routes/cpt"
 import type { BreadcrumbItem } from "@/types"
 
 const breadcrumbs: BreadcrumbItem[] = [
 	{
 		title: "CPT Management",
-		href: route("cpt.index"),
+		href: cptRoutes.index.url(),
 	},
 	{
 		title: "Schedule CPT",
-		href: route("cpt.create"),
+		href: cptRoutes.create.url(),
 	},
 ]
 
@@ -82,7 +83,7 @@ export default function CptCreate({ courses }: PageProps) {
 
 		setLoadingCourseData(true)
 		try {
-			const data = await api.get<CourseData>(route("cpt.course-data"), {
+			const data = await api.get<CourseData>(cptRoutes.courseData.url(), {
 				params: { course_id: courseId, date },
 			})
 			setCourseData(data)
@@ -101,7 +102,7 @@ export default function CptCreate({ courses }: PageProps) {
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault()
-		post(route("cpt.store"))
+		post(cptRoutes.store.url())
 	}
 
 	const getMinDateTime = () => {
@@ -303,7 +304,7 @@ export default function CptCreate({ courses }: PageProps) {
 
 									<div className="flex justify-end gap-3 border-t pt-6">
 										<Button
-											onClick={() => router.visit(route("cpt.index"))}
+											onClick={() => router.visit(cptRoutes.index.url())}
 											type="button"
 											variant="outline"
 										>

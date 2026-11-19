@@ -49,6 +49,7 @@ import { useIsMobile } from "@/hooks/use-mobile"
 import AppLayout from "@/layouts/app-layout"
 import { getTypeColor } from "@/lib/course-utils"
 import { cn } from "@/lib/utils"
+import waitingListsRoutes from "@/routes/waiting-lists"
 
 interface WaitingListEntry {
 	id: number
@@ -245,7 +246,7 @@ export default function MentorWaitingLists({ courses, config }: PageProps) {
 	return (
 		<AppLayout
 			breadcrumbs={[
-				{ title: "Waiting Lists", href: route("waiting-lists.manage") },
+				{ title: "Waiting Lists", href: waitingListsRoutes.manage.url() },
 			]}
 		>
 			<Head title="Waiting Lists" />
