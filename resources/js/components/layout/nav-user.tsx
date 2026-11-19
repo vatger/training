@@ -14,12 +14,13 @@ import {
 	useSidebar,
 } from "@/components/ui/sidebar"
 import { useIsMobile } from "@/hooks/use-mobile"
-import type { SharedData } from "@/types"
 
 export function NavUser() {
-	const { auth } = usePage<SharedData>().props
+	const { auth } = usePage().props
 	const { state } = useSidebar()
 	const isMobile = useIsMobile()
+
+	if (!auth.user) return null
 
 	return (
 		<SidebarMenu>

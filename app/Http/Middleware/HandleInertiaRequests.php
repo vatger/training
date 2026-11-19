@@ -2,7 +2,7 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\UserSetting;
+use App\Data\SharedData;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -36,44 +36,9 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
-        $theme = 'system';
-
-        if ($request->user()) {
-            $settings = UserSetting::where('user_id', $request->user()->id)->first();
-            if ($settings) {
-                $theme = $settings->theme;
-            }
-        }
-
         return [
             ...parent::share($request),
-            'name' => config('app.name'),
-            'auth' => [
-                'user' => $request->user() ? [
-                    'id' => $request->user()->id,
-                    'vatsim_id' => $request->user()->vatsim_id,
-                    'name' => $request->user()->name ?? 'Admin User',
-                    'first_name' => $request->user()->first_name,
-                    'last_name' => $request->user()->last_name,
-                    'email' => $request->user()->email,
-                    'rating' => $request->user()->rating,
-                    'subdivision' => $request->user()->subdivision,
-                    'is_staff' => $request->user()->is_staff,
-                    'is_superuser' => $request->user()->is_superuser,
-                    'is_admin' => $request->user()->is_admin ?? false,
-                    'is_vatsim_user' => $request->user()->isVatsimUser(),
-                    'roles' => $request->user()->isVatsimUser() ? $request->user()->roles->pluck('name') : [],
-                    'is_mentor' => $request->user()->isVatsimUser() ? $request->user()->isMentor() : false,
-                    'is_leadership' => $request->user()->isVatsimUser() ? $request->user()->isLeadership() : false,
-                    'is_leading_mentor' => $request->user()->isVatsimUser() ? $request->user()->isLeadingMentor() : false,
-                ] : null,
-            ],
-            'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
-            'theme' => $theme,
-            'flash' => [
-                'success' => $request->session()->get('flash.success', $request->session()->get('success')),
-                'error' => $request->session()->get('flash.error', $request->session()->get('error', $request->session()->get('errors')?->first('error'))),
-            ],
+            ...SharedData::fromRequest($request)->toArray(),
         ];
     }
 }

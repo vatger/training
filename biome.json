@@ -13,6 +13,8 @@
 			"!public",
 			"!resources/js/components/ui/*",
 			"!resources/js/images/*.svg",
+			"!resources/js/types/generated.d.ts",
+			"!resources/js/types/typescript-transformer-manifest.json",
 			"!.github/ISSUE_TEMPLATE"
 		]
 	},

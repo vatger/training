@@ -3,7 +3,7 @@ import { Award, ExternalLink } from "lucide-react"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
 import { getPositionIcon, getStatusBadge } from "@/pages/endorsements/trainee"
-import type { Endorsement, SharedData } from "@/types"
+import type { Endorsement } from "@/types"
 import { Button } from "../ui/button"
 import {
 	Table,
@@ -22,7 +22,7 @@ export default function Tier2EndorsementsTable({
 	const [requestingEndorsement, setRequestingEndorsement] = useState<
 		number | null
 	>(null)
-	const { flash } = usePage<SharedData>().props
+	const { flash } = usePage().props
 
 	useEffect(() => {
 		if (flash?.success) {

@@ -1,24 +1,18 @@
-import { usePage } from "@inertiajs/react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useInitials } from "@/hooks/use-initials"
-import type { SharedData, User } from "@/types"
 
 export function UserInfo({
+	user,
 	showEmail = false,
 }: {
-	user: User
+	user: App.Data.AuthUserData
 	showEmail?: boolean
 }) {
 	const getInitials = useInitials()
-	const { auth } = usePage<SharedData>().props
-	const user = auth.user
-
-	if (!user) return null
-
 	return (
 		<>
 			<Avatar className="h-8 w-8 overflow-hidden rounded-full">
-				<AvatarImage alt={user.name} src={user.avatar} />
+				<AvatarImage alt={user.name} />
 				{user.is_admin ? (
 					<>
 						<AvatarFallback className="rounded-full bg-danger-200 text-black dark:bg-danger-800/70 dark:text-white">

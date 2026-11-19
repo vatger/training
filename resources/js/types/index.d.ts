@@ -1,10 +1,6 @@
 import type { InertiaLinkProps } from "@inertiajs/react"
 import type { LucideIcon } from "lucide-react"
 
-export interface Auth {
-	user: User
-}
-
 export interface BreadcrumbItem {
 	title: string
 	href: string
@@ -21,34 +17,6 @@ export interface NavItem {
 	icon?: LucideIcon | null
 	isActive?: boolean
 	external?: boolean
-}
-
-export interface FlashData {
-	success?: string
-	error?: string
-}
-
-export interface SharedData {
-	name: string
-	quote: { message: string; author: string }
-	auth: Auth
-	sidebarOpen: boolean
-	flash?: FlashData
-	[key: string]: unknown
-}
-
-export interface User {
-	id: number
-	name: string
-	email: string
-	avatar?: string
-	email_verified_at: string | null
-	created_at: string
-	updated_at: string
-	vatsim_id?: number | null
-	is_admin?: boolean
-	is_vatsim_user?: boolean
-	[key: string]: unknown
 }
 
 export type Endorsement = {

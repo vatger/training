@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/sidebar"
 import { UserSearchModal } from "@/components/user-search-modal"
 import { dashboard } from "@/routes"
-import type { NavItem, SharedData } from "@/types"
+import type { NavItem } from "@/types"
 import AppLogo from "./app-logo"
 
 const navSections = [
@@ -179,7 +179,7 @@ function NavSection({ section }: { section: (typeof navSections)[0] }) {
 }
 
 export function AppSidebar() {
-	const { auth } = usePage<SharedData>().props
+	const { auth } = usePage().props
 	const isMentor =
 		auth.user?.is_mentor || auth.user?.is_superuser || auth.user?.is_admin
 	const isSuperuser = auth.user?.is_superuser || auth.user?.is_admin

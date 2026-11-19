@@ -14,6 +14,8 @@
 		"laravel/wayfinder": "^0.1.9",
 		"nesbot/carbon": "^3.10",
 		"nunomaduro/collision": "^8.6",
+		"spatie/laravel-data": "^4.23",
+		"spatie/laravel-typescript-transformer": "^3.3",
 		"tightenco/ziggy": "^2.0"
 	},
 	"require-dev": {
