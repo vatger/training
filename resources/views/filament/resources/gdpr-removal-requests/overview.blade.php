@@ -1,10 +1,12 @@
 @php
-    $current = $request->isPending() ? 1 : ($request->isApproved() ? 2 : 4); // 4 = every step done
     $steps = [
         1 => ['title' => 'Approve', 'text' => 'You decide whether the user is deleted. Approving deletes everything marked "Deleted" below. Nothing else is touched.'],
-        2 => ['title' => 'Review', 'text' => 'Only for the "Kept" records of other users. Remove anything that identifies the user, then mark each record as reviewed.'],
-        3 => ['title' => 'Completed', 'text' => 'Everything is deleted and reviewed.'],
     ];
+    if ($hasSpecialData) {
+        $steps[2] = ['title' => 'Review', 'text' => 'Only for the "Kept" records of other users. Remove anything that identifies the user, then mark each record as reviewed.'];
+    }
+    $steps[count($steps) + 1] = ['title' => 'Completed', 'text' => 'Everything is deleted and reviewed.'];
+    $current = $request->isPending() ? 1 : ($request->isApproved() ? 2 : count($steps) + 1); // beyond the last step = every step done
 @endphp
 
 @if ($request->isCancelled())
@@ -36,10 +38,17 @@
     @endforeach
 </div>
 
+@if ($request->isPending() && ! $hasSpecialData && $request->created_at)
+    <div style="padding: .75rem 1rem; border-left: 4px solid rgb(var(--info-500)); background: rgba(128,128,128,.08); border-radius: .5rem; margin-bottom: 1rem;">
+        <strong>No review needed</strong>
+        <div style="font-size: .875rem; opacity: .85;">This user has nothing stored besides their account, so there is nothing to review after the deletion. If nobody approves it, the user is deleted automatically on {{ $request->created_at->copy()->addDays(\App\Models\GdprRemovalRequest::AUTO_REMOVE_AFTER_DAYS)->format('Y-m-d') }}.</div>
+    </div>
+@endif
+
 @if ($request->isCompleted())
     <div style="padding: .75rem 1rem; border-left: 4px solid rgb(var(--success-600)); background: rgba(128,128,128,.08); border-radius: .5rem; margin-bottom: 1rem;">
         <strong style="color: rgb(var(--success-600));">✓ All done, nothing left to do</strong>
-        <div style="font-size: .875rem; opacity: .85;">The user was deleted and every kept record was reviewed. Only the VATSIM ID stays as proof.</div>
+        <div style="font-size: .875rem; opacity: .85;">The user was deleted{{ $hasSpecialData ? ' and every kept record was reviewed' : '' }}. Only the VATSIM ID stays as proof.</div>
     </div>
 @endif
 
@@ -183,7 +192,7 @@
     <div style="display: flex; flex-direction: column; gap: .75rem;">
         <div style="padding: .6rem 1rem; border-left: 4px solid rgb(var(--danger-500)); background: rgba(128,128,128,.08); border-radius: .5rem;">
             <strong>Already deleted</strong>
-            <span style="font-size: .875rem;">· The user and all of their own data are gone (approved {{ $request->approved_at?->format('Y-m-d H:i') }} by {{ $request->approvedBy?->name ?? 'a former user' }}). Nothing more to do there.</span>
+            <span style="font-size: .875rem;">· The user and all of their own data are gone (approved {{ $request->approved_at?->format('Y-m-d H:i') }} by {{ $request->approvedBy?->name ?? 'the system (automatic) or a former user' }}). Nothing more to do there.</span>
         </div>
         <div style="padding: .6rem 1rem; border-left: 4px solid rgb(var(--info-500)); background: rgba(128,128,128,.08); border-radius: .5rem;">
             <strong>Kept, needs your review</strong>

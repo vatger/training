@@ -6,6 +6,7 @@ use App\Http\Middleware\EnsureSandboxAuthEnabled;
 use App\Http\Middleware\EnsureUserIsMentor;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Jobs\AutoRemoveGdprRequest;
 use App\Jobs\CancelStaleGdprRemoval;
 use App\Jobs\SyncTeamRoles;
 use App\Jobs\UpdateTeamOverviewPost;
@@ -48,6 +49,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->call(fn () => CancelStaleGdprRemoval::dispatchForStale())
             ->name('gdpr-cancel-stale')
             ->dailyAt('01:30');
+
+        $schedule->call(fn () => AutoRemoveGdprRequest::dispatchForDue())
+            ->name('gdpr-auto-remove')
+            ->dailyAt('01:45');
 
         $schedule->command('roster:check')
             ->dailyAt('02:00')

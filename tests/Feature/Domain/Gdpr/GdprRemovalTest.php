@@ -5,6 +5,7 @@ use App\Domain\Gdpr\Actions\ReviewGdprItem;
 use App\Domain\Gdpr\UserDataMap;
 use App\Integrations\VatEud\FakeVatEudClient;
 use App\Integrations\VatEud\VatEudClientInterface;
+use App\Jobs\AutoRemoveGdprRequest;
 use App\Jobs\CancelStaleGdprRemoval;
 use App\Models\ActivityLog;
 use App\Models\ApiKey;
@@ -332,3 +333,55 @@ function apiCreateKeyForGdpr(): void
 {
     ApiKey::create(['name' => 'Gdpr', 'key' => 'gdpr-key', 'is_active' => true, 'permissions' => ['gdpr.delete']]);
 }
+
+describe('automatic removal of users without data', function () {
+    test('removes a user that has only the user model after 8 days', function () {
+        $user = User::factory()->create(['vatsim_id' => 7000030]);
+        DB::table('user_settings')->insert(['user_id' => $user->id, 'created_at' => now(), 'updated_at' => now()]);
+        $request = gdprRequestFor($user);
+        $request->forceFill(['created_at' => now()->subDays(8)])->save();
+
+        Queue::fake();
+        AutoRemoveGdprRequest::dispatchForDue();
+        Queue::assertPushed(AutoRemoveGdprRequest::class, 1);
+        (new AutoRemoveGdprRequest($request->id))->handle(app(ApproveGdprRemoval::class));
+
+        expect(User::find($user->id))->toBeNull()
+            ->and($request->fresh())->isCompleted()->toBeTrue()
+            ->approved_by_id->toBeNull();
+    });
+
+    test('does nothing before 8 days', function () {
+        $user = User::factory()->create(['vatsim_id' => 7000031]);
+        $request = gdprRequestFor($user);
+        $request->forceFill(['created_at' => now()->subDays(7)])->save();
+
+        Queue::fake();
+        AutoRemoveGdprRequest::dispatchForDue();
+        (new AutoRemoveGdprRequest($request->id))->handle(app(ApproveGdprRemoval::class));
+
+        Queue::assertNothingPushed();
+        expect(User::find($user->id))->not->toBeNull()->and($request->fresh()->isPending())->toBeTrue();
+    });
+
+    test('leaves users with special data for a person to handle', function () {
+        $user = User::factory()->create(['vatsim_id' => 7000032]);
+        $mentor = User::factory()->create();
+        createTrainingLog(['trainee_id' => $user->id, 'mentor_id' => $mentor->id]);
+        $request = gdprRequestFor($user);
+        $request->forceFill(['created_at' => now()->subDays(30)])->save();
+
+        (new AutoRemoveGdprRequest($request->id))->handle(app(ApproveGdprRemoval::class));
+
+        expect(User::find($user->id))->not->toBeNull()->and($request->fresh()->isPending())->toBeTrue();
+    });
+
+    test('a user mentioned in other peoples text counts as special data', function () {
+        $user = User::factory()->create(['vatsim_id' => 7000033, 'first_name' => 'Erika', 'last_name' => 'Musterfrau']);
+        $trainee = User::factory()->create();
+        $mentor = User::factory()->create();
+        createTrainingLog(['trainee_id' => $trainee->id, 'mentor_id' => $mentor->id, 'next_step' => 'Mit Erika Musterfrau fliegen']);
+
+        expect(UserDataMap::hasSpecialData($user))->toBeTrue();
+    });
+});

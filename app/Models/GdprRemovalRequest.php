@@ -21,6 +21,9 @@ class GdprRemovalRequest extends Model
     /** Days without a poll after which a pending request is cancelled. */
     public const STALE_AFTER_DAYS = 7;
 
+    /** Days after which a pending request of a user without any special data is approved automatically. */
+    public const AUTO_REMOVE_AFTER_DAYS = 8;
+
     protected $fillable = [
         'user_id',
         'vatsim_id',
@@ -67,6 +70,13 @@ class GdprRemovalRequest extends Model
     {
         return $query->where('status', self::STATUS_PENDING)
             ->where('last_polled_at', '<=', now()->subDays(self::STALE_AFTER_DAYS));
+    }
+
+    /** Pending requests old enough to be removed automatically, if the user has no special data. */
+    public function scopeDueForAutoRemoval($query)
+    {
+        return $query->where('status', self::STATUS_PENDING)
+            ->where('created_at', '<=', now()->subDays(self::AUTO_REMOVE_AFTER_DAYS));
     }
 
     public function isPending(): bool

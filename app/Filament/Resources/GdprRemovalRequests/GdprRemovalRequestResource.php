@@ -70,7 +70,7 @@ class GdprRemovalRequestResource extends Resource
 
                 Tables\Columns\TextColumn::make('approvedBy.name')
                     ->label('Approved by')
-                    ->placeholder('-'),
+                    ->placeholder(fn (GdprRemovalRequest $record) => $record->approved_at ? 'Automatic' : '-'),
 
                 Tables\Columns\TextColumn::make('completed_at')
                     ->label('Completed')

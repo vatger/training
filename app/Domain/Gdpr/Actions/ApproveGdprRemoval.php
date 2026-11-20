@@ -21,7 +21,10 @@ class ApproveGdprRemoval
         private CompleteGdprRemoval $complete,
     ) {}
 
-    public function execute(GdprRemovalRequest $request, User $approver, ?string $ip = null): void
+    /**
+     * @param  User|null  $approver  null when the system removes a user without any data on its own
+     */
+    public function execute(GdprRemovalRequest $request, ?User $approver, ?string $ip = null): void
     {
         if (! $request->isPending()) {
             throw new \DomainException('Only pending GDPR requests can be approved.');
@@ -29,7 +32,7 @@ class ApproveGdprRemoval
 
         $user = User::find($request->user_id);
 
-        if ($user && $user->is($approver)) {
+        if ($user && $approver && $user->is($approver)) {
             throw new \DomainException('You cannot approve your own GDPR removal request.');
         }
 
@@ -65,7 +68,7 @@ class ApproveGdprRemoval
 
             $request->update([
                 'status' => GdprRemovalRequest::STATUS_APPROVED,
-                'approved_by_id' => $approver->id,
+                'approved_by_id' => $approver?->id,
                 'approved_at' => now(),
             ]);
         });

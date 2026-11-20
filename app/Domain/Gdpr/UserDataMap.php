@@ -356,6 +356,25 @@ class UserDataMap
         ];
     }
 
+    private const INCIDENTAL_OWNED = ['user_settings', 'sessions', 'password_reset_tokens', 'activity_logs'];
+
+    public static function hasSpecialData(User $user): bool
+    {
+        foreach (self::owned() as $key => $source) {
+            if (! in_array($key, self::INCIDENTAL_OWNED, true) && $source['query']($user)->exists()) {
+                return true;
+            }
+        }
+
+        foreach (self::authored() as $source) {
+            if (DB::table($source['table'])->where($source['column'], $user->id)->exists()) {
+                return true;
+            }
+        }
+
+        return self::mentions(self::searchTerms($user), $user) !== [];
+    }
+
     /**
      * Identifiers a reviewer should look for in free text.
      *

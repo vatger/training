@@ -67,10 +67,10 @@ class ViewGdprRemovalRequest extends ViewRecord
     {
         return $schema->components([
             Section::make(fn (GdprRemovalRequest $record) => match ($record->status) {
-                GdprRemovalRequest::STATUS_PENDING => 'Step 1 of 3 · Approve the deletion of this user',
-                GdprRemovalRequest::STATUS_APPROVED => 'Step 2 of 3 · Review the kept records',
+                GdprRemovalRequest::STATUS_PENDING => 'Step 1 · Approve the deletion of this user',
+                GdprRemovalRequest::STATUS_APPROVED => 'Step 2 · Review the kept records',
                 GdprRemovalRequest::STATUS_CANCELLED => 'Cancelled',
-                default => 'Completed · all 3 steps done',
+                default => 'Completed · all steps done',
             })
                 ->columnSpanFull()
                 ->schema([
@@ -81,6 +81,8 @@ class ViewGdprRemovalRequest extends ViewRecord
 
                             return [
                                 'request' => $record,
+                                // Users without any special data skip the review and are removed automatically.
+                                'hasSpecialData' => $record->isPending() ? ($user ? UserDataMap::hasSpecialData($user) : true) : $record->reviewItems()->exists(),
                                 'data' => $user ? UserDataMap::collect($user) : null,
                                 'terms' => $record->search_terms ?? [],
                                 'mentions' => $user ? UserDataMap::mentions($record->search_terms ?? [], $user) : [],
