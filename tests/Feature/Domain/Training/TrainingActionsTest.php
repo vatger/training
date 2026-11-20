@@ -23,6 +23,7 @@ use App\Domain\Training\Events\TraineeUnclaimed;
 use App\Domain\Training\Events\TrainingStarted;
 use App\Integrations\Moodle\FakeMoodleClient;
 use App\Integrations\Moodle\MoodleClientInterface;
+use App\Integrations\Moodle\MoodleEnrollmentException;
 use App\Integrations\VatEud\FakeVatEudClient;
 use App\Integrations\VatEud\VatEudClientInterface;
 use App\Models\Course;
@@ -279,6 +280,26 @@ test('AddTraineeToCourse calls Moodle enrollment when course has moodle_course_i
     app(AddTraineeToCourse::class)->execute($course, $trainee, $mentor);
 
     expect($course->activeTrainees()->where('users.id', $trainee->id)->exists())->toBeTrue();
+});
+
+test('AddTraineeToCourse rolls back and throws when Moodle enrollment fails', function () {
+    Event::fake();
+    $this->app->bind(MoodleClientInterface::class, fn () => new class extends FakeMoodleClient
+    {
+        public function enrollUser(int $vatsimId, int $courseId): bool
+        {
+            return false;
+        }
+    });
+    $course = Course::factory()->create(['moodle_course_ids' => [101, 102]]);
+    $trainee = User::factory()->create();
+    $mentor = User::factory()->create();
+
+    expect(fn () => app(AddTraineeToCourse::class)->execute($course, $trainee, $mentor))
+        ->toThrow(MoodleEnrollmentException::class, 'Moodle course(s) 101, 102');
+
+    expect($course->activeTrainees()->where('users.id', $trainee->id)->exists())->toBeFalse();
+    Event::assertNotDispatched(TraineeAddedToCourse::class);
 });
 
 test('AddTraineeToCourse skips Moodle enrollment when course has no moodle_course_ids', function () {
@@ -605,6 +626,36 @@ test('StartTraining ignores activity for RTG courses with CTR position', functio
 
     expect($success)->toBeTrue();
     expect($message)->toBe('Training started successfully.');
+});
+
+test('StartTraining returns an error and keeps the waiting list entry when Moodle enrollment fails', function () {
+    Event::fake();
+    Http::fake();
+    $this->app->bind(MoodleClientInterface::class, fn () => new class extends FakeMoodleClient
+    {
+        public function enrollUser(int $vatsimId, int $courseId): bool
+        {
+            return false;
+        }
+    });
+    $course = Course::factory()->create(['moodle_course_ids' => [101]]);
+    $trainee = User::factory()->create();
+    $mentor = User::factory()->create();
+
+    $entry = WaitingListEntry::create([
+        'user_id' => $trainee->id,
+        'course_id' => $course->id,
+        'date_added' => now(),
+        'activity' => 10,
+    ]);
+
+    [$success, $message] = app(StartTraining::class)->execute($entry, $mentor);
+
+    expect($success)->toBeFalse();
+    expect($message)->toContain('could not be enrolled in the Moodle course(s) 101');
+    expect($course->activeTrainees()->where('users.id', $trainee->id)->exists())->toBeFalse();
+    expect(WaitingListEntry::find($entry->id))->not->toBeNull();
+    Event::assertNotDispatched(TrainingStarted::class);
 });
 
 test('StartTraining returns true and attaches trainee when RTG activity meets the threshold', function () {

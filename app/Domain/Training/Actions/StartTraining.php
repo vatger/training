@@ -4,6 +4,7 @@ namespace App\Domain\Training\Actions;
 
 use App\Domain\Training\Events\TrainingStarted;
 use App\Integrations\Moodle\MoodleClientInterface;
+use App\Integrations\Moodle\MoodleEnrollmentException;
 use App\Integrations\Vatger\VatgerClientInterface;
 use App\Models\User;
 use App\Models\WaitingListEntry;
@@ -38,6 +39,15 @@ class StartTraining
             event(new TrainingStarted($entry->course, $entry->user, $mentor, $entry));
 
             return [true, 'Training started successfully.'];
+        } catch (MoodleEnrollmentException $e) {
+            Log::warning('Training not started: Moodle enrollment failed', [
+                'entry_id' => $entry->id,
+                'user_id' => $entry->user_id,
+                'course_id' => $entry->course_id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return [false, $e->getMessage()];
         } catch (QueryException $e) {
             if (str_contains($e->getMessage(), 'course_trainee_unique')) {
                 Log::error('Failed to start training: trainee already has a record for this course', [
@@ -74,15 +84,19 @@ class StartTraining
         }
     }
 
+    /**
+     * @throws MoodleEnrollmentException if the user could not be enrolled in every course
+     */
     private function enrollInMoodle(User $user, array $courseIds): void
     {
-        foreach ($courseIds as $courseId) {
-            if (! $this->moodle->enrollUser($user->vatsim_id, (int) $courseId)) {
-                Log::warning('Failed to enroll user in Moodle course', [
-                    'user_id' => $user->id,
-                    'course_id' => $courseId,
-                ]);
-            }
+        $failed = collect($courseIds)
+            ->reject(fn ($courseId) => $this->moodle->enrollUser($user->vatsim_id, (int) $courseId))
+            ->map(fn ($courseId) => (int) $courseId)
+            ->values()
+            ->all();
+
+        if ($failed !== []) {
+            throw MoodleEnrollmentException::forCourses($user->vatsim_id, $failed);
         }
     }
 
