@@ -70,7 +70,7 @@ class ViewGdprRemovalRequest extends ViewRecord
                 GdprRemovalRequest::STATUS_PENDING => 'Step 1 of 3 · Approve the deletion of this user',
                 GdprRemovalRequest::STATUS_APPROVED => 'Step 2 of 3 · Review the kept records',
                 GdprRemovalRequest::STATUS_CANCELLED => 'Cancelled',
-                default => 'Step 3 of 3 · Completed',
+                default => 'Completed · all 3 steps done',
             })
                 ->columnSpanFull()
                 ->schema([

@@ -22,7 +22,13 @@ class GdprRemovalRequestResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->defaultSort('created_at', 'desc')
+            // Open work first: reviews in progress, then awaiting approval, then finished requests. Newest first within each group.
+            ->defaultSort(fn (Builder $query) => $query
+                ->orderByRaw('CASE status WHEN ? THEN 0 WHEN ? THEN 1 ELSE 2 END', [
+                    GdprRemovalRequest::STATUS_APPROVED,
+                    GdprRemovalRequest::STATUS_PENDING,
+                ])
+                ->orderByDesc('created_at'))
             ->modifyQueryUsing(fn (Builder $query) => $query->withCount([
                 'reviewItems',
                 'reviewItems as open_review_items_count' => fn (Builder $q) => $q->whereNull('reviewed_at'),

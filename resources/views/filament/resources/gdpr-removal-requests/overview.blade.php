@@ -1,37 +1,47 @@
 @php
-    $current = $request->isPending() ? 1 : ($request->isApproved() ? 2 : 3);
+    $current = $request->isPending() ? 1 : ($request->isApproved() ? 2 : 4); // 4 = every step done
     $steps = [
         1 => ['title' => 'Approve', 'text' => 'You decide whether the user is deleted. Approving deletes everything marked "Deleted" below. Nothing else is touched.'],
         2 => ['title' => 'Review', 'text' => 'Only for the "Kept" records of other users. Remove anything that identifies the user, then mark each record as reviewed.'],
-        3 => ['title' => 'Completed', 'text' => 'Everything is deleted and reviewed. Only the VATSIM ID stays as proof.'],
+        3 => ['title' => 'Completed', 'text' => 'Everything is deleted and reviewed.'],
     ];
 @endphp
 
 @if ($request->isCancelled())
     <p style="margin: 0;">Cancelled {{ $request->cancelled_at?->format('Y-m-d H:i') }}. The homepage stopped polling this user for {{ \App\Models\GdprRemovalRequest::STALE_AFTER_DAYS }} days, so nothing was deleted. If it asks again, a new request is opened.</p>
 @else
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: .75rem; margin-bottom: 1rem;">
+<div style="display: flex; align-items: flex-start; gap: .75rem; margin-bottom: 1.25rem; flex-wrap: wrap;">
     @foreach ($steps as $number => $step)
         @php
             $state = $number < $current ? 'done' : ($number === $current ? 'current' : 'todo');
-            $badgeColor = ['done' => 'success', 'current' => 'primary', 'todo' => 'gray'][$state];
-            $borderColor = $state === 'current' ? 'rgb(var(--primary-500))' : 'rgba(128,128,128,.3)';
-            $opacity = $state === 'todo' ? '.6' : '1';
+            $circle = match ($state) {
+                'done' => 'background: rgb(var(--success-600)); color: #fff; border: 2px solid rgb(var(--success-600));',
+                'current' => 'background: rgb(var(--primary-600)); color: #fff; border: 2px solid rgb(var(--primary-600)); box-shadow: 0 0 0 4px rgba(var(--primary-500), .25);',
+                default => 'background: transparent; opacity: .55; border: 2px solid rgba(128,128,128,.6);',
+            };
+            $label = ['done' => 'Done', 'current' => 'You are here', 'todo' => 'Up next'][$state];
         @endphp
-        <div style="padding: .75rem 1rem; border-radius: .5rem; border: 2px solid {{ $borderColor }}; opacity: {{ $opacity }};">
-            <div style="display: flex; align-items: center; gap: .5rem;">
-                <x-filament::badge :color="$badgeColor" style="display: inline-flex;">
-                    {{ $state === 'done' ? '✓' : $number }}
-                </x-filament::badge>
-                <strong>{{ $step['title'] }}</strong>
+        <div style="display: flex; gap: .75rem; flex: 1 1 14rem; min-width: 0; {{ $state === 'todo' ? 'opacity: .6;' : '' }}">
+            <div style="flex: none; width: 2rem; height: 2rem; border-radius: 9999px; display: flex; align-items: center; justify-content: center; font-weight: 700; {{ $circle }}">
+                {{ $state === 'done' ? '✓' : $number }}
+            </div>
+            <div style="min-width: 0;">
+                <div style="font-size: .7rem; text-transform: uppercase; letter-spacing: .06em; font-weight: 600; {{ $state === 'done' ? 'color: rgb(var(--success-600));' : ($state === 'current' ? 'color: rgb(var(--primary-600));' : 'opacity: .7;') }}">{{ $label }}</div>
+                <strong style="{{ $state === 'current' ? 'font-size: 1.05rem;' : '' }}">{{ $step['title'] }}</strong>
                 @if ($state === 'current')
-                    <span style="font-size: .75rem; opacity: .7;">· you are here</span>
+                    <p style="margin: .25rem 0 0; font-size: .85rem; opacity: .85;">{{ $step['text'] }}</p>
                 @endif
             </div>
-            <p style="margin: .35rem 0 0; font-size: .85rem; opacity: .85;">{{ $step['text'] }}</p>
         </div>
     @endforeach
 </div>
+
+@if ($request->isCompleted())
+    <div style="padding: .75rem 1rem; border-left: 4px solid rgb(var(--success-600)); background: rgba(128,128,128,.08); border-radius: .5rem; margin-bottom: 1rem;">
+        <strong style="color: rgb(var(--success-600));">✓ All done, nothing left to do</strong>
+        <div style="font-size: .875rem; opacity: .85;">The user was deleted and every kept record was reviewed. Only the VATSIM ID stays as proof.</div>
+    </div>
+@endif
 
 @php
     $highlight = function (?string $text) use ($terms) {
