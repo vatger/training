@@ -19,10 +19,10 @@ class GdprRemovalRequest extends Model
     public const STATUS_CANCELLED = 'cancelled';
 
     /** Days without a poll after which a pending request is cancelled. */
-    public const STALE_AFTER_DAYS = 7;
+    public const STALE_AFTER_DAYS = 3;
 
     /** Days after which a pending request of a user without any special data is approved automatically. */
-    public const AUTO_REMOVE_AFTER_DAYS = 8;
+    public const AUTO_REMOVE_AFTER_DAYS = 2;
 
     protected $fillable = [
         'user_id',
