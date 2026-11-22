@@ -44,7 +44,6 @@ class CptController extends Controller
 
             return response()->json([
                 'error' => 'Failed to retrieve CPTs',
-                'message' => $e->getMessage(),
             ], 500);
         }
     }

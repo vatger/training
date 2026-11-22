@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Training\Events\TraineeRemoved;
 use App\Integrations\Moodle\FakeMoodleClient;
 use App\Integrations\Moodle\MoodleClientInterface;
 use App\Integrations\VatEud\DTOs\ExamResultData;
@@ -1615,4 +1616,60 @@ test('updating a training log sanitises rich text too', function () {
         ->assertSessionHasNoErrors();
 
     expect($log->refresh()->final_comment)->toContain('<p>fine</p>')->not->toContain('<script');
+});
+
+// ─── Course scoping on trainee-targeting endpoints ────────────────────────────
+
+test('grant endorsement is refused for a user who is not a trainee of the course', function () {
+    $course = trainingHttpRtgCourse();
+    DB::table('course_endorsement_groups')->insert(['course_id' => $course->id, 'endorsement_group_name' => 'EDDF_TWR']);
+    $outsider = User::factory()->create();
+
+    $this->actingAs(trainingHttpMentor($course))
+        ->post(route('overview.grant-endorsement'), ['trainee_id' => $outsider->id, 'course_id' => $course->id])
+        ->assertSessionHasErrors('error');
+});
+
+test('remove trainee is refused for a user who is not a trainee of the course', function () {
+    $course = trainingHttpRtgCourse();
+    $outsider = User::factory()->create();
+
+    $this->actingAs(trainingHttpMentor($course))
+        ->post(route('overview.remove-trainee'), ['trainee_id' => $outsider->id, 'course_id' => $course->id])
+        ->assertSessionHasErrors('error');
+
+    Event::assertNotDispatched(TraineeRemoved::class);
+});
+
+test('moodle status batch requires access to the course', function () {
+    $course = trainingHttpRtgCourse();
+    $course->update(['moodle_course_ids' => [123]]);
+    $trainee = User::factory()->create();
+    trainingHttpAttachTrainee($course, $trainee);
+
+    $this->actingAs(trainingHttpMentorNoAccess())
+        ->postJson(route('overview.get-moodle-status-batch'), ['course_id' => $course->id, 'trainee_ids' => [$trainee->id]])
+        ->assertForbidden();
+});
+
+test('moodle status batch ignores users who are not trainees of the course', function () {
+    $course = trainingHttpRtgCourse();
+    $course->update(['moodle_course_ids' => [123]]);
+    $outsider = User::factory()->create();
+
+    $this->actingAs(trainingHttpMentor($course))
+        ->postJson(route('overview.get-moodle-status-batch'), ['course_id' => $course->id, 'trainee_ids' => [$outsider->id]])
+        ->assertOk()
+        ->assertJson(['statuses' => []]);
+});
+
+test('user search does not expose email addresses', function () {
+    $course = trainingHttpRtgCourse();
+    $mentor = trainingHttpMentor($course);
+    $target = User::factory()->create(['vatsim_id' => 9876543, 'email' => 'alice@example.test']);
+
+    $response = $this->actingAs($mentor)->postJson(route('users.search'), ['query' => '98765'])->assertOk();
+
+    expect($response->json('users.0.vatsim_id'))->toBe($target->vatsim_id)
+        ->and($response->json('users.0'))->not->toHaveKey('email');
 });

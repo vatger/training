@@ -197,11 +197,19 @@ class MentorOverviewController extends Controller
 
         $course = Course::findOrFail($validated['course_id']);
 
+        if (! $user->canViewCourse($course)) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
         if (empty($course->moodle_course_ids)) {
             return response()->json(['success' => true, 'statuses' => []]);
         }
 
-        $trainees = User::whereIn('id', $validated['trainee_ids'])->get()->keyBy('id');
+        $courseTraineeIds = $course->activeTrainees()
+            ->whereIn('users.id', $validated['trainee_ids'])
+            ->pluck('users.id');
+
+        $trainees = User::whereIn('id', $courseTraineeIds)->get()->keyBy('id');
         $statuses = [];
 
         foreach ($validated['trainee_ids'] as $traineeId) {
@@ -359,6 +367,10 @@ class MentorOverviewController extends Controller
 
         if ($endorsementGroups->isEmpty()) {
             return back()->withErrors(['error' => 'This course has no endorsements configured']);
+        }
+
+        if (! $course->activeTrainees()->where('user_id', $trainee->id)->exists()) {
+            return back()->withErrors(['error' => 'Trainee is not in this course']);
         }
 
         if ($trainee->isGdprDeleted()) {

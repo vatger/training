@@ -67,7 +67,7 @@ COPY composer.json composer.lock ./
 
 RUN APP_ENV=production composer install --optimize-autoloader --no-dev --no-scripts --classmap-authoritative
 
-COPY --chown=www-data:www-data . .
+COPY . .
 
 RUN rm -rf bootstrap/cache/*.php \
     storage/framework/cache/data/* \

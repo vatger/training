@@ -9,7 +9,7 @@
 
         <script>
             (function() {
-                const theme = '{{ $theme ?? "system" }}';
+                const theme = @json($theme ?? 'system');
 
                 if (theme === 'system') {
                     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;

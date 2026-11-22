@@ -27,11 +27,11 @@ class UserSearchController extends Controller
                 $users = User::where('vatsim_id', 'LIKE', $query.'%')
                     ->whereNotNull('vatsim_id')
                     ->limit(10)
-                    ->get(['id', 'vatsim_id', 'first_name', 'last_name', 'email']);
+                    ->get(['id', 'vatsim_id', 'first_name', 'last_name']);
             } else {
-                $searchTerm = strtolower($query);
+                $searchTerm = addcslashes(strtolower($query), '%_\\');
 
-                $users = User::select(['id', 'vatsim_id', 'first_name', 'last_name', 'email'])
+                $users = User::select(['id', 'vatsim_id', 'first_name', 'last_name'])
                     ->whereNotNull('vatsim_id')
                     ->where(function ($q) use ($searchTerm) {
                         $q->whereRaw('LOWER(first_name) LIKE ?', [$searchTerm.'%'])
@@ -65,7 +65,6 @@ class UserSearchController extends Controller
                     'id' => $user->id,
                     'vatsim_id' => $user->vatsim_id,
                     'name' => $user->name,
-                    'email' => $user->email,
                 ];
             });
 
@@ -347,7 +346,6 @@ class UserSearchController extends Controller
                 'vatsim_id' => $user->vatsim_id,
                 'first_name' => $user->first_name,
                 'last_name' => $user->last_name,
-                'email' => $user->email,
                 'rating' => $user->rating,
                 'subdivision' => $user->subdivision,
                 'last_rating_change' => $user->last_rating_change?->format('Y-m-d'),

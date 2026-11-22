@@ -32,7 +32,6 @@ class Tier1Controller extends Controller
 
             return response()->json([
                 'error' => 'Failed to retrieve tier 1 endorsements',
-                'message' => $e->getMessage(),
             ], 500);
         }
     }
