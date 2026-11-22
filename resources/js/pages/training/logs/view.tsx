@@ -1,4 +1,5 @@
 import { Head, Link } from "@inertiajs/react"
+import DOMPurify from "dompurify"
 import {
 	Activity,
 	AlertCircle,
@@ -167,7 +168,10 @@ const MarkdownContent = ({ content }: { content: string | null }) => {
 		)
 	}
 
-	const html = content.replace(/<p>(\s*)<\/p>/g, "<p><br></p>")
+	const html = DOMPurify.sanitize(
+		content.replace(/<p>(\s*)<\/p>/g, "<p><br></p>"),
+		{ USE_PROFILES: { html: true } },
+	)
 
 	return (
 		<>
@@ -342,77 +346,77 @@ export default function ViewTrainingLog({
 									log.surrounding_stations ||
 									log.special_procedures ||
 									log.airspace_restrictions) && (
-									<>
-										<Separator className="my-4" />
-										<div>
-											<h3 className="mb-3 text-sm font-semibold">
-												Additional Details
-											</h3>
+										<>
+											<Separator className="my-4" />
+											<div>
+												<h3 className="mb-3 text-sm font-semibold">
+													Additional Details
+												</h3>
 
-											{log.traffic_level && (
-												<div className="mb-3">
-													<p className="text-xs text-muted-foreground">
-														Traffic Level
-													</p>
-													<p className="text-sm">{log.traffic_level_display}</p>
-												</div>
-											)}
-
-											{log.traffic_complexity && (
-												<div className="mb-3">
-													<p className="text-xs text-muted-foreground">
-														Traffic Complexity
-													</p>
-													<p className="text-sm">
-														{log.traffic_complexity_display}
-													</p>
-												</div>
-											)}
-
-											{log.runway_configuration && (
-												<div className="mb-3">
-													<p className="text-xs text-muted-foreground">
-														Runway Configuration
-													</p>
-													<p className="text-sm">{log.runway_configuration}</p>
-												</div>
-											)}
-
-											{log.surrounding_stations && (
-												<div className="mb-3">
-													<p className="text-xs text-muted-foreground">
-														Surrounding Stations
-													</p>
-													<p className="text-sm">{log.surrounding_stations}</p>
-												</div>
-											)}
-
-											{log.special_procedures && (
-												<div className="mb-3">
-													<p className="text-xs text-muted-foreground">
-														Special Procedures
-													</p>
-													<div className="text-sm">
-														<MarkdownContent content={log.special_procedures} />
+												{log.traffic_level && (
+													<div className="mb-3">
+														<p className="text-xs text-muted-foreground">
+															Traffic Level
+														</p>
+														<p className="text-sm">{log.traffic_level_display}</p>
 													</div>
-												</div>
-											)}
+												)}
 
-											{log.airspace_restrictions && (
-												<div className="mb-3">
-													<p className="text-xs text-muted-foreground">
-														Airspace Restrictions
-													</p>
-													<div className="text-sm">
-														<MarkdownContent
-															content={log.airspace_restrictions}
-														/>
+												{log.traffic_complexity && (
+													<div className="mb-3">
+														<p className="text-xs text-muted-foreground">
+															Traffic Complexity
+														</p>
+														<p className="text-sm">
+															{log.traffic_complexity_display}
+														</p>
 													</div>
-												</div>
-											)}
-										</div>
-									</>
-								)}
+												)}
+
+												{log.runway_configuration && (
+													<div className="mb-3">
+														<p className="text-xs text-muted-foreground">
+															Runway Configuration
+														</p>
+														<p className="text-sm">{log.runway_configuration}</p>
+													</div>
+												)}
+
+												{log.surrounding_stations && (
+													<div className="mb-3">
+														<p className="text-xs text-muted-foreground">
+															Surrounding Stations
+														</p>
+														<p className="text-sm">{log.surrounding_stations}</p>
+													</div>
+												)}
+
+												{log.special_procedures && (
+													<div className="mb-3">
+														<p className="text-xs text-muted-foreground">
+															Special Procedures
+														</p>
+														<div className="text-sm">
+															<MarkdownContent content={log.special_procedures} />
+														</div>
+													</div>
+												)}
+
+												{log.airspace_restrictions && (
+													<div className="mb-3">
+														<p className="text-xs text-muted-foreground">
+															Airspace Restrictions
+														</p>
+														<div className="text-sm">
+															<MarkdownContent
+																content={log.airspace_restrictions}
+															/>
+														</div>
+													</div>
+												)}
+											</div>
+										</>
+									)}
 							</CardContent>
 						</Card>
 						<Card>

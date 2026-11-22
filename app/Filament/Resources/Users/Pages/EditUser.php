@@ -44,8 +44,51 @@ class EditUser extends EditRecord
         return $record;
     }
 
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        $actor = auth()->user();
+
+        if (! $actor?->isSuperuser()) {
+            unset($data['is_staff'], $data['is_superuser'], $data['is_admin']);
+        }
+
+        if (! $actor?->isAdmin()) {
+            unset($data['is_admin']);
+        }
+
+        return $data;
+    }
+
+    protected function guardAccessChanges(): void
+    {
+        $actor = auth()->user();
+
+        if ($actor?->isSuperuser()) {
+            return;
+        }
+
+        $state = $this->form->getRawState();
+
+        $ids = fn ($relation, $key) => $this->record->{$relation}()->pluck($key)->map(fn ($id) => (int) $id)->sort()->values()->all();
+        $submitted = fn (string $field) => collect($state[$field] ?? [])->map(fn ($id) => (int) $id)->sort()->values()->all();
+
+        $rolesChanged = array_key_exists('roles', $state) && $submitted('roles') !== $ids('roles', 'roles.id');
+        $permissionsChanged = array_key_exists('permissions', $state) && $submitted('permissions') !== $ids('permissions', 'permissions.id');
+
+        if ($rolesChanged || $permissionsChanged) {
+            Notification::make()
+                ->title('Only superusers can change roles or permissions')
+                ->danger()
+                ->send();
+
+            $this->halt();
+        }
+    }
+
     protected function beforeSave(): void
     {
+        $this->guardAccessChanges();
+
         $this->originalRoleNames = $this->record->roles()->pluck('name')->sort()->values()->all();
         $this->originalPermissionNames = $this->record->permissions()->pluck('name')->sort()->values()->all();
     }

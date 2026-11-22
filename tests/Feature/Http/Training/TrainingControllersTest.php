@@ -1563,3 +1563,56 @@ test('courses index includes courses the user is already on the waiting list for
             ->where('courses', fn ($courses) => collect($courses)->pluck('id')->contains($course->id))
         );
 });
+
+// ─── TrainingLogController: HTML sanitising & trainee membership ──────────────
+
+test('training log rich text is sanitised before it is stored', function () {
+    $course = trainingHttpRtgCourse();
+    $mentor = trainingHttpMentor($course);
+    $trainee = User::factory()->create();
+    trainingHttpAttachTrainee($course, $trainee);
+
+    $payload = array_merge(trainingHttpLogData($trainee, $course), [
+        'theory_positives' => '<p>Good</p><script>alert(1)</script><img src="x" onerror="alert(1)">',
+        'final_comment' => '<a href="javascript:alert(1)">click</a><strong>ok</strong>',
+        'internal_remarks' => '<iframe src="https://evil.test"></iframe><em>note</em>',
+    ]);
+
+    $this->actingAs($mentor)->post(route('training-logs.store'), $payload)->assertSessionHasNoErrors();
+
+    $log = TrainingLog::latest('id')->first();
+
+    expect($log->theory_positives)->toContain('<p>Good</p>')
+        ->not->toContain('<script')
+        ->not->toContain('onerror')
+        ->and($log->final_comment)->not->toContain('javascript:')->toContain('<strong>ok</strong>')
+        ->and($log->internal_remarks)->not->toContain('<iframe')->toContain('<em>note</em>');
+});
+
+test('mentor cannot create a training log for a user who is not active in the course', function () {
+    $course = trainingHttpRtgCourse();
+    $mentor = trainingHttpMentor($course);
+    $outsider = User::factory()->create();
+
+    $this->actingAs($mentor)
+        ->post(route('training-logs.store'), trainingHttpLogData($outsider, $course))
+        ->assertSessionHasErrors('trainee_id');
+
+    expect(TrainingLog::count())->toBe(0);
+});
+
+test('updating a training log sanitises rich text too', function () {
+    $course = trainingHttpRtgCourse();
+    $mentor = trainingHttpMentor($course);
+    $trainee = User::factory()->create();
+    trainingHttpAttachTrainee($course, $trainee);
+    $log = trainingHttpCreateLog($mentor, $trainee, $course);
+
+    $this->actingAs($mentor)
+        ->put(route('training-logs.update', $log), array_merge(trainingHttpLogData($trainee, $course), [
+            'final_comment' => '<p>fine</p><script>alert(1)</script>',
+        ]))
+        ->assertSessionHasNoErrors();
+
+    expect($log->refresh()->final_comment)->toContain('<p>fine</p>')->not->toContain('<script');
+});
