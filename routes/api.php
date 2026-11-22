@@ -5,7 +5,6 @@ use App\Http\Controllers\Api\FamiliarisationController;
 use App\Http\Controllers\Api\GdprController;
 use App\Http\Controllers\Api\SoloController;
 use App\Http\Controllers\Api\Tier1Controller;
-use App\Http\Controllers\Api\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -19,10 +18,6 @@ Route::middleware(['api.auth:gdpr.delete'])->group(function () {
 
 Route::middleware(['api.auth:gdpr.read'])->group(function () {
     Route::get('gdpr-data/{vatsimId}', [GdprController::class, 'show']);
-});
-
-Route::middleware(['api.auth:users.read'])->group(function () {
-    Route::get('user-data/{vatsimId}', [UserController::class, 'show']);
 });
 
 Route::middleware(['api.auth:familiarisations.read'])->group(function () {

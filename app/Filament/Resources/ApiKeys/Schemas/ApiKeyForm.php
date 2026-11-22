@@ -21,7 +21,6 @@ class ApiKeyForm
                     ->options([
                         'gdpr.delete' => 'GDPR Removal Requests',
                         'gdpr.read' => 'GDPR Read All User Data',
-                        'users.read' => 'Read User Data',
                         'familiarisations.read' => 'Read Familiarisations',
                         'tier1.read' => 'Read Tier 1 Endorsements',
                         'solos.read' => 'Read Solo Endorsements',

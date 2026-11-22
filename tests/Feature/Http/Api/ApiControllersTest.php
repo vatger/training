@@ -51,14 +51,14 @@ function apiAuthHeaders(string $plainKey = 'test-api-key'): array
 
 describe('API authentication', function () {
     test('returns 401 with message when no bearer token is provided', function () {
-        $this->getJson('/api/user-data/1234567')
+        $this->getJson('/api/gdpr-data/1234567')
             ->assertStatus(401)
             ->assertJson(['error' => 'No API key provided']);
     });
 
     test('returns 401 when bearer token does not match any key', function () {
         $this->withHeaders(['Authorization' => 'Bearer unknown-key'])
-            ->getJson('/api/user-data/1234567')
+            ->getJson('/api/gdpr-data/1234567')
             ->assertStatus(401)
             ->assertJson(['error' => 'Invalid API key']);
     });
@@ -68,11 +68,11 @@ describe('API authentication', function () {
             'name' => 'Inactive',
             'key' => 'inactive-key',
             'is_active' => false,
-            'permissions' => ['users.read'],
+            'permissions' => ['gdpr.read'],
         ]);
 
         $this->withHeaders(['Authorization' => 'Bearer inactive-key'])
-            ->getJson('/api/user-data/1234567')
+            ->getJson('/api/gdpr-data/1234567')
             ->assertStatus(401)
             ->assertJson(['error' => 'API key is inactive or expired']);
     });
@@ -83,81 +83,23 @@ describe('API authentication', function () {
             'key' => 'expired-key',
             'is_active' => true,
             'expires_at' => now()->subDay(),
-            'permissions' => ['users.read'],
+            'permissions' => ['gdpr.read'],
         ]);
 
         $this->withHeaders(['Authorization' => 'Bearer expired-key'])
-            ->getJson('/api/user-data/1234567')
+            ->getJson('/api/gdpr-data/1234567')
             ->assertStatus(401)
             ->assertJson(['error' => 'API key is inactive or expired']);
     });
 
     test('records usage timestamp and ip on a successful request', function () {
-        apiCreateKey(['users.read']);
+        apiCreateKey(['gdpr.read']);
 
         $this->withHeaders(apiAuthHeaders())
-            ->getJson('/api/user-data/9999999');
+            ->getJson('/api/gdpr-data/9999999');
 
         $key = ApiKey::where('key', hash('sha256', 'test-api-key'))->first();
         expect($key->last_used_at)->not->toBeNull();
-    });
-});
-
-// ─── UserController ──────────────────────────────────────────────────────────
-
-describe('UserController', function () {
-    test('returns 403 when api key lacks users.read permission', function () {
-        apiCreateKey([], 'no-perm-key');
-
-        $this->withHeaders(apiAuthHeaders('no-perm-key'))
-            ->getJson('/api/user-data/1234567')
-            ->assertStatus(403)
-            ->assertJson(['error' => 'Insufficient permissions']);
-    });
-
-    test('returns user attributes when the user exists', function () {
-        apiCreateKey(['users.read']);
-        $user = User::factory()->create(['vatsim_id' => 1234567]);
-
-        $response = $this->withHeaders(apiAuthHeaders())
-            ->getJson('/api/user-data/1234567');
-
-        $response->assertOk()
-            ->assertJsonFragment(['vatsim_id' => 1234567])
-            ->assertJsonFragment(['email' => $user->email]);
-    });
-
-    test('returns error json with 200 status when vatsim id is not found', function () {
-        apiCreateKey(['users.read']);
-
-        $this->withHeaders(apiAuthHeaders())
-            ->getJson('/api/user-data/9999999')
-            ->assertOk()
-            ->assertJson(['error' => 'User not found']);
-    });
-
-    test('includes all raw user attributes in response including vatsim id and email', function () {
-        apiCreateKey(['users.read']);
-        $user = User::factory()->create(['vatsim_id' => 1234567, 'subdivision' => 'GER']);
-
-        $response = $this->withHeaders(apiAuthHeaders())
-            ->getJson('/api/user-data/1234567');
-
-        $response->assertOk()
-            ->assertJsonFragment(['vatsim_id' => 1234567])
-            ->assertJsonFragment(['subdivision' => 'GER'])
-            ->assertJsonFragment(['email' => $user->email]);
-    });
-
-    test('never exposes the password hash or remember token', function () {
-        apiCreateKey(['users.read']);
-        User::factory()->create(['vatsim_id' => 1234568]);
-
-        $response = $this->withHeaders(apiAuthHeaders())
-            ->getJson('/api/user-data/1234568');
-
-        $response->assertOk();
-        expect($response->json())->not->toHaveKeys(['password', 'remember_token']);
     });
 });
 
@@ -541,7 +483,7 @@ describe('GdprController removal requests', function () {
     });
 
     test('returns 403 when api key lacks gdpr.delete permission', function () {
-        apiCreateKey(['users.read'], 'wrong-perm-key');
+        apiCreateKey(['gdpr.read'], 'wrong-perm-key');
 
         $this->withHeaders(apiAuthHeaders('wrong-perm-key'))
             ->deleteJson('/api/gdpr-removal/1234567')
