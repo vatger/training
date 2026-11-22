@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Training\Events\TraineeRemoved;
 use App\Integrations\Moodle\FakeMoodleClient;
 use App\Integrations\Moodle\MoodleClientInterface;
 use App\Integrations\VatEud\DTOs\ExamResultData;
@@ -1562,4 +1563,113 @@ test('courses index includes courses the user is already on the waiting list for
             ->component('training/courses')
             ->where('courses', fn ($courses) => collect($courses)->pluck('id')->contains($course->id))
         );
+});
+
+// ─── TrainingLogController: HTML sanitising & trainee membership ──────────────
+
+test('training log rich text is sanitised before it is stored', function () {
+    $course = trainingHttpRtgCourse();
+    $mentor = trainingHttpMentor($course);
+    $trainee = User::factory()->create();
+    trainingHttpAttachTrainee($course, $trainee);
+
+    $payload = array_merge(trainingHttpLogData($trainee, $course), [
+        'theory_positives' => '<p>Good</p><script>alert(1)</script><img src="x" onerror="alert(1)">',
+        'final_comment' => '<a href="javascript:alert(1)">click</a><strong>ok</strong>',
+        'internal_remarks' => '<iframe src="https://evil.test"></iframe><em>note</em>',
+    ]);
+
+    $this->actingAs($mentor)->post(route('training-logs.store'), $payload)->assertSessionHasNoErrors();
+
+    $log = TrainingLog::latest('id')->first();
+
+    expect($log->theory_positives)->toContain('<p>Good</p>')
+        ->not->toContain('<script')
+        ->not->toContain('onerror')
+        ->and($log->final_comment)->not->toContain('javascript:')->toContain('<strong>ok</strong>')
+        ->and($log->internal_remarks)->not->toContain('<iframe')->toContain('<em>note</em>');
+});
+
+test('mentor cannot create a training log for a user who is not active in the course', function () {
+    $course = trainingHttpRtgCourse();
+    $mentor = trainingHttpMentor($course);
+    $outsider = User::factory()->create();
+
+    $this->actingAs($mentor)
+        ->post(route('training-logs.store'), trainingHttpLogData($outsider, $course))
+        ->assertSessionHasErrors('trainee_id');
+
+    expect(TrainingLog::count())->toBe(0);
+});
+
+test('updating a training log sanitises rich text too', function () {
+    $course = trainingHttpRtgCourse();
+    $mentor = trainingHttpMentor($course);
+    $trainee = User::factory()->create();
+    trainingHttpAttachTrainee($course, $trainee);
+    $log = trainingHttpCreateLog($mentor, $trainee, $course);
+
+    $this->actingAs($mentor)
+        ->put(route('training-logs.update', $log), array_merge(trainingHttpLogData($trainee, $course), [
+            'final_comment' => '<p>fine</p><script>alert(1)</script>',
+        ]))
+        ->assertSessionHasNoErrors();
+
+    expect($log->refresh()->final_comment)->toContain('<p>fine</p>')->not->toContain('<script');
+});
+
+// ─── Course scoping on trainee-targeting endpoints ────────────────────────────
+
+test('grant endorsement is refused for a user who is not a trainee of the course', function () {
+    $course = trainingHttpRtgCourse();
+    DB::table('course_endorsement_groups')->insert(['course_id' => $course->id, 'endorsement_group_name' => 'EDDF_TWR']);
+    $outsider = User::factory()->create();
+
+    $this->actingAs(trainingHttpMentor($course))
+        ->post(route('overview.grant-endorsement'), ['trainee_id' => $outsider->id, 'course_id' => $course->id])
+        ->assertSessionHasErrors('error');
+});
+
+test('remove trainee is refused for a user who is not a trainee of the course', function () {
+    $course = trainingHttpRtgCourse();
+    $outsider = User::factory()->create();
+
+    $this->actingAs(trainingHttpMentor($course))
+        ->post(route('overview.remove-trainee'), ['trainee_id' => $outsider->id, 'course_id' => $course->id])
+        ->assertSessionHasErrors('error');
+
+    Event::assertNotDispatched(TraineeRemoved::class);
+});
+
+test('moodle status batch requires access to the course', function () {
+    $course = trainingHttpRtgCourse();
+    $course->update(['moodle_course_ids' => [123]]);
+    $trainee = User::factory()->create();
+    trainingHttpAttachTrainee($course, $trainee);
+
+    $this->actingAs(trainingHttpMentorNoAccess())
+        ->postJson(route('overview.get-moodle-status-batch'), ['course_id' => $course->id, 'trainee_ids' => [$trainee->id]])
+        ->assertForbidden();
+});
+
+test('moodle status batch ignores users who are not trainees of the course', function () {
+    $course = trainingHttpRtgCourse();
+    $course->update(['moodle_course_ids' => [123]]);
+    $outsider = User::factory()->create();
+
+    $this->actingAs(trainingHttpMentor($course))
+        ->postJson(route('overview.get-moodle-status-batch'), ['course_id' => $course->id, 'trainee_ids' => [$outsider->id]])
+        ->assertOk()
+        ->assertJson(['statuses' => []]);
+});
+
+test('user search does not expose email addresses', function () {
+    $course = trainingHttpRtgCourse();
+    $mentor = trainingHttpMentor($course);
+    $target = User::factory()->create(['vatsim_id' => 9876543, 'email' => 'alice@example.test']);
+
+    $response = $this->actingAs($mentor)->postJson(route('users.search'), ['query' => '98765'])->assertOk();
+
+    expect($response->json('users.0.vatsim_id'))->toBe($target->vatsim_id)
+        ->and($response->json('users.0'))->not->toHaveKey('email');
 });

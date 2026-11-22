@@ -5,33 +5,31 @@ use App\Http\Controllers\Api\FamiliarisationController;
 use App\Http\Controllers\Api\GdprController;
 use App\Http\Controllers\Api\SoloController;
 use App\Http\Controllers\Api\Tier1Controller;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:api');
+// Throttled before key lookup so invalid keys are rate limited too.
+Route::middleware('throttle:120,1')->group(function () {
+    Route::middleware(['api.auth:gdpr.delete'])->group(function () {
+        Route::delete('gdpr-removal/{vatsimId}', [GdprController::class, 'delete']);
+    });
 
-Route::middleware(['api.auth:gdpr.delete'])->group(function () {
-    Route::delete('gdpr-removal/{vatsimId}', [GdprController::class, 'delete']);
-});
+    Route::middleware(['api.auth:gdpr.read'])->group(function () {
+        Route::get('gdpr-data/{vatsimId}', [GdprController::class, 'show']);
+    });
 
-Route::middleware(['api.auth:gdpr.read'])->group(function () {
-    Route::get('gdpr-data/{vatsimId}', [GdprController::class, 'show']);
-});
+    Route::middleware(['api.auth:familiarisations.read'])->group(function () {
+        Route::get('familiarisations', [FamiliarisationController::class, 'index']);
+    });
 
-Route::middleware(['api.auth:familiarisations.read'])->group(function () {
-    Route::get('familiarisations', [FamiliarisationController::class, 'index']);
-});
+    Route::middleware(['api.auth:tier1.read'])->group(function () {
+        Route::get('tier1', [Tier1Controller::class, 'index']);
+    });
 
-Route::middleware(['api.auth:tier1.read'])->group(function () {
-    Route::get('tier1', [Tier1Controller::class, 'index']);
-});
+    Route::middleware(['api.auth:solos.read'])->group(function () {
+        Route::get('solos', [SoloController::class, 'index']);
+    });
 
-Route::middleware(['api.auth:solos.read'])->group(function () {
-    Route::get('solos', [SoloController::class, 'index']);
-});
-
-Route::middleware(['api.auth:cpts.read'])->group(function () {
-    Route::get('cpts', [CptController::class, 'index']);
+    Route::middleware(['api.auth:cpts.read'])->group(function () {
+        Route::get('cpts', [CptController::class, 'index']);
+    });
 });

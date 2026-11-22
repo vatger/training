@@ -11,6 +11,7 @@ use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
 
@@ -64,6 +65,20 @@ function cptHttpTwrCourse(): Course
         'position' => 'TWR',
         'solo_station' => 'EDDF_TWR',
     ]);
+}
+
+function cptHttpTrainee(Course $course): User
+{
+    $trainee = User::factory()->create();
+    DB::table('course_trainees')->insert([
+        'course_id' => $course->id,
+        'user_id' => $trainee->id,
+        'status' => 'active',
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+
+    return $trainee;
 }
 
 function cptHttpMakeExaminerFor(User $user, string $position = 'TWR'): Examiner
@@ -135,7 +150,7 @@ test('store fails validation when required fields are missing', function () {
 
 test('store fails validation when date is in the past', function () {
     $course = cptHttpTwrCourse();
-    $trainee = User::factory()->create();
+    $trainee = cptHttpTrainee($course);
 
     $this->actingAs(cptHttpSuperuser())
         ->post(route('cpt.store'), [
@@ -148,7 +163,7 @@ test('store fails validation when date is in the past', function () {
 
 test('superuser can create a cpt without examiner or local', function () {
     $course = cptHttpTwrCourse();
-    $trainee = User::factory()->create();
+    $trainee = cptHttpTrainee($course);
 
     $this->actingAs(cptHttpSuperuser())
         ->post(route('cpt.store'), [
@@ -167,7 +182,7 @@ test('superuser can create a cpt without examiner or local', function () {
 
 test('creating a cpt with both examiner and local results in confirmed true', function () {
     $course = cptHttpTwrCourse();
-    $trainee = User::factory()->create();
+    $trainee = cptHttpTrainee($course);
     $examinerUser = User::factory()->create();
     cptHttpMakeExaminerFor($examinerUser, 'TWR');
     $localUser = cptHttpMentor($course);
@@ -192,7 +207,7 @@ test('creating a cpt with both examiner and local results in confirmed true', fu
 
 test('store rejects course mentor as examiner when cpt is more than 36 hours away', function () {
     $course = cptHttpTwrCourse();
-    $trainee = User::factory()->create();
+    $trainee = cptHttpTrainee($course);
     $mentor = cptHttpMentor($course);
     cptHttpMakeExaminerFor($mentor, 'TWR');
 
@@ -208,7 +223,7 @@ test('store rejects course mentor as examiner when cpt is more than 36 hours awa
 
 test('store allows course mentor as examiner when cpt is within 36 hours', function () {
     $course = cptHttpTwrCourse();
-    $trainee = User::factory()->create();
+    $trainee = cptHttpTrainee($course);
     $mentor = cptHttpMentor($course);
     cptHttpMakeExaminerFor($mentor, 'TWR');
 
@@ -226,7 +241,7 @@ test('store allows course mentor as examiner when cpt is within 36 hours', funct
 
 test('store rejects when trainee and examiner are the same user', function () {
     $course = cptHttpTwrCourse();
-    $trainee = User::factory()->create();
+    $trainee = cptHttpTrainee($course);
     cptHttpMakeExaminerFor($trainee, 'TWR');
 
     $this->actingAs(cptHttpSuperuser())
@@ -241,7 +256,7 @@ test('store rejects when trainee and examiner are the same user', function () {
 
 test('store rejects when examiner user has no examiner profile', function () {
     $course = cptHttpTwrCourse();
-    $trainee = User::factory()->create();
+    $trainee = cptHttpTrainee($course);
     $nonExaminer = User::factory()->create();
 
     $this->actingAs(cptHttpSuperuser())
@@ -256,7 +271,7 @@ test('store rejects when examiner user has no examiner profile', function () {
 
 test('store rejects when examiner is not authorized for the course position', function () {
     $course = cptHttpTwrCourse(); // TWR position
-    $trainee = User::factory()->create();
+    $trainee = cptHttpTrainee($course);
     $examinerUser = User::factory()->create();
     cptHttpMakeExaminerFor($examinerUser, 'APP'); // APP examiner, not TWR
 
@@ -272,7 +287,7 @@ test('store rejects when examiner is not authorized for the course position', fu
 
 test('store rejects when local is not a mentor for the course', function () {
     $course = cptHttpTwrCourse();
-    $trainee = User::factory()->create();
+    $trainee = cptHttpTrainee($course);
     $nonMentor = User::factory()->create();
 
     $this->actingAs(cptHttpSuperuser())
@@ -756,4 +771,49 @@ test('course mentor not assigned as examiner or local cannot upload a log', func
     $this->actingAs($mentor)
         ->post(route('cpt.upload.store', $cpt), ['log_file' => $file])
         ->assertSessionHasErrors('error');
+});
+
+test('mentor without access to the course cannot create a cpt for it', function () {
+    $course = cptHttpTwrCourse();
+    $trainee = cptHttpTrainee($course);
+    $otherMentor = cptHttpMentor(cptHttpTwrCourse());
+
+    $this->actingAs($otherMentor)
+        ->post(route('cpt.store'), [
+            'course_id' => $course->id,
+            'trainee_id' => $trainee->id,
+            'date' => now()->addDays(2)->toDateTimeString(),
+        ])
+        ->assertForbidden();
+
+    $this->assertDatabaseCount('cpts', 0);
+});
+
+test('cpt cannot be created for a user who is not active in the course', function () {
+    $course = cptHttpTwrCourse();
+    $outsider = User::factory()->create();
+
+    $this->actingAs(cptHttpMentor($course))
+        ->post(route('cpt.store'), [
+            'course_id' => $course->id,
+            'trainee_id' => $outsider->id,
+            'date' => now()->addDays(2)->toDateTimeString(),
+        ])
+        ->assertSessionHasErrors('trainee_id');
+
+    $this->assertDatabaseCount('cpts', 0);
+});
+
+test('course data is only available to mentors of that course', function () {
+    $course = cptHttpTwrCourse();
+    cptHttpTrainee($course);
+
+    $this->actingAs(cptHttpMentor(cptHttpTwrCourse()))
+        ->getJson(route('cpt.course-data', ['course_id' => $course->id]))
+        ->assertForbidden();
+
+    $this->actingAs(cptHttpMentor($course))
+        ->getJson(route('cpt.course-data', ['course_id' => $course->id]))
+        ->assertOk()
+        ->assertJsonCount(1, 'trainees');
 });

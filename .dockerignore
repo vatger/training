@@ -1,6 +1,7 @@
 vendor/
 node_modules/
 .env
+.env.*
 .env.backup
 .git/
 .github/
@@ -34,3 +35,9 @@ docker-compose*.yml
 .idea/
 .vscode/
 .DS_Store
+
+database/*.sqlite
+_ide_helper*.php
+*.key
+.claude/
+.agents/

@@ -1,4 +1,5 @@
 import { Head, Link } from "@inertiajs/react"
+import DOMPurify from "dompurify"
 import {
 	Activity,
 	AlertCircle,
@@ -167,7 +168,10 @@ const MarkdownContent = ({ content }: { content: string | null }) => {
 		)
 	}
 
-	const html = content.replace(/<p>(\s*)<\/p>/g, "<p><br></p>")
+	const html = DOMPurify.sanitize(
+		content.replace(/<p>(\s*)<\/p>/g, "<p><br></p>"),
+		{ USE_PROFILES: { html: true } },
+	)
 
 	return (
 		<>

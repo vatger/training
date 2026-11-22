@@ -159,6 +159,10 @@ class TraineeManagementController extends Controller
             return back()->withErrors(['error' => 'You cannot modify this course']);
         }
 
+        if (! $course->activeTrainees()->where('user_id', $trainee->id)->exists()) {
+            return back()->withErrors(['error' => 'Trainee is not in this course']);
+        }
+
         try {
             $this->removeTrainee->execute($course, $trainee, $user);
 

@@ -111,6 +111,14 @@ class CptController extends Controller
         $course = Course::findOrFail($validated['course_id']);
         $trainee = User::findOrFail($validated['trainee_id']);
 
+        if (! $request->user()->isMentorForCourse($course)) {
+            abort(403, 'You are not a mentor for this course.');
+        }
+
+        if (! $course->activeTrainees()->where('user_id', $trainee->id)->exists()) {
+            return back()->withErrors(['trainee_id' => 'This trainee is not active in the selected course.']);
+        }
+
         if ($validated['trainee_id'] === ($validated['examiner_id'] ?? null)) {
             return back()->withErrors(['examiner_id' => 'Trainee cannot be the same as examiner.']);
         }
@@ -192,6 +200,11 @@ class CptController extends Controller
 
     public function getCourseData(Request $request)
     {
+        $request->validate([
+            'course_id' => 'nullable|integer',
+            'date' => 'nullable|date',
+        ]);
+
         $courseId = $request->get('course_id');
 
         if (! $courseId) {
@@ -199,6 +212,11 @@ class CptController extends Controller
         }
 
         $course = Course::with(['activeTrainees', 'mentors'])->findOrFail($courseId);
+
+        if (! $request->user()->isMentorForCourse($course)) {
+            abort(403, 'You are not a mentor for this course.');
+        }
+
         $date = Carbon::parse($request->get('date'));
 
         $examinersQuery = Examiner::with('user')

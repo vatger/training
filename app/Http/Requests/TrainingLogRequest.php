@@ -3,7 +3,9 @@
 namespace App\Http\Requests;
 
 use App\Models\Course;
+use App\Support\HtmlSanitizer;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Validator;
 
 class TrainingLogRequest extends FormRequest
 {
@@ -15,8 +17,8 @@ class TrainingLogRequest extends FormRequest
             return false;
         }
 
-        if ($this->route('training_log')) {
-            return $user->canEditTrainingLog($this->route('training_log'));
+        if ($log = $this->route('trainingLog')) {
+            return $user->can('update', $log);
         }
 
         if ($this->has('course_id')) {
@@ -26,6 +28,44 @@ class TrainingLogRequest extends FormRequest
         }
 
         return true;
+    }
+
+    private const RICH_TEXT_FIELDS = [
+        'special_procedures', 'airspace_restrictions', 'internal_remarks', 'final_comment',
+    ];
+
+    public function validated($key = null, $default = null)
+    {
+        $data = parent::validated();
+
+        foreach ($data as $field => $value) {
+            if (! is_string($value)) {
+                continue;
+            }
+
+            if (in_array($field, self::RICH_TEXT_FIELDS, true) || str_ends_with($field, '_positives') || str_ends_with($field, '_negatives')) {
+                $data[$field] = HtmlSanitizer::clean($value);
+            }
+        }
+
+        return $key === null ? $data : data_get($data, $key, $default);
+    }
+
+    public function after(): array
+    {
+        return [
+            function (Validator $validator) {
+                if (! $this->isMethod('post') || $validator->errors()->isNotEmpty()) {
+                    return;
+                }
+
+                $course = Course::find($this->input('course_id'));
+
+                if (! $course || ! $course->activeTrainees()->where('user_id', $this->input('trainee_id'))->exists()) {
+                    $validator->errors()->add('trainee_id', 'This trainee is not active in the selected course.');
+                }
+            },
+        ];
     }
 
     public function rules(): array

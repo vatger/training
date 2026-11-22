@@ -113,19 +113,19 @@ class UserForm
                     ->schema([
                         Forms\Components\Toggle::make('is_staff')
                             ->label('Staff Member')
-                            ->disabled(fn ($livewire) => ! $livewire->isFieldUnlocked('system_permissions'))
+                            ->disabled(fn ($livewire) => ! $livewire->isFieldUnlocked('system_permissions') || ! Filament::auth()->user()?->isSuperuser())
                             ->dehydrated(),
 
                         Forms\Components\Toggle::make('is_superuser')
                             ->label('Superuser')
-                            ->disabled(fn ($livewire) => ! $livewire->isFieldUnlocked('system_permissions'))
+                            ->disabled(fn ($livewire) => ! $livewire->isFieldUnlocked('system_permissions') || ! Filament::auth()->user()?->isSuperuser())
                             ->dehydrated(),
 
                         Forms\Components\Toggle::make('is_admin')
                             ->label('Admin Account')
                             ->visible(fn () => Filament::auth()->user()?->isAdmin() === true)
                             ->helperText('Not synced from VATSIM.')
-                            ->disabled(fn ($livewire) => ! $livewire->isFieldUnlocked('system_permissions'))
+                            ->disabled(fn ($livewire) => ! $livewire->isFieldUnlocked('system_permissions') || ! Filament::auth()->user()?->isAdmin())
                             ->dehydrated(),
                     ])->columns(3),
 
@@ -136,7 +136,8 @@ class UserForm
                             ->label('Roles')
                             ->relationship('roles', 'name')
                             ->multiple()
-                            ->preload(),
+                            ->preload()
+                            ->disabled(fn () => ! Filament::auth()->user()?->isSuperuser()),
 
                         Forms\Components\CheckboxList::make('permissions')
                             ->label('Direct Permissions')
@@ -158,6 +159,7 @@ class UserForm
                             })
                             ->searchable()
                             ->columns(2)
+                            ->disabled(fn () => ! Filament::auth()->user()?->isSuperuser())
                             ->gridDirection('row'),
                     ])->columns(1),
 

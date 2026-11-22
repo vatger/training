@@ -150,7 +150,7 @@ class VatgerClient implements VatgerClientInterface
 
             $response = Http::timeout(15)
                 ->retry(2, 1000)
-                ->get("http://stats.vatsim-germany.org/api/atc/{$vatsimId}/sessions/", [
+                ->get(rtrim(config('services.vatger.stats_url'), '/')."/api/atc/{$vatsimId}/sessions/", [
                     'start_date' => $start,
                 ]);
 

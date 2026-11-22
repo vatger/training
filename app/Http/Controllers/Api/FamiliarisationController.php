@@ -40,7 +40,6 @@ class FamiliarisationController extends Controller
 
             return response()->json([
                 'error' => 'Failed to retrieve familiarisations',
-                'message' => $e->getMessage(),
             ], 500);
         }
     }

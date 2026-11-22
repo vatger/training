@@ -94,7 +94,7 @@ class VatsimActivityService
 
         return Cache::remember($cacheKey, now()->addHours(1), function () use ($vatsimId) {
             $start = Carbon::now()->subDays(180)->format('Y-m-d');
-            $apiUrl = "http://stats.vatsim-germany.org/api/atc/{$vatsimId}/sessions/?start_date={$start}";
+            $apiUrl = rtrim(config('services.vatger.stats_url'), '/')."/api/atc/{$vatsimId}/sessions/?start_date={$start}";
 
             try {
                 $response = Http::timeout(15)
@@ -293,7 +293,7 @@ class VatsimActivityService
 
         return Cache::remember($cacheKey, now()->addHours(6), function () use ($vatsimId) {
             $start = Carbon::now()->subYears(2)->format('Y-m-d');
-            $apiUrl = "http://stats.vatsim-germany.org/api/atc/{$vatsimId}/sessions/?start_date={$start}";
+            $apiUrl = rtrim(config('services.vatger.stats_url'), '/')."/api/atc/{$vatsimId}/sessions/?start_date={$start}";
 
             try {
                 $response = Http::timeout(15)

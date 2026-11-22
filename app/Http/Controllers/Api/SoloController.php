@@ -32,7 +32,6 @@ class SoloController extends Controller
 
             return response()->json([
                 'error' => 'Failed to retrieve solo endorsements',
-                'message' => $e->getMessage(),
             ], 500);
         }
     }
