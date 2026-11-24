@@ -19,7 +19,7 @@ class GdprController extends Controller
      * The first call opens a removal request for Leitung to review, every call until
      * that request is completed is answered with 202, which the homepage does not
      * count as success. Nothing is deleted here. Every call is recorded, a pending request
-     * that is not polled for 7 days is cancelled (CancelStaleGdprRemoval).
+     * that is not polled for 3 days is cancelled (CancelStaleGdprRemoval).
      */
     public function delete(Request $request, int $vatsimId): JsonResponse
     {

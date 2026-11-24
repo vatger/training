@@ -151,18 +151,18 @@ describe('approving a removal request', function () {
         apiCreateKeyForGdpr();
 
         $this->withHeaders(['Authorization' => 'Bearer gdpr-key'])->deleteJson('/api/gdpr-removal/7000020')->assertStatus(202);
-        GdprRemovalRequest::sole()->update(['last_polled_at' => now()->subDays(5)]);
+        GdprRemovalRequest::sole()->update(['last_polled_at' => now()->subDays(GdprRemovalRequest::STALE_AFTER_DAYS - 1)]);
 
         $this->withHeaders(['Authorization' => 'Bearer gdpr-key'])->deleteJson('/api/gdpr-removal/7000020')->assertStatus(202);
 
         expect(GdprRemovalRequest::sole()->last_polled_at->isToday())->toBeTrue();
     });
 
-    test('queues a job for each request not polled for 7 days, which cancels it and wipes the identifiers', function () {
+    test('queues a job for each request not polled for 3 days, which cancels it and wipes the identifiers', function () {
         $stale = gdprRequestFor(User::factory()->create());
-        $stale->update(['last_polled_at' => now()->subDays(7)]);
+        $stale->update(['last_polled_at' => now()->subDays(GdprRemovalRequest::STALE_AFTER_DAYS)]);
         $fresh = gdprRequestFor(User::factory()->create());
-        $fresh->update(['last_polled_at' => now()->subDays(6)]);
+        $fresh->update(['last_polled_at' => now()->subDays(GdprRemovalRequest::STALE_AFTER_DAYS - 1)]);
 
         Queue::fake();
         CancelStaleGdprRemoval::dispatchForStale();
@@ -190,7 +190,7 @@ describe('approving a removal request', function () {
 
     test('a poll after the cancellation opens a new request', function () {
         $user = User::factory()->create(['vatsim_id' => 7000021]);
-        gdprRequestFor($user)->update(['last_polled_at' => now()->subDays(8)]);
+        gdprRequestFor($user)->update(['last_polled_at' => now()->subDays(GdprRemovalRequest::STALE_AFTER_DAYS)]);
         CancelStaleGdprRemoval::dispatchForStale();
         apiCreateKeyForGdpr();
 
@@ -335,11 +335,11 @@ function apiCreateKeyForGdpr(): void
 }
 
 describe('automatic removal of users without data', function () {
-    test('removes a user that has only the user model after 8 days', function () {
+    test('removes a user that has only the user model after 2 days', function () {
         $user = User::factory()->create(['vatsim_id' => 7000030]);
         DB::table('user_settings')->insert(['user_id' => $user->id, 'created_at' => now(), 'updated_at' => now()]);
         $request = gdprRequestFor($user);
-        $request->forceFill(['created_at' => now()->subDays(8)])->save();
+        $request->forceFill(['created_at' => now()->subDays(GdprRemovalRequest::AUTO_REMOVE_AFTER_DAYS)])->save();
 
         Queue::fake();
         AutoRemoveGdprRequest::dispatchForDue();
@@ -351,10 +351,10 @@ describe('automatic removal of users without data', function () {
             ->approved_by_id->toBeNull();
     });
 
-    test('does nothing before 8 days', function () {
+    test('does nothing before 2 days', function () {
         $user = User::factory()->create(['vatsim_id' => 7000031]);
         $request = gdprRequestFor($user);
-        $request->forceFill(['created_at' => now()->subDays(7)])->save();
+        $request->forceFill(['created_at' => now()->subDays(GdprRemovalRequest::AUTO_REMOVE_AFTER_DAYS - 1)])->save();
 
         Queue::fake();
         AutoRemoveGdprRequest::dispatchForDue();
