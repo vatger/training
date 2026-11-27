@@ -138,6 +138,7 @@ class MoodleClient implements MoodleClientInterface
                 'vatsim_id' => $vatsimId,
                 'course_id' => $courseId,
                 'status' => $response->status(),
+                'body' => mb_substr($response->body(), 0, 500),
             ]);
 
             return false;
